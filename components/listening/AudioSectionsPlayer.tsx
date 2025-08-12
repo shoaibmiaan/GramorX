@@ -6,12 +6,16 @@ import { Alert } from '@/components/design-system/Alert';
 import { AudioBar } from '@/components/design-system/AudioBar';
 
 type Section = {
-  id: string; order_no: number; audio_url: string;
-  start_ms: number; end_ms: number; transcript?: string | null;
+  id: string;
+  order_no: number;
+  audio_url: string;
+  start_ms: number;
+  end_ms: number;
+  transcript?: string | null;
 };
 
 export default function AudioSectionsPlayer({ sections }: { sections: Section[] }) {
-  const ordered = useMemo(() => [...sections].sort((a,b)=>a.order_no-b.order_no), [sections]);
+  const ordered = useMemo(() => [...sections].sort((a, b) => a.order_no - b.order_no), [sections]);
   const [i, setI] = useState(0);
   const [showTranscript, setShowTranscript] = useState<Record<string, boolean>>({});
   const [autoPlay, setAutoPlay] = useState(true);
@@ -23,17 +27,21 @@ export default function AudioSectionsPlayer({ sections }: { sections: Section[] 
   const s = ordered[i];
 
   if (!ordered.length) {
-    return <Alert variant="warning" title="No audio">No sections available.</Alert>;
+    return (
+      <Alert variant="warning" title="No audio">
+        No sections available.
+      </Alert>
+    );
   }
 
-  // (Re)load the section
+  // (Re)load section
   useEffect(() => {
     const el = audioRef.current;
     if (!el || !s) return;
     setPlaying(false);
     el.src = s.audio_url;
     el.currentTime = s.start_ms / 1000;
-    // play attempt (allowed only after user gesture)
+    // Attempt autoplay (requires user gesture in most browsers)
     el.play().then(() => setPlaying(true)).catch(() => {});
   }, [i, s?.audio_url, s?.start_ms]);
 
@@ -48,10 +56,10 @@ export default function AudioSectionsPlayer({ sections }: { sections: Section[] 
       setCurrent(0);
     };
     const onTime = () => {
-      const end = s.end_ms / 1000;
-      const t = Math.min(Math.max(el.currentTime - s.start_ms / 1000, 0), duration || end);
-      setCurrent(t);
-      if (el.currentTime >= end - 0.05) {
+      const endAbs = s.end_ms / 1000;
+      const local = Math.min(Math.max(el.currentTime - s.start_ms / 1000, 0), duration || endAbs);
+      setCurrent(local);
+      if (el.currentTime >= endAbs - 0.05) {
         el.pause();
         setPlaying(false);
         if (autoPlay && i < ordered.length - 1) setI(i + 1);
@@ -75,14 +83,14 @@ export default function AudioSectionsPlayer({ sections }: { sections: Section[] 
   const togglePlay = () => {
     const el = audioRef.current;
     if (!el) return;
-    if (playing) { el.pause(); }
-    else { el.play().catch(()=>{}); }
+    if (playing) el.pause();
+    else el.play().catch(() => {});
   };
 
   const handleSeek = (seconds: number) => {
     const el = audioRef.current;
     if (!el || !s) return;
-    const absolute = (s.start_ms / 1000) + seconds;
+    const absolute = s.start_ms / 1000 + seconds;
     el.currentTime = absolute;
     setCurrent(seconds);
   };
@@ -90,22 +98,36 @@ export default function AudioSectionsPlayer({ sections }: { sections: Section[] 
   return (
     <Card className="card-surface p-6 rounded-ds-2xl">
       <div className="flex items-center gap-3">
-        <Badge variant="info" size="sm">Section {s.order_no}</Badge>
-        <Button variant="secondary" onClick={() => setAutoPlay(v => !v)}>
+        <Badge variant="info" size="sm">
+          Section {s.order_no}
+        </Badge>
+        <Button variant="secondary" onClick={() => setAutoPlay((v) => !v)}>
           {autoPlay ? 'Auto-play: On' : 'Auto-play: Off'}
         </Button>
         <div className="ml-auto flex gap-2">
-          <Button variant="secondary" disabled={i===0} onClick={() => setI(p=>Math.max(0,p-1))}>Prev</Button>
-          <Button variant="secondary" disabled={i===ordered.length-1} onClick={() => setI(p=>Math.min(ordered.length-1,p+1))}>Next</Button>
+          <Button
+            variant="secondary"
+            disabled={i === 0}
+            onClick={() => setI((p) => Math.max(0, p - 1))}
+          >
+            Prev
+          </Button>
+          <Button
+            variant="secondary"
+            disabled={i === ordered.length - 1}
+            onClick={() => setI((p) => Math.min(ordered.length - 1, p + 1))}
+          >
+            Next
+          </Button>
         </div>
       </div>
 
-      {/* Hidden native audio for actual playback; UI via AudioBar */}
+      {/* Hidden native audio for actual playback; UI via DS AudioBar (controlled mode) */}
       <audio ref={audioRef} className="sr-only" aria-hidden />
 
       <div className="mt-4">
         <AudioBar
-          // If your AudioBar uses different prop names, map them here.
+          // controlled mode — matches player state
           current={current}
           duration={duration}
           playing={playing}
@@ -117,7 +139,9 @@ export default function AudioSectionsPlayer({ sections }: { sections: Section[] 
       <div className="mt-4">
         <Button
           variant="primary"
-          onClick={() => setShowTranscript(prev => ({ ...prev, [s.id]: !prev[s.id] }))}
+          onClick={() =>
+            setShowTranscript((prev) => ({ ...prev, [s.id]: !prev[s.id] }))
+          }
           aria-expanded={!!showTranscript[s.id]}
         >
           {showTranscript[s.id] ? 'Hide transcript' : 'Show transcript'}
@@ -125,7 +149,9 @@ export default function AudioSectionsPlayer({ sections }: { sections: Section[] 
 
         {showTranscript[s.id] && s.transcript && (
           <Card className="p-4 mt-3">
-            <p className="whitespace-pre-wrap text-body opacity-90">{s.transcript}</p>
+            <p className="whitespace-pre-wrap text-body opacity-90">
+              {s.transcript}
+            </p>
           </Card>
         )}
       </div>

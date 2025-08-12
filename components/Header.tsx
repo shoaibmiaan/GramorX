@@ -45,6 +45,7 @@ export const Header: React.FC<{ streak: number }> = ({ streak }) => {
   // Load session + subscribe to changes
   useEffect(() => {
     let cancelled = false;
+
     const sync = async () => {
       const { data } = await supabaseBrowser.auth.getSession();
       if (!cancelled) {
@@ -59,6 +60,7 @@ export const Header: React.FC<{ streak: number }> = ({ streak }) => {
       }
     };
     sync();
+
     const { data: sub } = supabaseBrowser.auth.onAuthStateChange((_e, session) => {
       const s = session?.user;
       setUser({
@@ -68,7 +70,11 @@ export const Header: React.FC<{ streak: number }> = ({ streak }) => {
         avatarUrl: (s?.user_metadata as any)?.avatar_url ?? null,
       });
     });
-    return () => sub.subscription.unsubscribe();
+
+    return () => {
+      cancelled = true;
+      sub?.subscription?.unsubscribe();
+    };
   }, []);
 
   // Close dropdowns on outside click / Esc
@@ -217,7 +223,6 @@ export const Header: React.FC<{ streak: number }> = ({ streak }) => {
                       avatarUrl={user.avatarUrl}
                       onAvatarChange={(url) => setUser((u) => ({ ...u, avatarUrl: url }))}
                       onSignOut={signOut}
-                      // (optional) You can pass custom items; default already contains Profile + Account + Sign out
                     />
                   </li>
                 ) : (
@@ -261,9 +266,8 @@ export const Header: React.FC<{ streak: number }> = ({ streak }) => {
           <Container>
             <div className="py-3 flex items-center justify-between">
               <StreakIndicator value={streak} />
-              {ready && userEmail ? (
+              {ready && user.id ? (
                 <div className="flex items-center gap-2">
-                  {/* Dashboard button removed on mobile as well */}
                   <button
                     onClick={signOut}
                     className="px-4 py-2 rounded-full bg-gradient-to-r from-purpleVibe to-electricBlue text-white font-semibold hover:opacity-90 transition"
@@ -324,7 +328,7 @@ export const Header: React.FC<{ streak: number }> = ({ streak }) => {
                   )}
                 </li>
 
-                {/* Success Stories removed; keep Pricing + Waitlist */}
+                {/* Pricing + Waitlist */}
                 {NAV.map((n) => (
                   <li key={n.href}>
                     <a

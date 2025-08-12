@@ -91,7 +91,7 @@ export default function TipDetail({
             <h1 className="text-h3 font-semibold mb-2">Tip not found</h1>
             <p className="text-body text-grayish">This strategy may have been moved or removed.</p>
             <div className="mt-4">
-              <Button as={Link} href="/learning/strategies" variant="primary">
+              <Button as="a" href="/learning/strategies" variant="primary">
                 Back to strategies
               </Button>
             </div>
@@ -258,7 +258,7 @@ export default function TipDetail({
               </div>
             </div>
             <div className="shrink-0">
-              <Button as={Link} href={`/learning/strategies?area=${tip.area}`} variant="secondary">
+              <Button as="a" href={`/learning/strategies?area=${tip.area}`} variant="secondary">
                 Back
               </Button>
             </div>
@@ -344,7 +344,7 @@ export default function TipDetail({
                         <Badge key={t} variant="info" size="sm" className="capitalize">{t}</Badge>
                       ))}
                     </div>
-                    <Button as={Link} href={`/learning/strategies/${r.slug}`} variant="secondary">
+                    <Button as="a" href={`/learning/strategies/${r.slug}`} variant="secondary">
                       Open
                     </Button>
                   </Card>

@@ -1,130 +1,169 @@
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { useEffect, useMemo, useState } from 'react';
+import Image from 'next/image';
+import { createClient } from '@supabase/supabase-js';
 import { Container } from '@/components/design-system/Container';
 import { Card } from '@/components/design-system/Card';
-import { Badge } from '@/components/design-system/Badge';
 import { Button } from '@/components/design-system/Button';
-import { Input } from '@/components/design-system/Input';
+import { Badge } from '@/components/design-system/Badge';
 import { Alert } from '@/components/design-system/Alert';
+import { StreakIndicator } from '@/components/design-system/StreakIndicator';
 
-type SkillKey = 'grammar' | 'vocabulary' | 'collocations';
-type MiniLesson = { id: string; title: string; tags: string[]; level: 'beginner'|'intermediate'|'advanced' };
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
-const CATALOG: Record<SkillKey, MiniLesson[]> = {
-  grammar: [
-    { id: 'g1', title: 'Tenses Overview', tags: ['verb','time'], level: 'beginner' },
-    { id: 'g2', title: 'Complex Clauses', tags: ['relative','subordinate'], level: 'intermediate' },
-    { id: 'g3', title: 'Punctuation Precision', tags: ['comma','semicolon'], level: 'advanced' },
-  ],
-  vocabulary: [
-    { id: 'v1', title: 'Environment Lexicon', tags: ['band 7+','topic'], level: 'intermediate' },
-    { id: 'v2', title: 'Education Themes', tags: ['topic'], level: 'beginner' },
-    { id: 'v3', title: 'Technology Register', tags: ['formal'], level: 'advanced' },
-  ],
-  collocations: [
-    { id: 'c1', title: 'Make / Do / Take', tags: ['verbs'], level: 'beginner' },
-    { id: 'c2', title: 'Economic + Nouns', tags: ['topic'], level: 'intermediate' },
-    { id: 'c3', title: 'Academic Collocations', tags: ['formal'], level: 'advanced' },
-  ],
+type CoachAI = {
+  suggestedGoal?: number;
+  etaWeeks?: number;
+  sequence?: string[];
+  notes?: string[];
 };
 
-export default function SkillDetail() {
-  const { query } = useRouter();
-  const skill = (query.skill as SkillKey) || 'grammar';
+type Profile = {
+  user_id: string;
+  full_name: string;
+  country: string | null;
+  english_level: string | null;
+  goal_band: number | null;
+  study_prefs: string[] | null;
+  time_commitment: string | null;
+  preferred_language: string | null;
+  avatar_url: string | null;
+  ai_recommendation: CoachAI | null;
+  draft: boolean;
+};
 
-  const [level, setLevel] = useState<'beginner'|'intermediate'|'advanced'|'all'>('all');
-  const [focus, setFocus] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState<string|null>(null);
-  const [drill, setDrill] = useState<{ id: string; prompt: string } | null>(null);
+export default function Dashboard() {
+  const router = useRouter();
+  const [loading, setLoading] = useState(true);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [streak, setStreak] = useState(0); // wire to real data later
 
-  const lessons = useMemo(() => {
-    const list = CATALOG[skill] ?? [];
-    return list.filter(l => (level === 'all' ? true : l.level === level));
-  }, [skill, level]);
+  useEffect(() => {
+    (async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) { router.replace('/login'); return; }
 
-  useEffect(() => { setDrill(null); setErrorMsg(null); }, [skill]);
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('user_id', session.user.id)
+        .maybeSingle();
 
-  async function generateDrill() {
-    try {
-      setLoading(true);
-      setErrorMsg(null);
-      setDrill(null);
-      const res = await fetch('/api/drills/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ skill, level: level === 'all' ? 'beginner' : level, focus }),
-      });
-      if (!res.ok) throw new Error('Failed to generate drill');
-      const data = await res.json(); // { id, prompt }
-      setDrill({ id: data.id, prompt: data.prompt });
-    } catch (e: any) {
-      setErrorMsg(e?.message ?? 'Something went wrong.');
-    } finally {
+      if (error) console.error(error);
+      if (!data || data.draft) {
+        router.replace('/profile-setup');
+        return;
+      }
+
+      setProfile(data as Profile);
+      // naive local streak example (replace with real streak table)
+      const today = new Date().toDateString();
+      const last = typeof window !== 'undefined' ? localStorage.getItem('lastStudy') : null;
+      if (last === today) setStreak(prev => Math.max(prev, 1));
       setLoading(false);
-    }
+    })();
+  }, [router]);
+
+  if (loading) {
+    return (
+      <section className="py-24 bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90">
+        <Container>
+          <div className="grid gap-6 md:grid-cols-3">
+            {[...Array(3)].map((_,i)=>(
+              <Card key={i} className="p-6 rounded-ds-2xl">
+                <div className="animate-pulse h-6 w-40 bg-gray-200 dark:bg-white/10 rounded" />
+                <div className="mt-4 animate-pulse h-24 bg-gray-200 dark:bg-white/10 rounded" />
+              </Card>
+            ))}
+          </div>
+        </Container>
+      </section>
+    );
   }
 
-  const titleMap: Record<SkillKey, string> = { grammar: 'Grammar', vocabulary: 'Vocabulary', collocations: 'Collocations' };
+  const ai: CoachAI = profile?.ai_recommendation ?? {};
+  const prefs = profile?.study_prefs ?? [];
+  const notes = Array.isArray(ai.notes) ? ai.notes : [];
 
   return (
     <section className="py-24 bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90">
       <Container>
-        <h1 className="font-slab text-4xl mb-3 text-gradient-primary">{titleMap[skill]} — Mini Lessons</h1>
-        <p className="text-grayish max-w-2xl">Browse lessons by level and generate a quick practice drill.</p>
-
-        <Card className="card-surface p-6 rounded-ds-2xl mt-8">
-          <div className="flex flex-col md:flex-row md:items-end gap-4">
-            <div className="flex items-center gap-2">
-              <Badge variant={level === 'all' ? 'success' : 'neutral'} size="sm" className="cursor-pointer" onClick={() => setLevel('all')}>All</Badge>
-              <Badge variant={level === 'beginner' ? 'success' : 'neutral'} size="sm" className="cursor-pointer" onClick={() => setLevel('beginner')}>Beginner</Badge>
-              <Badge variant={level === 'intermediate' ? 'success' : 'neutral'} size="sm" className="cursor-pointer" onClick={() => setLevel('intermediate')}>Intermediate</Badge>
-              <Badge variant={level === 'advanced' ? 'success' : 'neutral'} size="sm" className="cursor-pointer" onClick={() => setLevel('advanced')}>Advanced</Badge>
-            </div>
-            <div className="md:ml-auto w-full md:w-96">
-              <Input label="Focus (optional)" placeholder="e.g., relative clauses, technology topic" value={focus} onChange={(e) => setFocus(e.target.value)} hint="Refine the drill theme" />
-            </div>
-            <Button variant="primary" className="rounded-ds" onClick={generateDrill} disabled={loading}>
-              {loading ? 'Generating…' : 'Generate Drill'}
-            </Button>
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <h1 className="font-slab text-display text-gradient-primary">Welcome, {profile?.full_name || 'Learner'}!</h1>
+            <p className="text-grayish">Let’s hit your target band with a personalized plan.</p>
           </div>
+          <div className="flex items-center gap-4">
+            <StreakIndicator count={streak} />
+            {profile?.avatar_url ? (
+              <Image src={profile.avatar_url} alt="Avatar" width={56} height={56} className="rounded-full ring-2 ring-primary/40" />
+            ) : null}
+          </div>
+        </div>
 
-          {loading && <Alert className="mt-4" title="Generating drill…" variant="info">Please wait a moment.</Alert>}
-          {errorMsg && <Alert className="mt-4" title="Error" variant="error">{errorMsg}</Alert>}
-          {drill && (
-            <Card className="card-surface p-5 rounded-ds mt-4">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <div className="text-h3 font-semibold">Practice Drill</div>
-                  <p className="mt-1 opacity-90">{drill.prompt}</p>
-                </div>
-                <Badge variant="info" size="sm">AI</Badge>
-              </div>
-              <div className="mt-4">
-                <Input placeholder="Type your short answer here…" />
-              </div>
-              <div className="mt-3">
-                <Button variant="secondary" className="rounded-ds">Save Attempt</Button>
-              </div>
-            </Card>
-          )}
-        </Card>
+        {/* Top summary cards */}
+        <div className="mt-10 grid gap-6 md:grid-cols-3">
+          <Card className="p-6 rounded-ds-2xl">
+            <div className="text-small opacity-70 mb-1">Goal Band</div>
+            <div className="text-h1 font-semibold">{profile?.goal_band?.toFixed(1) ?? (ai.suggestedGoal?.toFixed?.(1) || '—')}</div>
+            <div className="mt-3">
+              <Badge variant="info" size="sm">{profile?.english_level || 'Level —'}</Badge>
+            </div>
+          </Card>
 
-        <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {lessons.map(item => (
-            <Card key={item.id} className="card-surface p-6 rounded-ds-2xl">
-              <div className="flex items-center justify-between">
-                <h3 className="text-h3 font-semibold">{item.title}</h3>
-                <Badge variant="neutral" size="sm" className="capitalize">{item.level}</Badge>
-              </div>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {item.tags.map(t => <Badge key={t} size="sm" variant="info">{t}</Badge>)}
-              </div>
-              <div className="mt-5">
-                <Button variant="primary" className="rounded-ds">Practice</Button>
-              </div>
-            </Card>
-          ))}
+          <Card className="p-6 rounded-ds-2xl">
+            <div className="text-small opacity-70 mb-1">ETA to Goal</div>
+            <div className="text-h1 font-semibold">{ai.etaWeeks ?? '—'}<span className="text-h3 ml-1">weeks</span></div>
+            <div className="mt-3 text-small opacity-80">Assuming {profile?.time_commitment || '1–2h/day'}</div>
+          </Card>
+
+          <Card className="p-6 rounded-ds-2xl">
+            <div className="text-small opacity-70 mb-1">Focus Sequence</div>
+            <div className="flex flex-wrap gap-2 mt-1">
+              {(ai.sequence ?? prefs).slice(0,4).map(s => <Badge key={s} size="sm">{s}</Badge>)}
+            </div>
+          </Card>
+        </div>
+
+        {/* Quick actions */}
+        <div className="mt-10 grid gap-6 lg:grid-cols-[1fr_.8fr]">
+          <Card className="p-6 rounded-ds-2xl">
+            <h2 className="font-slab text-h2">Quick Actions</h2>
+            <p className="text-grayish mt-1">Jump back in with one click.</p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Button as="a" href="/learning" variant="primary" className="rounded-ds-xl">Start Today’s Lesson</Button>
+              <Button as="a" href="/mock-tests" variant="secondary" className="rounded-ds-xl">Take a Mock Test</Button>
+              <Button as="a" href="/writing" variant="accent" className="rounded-ds-xl">Practice Writing</Button>
+            </div>
+          </Card>
+
+          <Card className="p-6 rounded-ds-2xl">
+            <h3 className="font-slab text-h3 mb-2">Upgrade to Rocket 🚀</h3>
+            <p className="text-body opacity-90">Unlock AI deep feedback, speaking evaluator, and full analytics.</p>
+            <div className="mt-4">
+              <Button as="a" href="/pricing" variant="primary" className="rounded-ds-xl">See Plans</Button>
+            </div>
+          </Card>
+        </div>
+
+        {/* Plan coach notes */}
+        <div className="mt-10">
+          <Card className="p-6 rounded-ds-2xl">
+            <h3 className="font-slab text-h3">Coach Notes</h3>
+            {notes.length ? (
+              <ul className="mt-3 list-disc pl-6 text-body">
+                {notes.map((n: string, i: number) => <li key={i}>{n}</li>)}
+              </ul>
+            ) : (
+              <Alert variant="info" className="mt-3">Add more details in <b>Profile</b> to refine your AI plan.</Alert>
+            )}
+            <div className="mt-4">
+              <Button as="a" href="/profile-setup" variant="secondary" className="rounded-ds-xl">Edit Profile</Button>
+            </div>
+          </Card>
         </div>
       </Container>
     </section>

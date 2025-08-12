@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useTheme } from 'next-themes';
 
-export const ThemeToggle: React.FC = () => {
+export const ThemeToggle: React.FC<{ className?: string }> = ({ className = '' }) => {
   const { theme, setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
@@ -14,13 +14,13 @@ export const ThemeToggle: React.FC = () => {
   return (
     <button
       onClick={() => setTheme(currentTheme === 'light' ? 'dark' : 'light')}
-      className="p-2 rounded hover:bg-purpleVibe/10 transition"
+      className={`p-2 rounded hover:bg-purpleVibe/10 transition ${className}`}
       aria-label="Toggle Theme"
     >
       {currentTheme === 'light' ? (
-        <i className="fas fa-moon text-lg text-yellow-400"></i>
+        <i className="fas fa-moon text-lg text-yellow-400" />
       ) : (
-        <i className="fas fa-sun text-lg text-yellow-400"></i>
+        <i className="fas fa-sun text-lg text-yellow-400" />
       )}
     </button>
   );

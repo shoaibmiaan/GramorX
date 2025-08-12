@@ -14,6 +14,13 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
+type AIPlan = {
+  suggestedGoal?: number;
+  etaWeeks?: number;
+  sequence?: string[];
+  notes?: string[]; // <-- added so ai.notes compiles
+};
+
 type Profile = {
   user_id: string;
   full_name: string;
@@ -24,7 +31,7 @@ type Profile = {
   time_commitment: string | null;
   preferred_language: string | null;
   avatar_url: string | null;
-  ai_recommendation: { suggestedGoal?: number; etaWeeks?: number; sequence?: string[] } | null;
+  ai_recommendation: AIPlan | null;
   draft: boolean;
 };
 
@@ -36,8 +43,14 @@ export default function Dashboard() {
 
   useEffect(() => {
     (async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) { router.replace('/login'); return; }
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session?.user) {
+        router.replace('/login');
+        return;
+      }
 
       const { data, error } = await supabase
         .from('user_profiles')
@@ -45,17 +58,24 @@ export default function Dashboard() {
         .eq('user_id', session.user.id)
         .maybeSingle();
 
-      if (error) console.error(error);
+      if (error) {
+        console.error(error);
+        setLoading(false);
+        return;
+      }
+
       if (!data || data.draft) {
         router.replace('/profile-setup');
         return;
       }
 
       setProfile(data as Profile);
+
       // naive local streak example (replace with real streak table)
       const today = new Date().toDateString();
-      const last = localStorage.getItem('lastStudy');
-      if (last === today) setStreak(prev => Math.max(prev, 1));
+      const last = typeof window !== 'undefined' ? localStorage.getItem('lastStudy') : null;
+      if (last === today) setStreak((prev) => Math.max(prev, 1));
+
       setLoading(false);
     })();
   }, [router]);
@@ -65,7 +85,7 @@ export default function Dashboard() {
       <section className="py-24 bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90">
         <Container>
           <div className="grid gap-6 md:grid-cols-3">
-            {[...Array(3)].map((_,i)=>(
+            {[...Array(3)].map((_, i) => (
               <Card key={i} className="p-6 rounded-ds-2xl">
                 <div className="animate-pulse h-6 w-40 bg-gray-200 dark:bg-white/10 rounded" />
                 <div className="mt-4 animate-pulse h-24 bg-gray-200 dark:bg-white/10 rounded" />
@@ -77,7 +97,7 @@ export default function Dashboard() {
     );
   }
 
-  const ai = profile?.ai_recommendation ?? {};
+  const ai: AIPlan = profile?.ai_recommendation ?? {};
   const prefs = profile?.study_prefs ?? [];
 
   return (
@@ -85,13 +105,21 @@ export default function Dashboard() {
       <Container>
         <div className="flex items-center justify-between gap-4">
           <div>
-            <h1 className="font-slab text-display text-gradient-primary">Welcome, {profile?.full_name || 'Learner'}!</h1>
+            <h1 className="font-slab text-display text-gradient-primary">
+              Welcome, {profile?.full_name || 'Learner'}!
+            </h1>
             <p className="text-grayish">Let’s hit your target band with a personalized plan.</p>
           </div>
           <div className="flex items-center gap-4">
             <StreakIndicator count={streak} />
             {profile?.avatar_url ? (
-              <Image src={profile.avatar_url} alt="Avatar" width={56} height={56} className="rounded-full ring-2 ring-primary/40" />
+              <Image
+                src={profile.avatar_url}
+                alt="Avatar"
+                width={56}
+                height={56}
+                className="rounded-full ring-2 ring-primary/40"
+              />
             ) : null}
           </div>
         </div>
@@ -100,7 +128,9 @@ export default function Dashboard() {
         <div className="mt-10 grid gap-6 md:grid-cols-3">
           <Card className="p-6 rounded-ds-2xl">
             <div className="text-small opacity-70 mb-1">Goal Band</div>
-            <div className="text-h1 font-semibold">{profile?.goal_band?.toFixed(1) ?? (ai.suggestedGoal?.toFixed?.(1) || '—')}</div>
+            <div className="text-h1 font-semibold">
+              {profile?.goal_band?.toFixed(1) ?? (ai.suggestedGoal?.toFixed?.(1) || '—')}
+            </div>
             <div className="mt-3">
               <Badge variant="info" size="sm">{profile?.english_level || 'Level —'}</Badge>
             </div>
@@ -108,14 +138,23 @@ export default function Dashboard() {
 
           <Card className="p-6 rounded-ds-2xl">
             <div className="text-small opacity-70 mb-1">ETA to Goal</div>
-            <div className="text-h1 font-semibold">{ai.etaWeeks ?? '—'}<span className="text-h3 ml-1">weeks</span></div>
-            <div className="mt-3 text-small opacity-80">Assuming {profile?.time_commitment || '1–2h/day'}</div>
+            <div className="text-h1 font-semibold">
+              {ai.etaWeeks ?? '—'}
+              <span className="text-h3 ml-1">weeks</span>
+            </div>
+            <div className="mt-3 text-small opacity-80">
+              Assuming {profile?.time_commitment || '1–2h/day'}
+            </div>
           </Card>
 
           <Card className="p-6 rounded-ds-2xl">
             <div className="text-small opacity-70 mb-1">Focus Sequence</div>
             <div className="flex flex-wrap gap-2 mt-1">
-              {(ai.sequence ?? prefs).slice(0,4).map(s => <Badge key={s} size="sm">{s}</Badge>)}
+              {(ai.sequence ?? prefs).slice(0, 4).map((s) => (
+                <Badge key={s} size="sm">
+                  {s}
+                </Badge>
+              ))}
             </div>
           </Card>
         </div>
@@ -126,17 +165,27 @@ export default function Dashboard() {
             <h2 className="font-slab text-h2">Quick Actions</h2>
             <p className="text-grayish mt-1">Jump back in with one click.</p>
             <div className="mt-6 flex flex-wrap gap-3">
-              <Button as="a" href="/learning" variant="primary" className="rounded-ds-xl">Start Today’s Lesson</Button>
-              <Button as="a" href="/mock-tests" variant="secondary" className="rounded-ds-xl">Take a Mock Test</Button>
-              <Button as="a" href="/writing" variant="accent" className="rounded-ds-xl">Practice Writing</Button>
+              <Button as="a" href="/learning" variant="primary" className="rounded-ds-xl">
+                Start Today’s Lesson
+              </Button>
+              <Button as="a" href="/mock-tests" variant="secondary" className="rounded-ds-xl">
+                Take a Mock Test
+              </Button>
+              <Button as="a" href="/writing" variant="accent" className="rounded-ds-xl">
+                Practice Writing
+              </Button>
             </div>
           </Card>
 
           <Card className="p-6 rounded-ds-2xl">
             <h3 className="font-slab text-h3 mb-2">Upgrade to Rocket 🚀</h3>
-            <p className="text-body opacity-90">Unlock AI deep feedback, speaking evaluator, and full analytics.</p>
+            <p className="text-body opacity-90">
+              Unlock AI deep feedback, speaking evaluator, and full analytics.
+            </p>
             <div className="mt-4">
-              <Button as="a" href="/pricing" variant="primary" className="rounded-ds-xl">See Plans</Button>
+              <Button as="a" href="/pricing" variant="primary" className="rounded-ds-xl">
+                See Plans
+              </Button>
             </div>
           </Card>
         </div>
@@ -147,13 +196,19 @@ export default function Dashboard() {
             <h3 className="font-slab text-h3">Coach Notes</h3>
             {Array.isArray(ai?.notes) && ai.notes.length ? (
               <ul className="mt-3 list-disc pl-6 text-body">
-                {ai.notes.map((n: string, i: number) => <li key={i}>{n}</li>)}
+                {ai.notes.map((n: string, i: number) => (
+                  <li key={i}>{n}</li>
+                ))}
               </ul>
             ) : (
-              <Alert variant="info" className="mt-3">Add more details in <b>Profile</b> to refine your AI plan.</Alert>
+              <Alert variant="info" className="mt-3">
+                Add more details in <b>Profile</b> to refine your AI plan.
+              </Alert>
             )}
             <div className="mt-4">
-              <Button as="a" href="/profile-setup" variant="secondary" className="rounded-ds-xl">Edit Profile</Button>
+              <Button as="a" href="/profile-setup" variant="secondary" className="rounded-ds-xl">
+                Edit Profile
+              </Button>
             </div>
           </Card>
         </div>
