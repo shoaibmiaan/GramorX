@@ -124,6 +124,12 @@ export default function CourseDetailPage() {
 
   const firstLessonId = resumeLesson?.id ?? lessons[0]?.id;
 
+  // Which lessons should be unlocked?
+  const lastViewedIndex = useMemo(
+    () => (resumeLesson ? lessons.findIndex(l => l.id === resumeLesson.id) : -1),
+    [resumeLesson, lessons]
+  );
+
   async function markStart(lessonId: string) {
     const s = (Array.isArray(slug) ? slug[0] : slug) || course?.slug;
     const { data: { user } } = await supabase.auth.getUser();
@@ -237,16 +243,13 @@ export default function CourseDetailPage() {
               )}
 
               <div className="mt-5 flex flex-wrap gap-3">
-                {/* Start/Resume — link for fallback + onClick updates progress */}
-                <Link
-                  href={firstLessonId ? `/learning/${course.slug}/lesson/${firstLessonId}` : '#'}
-                  passHref
-                >
+                {/* Start/Resume — link fallback + state update */}
+                <Link href={firstLessonId ? `/learning/${course.slug}/lesson/${firstLessonId}` : '#'} passHref>
                   <Button
                     as="a"
                     variant="primary"
                     className="rounded-ds-xl"
-                    onClick={() => startOrResume()}
+                    onClick={(e) => { e.preventDefault(); startOrResume(); }}
                     aria-disabled={!firstLessonId}
                   >
                     {resumeLesson ? 'Resume Course' : 'Start Course'}
@@ -272,6 +275,7 @@ export default function CourseDetailPage() {
               <ol className="mt-4 space-y-3">
                 {lessons.map((lsn, idx) => {
                   const isResume = lsn.id === resumeLesson?.id;
+                  const isUnlocked = idx <= lastViewedIndex + 1;
 
                   const kindVariant =
                     lsn.kind === 'Strategy' ? 'info' :
@@ -298,16 +302,22 @@ export default function CourseDetailPage() {
                       </div>
                       <div className="flex items-center gap-2">
                         {isResume && <Badge variant="success" size="sm">Last viewed</Badge>}
-                        <Link href={`/learning/${course.slug}/lesson/${lsn.id}`} passHref>
-                          <Button
-                            as="a"
-                            variant={isResume ? 'secondary' : 'primary'}
-                            className="rounded-ds-xl"
-                            onClick={() => markStart(lsn.id)}
-                          >
-                            {isResume ? 'Continue' : (idx === 0 ? 'Start' : 'Open')}
+                        {isUnlocked ? (
+                          <Link href={`/learning/${course.slug}/lesson/${lsn.id}`} passHref>
+                            <Button
+                              as="a"
+                              variant={isResume ? 'secondary' : 'primary'}
+                              className="rounded-ds-xl"
+                              onClick={(e) => { e.preventDefault(); markStart(lsn.id); }}
+                            >
+                              {isResume ? 'Continue' : (idx === 0 ? 'Start' : 'Open')}
+                            </Button>
+                          </Link>
+                        ) : (
+                          <Button variant="secondary" className="rounded-ds-xl" aria-disabled>
+                            Locked
                           </Button>
-                        </Link>
+                        )}
                       </div>
                     </li>
                   );

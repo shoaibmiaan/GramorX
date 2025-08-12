@@ -1,32 +1,81 @@
+// components/sections/Header.tsx
 import React, { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/router';
 import { Container } from '@/components/design-system/Container';
 import { ThemeToggle } from '@/components/design-system/ThemeToggle';
 import { StreakIndicator } from '@/components/design-system/StreakIndicator';
 import { NavLink } from '@/components/design-system/NavLink';
+import { supabaseBrowser } from '@/lib/supabaseBrowser';
+import { UserMenu } from '@/components/design-system/UserMenu';
 
 const MODULE_LINKS = [
+  { label: 'Learning', href: '/learning', desc: 'Lessons, tips & progress' },
   { label: 'Listening', href: '/listening', desc: 'Audio comprehension drills' },
   { label: 'Reading', href: '/reading', desc: 'Short passages & skimming' },
   { label: 'Writing', href: '/writing', desc: 'Prompts, structure & style' },
   { label: 'Speaking', href: '/speaking', desc: 'Pronunciation & fluency' },
 ];
 
+// NOTE: “Success Stories” removed
 const NAV = [
-  { href: '#testimonials', label: 'Success Stories' },
   { href: '#pricing', label: 'Pricing' },
   { href: '#waitlist', label: 'Join Waitlist' },
 ];
 
 export const Header: React.FC<{ streak: number }> = ({ streak }) => {
+  const router = useRouter();
+
+  // UI state
   const [openDesktopModules, setOpenDesktopModules] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileModulesOpen, setMobileModulesOpen] = useState(false);
-  const ddRef = useRef<HTMLLIElement>(null);
 
-  // Close desktop dropdown on click outside / Esc
+  // Auth state
+  const [ready, setReady] = useState(false);
+  const [user, setUser] = useState<{
+    id: string | null;
+    email: string | null;
+    name: string | null;
+    avatarUrl: string | null;
+  }>({ id: null, email: null, name: null, avatarUrl: null });
+
+  // Refs
+  const modulesRef = useRef<HTMLLIElement>(null);
+
+  // Load session + subscribe to changes
+  useEffect(() => {
+    let cancelled = false;
+    const sync = async () => {
+      const { data } = await supabaseBrowser.auth.getSession();
+      if (!cancelled) {
+        const s = data.session?.user;
+        setUser({
+          id: s?.id ?? null,
+          email: s?.email ?? null,
+          name: (s?.user_metadata as any)?.full_name ?? null,
+          avatarUrl: (s?.user_metadata as any)?.avatar_url ?? null,
+        });
+        setReady(true);
+      }
+    };
+    sync();
+    const { data: sub } = supabaseBrowser.auth.onAuthStateChange((_e, session) => {
+      const s = session?.user;
+      setUser({
+        id: s?.id ?? null,
+        email: s?.email ?? null,
+        name: (s?.user_metadata as any)?.full_name ?? null,
+        avatarUrl: (s?.user_metadata as any)?.avatar_url ?? null,
+      });
+    });
+    return () => sub.subscription.unsubscribe();
+  }, []);
+
+  // Close dropdowns on outside click / Esc
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
-      if (!ddRef.current?.contains(e.target as Node)) setOpenDesktopModules(false);
+      const t = e.target as Node;
+      if (modulesRef.current && !modulesRef.current.contains(t)) setOpenDesktopModules(false);
     };
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -43,7 +92,7 @@ export const Header: React.FC<{ streak: number }> = ({ streak }) => {
     };
   }, []);
 
-  // Prevent body scroll when mobile menu open (iOS-friendly)
+  // Prevent body scroll when mobile menu open
   useEffect(() => {
     const preventTouch = (e: TouchEvent) => e.preventDefault();
     if (mobileOpen) {
@@ -59,21 +108,21 @@ export const Header: React.FC<{ streak: number }> = ({ streak }) => {
     };
   }, [mobileOpen]);
 
+  const signOut = async () => {
+    await supabaseBrowser.auth.signOut();
+    router.replace('/login');
+  };
+
   return (
     <header className="sticky top-0 z-50 header-glass">
       <Container>
         <div className="flex items-center justify-between py-4 md:py-5">
           {/* Brand */}
           <a href="/" className="flex items-center gap-3 group">
-            <img
-              src="/brand/logo.png"
-              alt="GramorX logo"
-              className="h-9 w-9 rounded-lg object-contain"
-            />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/brand/logo.png" alt="GramorX logo" className="h-9 w-9 rounded-lg object-contain" />
             <span className="font-slab font-bold text-2xl">
-              <span className="text-gradient-primary group-hover:opacity-90 transition">
-                GramorX
-              </span>
+              <span className="text-gradient-primary group-hover:opacity-90 transition">GramorX</span>
             </span>
           </a>
 
@@ -81,7 +130,7 @@ export const Header: React.FC<{ streak: number }> = ({ streak }) => {
           <nav className="hidden md:block">
             <ul className="flex items-center gap-3 relative">
               {/* Modules mega menu (desktop) */}
-              <li className="relative" ref={ddRef}>
+              <li className="relative" ref={modulesRef}>
                 <button
                   onClick={() => setOpenDesktopModules((v) => !v)}
                   aria-expanded={openDesktopModules}
@@ -146,38 +195,48 @@ export const Header: React.FC<{ streak: number }> = ({ streak }) => {
                 )}
               </li>
 
-              {/* NEW: Learning hub entry */}
-              <li>
-                <NavLink href="/learning" label="Learning" />
-              </li>
+              {/* Learning hub entry */}
+              <li><NavLink href="/learning" label="Learning" /></li>
 
-              {/* Other links */}
+              {/* Other links (Success Stories removed) */}
               {NAV.map((n) => (
-                <li key={n.href}>
-                  <NavLink href={n.href} label={n.label} />
-                </li>
+                <li key={n.href}><NavLink href={n.href} label={n.label} /></li>
               ))}
 
-              {/* Right-side: Community link + Sign in CTA */}
-              <li>
-                <NavLink href="/community" label="Community" />
-              </li>
-              <li>
-                <a
-                  href="/login"
-                  className="px-4 py-2 rounded-full bg-gradient-to-r from-purpleVibe to-electricBlue text-white font-semibold hover:opacity-90 transition"
-                >
-                  Sign in
-                </a>
-              </li>
+              {/* Community link */}
+              <li><NavLink href="/community" label="Community" /></li>
 
-              {/* Streak + Theme toggle */}
-              <li>
-                <StreakIndicator value={streak} />
-              </li>
-              <li>
-                <ThemeToggle />
-              </li>
+              {/* Auth area (Dashboard link removed) */}
+              {ready ? (
+                user.id ? (
+                  <li>
+                    <UserMenu
+                      userId={user.id}
+                      email={user.email}
+                      name={user.name}
+                      avatarUrl={user.avatarUrl}
+                      onAvatarChange={(url) => setUser((u) => ({ ...u, avatarUrl: url }))}
+                      onSignOut={signOut}
+                      // (optional) You can pass custom items; default already contains Profile + Account + Sign out
+                    />
+                  </li>
+                ) : (
+                  <li>
+                    <a
+                      href="/login"
+                      className="px-4 py-2 rounded-full bg-gradient-to-r from-purpleVibe to-electricBlue text-white font-semibold hover:opacity-90 transition"
+                    >
+                      Sign in
+                    </a>
+                  </li>
+                )
+              ) : (
+                <li><div className="h-9 w-24 rounded-full bg-gray-200 dark:bg-white/10 animate-pulse" /></li>
+              )}
+
+              {/* Tools */}
+              <li><StreakIndicator value={streak} /></li>
+              <li><ThemeToggle /></li>
             </ul>
           </nav>
 
@@ -190,11 +249,7 @@ export const Header: React.FC<{ streak: number }> = ({ streak }) => {
               onClick={() => setMobileOpen((v) => !v)}
               className="inline-flex h-10 w-10 items-center justify-center rounded-lg hover:bg-purpleVibe/10"
             >
-              {mobileOpen ? (
-                <i className="fas fa-times text-lg" />
-              ) : (
-                <i className="fas fa-bars text-lg" />
-              )}
+              {mobileOpen ? <i className="fas fa-times text-lg" /> : <i className="fas fa-bars text-lg" />}
             </button>
           </div>
         </div>
@@ -206,18 +261,31 @@ export const Header: React.FC<{ streak: number }> = ({ streak }) => {
           <Container>
             <div className="py-3 flex items-center justify-between">
               <StreakIndicator value={streak} />
-              <a
-                href="/login"
-                className="px-4 py-2 rounded-full bg-gradient-to-r from-purpleVibe to-electricBlue text-white font-semibold hover:opacity-90 transition"
-                onClick={() => setMobileOpen(false)}
-              >
-                Sign in
-              </a>
+              {ready && userEmail ? (
+                <div className="flex items-center gap-2">
+                  {/* Dashboard button removed on mobile as well */}
+                  <button
+                    onClick={signOut}
+                    className="px-4 py-2 rounded-full bg-gradient-to-r from-purpleVibe to-electricBlue text-white font-semibold hover:opacity-90 transition"
+                  >
+                    Sign out
+                  </button>
+                </div>
+              ) : ready ? (
+                <a
+                  href="/login"
+                  className="px-4 py-2 rounded-full bg-gradient-to-r from-purpleVibe to-electricBlue text-white font-semibold hover:opacity-90 transition"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  Sign in
+                </a>
+              ) : (
+                <div className="h-9 w-24 rounded-full bg-gray-200 dark:bg-white/10 animate-pulse" />
+              )}
             </div>
 
             <nav aria-label="Mobile Navigation" className="pb-4">
               <ul className="flex flex-col gap-1">
-                {/* NEW: Learning hub (mobile) */}
                 <li>
                   <a
                     href="/learning"
@@ -256,7 +324,7 @@ export const Header: React.FC<{ streak: number }> = ({ streak }) => {
                   )}
                 </li>
 
-                {/* The rest of the links */}
+                {/* Success Stories removed; keep Pricing + Waitlist */}
                 {NAV.map((n) => (
                   <li key={n.href}>
                     <a
@@ -269,7 +337,6 @@ export const Header: React.FC<{ streak: number }> = ({ streak }) => {
                   </li>
                 ))}
 
-                {/* Community (mobile) */}
                 <li>
                   <a
                     href="/community"

@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>IELTS Platform Implementation Tracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root{
+      --bg:#0b0c10; --card:#111319; --text:#e8eaed; --muted:#a7b0bf;
+      --border:#232733; --acc:#3b82f6; --ok:#10b981; --warn:#f59e0b;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif}
+    .wrap{max-width:1200px;margin:0 auto;padding:20px}
+    h1{margin:0 0 8px}
+    .legend{color:var(--muted);margin-bottom:8px}
+    .bar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;
+         position:sticky;top:0;background:rgba(11,12,16,.9);backdrop-filter:blur(6px);
+         border-bottom:1px solid var(--border);padding:10px;margin:6px 0 12px}
+    select{background:var(--card);color:var(--text);border:1px solid var(--border);
+           border-radius:8px;padding:8px 10px}
+    .stats{display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 10px}
+    .stat{background:var(--card);border:1px solid var(--border);padding:6px 10px;border-radius:8px}
+    table{width:100%;border-collapse:collapse}
+    thead th{position:sticky;top:56px;background:var(--bg);z-index:2;color:#b9c2d0;
+             text-align:left;font-weight:600;padding:10px;border-bottom:1px solid var(--border)}
+    tbody td{padding:10px;border-bottom:1px solid var(--border);vertical-align:top}
+    tbody tr:hover{background:rgba(59,130,246,.06)}
+    .pill{font-size:12px;border-radius:999px;padding:2px 8px;border:1px solid var(--border)}
+    .completed{color:#052814;background:rgba(16,185,129,.15);border-color:rgba(16,185,129,.35)}
+    .inprogress{color:#2f2302;background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.35)}
+    .notstarted{color:#2a2f3a;background:rgba(167,176,191,.12);border-color:rgba(167,176,191,.35)}
+    .mod{font-size:12px;color:var(--muted)}
+    .nowrap{white-space:nowrap}
+    .muted{color:var(--muted)}
+    input[type="date"]{background:var(--card);color:var(--text);border:1px solid var(--border);
+                       border-radius:6px;padding:6px 8px}
+    .sum{min-height:1.8em}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>📋 IELTS Platform Implementation Tracker</h1>
+    <div class="legend">Legend: <code>[ ]</code> Not started • <code>[~]</code> In progress • <code>[x]</code> Completed</div>
+
+    <div class="stats" id="stats">
+      <div class="stat">Total: <b id="tTotal">—</b></div>
+      <div class="stat">Completed: <b id="tDone" style="color:var(--ok)">—</b></div>
+      <div class="stat">In progress: <b id="tProg" style="color:var(--warn)">—</b></div>
+      <div class="stat">Not started: <b id="tTodo">—</b></div>
+    </div>
+
+    <div class="bar">
+      <label for="filter">Filter status:</label>
+      <select id="filter">
+        <option value="all">All</option>
+        <option value="completed">Completed</option>
+        <option value="inprogress">In progress</option>
+        <option value="notstarted">Not started</option>
+        <option value="incomplete">Incomplete (not started + in progress)</option>
+      </select>
+      <button id="reset" style="margin-left:auto;background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:8px 10px;cursor:pointer">Reset filter</button>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th class="nowrap">#</th>
+          <th>Mark</th>
+          <th>Item</th>
+          <th>Development summary</th>
+          <th class="nowrap">Updated</th>
+        </tr>
+      </thead>
+      <tbody id="tbody">
+        <!-- ROWS INJECTED BY JS -->
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    // ------- DATA (status: "[x]" | "[~]" | "[ ]") ----------
+    const tasks = [
+      // 1. User Module (6)
+      ["[x]", "User Module — User registration & login (email, social, phone)"],
+      ["[x]", "User Module — Profile setup (goal band, country, level)"],
+      ["[ ]", "User Module — Role-based access (student, teacher, admin)"],
+      ["[ ]", "User Module — Daily streak & study calendar"],
+      ["[ ]", "User Module — Saved tests, bookmarked content"],
+      ["[ ]", "User Module — Language preference settings"],
+      // 2. Learning Module (5)
+      ["[ ]", "Learning Module — Structured course library (Academic & General)"],
+      ["[ ]", "Learning Module — Grammar, vocabulary, collocations lessons"],
+      ["[x]", "Learning Module — IELTS strategy tips (all 4 skills)"],
+      ["[ ]", "Learning Module — AI-generated practice drills"],
+      ["[ ]", "Learning Module — Progressively unlocked learning paths"],
+      // 3. Mock Test Module (6)
+      ["[ ]", "Mock Test Module — Full-length IELTS mock tests (timed)"],
+      ["[ ]", "Mock Test Module — Section-wise practice tests (Listening, Reading, Writing, Speaking)"],
+      ["[ ]", "Mock Test Module — Band score simulation"],
+      ["[ ]", "Mock Test Module — Real-time test timer & tab-switch detection"],
+      ["[ ]", "Mock Test Module — Auto-save test state"],
+      ["[ ]", "Mock Test Module — Performance analytics per mock"],
+      // 4. AI Evaluation Module (6)
+      ["[x]", "AI Evaluation Module — Writing Task 1 & 2 feedback with band score"],
+      ["[x]", "AI Evaluation Module — Letter writing for General Training"],
+      ["[x]", "AI Evaluation Module — Speaking audio evaluation (fluency, vocab, grammar, pronunciation)"],
+      ["[x]", "AI Evaluation Module — Transcription + pronunciation scoring"],
+      ["[x]", "AI Evaluation Module — Instant feedback with model answer"],
+      ["[ ]", "AI Evaluation Module — AI re-evaluation option"],
+      // 5. Speaking Practice Module (6)
+      ["[x]", "Speaking Practice Module — Speaking test simulator (Parts 1, 2, 3)"],
+      ["[x]", "Speaking Practice Module — Voice recording and playback"],
+      ["[ ]", "Speaking Practice Module — AI or LLM-powered speaking partner"],
+      ["[ ]", "Speaking Practice Module — Accent adaptation (UK, US, AUS)"],
+      ["[ ]", "Speaking Practice Module — Roleplay conversations"],
+      ["[ ]", "Speaking Practice Module — Band prediction + detailed speaking report"],
+      // 6. Listening Module (6)
+      ["[~]", "Listening Module — Audio-based practice & tests"],
+      ["[~]", "Listening Module — Auto-play per section with transcript toggle"],
+      ["[~]", "Listening Module — Question types: MCQ, gap-fill, matching"],
+      ["[~]", "Listening Module — Real-time answer input"],
+      ["[~]", "Listening Module — Band scoring & answer review"],
+      ["[~]", "Listening Module — Highlight correct vs user answer"],
+      // 7. Reading Module (6)
+      ["[x]", "Reading Module — Full passage with real IELTS question types"],
+      ["[ ]", "Reading Module — Support for TF/NG, Matching, MCQ, etc."],
+      ["[ ]", "Reading Module — Question-type-wise filtering"],
+      ["[x]", "Reading Module — Timer + live progress bar"],
+      ["[ ]", "Reading Module — AI answer explanation on review"],
+      ["[ ]", "Reading Module — Stats per passage & per type"],
+      // 8. Performance & Analytics Module (6)
+      ["[ ]", "Performance & Analytics — Skill-wise band progression"],
+      ["[ ]", "Performance & Analytics — Weekly/monthly reports"],
+      ["[ ]", "Performance & Analytics — Weakness detection & suggestions"],
+      ["[ ]", "Performance & Analytics — Leaderboard / percentile rank"],
+      ["[ ]", "Performance & Analytics — Study time tracker"],
+      ["[ ]", "Performance & Analytics — AI-generated personalized improvement plan"],
+      // 9. Adaptive Learning Module (5)
+      ["[ ]", "Adaptive Learning — Personalized test/lesson recommendations"],
+      ["[ ]", "Adaptive Learning — Smart revision cycles (spaced repetition)"],
+      ["[ ]", "Adaptive Learning — Dynamic difficulty adjustment"],
+      ["[ ]", "Adaptive Learning — Suggested exercises based on errors"],
+      ["[ ]", "Adaptive Learning — “Next Best Task” AI engine"],
+      // 10. Teacher/Admin Module (6)
+      ["[ ]", "Teacher/Admin Module — User monitoring dashboard"],
+      ["[ ]", "Teacher/Admin Module — Writing & speaking review override"],
+      ["[ ]", "Teacher/Admin Module — Upload custom content/tests"],
+      ["[ ]", "Teacher/Admin Module — Approve new test papers"],
+      ["[ ]", "Teacher/Admin Module — View usage metrics & heatmaps"],
+      ["[ ]", "Teacher/Admin Module — Manage subscriptions"],
+      // 11. Community & Support Module (5)
+      ["[ ]", "Community & Support — Discussion forums / study groups"],
+      ["[ ]", "Community & Support — Peer review for writing/speaking"],
+      ["[ ]", "Community & Support — Live chat with AI/teachers"],
+      ["[ ]", "Community & Support — Ask a doubt (with AI reply + upvote)"],
+      ["[ ]", "Community & Support — Leaderboards, badges, achievements"],
+      // 12. Monetization Module (5)
+      ["[ ]", "Monetization — Subscription tiers (free, premium, pro)"],
+      ["[ ]", "Monetization — Credits for feedback attempts"],
+      ["[ ]", "Monetization — Discount & referral code engine"],
+      ["[ ]", "Monetization — Trial vs full feature gating"],
+      ["[ ]", "Monetization — Stripe/PayPal integration"],
+      // 13. Infrastructure & Security Module (5)
+      ["[ ]", "Infrastructure & Security — Fullscreen + tab-switch lockdown during tests"],
+      ["[ ]", "Infrastructure & Security — Email & phone verification"],
+      ["[ ]", "Infrastructure & Security — GDPR-compliant data storage"],
+      ["[ ]", "Infrastructure & Security — AI plagiarism checker"],
+      ["[ ]", "Infrastructure & Security — Data export for review/history"],
+      // 14. Design System & UI (8)
+      ["[x]", "Design System & UI — Color tokens"],
+      ["[x]", "Design System & UI — Radius, spacing, typography tokens"],
+      ["[x]", "Design System & UI — DS primitives: Button, Card, Container, Badge, Ribbon, Input, Alert, NavLink, SocialIconLink, GradientText, StreakIndicator"],
+      ["[ ]", "Design System & UI — DS form components: Select, Checkbox, Radio, Toggle"],
+      ["[ ]", "Design System & UI — Toast/Notification service"],
+      ["[ ]", "Design System & UI — Storybook for DS components"],
+      ["[ ]", "Design System & UI — Icon optimization (Lucide/FA)"],
+      ["[ ]", "Design System & UI — Seasonal theming presets"],
+      // 15. Deployment & Optimization (5)
+      ["[ ]", "Deployment & Optimization — Client-only for time/random/localStorage components"],
+      ["[ ]", "Deployment & Optimization — Image/SVG optimization"],
+      ["[ ]", "Deployment & Optimization — SEO pass + structured data"],
+      ["[ ]", "Deployment & Optimization — Accessibility audit (WCAG AA)"],
+      ["[ ]", "Deployment & Optimization — Final performance QA"]
+    ];
+
+    // ------- RENDER ----------
+    const tbody = document.getElementById('tbody');
+    const statusMap = { "[x]":"completed", "[~]":"inprogress", "[ ]":"notstarted" };
+    function pillClass(s){ return {completed:"completed",inprogress:"inprogress",notstarted:"notstarted"}[s]||"notstarted"; }
+    function markSymbol(s){ return {completed:"✓",inprogress:"~",notstarted:"☐"}[s]||"☐"; }
+
+    function render(){
+      tbody.innerHTML = "";
+      tasks.forEach((t, idx) => {
+        const mark = statusMap[t[0]] || "notstarted";
+        const tr = document.createElement('tr');
+        tr.className = "row";
+        tr.dataset.status = mark;
+        tr.innerHTML = `
+          <td class="nowrap">${idx+1}</td>
+          <td><span class="pill ${pillClass(mark)}">${t[0]}</span></td>
+          <td>${t[1]}</td>
+          <td class="muted sum" contenteditable="true" spellcheck="true"></td>
+          <td class="nowrap"><input type="date" /></td>
+        `;
+        tbody.appendChild(tr);
+      });
+      updateStats();
+    }
+
+    // ------- FILTER ----------
+    const filter = document.getElementById('filter');
+    const resetBtn = document.getElementById('reset');
+    function applyFilter(){
+      const val = filter.value;
+      const rows = tbody.querySelectorAll('tr');
+      rows.forEach(r => {
+        const st = r.dataset.status;
+        let show = true;
+        if (val === "completed") show = st === "completed";
+        else if (val === "inprogress") show = st === "inprogress";
+        else if (val === "notstarted") show = st === "notstarted";
+        else if (val === "incomplete") show = st !== "completed";
+        else show = true;
+        r.style.display = show ? "" : "none";
+      });
+    }
+    filter.addEventListener('change', applyFilter);
+    resetBtn.addEventListener('click', () => { filter.value="all"; applyFilter(); });
+
+    // ------- STATS ----------
+    function updateStats(){
+      const rows = [...tbody.querySelectorAll('tr')];
+      const total = rows.length;
+      const completed = rows.filter(r=>r.dataset.status==="completed").length;
+      const inprog   = rows.filter(r=>r.dataset.status==="inprogress").length;
+      const todo     = rows.filter(r=>r.dataset.status==="notstarted").length;
+      document.getElementById('tTotal').textContent = total;
+      document.getElementById('tDone').textContent  = completed;
+      document.getElementById('tProg').textContent  = inprog;
+      document.getElementById('tTodo').textContent  = todo;
+    }
+
+    // init
+    render();
+    applyFilter();
+  </script>
+</body>
+</html>
+

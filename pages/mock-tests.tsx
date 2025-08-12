@@ -7,7 +7,9 @@ export default function MockTests() {
       <Container>
         <Card className="p-6 rounded-ds-2xl">
           <h1 className="font-slab text-h2">Mock Tests</h1>
-          <p className="text-grayish mt-2">Coming soon — timed full tests with band simulation.</p>
+          <p className="text-grayish mt-2">
+            Coming soon — timed full tests with band score simulation and auto-save.
+          </p>
         </Card>
       </Container>
     </section>
