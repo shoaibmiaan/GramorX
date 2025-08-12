@@ -1,0 +1,26 @@
+import React from 'react';
+
+export type ProgressBarProps = {
+  value: number; // 0..100
+  label?: string;
+  className?: string;
+};
+
+export const ProgressBar: React.FC<ProgressBarProps> = ({ value, label, className='' }) => {
+  const v = Math.max(0, Math.min(100, value));
+  return (
+    <div className={`w-full ${className}`}>
+      {label && <div className="mb-1 text-small text-gray-600 dark:text-grayish">{label}</div>}
+      <div className="h-2 w-full rounded-ds bg-gray-200 dark:bg-white/10 overflow-hidden">
+        <div
+          className="h-full rounded-ds bg-primary dark:bg-electricBlue transition-[width] duration-300"
+          style={{ width: `${v}%` }}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={v}
+          role="progressbar"
+        />
+      </div>
+    </div>
+  );
+};

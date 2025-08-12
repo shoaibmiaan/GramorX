@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body, #__next { height: 100%; }
+
+/* Light = default; Dark via .dark on <html> (next-themes) */
+body { @apply font-poppins text-lightText bg-lightBg overflow-x-hidden relative; }
+.dark body { @apply text-white bg-gradient-to-br from-darker to-dark; }
+
+/* Header */
+.header-glass { @apply bg-white/90 backdrop-blur-md border-b border-gray-200; }
+.dark .header-glass { @apply bg-dark/95 border-purpleVibe/20; }
+
+/* Container utility */
+.container { @apply max-w-[1200px] mx-auto px-5; }
+
+/* Buttons */
+.btn { @apply inline-flex items-center justify-center font-semibold rounded-full px-8 py-3 relative overflow-hidden transition; }
+.btn::before { content: ""; position: absolute; inset: 0; background: rgba(0,0,0,0.04); transform: translateX(-100%); transition: transform .4s; }
+.dark .btn::before { background: rgba(255,255,255,0.1); }
+.btn:hover::before { transform: translateX(0); }
+
+.btn-primary { @apply text-white bg-gradient-to-br from-purpleVibe to-electricBlue shadow-glow; }
+.btn-secondary { @apply border-2 border-primary text-primary bg-transparent; }
+.dark .btn-secondary { @apply border-neonGreen text-neonGreen; }
+.btn-accent { @apply text-white bg-gradient-to-br from-sunsetOrange to-goldenYellow shadow-glow; }
+
+/* Badges / chips */
+.streak-chip { @apply bg-primary/10 text-primary font-semibold rounded-ds px-4 py-2 flex items-center gap-2; }
+.dark .streak-chip { @apply bg-purpleVibe/15 text-neonGreen; }
+
+/* Card surface */
+.card-surface { @apply rounded-ds-2xl border bg-white border-gray-200 text-lightText; }
+.dark .card-surface { @apply border-purpleVibe/20 backdrop-blur-md bg-purpleVibe/10 text-white; }
+
+/* Text gradients */
+.text-gradient-primary { @apply bg-clip-text text-transparent bg-gradient-to-r from-purpleVibe to-electricBlue; }
+.text-gradient-accent  { @apply bg-clip-text text-transparent bg-gradient-to-r from-neonGreen to-electricBlue; }
+.text-gradient-vertical { @apply bg-clip-text text-transparent bg-gradient-to-b from-neonGreen to-electricBlue; }
