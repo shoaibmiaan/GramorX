@@ -1,67 +1,74 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { supabase } from '@/lib/supabaseClient';
+import { detectBrowserTimeZone } from '@/lib/streak';
 
-type StreakData = { count: number; lastDate: string };
-
-const KEY = 'study_streak';
-
-function isYesterday(dateStr: string) {
-  const today = new Date();
-  const d = new Date(dateStr);
-  const diffDays = Math.floor((today.setHours(0,0,0,0) as unknown as number - d.setHours(0,0,0,0) as unknown as number) / 86400000);
-  return diffDays === 1;
-}
-
-function isToday(dateStr: string) {
-  const today = new Date();
-  const d = new Date(dateStr);
-  return today.toDateString() === d.toDateString();
-}
+export type StreakState = {
+  loading: boolean;
+  current: number;
+  longest: number;
+  lastDayKey: string | null;
+  error?: string;
+  tz: string;
+};
 
 export function useStreak() {
-  const [streak, setStreak] = useState(0);
+  const [state, setState] = useState<StreakState>({
+    loading: true,
+    current: 0,
+    longest: 0,
+    lastDayKey: null,
+    tz: 'UTC',
+  });
 
-  useEffect(() => {
-    const raw = typeof window !== 'undefined' ? localStorage.getItem(KEY) : null;
-    const parsed: StreakData | null = raw ? JSON.parse(raw) : null;
-    const todayISO = new Date().toISOString();
-
-    if (!parsed) {
-      const init = { count: 1, lastDate: todayISO };
-      localStorage.setItem(KEY, JSON.stringify(init));
-      setStreak(1);
-      return;
-    }
-
-    if (isToday(parsed.lastDate)) {
-      setStreak(parsed.count);
-      return;
-    }
-
-    if (isYesterday(parsed.lastDate)) {
-      const next = { count: parsed.count + 1, lastDate: todayISO };
-      localStorage.setItem(KEY, JSON.stringify(next));
-      setStreak(next.count);
-      return;
-    }
-
-    // Missed a day: reset
-    const reset = { count: 1, lastDate: todayISO };
-    localStorage.setItem(KEY, JSON.stringify(reset));
-    setStreak(1);
+  const ensureTz = useCallback(async () => {
+    const tz = detectBrowserTimeZone();
+    await supabase.rpc('set_streak_timezone', { tz_in: tz });
+    return tz;
   }, []);
 
-  // Optional: Call this when user completes an activity today
-  const bumpToday = () => {
-    const raw = localStorage.getItem(KEY);
-    const parsed: StreakData | null = raw ? JSON.parse(raw) : null;
-    const todayISO = new Date().toISOString();
-
-    if (!parsed || !isToday(parsed.lastDate)) {
-      const next = { count: (parsed?.count ?? 0) + 1, lastDate: todayISO };
-      localStorage.setItem(KEY, JSON.stringify(next));
-      setStreak(next.count);
+  const load = useCallback(async () => {
+    setState(s => ({ ...s, loading: true, error: undefined }));
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      setState({ loading: false, current: 0, longest: 0, lastDayKey: null, tz: 'UTC' });
+      return;
     }
-  };
+    const tz = await ensureTz();
+    const { data, error } = await supabase.rpc('get_streak'); // from previous setup
+    if (error) {
+      setState(s => ({ ...s, loading: false, tz, error: error.message }));
+      return;
+    }
+    if (!data) {
+      setState({ loading: false, current: 0, longest: 0, lastDayKey: null, tz });
+      return;
+    }
+    setState({
+      loading: false,
+      current: data.current_streak ?? 0,
+      longest: data.longest_streak ?? 0,
+      lastDayKey: data.last_day_key ?? null,
+      tz,
+    });
+  }, [ensureTz]);
 
-  return { streak, bumpToday };
+  useEffect(() => { load(); }, [load]);
+
+  const completeToday = useCallback(async () => {
+    const tz = state.tz || detectBrowserTimeZone();
+    const { data, error } = await supabase.rpc('complete_daily_action_tz', { tz_in: tz });
+    if (error) {
+      setState(s => ({ ...s, error: error.message }));
+      throw error;
+    }
+    setState(s => ({
+      ...s,
+      loading: false,
+      current: data?.current_streak ?? s.current,
+      longest: data?.longest_streak ?? s.longest,
+      lastDayKey: data?.last_day_key ?? s.lastDayKey,
+    }));
+  }, [state.tz]);
+
+  return { ...state, reload: load, completeToday };
 }

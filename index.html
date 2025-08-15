@@ -17,12 +17,14 @@
     .bar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;
          position:sticky;top:0;background:rgba(11,12,16,.9);backdrop-filter:blur(6px);
          border-bottom:1px solid var(--border);padding:10px;margin:6px 0 12px}
-    select{background:var(--card);color:var(--text);border:1px solid var(--border);
-           border-radius:8px;padding:8px 10px}
+    select, input[type="date"]{
+      background:var(--card);color:var(--text);border:1px solid var(--border);
+      border-radius:8px;padding:8px 10px
+    }
     .stats{display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 10px}
     .stat{background:var(--card);border:1px solid var(--border);padding:6px 10px;border-radius:8px}
     table{width:100%;border-collapse:collapse}
-    thead th{position:sticky;top:56px;background:var(--bg);z-index:2;color:#b9c2d0;
+    thead th{position:sticky;top:72px;background:var(--bg);z-index:2;color:#b9c2d0;
              text-align:left;font-weight:600;padding:10px;border-bottom:1px solid var(--border)}
     tbody td{padding:10px;border-bottom:1px solid var(--border);vertical-align:top}
     tbody tr:hover{background:rgba(59,130,246,.06)}
@@ -33,15 +35,20 @@
     .mod{font-size:12px;color:var(--muted)}
     .nowrap{white-space:nowrap}
     .muted{color:var(--muted)}
-    input[type="date"]{background:var(--card);color:var(--text);border:1px solid var(--border);
-                       border-radius:6px;padding:6px 8px}
     .sum{min-height:1.8em}
+    .spacer{flex:1}
+    .btn{background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:8px 10px;cursor:pointer}
   </style>
 </head>
 <body>
   <div class="wrap">
     <h1>📋 IELTS Platform Implementation Tracker</h1>
-    <div class="legend">Legend: <code>[ ]</code> Not started • <code>[~]</code> In progress • <code>[x]</code> Completed</div>
+    <div class="legend">
+      Legend: <code>[ ]</code> Not started • <code>[~]</code> In progress • <code>[x]</code> Completed
+    </div>
+    <div class="legend">
+      Today: <b id="today"></b> — <span class="mod">Strict Phase-1 only (IELTS 4 modules + onboarding + AI eval)</span>
+    </div>
 
     <div class="stats" id="stats">
       <div class="stat">Total: <b id="tTotal">—</b></div>
@@ -59,7 +66,17 @@
         <option value="notstarted">Not started</option>
         <option value="incomplete">Incomplete (not started + in progress)</option>
       </select>
-      <button id="reset" style="margin-left:auto;background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:8px 10px;cursor:pointer">Reset filter</button>
+
+      <label for="dateFilter">Filter date:</label>
+      <input type="date" id="dateFilter" />
+      <select id="dateField">
+        <option value="estimated">Estimated</option>
+        <option value="completion">Completion</option>
+      </select>
+
+      <button id="todayBtn" class="btn">Today’s targets</button>
+      <div class="spacer"></div>
+      <button id="reset" class="btn">Reset</button>
     </div>
 
     <table>
@@ -68,8 +85,9 @@
           <th class="nowrap">#</th>
           <th>Mark</th>
           <th>Item</th>
-          <th>Development summary</th>
-          <th class="nowrap">Updated</th>
+          <th>Developer summary (how to complete)</th>
+          <th class="nowrap">Estimated</th>
+          <th class="nowrap">Completion</th>
         </tr>
       </thead>
       <tbody id="tbody">
@@ -184,50 +202,155 @@
       ["[ ]", "Deployment & Optimization — Final performance QA"]
     ];
 
-    // ------- RENDER ----------
+    // ------- DEV GUIDES (auto-fill into "Developer summary" column for Phase-1 priorities) -------
+    const devGuides = {
+      // User
+      "User Module — Role-based access (student, teacher, admin)":
+        "Supabase: add enum user_role + column on profiles; write RLS per role. In app, centralize guards in lib/routeAccess.ts and redirect unauthorized routes.",
+      "User Module — Daily streak & study calendar":
+        "Table user_streaks(user_id,last_active,count). On valid activity: if last_active < today, increment else keep. Show chip with StreakIndicator in header.",
+      "User Module — Saved tests, bookmarked content":
+        "Table user_saves(user_id,entity_type,entity_id). API /api/saves/toggle (auth). Render save button; show count on cards.",
+      // Listening
+      "Listening Module — Band scoring & answer review":
+        "Create listening_attempts + listening_answers. POST /api/listening/submit -> compare with key, store per-Q correctness, compute band; redirect to /listening/review/[attemptId].",
+      "Listening Module — Highlight correct vs user answer":
+        "In review screen, render each Q: user vs correct; add .correct/.wrong classes and summary counts.",
+      "Listening Module — Real-time answer input":
+        "Auto-save input on blur/change to listening_answers; debounce 400ms; disable seek during active section.",
+      "Listening Module — Question types: MCQ, gap-fill, matching":
+        "Normalize schema (type, options jsonb, answer). Renderers per type; validate before submit.",
+      // Reading
+      "Reading Module — Support for TF/NG, Matching, MCQ, etc.":
+        "Unified renderer with strict types; keyboard support; persist answers in reading_answers; server scoring on submit.",
+      "Reading Module — AI answer explanation on review":
+        "POST /api/reading/explain with passage chunk + Q + key; return 2–3 line rationale; cache by attempt+q.",
+      // Writing
+      "AI Evaluation Module — AI re-evaluation option":
+        "POST /api/writing/reevaluate {attemptId, mode, focus[]}; store revision row; UI shows delta vs previous.",
+      // Mock tests
+      "Mock Test Module — Full-length IELTS mock tests (timed)":
+        "mock_attempts + mock_answers; per-section timer; fullscreen prompt; auto-save every 10s and on nav.",
+      "Mock Test Module — Section-wise practice tests (Listening, Reading, Writing, Speaking)":
+        "Reuse per-module pages; wrap in test shell to pass attemptId and collect results.",
+      "Mock Test Module — Band score simulation":
+        "Aggregate sub-scores using IELTS scale; store final band + breakdown; summary screen + export.",
+      "Mock Test Module — Real-time test timer & tab-switch detection":
+        "Use Page Visibility API; warn on blur; pause only if rules allow; log violations.",
+      "Mock Test Module — Auto-save test state":
+        "Local snapshot + server upsert; recover draft on reload by attemptId.",
+      // Performance
+      "Performance & Analytics — Skill-wise band progression":
+        "SQL view aggregating last N attempts per skill; API /api/performance/summary; small chart of trend.",
+      "Performance & Analytics — Weakness detection & suggestions":
+        "Heuristics on per-type accuracy; map to study tips; surface top 3 weaknesses."
+    };
+
+    // ------- PRIORITY ESTIMATE PLAN (Estimated = expected completion date) -------
+    const estimateOffsets = {
+      // Week 1: User + Speaking polish
+      "User Module — Role-based access (student, teacher, admin)": 3,
+      "User Module — Daily streak & study calendar": 5,
+      "User Module — Saved tests, bookmarked content": 7,
+      // Week 2: Listening + Reading essentials
+      "Listening Module — Band scoring & answer review": 10,
+      "Listening Module — Highlight correct vs user answer": 11,
+      "Listening Module — Real-time answer input": 12,
+      "Listening Module — Question types: MCQ, gap-fill, matching": 13,
+      "Reading Module — Support for TF/NG, Matching, MCQ, etc.": 13,
+      "Reading Module — AI answer explanation on review": 14,
+      // Week 3: Mock Tests + Writing re-eval
+      "Mock Test Module — Full-length IELTS mock tests (timed)": 17,
+      "Mock Test Module — Section-wise practice tests (Listening, Reading, Writing, Speaking)": 18,
+      "Mock Test Module — Band score simulation": 19,
+      "Mock Test Module — Real-time test timer & tab-switch detection": 20,
+      "Mock Test Module — Auto-save test state": 21,
+      "AI Evaluation Module — AI re-evaluation option": 21,
+      // Week 4: Basic Performance/Analytics
+      "Performance & Analytics — Skill-wise band progression": 24,
+      "Performance & Analytics — Weakness detection & suggestions": 26
+    };
+
+    // ------- HELPERS ----------
     const tbody = document.getElementById('tbody');
+    const filter = document.getElementById('filter');
+    const resetBtn = document.getElementById('reset');
+    const dateFilter = document.getElementById('dateFilter');
+    const dateField = document.getElementById('dateField');
+    const todayBtn = document.getElementById('todayBtn');
+
+    function todayString(){
+      const d = new Date();
+      const y = d.getFullYear();
+      const m = String(d.getMonth()+1).padStart(2,'0');
+      const day = String(d.getDate()).padStart(2,'0');
+      return `${y}-${m}-${day}`;
+    }
+    function addDays(base, n){
+      const d = new Date(base);
+      d.setDate(d.getDate()+n);
+      const y = d.getFullYear();
+      const m = String(d.getMonth()+1).padStart(2,'0');
+      const day = String(d.getDate()).padStart(2,'0');
+      return `${y}-${m}-${day}`;
+    }
     const statusMap = { "[x]":"completed", "[~]":"inprogress", "[ ]":"notstarted" };
     function pillClass(s){ return {completed:"completed",inprogress:"inprogress",notstarted:"notstarted"}[s]||"notstarted"; }
-    function markSymbol(s){ return {completed:"✓",inprogress:"~",notstarted:"☐"}[s]||"☐"; }
 
+    // ------- RENDER ----------
     function render(){
       tbody.innerHTML = "";
+      const today = todayString();
+
       tasks.forEach((t, idx) => {
         const mark = statusMap[t[0]] || "notstarted";
+        const title = t[1];
         const tr = document.createElement('tr');
         tr.className = "row";
         tr.dataset.status = mark;
+
+        const estimated = estimateOffsets[title] != null ? addDays(today, estimateOffsets[title]) : "";
+        const guide = devGuides[title] || "";
+
         tr.innerHTML = `
           <td class="nowrap">${idx+1}</td>
           <td><span class="pill ${pillClass(mark)}">${t[0]}</span></td>
-          <td>${t[1]}</td>
-          <td class="muted sum" contenteditable="true" spellcheck="true"></td>
-          <td class="nowrap"><input type="date" /></td>
+          <td>${title}</td>
+          <td class="muted sum" contenteditable="true" spellcheck="true">${guide}</td>
+          <td class="nowrap"><input class="date-est" type="date" value="${estimated}" /></td>
+          <td class="nowrap"><input class="date-comp" type="date" /></td>
         `;
         tbody.appendChild(tr);
       });
       updateStats();
     }
 
-    // ------- FILTER ----------
-    const filter = document.getElementById('filter');
-    const resetBtn = document.getElementById('reset');
+    // ------- FILTER (Status + Date on Estimated/Completion) ----------
     function applyFilter(){
       const val = filter.value;
+      const chosenDate = dateFilter.value;
+      const field = dateField.value; // 'estimated' | 'completion'
       const rows = tbody.querySelectorAll('tr');
+
       rows.forEach(r => {
         const st = r.dataset.status;
-        let show = true;
-        if (val === "completed") show = st === "completed";
-        else if (val === "inprogress") show = st === "inprogress";
-        else if (val === "notstarted") show = st === "notstarted";
-        else if (val === "incomplete") show = st !== "completed";
-        else show = true;
-        r.style.display = show ? "" : "none";
+        let ok = true;
+
+        if (val === "completed") ok = st === "completed";
+        else if (val === "inprogress") ok = st === "inprogress";
+        else if (val === "notstarted") ok = st === "notstarted";
+        else if (val === "incomplete") ok = st !== "completed";
+
+        if (ok && chosenDate){
+          const sel = field === 'estimated' ? '.date-est' : '.date-comp';
+          const inp = r.querySelector(sel);
+          const v = inp ? inp.value : '';
+          if (v !== chosenDate) ok = false;
+        }
+
+        r.style.display = ok ? "" : "none";
       });
     }
-    filter.addEventListener('change', applyFilter);
-    resetBtn.addEventListener('click', () => { filter.value="all"; applyFilter(); });
 
     // ------- STATS ----------
     function updateStats(){
@@ -242,10 +365,27 @@
       document.getElementById('tTodo').textContent  = todo;
     }
 
-    // init
+    // ------- INIT & EVENTS -------
+    document.getElementById('today').textContent = todayString();
     render();
     applyFilter();
+
+    filter.addEventListener('change', applyFilter);
+    dateFilter.addEventListener('change', applyFilter);
+    dateField.addEventListener('change', applyFilter);
+
+    todayBtn.addEventListener('click', () => {
+      dateFilter.value = todayString();
+      dateField.value = 'estimated';
+      applyFilter();
+    });
+
+    resetBtn.addEventListener('click', () => {
+      filter.value="all";
+      dateFilter.value="";
+      dateField.value="estimated";
+      applyFilter();
+    });
   </script>
 </body>
 </html>
-

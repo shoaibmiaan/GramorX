@@ -1,4 +1,6 @@
 // lib/routeAccess.ts
+export type AppRole = 'student' | 'teacher' | 'admin';
+
 export const isPublicRoute = (path: string) => {
   // Allow-list public pages. Adjust as needed.
   if (path === '/') return true;
@@ -6,6 +8,9 @@ export const isPublicRoute = (path: string) => {
   if (path === '/community') return true;
   if (path === '/about') return true;
   if (path === '/contact') return true;
+
+  // Access-denied page must be public to avoid redirect loops.
+  if (path === '/403') return true;
 
   // Auth pages should stay public:
   if (path === '/login' || path.startsWith('/login/')) return true;
@@ -16,3 +21,24 @@ export const isPublicRoute = (path: string) => {
 
 export const isGuestOnlyRoute = (path: string) =>
   path === '/login' || path.startsWith('/login/') || path === '/signup';
+
+// ---- Role gates -------------------------------------------------------------
+
+type Gate = { pattern: RegExp; roles: AppRole[] };
+
+// Add more gates as needed (e.g., /^\/staff/)
+const ROLE_GATES: Gate[] = [
+  { pattern: /^\/admin(\/.*)?$/i, roles: ['admin'] },
+  { pattern: /^\/teacher(\/.*)?$/i, roles: ['teacher', 'admin'] },
+];
+
+export const requiredRolesFor = (path: string): AppRole[] | null => {
+  const g = ROLE_GATES.find(g => g.pattern.test(path));
+  return g ? g.roles : null;
+};
+
+export const canAccess = (path: string, role: AppRole | null | undefined): boolean => {
+  const needed = requiredRolesFor(path);
+  if (!needed) return true; // no special role required
+  return !!role && needed.includes(role);
+};

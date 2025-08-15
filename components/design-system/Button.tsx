@@ -1,69 +1,28 @@
-import React from 'react';
+// components/design-system/Button.tsx
+import React, { ReactNode } from 'react';
 
-type Variant = 'primary' | 'secondary' | 'accent';
+type ButtonVariant = 'primary' | 'secondary' | 'accent';
 
-type BaseProps = {
-  variant?: Variant;
+interface ButtonProps {
+  children: ReactNode;
+  variant?: ButtonVariant;
   className?: string;
-  children?: React.ReactNode;
-};
+  onClick?: () => void;
+  type?: 'button' | 'submit' | 'reset';
+  disabled?: boolean;
+}
 
-type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> &
-  BaseProps & {
-    as?: 'button';
-  };
-
-type AnchorProps = React.AnchorHTMLAttributes<HTMLAnchorElement> &
-  BaseProps & {
-    as: 'a';
-    href?: string; // ← made optional
-  };
-
-type Props = ButtonProps | AnchorProps;
-
-export const Button: React.FC<Props> = (props) => {
-  const { variant = 'primary', className = '', children } = props;
-
-  const base =
-    'inline-flex items-center justify-center font-semibold transition rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 ' +
-    (variant === 'primary'
-      ? 'btn-primary'
-      : variant === 'secondary'
-      ? 'btn-secondary'
-      : 'btn-accent');
-
-  if (props.as === 'a') {
-    const { as, href, onClick, ...rest } = props as AnchorProps;
-
-    // Allow button-like anchors without href; keep a11y sane
-    const role = href ? rest.role : (rest.role ?? 'button');
-    const ariaDisabled = (rest as any)['aria-disabled'];
-
-    const handleClick: React.MouseEventHandler<HTMLAnchorElement> = (e) => {
-      if (ariaDisabled || !href) {
-        e.preventDefault();
-        e.stopPropagation();
-      }
-      onClick?.(e);
-    };
-
-    return (
-      <a
-        href={href ?? '#'}
-        role={role}
-        aria-disabled={ariaDisabled}
-        className={`${base} ${className}`}
-        onClick={handleClick}
-        {...rest}
-      >
-        {children}
-      </a>
-    );
-  }
-
-  const { as, ...rest } = props as ButtonProps;
+export const Button: React.FC<ButtonProps> = ({
+  children,
+  variant = 'primary',
+  className = '',
+  onClick,
+  type = 'button',
+  disabled = false,
+}) => {
+  const classes = ['btn', `btn-${variant}`, className].filter(Boolean).join(' ');
   return (
-    <button className={`${base} ${className}`} {...rest}>
+    <button type={type} onClick={onClick} disabled={disabled} className={classes}>
       {children}
     </button>
   );
