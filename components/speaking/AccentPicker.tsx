@@ -1,30 +1,23 @@
+// components/speaking/AccentPicker.tsx
 import React from 'react';
+import { Badge } from '@/components/design-system/Badge';
 
-export const AccentPicker: React.FC<{
-  voices: SpeechSynthesisVoice[];
-  voiceName: string;
-  onChange: (n: string) => void;
-  className?: string;
-}> = ({ voices, voiceName, onChange, className = '' }) => {
-  const english = voices.filter(v => /en[-_]/i.test(v.lang));
+export type Accent = 'UK' | 'US' | 'AUS';
+export const AccentPicker: React.FC<{ value: Accent; onChange: (a: Accent)=>void }> = ({ value, onChange }) => {
+  const options: Accent[] = ['UK','US','AUS'];
   return (
-    <div className={className}>
-      <label className="block">
-        <span className="mb-1.5 inline-block text-small text-gray-600 dark:text-grayish">Accent & Voice</span>
-        <select
-          className="w-full p-3.5 rounded-ds border border-gray-200 dark:border-white/10 bg-white dark:bg-dark"
-          value={voiceName}
-          onChange={(e) => onChange(e.target.value)}
+    <div className="flex gap-2 items-center">
+      <span className="text-small opacity-80">Accent:</span>
+      {options.map(o => (
+        <button
+          key={o}
+          onClick={()=>onChange(o)}
+          className={`px-3 py-1 rounded-ds border ${o===value ? 'border-primary text-primary' : 'border-white/10 text-grayish'}`}
         >
-          <option value="">System default</option>
-          {english.map(v => (
-            <option key={v.name} value={v.name}>{v.name} ({v.lang})</option>
-          ))}
-        </select>
-      </label>
-      {english.length === 0 && (
-        <p className="text-grayish text-small mt-2">No English voices detected. Try a desktop browser.</p>
-      )}
+          <span className="text-small">{o}</span>
+        </button>
+      ))}
+      <Badge variant="info" className="ml-2">Optional</Badge>
     </div>
   );
 };

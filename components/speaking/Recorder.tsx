@@ -1,176 +1,123 @@
-/* eslint-disable react-hooks/exhaustive-deps */
+// components/speaking/Recorder.tsx
 import React, { useEffect, useRef, useState } from 'react';
-import { Button } from '@/components/design-system/Button';
 
-export type RecorderProps = {
-  onBlob: (blob: Blob) => void;
-  onError?: (msg: string) => void;
-  className?: string;
-  /** Hard cap in bytes; default ~15MB */
-  maxBytes?: number;
-  /** Auto-stop after N seconds; default 180s */
-  maxSeconds?: number;
+type Props = {
+  active: boolean;
+  maxMs: number;
+  onComplete: (blob: Blob) => void;
+  onError?: (err: Error) => void;
+  showUI?: boolean;
 };
 
-function pickMimeType() {
-  const candidates = [
-    'audio/webm;codecs=opus',
-    'audio/webm',
-    'audio/mp4',      // iOS Safari fallback
-    'audio/mpeg',     // last-ditch fallback (some browsers synthesize)
-  ];
-  for (const c of candidates) {
-    // @ts-ignore
-    if (typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(c)) {
-      return c;
-    }
-  }
-  return ''; // let browser choose
-}
-
-function extFromMime(mime: string) {
-  if (!mime) return 'webm';
-  if (mime.includes('mp4')) return 'mp4';
-  if (mime.includes('mpeg')) return 'mp3';
-  if (mime.includes('webm')) return 'webm';
-  return 'webm';
-}
-
-export const Recorder: React.FC<RecorderProps> = ({
-  onBlob,
+export const Recorder: React.FC<Props> = ({
+  active,
+  maxMs,
+  onComplete,
   onError,
-  className = '',
-  maxBytes = 15 * 1024 * 1024,
-  maxSeconds = 180,
+  showUI = true,
 }) => {
-  const [recording, setRecording] = useState(false);
-  const [elapsed, setElapsed] = useState(0);
-  const [mime, setMime] = useState<string>('');
-  const chunksRef = useRef<BlobPart[]>([]);
-  const sizeRef = useRef<number>(0);
-  const recRef = useRef<MediaRecorder | null>(null);
-  const tickRef = useRef<number | null>(null);
+  const mediaRec = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const chunksRef = useRef<BlobPart[]>([]);
+  const timerRef = useRef<number | null>(null);
+  const stopAtRef = useRef<number | null>(null);
+  const [seconds, setSeconds] = useState(0);
+  const [isRecording, setIsRecording] = useState(false);
 
-  useEffect(() => {
-    return () => cleanup();
-  }, []);
-
-  function cleanup() {
-    if (tickRef.current) {
-      window.clearInterval(tickRef.current);
-      tickRef.current = null;
-    }
+  const start = async () => {
     try {
-      recRef.current?.stream?.getTracks()?.forEach((t) => t.stop());
-    } catch {}
-    recRef.current = null;
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((t) => t.stop());
-      streamRef.current = null;
-    }
-    setRecording(false);
-    setElapsed(0);
-  }
-
-  async function start() {
-    try {
-      const m = pickMimeType();
-      setMime(m);
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          channelCount: 1,
+          sampleRate: 48000,
+        },
+        video: false,
+      });
       streamRef.current = stream;
 
-      // @ts-ignore
-      const rec = new MediaRecorder(stream, m ? { mimeType: m } : undefined);
-      recRef.current = rec;
-      chunksRef.current = [];
-      sizeRef.current = 0;
+      const mime = MediaRecorder.isTypeSupported('audio/webm')
+        ? 'audio/webm'
+        : 'audio/webm;codecs=opus';
 
-      rec.ondataavailable = (ev: BlobEvent) => {
-        if (!ev.data) return;
-        chunksRef.current.push(ev.data);
-        sizeRef.current += ev.data.size;
-        if (sizeRef.current > maxBytes) {
-          onError?.('Recording stopped: file too large.');
-          stop(true);
+      const rec = new MediaRecorder(stream, { mimeType: mime });
+      mediaRec.current = rec;
+      chunksRef.current = [];
+      setSeconds(0);
+
+      rec.ondataavailable = (e) => {
+        if (e.data && e.data.size) chunksRef.current.push(e.data);
+      };
+      rec.onstop = () => {
+        try {
+          const blob = new Blob(chunksRef.current, { type: mime });
+          chunksRef.current = [];
+          onComplete(blob);
+        } catch (e: any) {
+          onError?.(e);
+        } finally {
+          stream.getTracks().forEach((t) => t.stop());
+          streamRef.current = null;
+          setIsRecording(false);
         }
       };
-      rec.onerror = (e: any) => {
-        onError?.(`Recorder error: ${e?.error?.message || e?.message || 'unknown'}`);
-        stop(true);
-      };
-      rec.start(1000); // gather chunks every second
-      setRecording(true);
 
-      tickRef.current = window.setInterval(() => {
-        setElapsed((s) => {
-          if (s + 1 >= maxSeconds) {
-            onError?.('Auto-stopped at max duration.');
-            stop();
+      rec.start(250);
+      setIsRecording(true);
+
+      stopAtRef.current = Date.now() + maxMs;
+      if (timerRef.current) window.clearInterval(timerRef.current);
+      timerRef.current = window.setInterval(() => {
+        setSeconds((s) => {
+          const next = s + 1;
+          if (Date.now() >= (stopAtRef.current ?? 0)) {
+            if (mediaRec.current && mediaRec.current.state !== 'inactive') {
+              mediaRec.current.stop();
+            }
+            if (timerRef.current) {
+              window.clearInterval(timerRef.current);
+              timerRef.current = null;
+            }
           }
-          return s + 1;
+          return next;
         });
       }, 1000);
     } catch (e: any) {
-      const code = e?.name || e?.code;
-      if (code === 'NotAllowedError' || code === 'PermissionDeniedError') {
-        onError?.('Microphone permission was denied. Please allow mic access and try again.');
-      } else if (code === 'NotFoundError' || code === 'DevicesNotFoundError') {
-        onError?.('No microphone found. Please connect a mic and try again.');
-      } else {
-        onError?.(e?.message || 'Failed to start recording.');
+      onError?.(e);
+    }
+  };
+
+  const stop = () => {
+    try {
+      if (mediaRec.current && mediaRec.current.state !== 'inactive') {
+        mediaRec.current.stop();
       }
-      cleanup();
+      if (timerRef.current) {
+        window.clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    } catch (e: any) {
+      onError?.(e);
     }
-  }
+  };
 
-  function stop(silent = false) {
-    try {
-      recRef.current?.stop();
-    } catch {}
-    if (tickRef.current) {
-      window.clearInterval(tickRef.current);
-      tickRef.current = null;
-    }
-    setRecording(false);
+  useEffect(() => {
+    if (active) start();
+    else stop();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [active]);
 
-    // assemble & emit
-    const type = mime || (recRef.current as any)?.mimeType || 'audio/webm';
-    const blob = new Blob(chunksRef.current, { type });
-    chunksRef.current = [];
-    sizeRef.current = 0;
-    if (!silent && blob.size > 0) {
-      onBlob(blob);
-    }
-    // stop tracks
-    try {
-      recRef.current?.stream?.getTracks()?.forEach((t) => t.stop());
-    } catch {}
-    recRef.current = null;
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((t) => t.stop());
-      streamRef.current = null;
-    }
-    setElapsed(0);
-  }
-
-  return (
-    <div className={`flex items-center gap-2 ${className}`}>
-      {!recording ? (
-        <Button variant="primary" onClick={start} className="rounded-ds-xl">
-          <i className="fas fa-microphone mr-2" aria-hidden="true" /> Record
-        </Button>
-      ) : (
-        <>
-          <Button variant="danger" onClick={() => stop()} className="rounded-ds-xl">
-            <i className="fas fa-stop mr-2" aria-hidden="true" /> Stop
-          </Button>
-          <span className="text-small text-grayish">
-            {String(Math.floor(elapsed / 60)).padStart(2, '0')}:
-            {String(elapsed % 60).padStart(2, '0')} • {mime || 'auto'}
-          </span>
-        </>
-      )}
+  return showUI ? (
+    <div className="text-small text-gray-600 dark:text-grayish">
+      <span className="inline-flex items-center gap-2">
+        <span
+          className={`h-2.5 w-2.5 rounded-full ${
+            isRecording ? 'bg-sunsetOrange animate-pulse' : 'bg-gray-400'
+          }`}
+        />
+        {isRecording ? `Recording… ${seconds}s` : 'Mic idle'}
+      </span>
     </div>
-  );
+  ) : null;
 };

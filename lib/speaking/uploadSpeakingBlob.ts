@@ -1,21 +1,25 @@
 // lib/speaking/uploadSpeakingBlob.ts
+import { authHeaders } from '@/lib/supabaseBrowser';
+
 export async function uploadSpeakingBlob(
   blob: Blob,
-  part: 'p1'|'p2'|'p3',
-  promptHint?: string        // optional hint for transcription (topic/keywords)
-): Promise<{ transcript: string; scores: {
-  fluency: number; lexical: number; grammar: number; pronunciation: number; overall: number; feedback: string;
-} }> {
-  const arrayBuf = await blob.arrayBuffer();
-  const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuf)));
-  const mime = blob.type || 'audio/webm';
+  ctx: 'p1' | 'p2' | 'p3' | 'chat',
+  attemptId?: string
+) {
+  const fd = new FormData();
+  fd.append('file', blob, `speaking-${ctx}-${Date.now()}.webm`);
+  if (attemptId) fd.append('attemptId', attemptId);
+  fd.append('ctx', ctx);
 
-  const r = await fetch('/api/speaking/score-audio-groq', {
+  const headers = await authHeaders();
+  const res = await fetch('/api/speaking/upload', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ audioBase64: base64, mime, part, promptHint }),
+    headers,
+    body: fd,
   });
-
-  if (!r.ok) throw new Error(`Upload/score failed: ${r.status}`);
-  return r.json();
+  if (!res.ok) {
+    const msg = await res.text();
+    throw new Error(`Upload failed: ${res.status} ${msg}`);
+  }
+  return res.json();
 }
