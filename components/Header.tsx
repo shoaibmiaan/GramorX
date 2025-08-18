@@ -9,7 +9,6 @@ import { supabaseBrowser } from '@/lib/supabaseBrowser';
 import { UserMenu } from '@/components/design-system/UserMenu';
 
 const MODULE_LINKS = [
-  { label: 'Learning', href: '/learning', desc: 'Lessons, tips & progress' },
   { label: 'Listening', href: '/listening', desc: 'Audio comprehension drills' },
   { label: 'Reading', href: '/reading', desc: 'Short passages & skimming' },
   { label: 'Writing', href: '/writing', desc: 'Prompts, structure & style' },
@@ -209,8 +208,8 @@ export const Header: React.FC<{ streak: number }> = ({ streak }) => {
                 <li key={n.href}><NavLink href={n.href} label={n.label} /></li>
               ))}
 
-              {/* Community link */}
-              <li><NavLink href="/community" label="Community" /></li>
+              {/* premium link */}
+              <li><NavLink href="/premium" label="premium" /></li>
 
               {/* Auth area (Dashboard link removed) */}
               {ready ? (
@@ -343,11 +342,11 @@ export const Header: React.FC<{ streak: number }> = ({ streak }) => {
 
                 <li>
                   <a
-                    href="/community"
+                    href="/premium"
                     className="block px-3 py-3 rounded-lg hover:bg-purpleVibe/10"
                     onClick={() => setMobileOpen(false)}
                   >
-                    Community
+                    premium
                   </a>
                 </li>
               </ul>

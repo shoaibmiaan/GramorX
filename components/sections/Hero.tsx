@@ -71,9 +71,9 @@ export const Hero: React.FC<{ onStreakChange: (n: number) => void }> = ({ onStre
 
   if (!mounted) {
     return (
-      <section className="min-h-[60vh] flex items-center py-24 relative">
+      <section className="min-h-[60vh] grid place-items-center py-24 relative">
         <Container>
-          <div className="max-w-2xl">
+          <div className="max-w-2xl mx-auto text-center">
             <h1 className="font-slab text-5xl md:text-6xl font-bold mb-5 leading-tight">
               <span className="text-gradient-accent">
                 ACHIEVE YOUR DREAM IELTS SCORE WITH AI-POWERED PREPARATION
@@ -87,22 +87,22 @@ export const Hero: React.FC<{ onStreakChange: (n: number) => void }> = ({ onStre
   }
 
   return (
-    <section className="min-h-[100vh] flex items-center py-24 relative">
+    <section className="min-h-[100vh] flex items-center justify-center py-24 relative">
       <Container>
-        <div className="relative z-10 max-w-2xl">
+        <div className="relative z-10 max-w-2xl mx-auto text-center">
           <h1 className="font-slab text-5xl md:text-6xl font-bold mb-5 leading-tight">
             <span className="text-gradient-accent">
               ACHIEVE YOUR DREAM IELTS SCORE WITH AI-POWERED PREPARATION
             </span>
           </h1>
-          <p className="text-lg text-[#d0d0e0] mb-8 max-w-xl">
+          <p className="text-lg text-[#d0d0e0] mb-8 max-w-xl mx-auto">
             Master all four IELTS skills with personalized feedback, adaptive learning paths, and realistic mock tests. Join thousands of
             successful candidates who&apos;ve achieved Band 7+ with our platform.
           </p>
 
           <Card className="inline-block p-6 rounded-2xl">
             <div className="text-neonGreen font-semibold mb-3">PRE-LAUNCH ACCESS IN</div>
-            <div className="flex gap-5">
+            <div className="flex gap-5 justify-center">
               {['Days', 'Hours', 'Minutes', 'Seconds'].map((label, idx) => {
                 const values = [diff.days, diff.hours, diff.minutes, diff.seconds] as number[];
                 const value = values[idx] || 0;
@@ -118,7 +118,7 @@ export const Hero: React.FC<{ onStreakChange: (n: number) => void }> = ({ onStre
             </div>
           </Card>
 
-          <Card className="mt-6 max-w-md p-6 rounded-2xl">
+          <Card className="mt-6 max-w-md p-6 rounded-2xl mx-auto">
             <h3 className="text-neonGreen font-semibold text-xl mb-4">
               <i className="fas fa-book mr-2" />
               Word of the Day
@@ -164,7 +164,7 @@ export const Hero: React.FC<{ onStreakChange: (n: number) => void }> = ({ onStre
             </Alert>
           </Card>
 
-          <div className="flex gap-4 mt-8">
+          <div className="flex gap-4 mt-8 justify-center">
             <Button as="a" href="#waitlist" variant="primary">
               Join Exclusive Waitlist
             </Button>
@@ -174,8 +174,9 @@ export const Hero: React.FC<{ onStreakChange: (n: number) => void }> = ({ onStre
           </div>
         </div>
 
-        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1/2 max-w-[600px] opacity-80 hidden md:block">
-          <svg viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
+        {/* Decorative rings on the right; kept absolute so they don't affect centering */}
+        <div className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2 w-1/2 max-w-[600px] opacity-80 hidden md:block">
+          <svg viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
             <circle cx="300" cy="300" r="200" fill="none" stroke="rgba(157, 78, 221, 0.3)" strokeWidth="20" />
             <circle cx="300" cy="300" r="170" fill="none" stroke="rgba(0, 187, 249, 0.3)" strokeWidth="20" />
             <circle cx="300" cy="300" r="140" fill="none" stroke="rgba(255, 107, 107, 0.3)" strokeWidth="20" />

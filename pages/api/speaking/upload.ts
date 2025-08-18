@@ -1,73 +1,80 @@
-// pages/api/speaking/upload.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
-import formidable, { File as FormidableFile, Fields, Files } from 'formidable';
+import formidable, { File } from 'formidable';
 import fs from 'node:fs/promises';
-import crypto from 'node:crypto';
-import { getUserServer } from '@/lib/authServer';
+import pathMod from 'node:path';
+import { supabaseFromRequest } from '@/lib/apiAuth';
 
 export const config = { api: { bodyParser: false, sizeLimit: '25mb' } };
 
-async function parseForm(req: NextApiRequest) {
+function parseForm(req: NextApiRequest) {
   const form = formidable({ multiples: false, maxFileSize: 25 * 1024 * 1024 });
-  return await new Promise<{ fields: Fields; files: Files }>((resolve, reject) => {
-    form.parse(req, (err, fields, files) => (err ? reject(err) : resolve({ fields, files })));
-  });
-}
-function pickFile(files: Files): FormidableFile | null {
-  const maybe = (files as any).file ?? Object.values(files)[0];
-  return Array.isArray(maybe) ? maybe[0] : (maybe as FormidableFile | null);
+  return new Promise<{ fields: formidable.Fields; files: formidable.Files }>((resolve, reject) =>
+    form.parse(req, (err, fields, files) => (err ? reject(err) : resolve({ fields, files })))
+  );
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { user, supabaseDb } = await getUserServer(req);
-  if (!user) return res.status(401).json({ error: 'Unauthorized (no valid session token)' });
+  const supabase = supabaseFromRequest(req);
+  const bucket = process.env.SPEAKING_BUCKET || 'speaking';
 
   try {
     const { fields, files } = await parseForm(req);
-    const f = pickFile(files);
-    if (!f) return res.status(400).json({ error: 'No file received (FormData key must be "file")' });
-    const filepath = (f as any).filepath;
-    if (!filepath) return res.status(400).json({ error: 'Temp filepath missing from parser' });
+    const attemptId = String(fields.attemptId || '');
+    const context = String(fields.context || fields.part || 'p1'); // p1|p2|p3
+    const storagePath = String(fields.path || '');
 
-    const buf = await fs.readFile(filepath);
-    const attemptId = crypto.randomUUID();
-    const orig = (f as any).originalFilename || 'audio.webm';
-    const ext = (orig.split('.').pop() || 'webm').toLowerCase();
-    const objectPath = `${user.id}/${attemptId}.${ext}`;
+    if (!attemptId || !storagePath) {
+      return res.status(400).json({ error: 'Missing attemptId or path' });
+    }
 
-    const up = await supabaseDb.storage.from('speaking-audio').upload(objectPath, buf, {
-      contentType: (f as any).mimetype || 'audio/webm',
-      upsert: false,
-    });
-    await fs.unlink(filepath).catch(() => {});
-    if (up.error) return res.status(500).json({ error: `Storage: ${up.error.message}` });
+    const file = (files.file as File) ?? null;
+    if (!file || !file.filepath) return res.status(400).json({ error: 'Missing file' });
 
-    const ctx = String((fields as any).ctx || 'p1');
-    const durationMs = Number((fields as any).durationMs || 0);
-    const promptText = String((fields as any).prompt || '');
-    const accentRaw  = String((fields as any).accent || '');
-    const accent = ['UK','US','AUS'].includes(accentRaw) ? accentRaw : null;
+    const fileBuf = await fs.readFile(file.filepath);
+    const contentType =
+      (file.mimetype as string | undefined) ||
+      (file.originalFilename ? mimeFromName(file.originalFilename) : 'audio/webm');
 
-    const ins = await supabaseDb
-      .from('speaking_attempts')
+    // Upload to Storage (upsert = true lets user retry)
+    const { error: upErr } = await supabase.storage
+      .from(bucket)
+      .upload(storagePath, fileBuf, { upsert: true, contentType });
+
+    if (upErr) return res.status(400).json({ error: upErr.message });
+
+    // Record clip row (path is NOT NULL in your schema)
+    const bytes = fileBuf.byteLength;
+    const filename = pathMod.basename(storagePath);
+
+    const { data: clip, error: insErr } = await supabase
+      .from('speaking_clips')
       .insert({
-        id: attemptId,
-        user_id: user.id,
-        part: ctx,
-        duration_ms: durationMs,
-        audio_path: up.data?.path || objectPath,
-        prompt_text: promptText,
-        accent,
+        attempt_id: attemptId,
+        part: context,
+        path: storagePath,
+        mime: contentType,
+        bytes,
+        filename,
       })
-      .select('id, audio_path')
+      .select('id, path')
       .single();
 
-    if (ins.error) return res.status(500).json({ error: `DB: ${ins.error.message}` });
-    return res.status(200).json({ attemptId: ins.data.id, audioPath: ins.data.audio_path });
+    if (insErr) return res.status(400).json({ error: insErr.message });
+
+    return res.status(200).json({ path: clip.path, clipId: clip.id });
   } catch (e: any) {
-    console.error('Upload failed:', e);
     return res.status(500).json({ error: e?.message || 'Upload failed' });
   }
+}
+
+function mimeFromName(name: string) {
+  const ext = name.split('.').pop()?.toLowerCase();
+  if (ext === 'mp3') return 'audio/mpeg';
+  if (ext === 'wav') return 'audio/wav';
+  if (ext === 'm4a') return 'audio/mp4';
+  if (ext === 'ogg') return 'audio/ogg';
+  if (ext === 'webm') return 'audio/webm';
+  return 'application/octet-stream';
 }

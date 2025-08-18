@@ -1,12 +1,19 @@
 // pages/_app.tsx
 import type { AppProps } from 'next/app';
+import Head from 'next/head';
 import { ThemeProvider } from 'next-themes';
 import { useRouter } from 'next/router';
 import { useEffect, useMemo, useState } from 'react';
 import '@/styles/globals.css';
 import { Layout } from '@/components/Layout';
 import { supabaseBrowser } from '@/lib/supabaseBrowser';
-import { isPublicRoute, isGuestOnlyRoute, canAccess, requiredRolesFor, type AppRole } from '@/lib/routeAccess';
+import {
+  isPublicRoute,
+  isGuestOnlyRoute,
+  canAccess,
+  requiredRolesFor,
+  type AppRole,
+} from '@/lib/routeAccess';
 import { ToastProvider } from '@/components/design-system/Toast';
 
 function GuardSkeleton() {
@@ -20,8 +27,14 @@ function GuardSkeleton() {
 export default function MyApp({ Component, pageProps }: AppProps) {
   const router = useRouter();
 
-  // Hide chrome on auth pages (matches your design)
-  const hideChrome = router.pathname === '/signup' || router.pathname.startsWith('/login');
+  // Premium detection
+  const isPremium = router.pathname.startsWith('/premium');
+
+  // Hide chrome on auth pages (matches your design) + premium pages
+  const hideChrome =
+    router.pathname === '/signup' ||
+    router.pathname.startsWith('/login') ||
+    isPremium;
 
   // Determine if current route is protected
   const guarded = useMemo(() => !isPublicRoute(router.pathname), [router.pathname]);
@@ -99,10 +112,32 @@ export default function MyApp({ Component, pageProps }: AppProps) {
     };
   }, [guarded, router.pathname, router.asPath]);
 
-  const page = ready ? <Component {...pageProps} /> : <GuardSkeleton />;
+  // Ensure initial theme comes from localStorage (or light) on premium pages
+  useEffect(() => {
+    if (!isPremium) return;
+    const saved =
+      (typeof window !== 'undefined' && localStorage.getItem('premium:theme')) ||
+      'light';
+    const root =
+      (document.getElementById('premium-root') ||
+        document.querySelector('.premium-root')) as HTMLElement | null;
+    if (root) root.setAttribute('data-pr-theme', saved);
+  }, [isPremium]);
+
+  const pageBody = ready ? <Component {...pageProps} /> : <GuardSkeleton />;
+
+  // Wrap premium pages in the scoped root (and load /public/premium.css)
+  const page = isPremium ? (
+    <div id="premium-root" className="premium-root">
+      {pageBody}
+    </div>
+  ) : (
+    pageBody
+  );
 
   return (
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
+      <Head>{isPremium ? <link rel="stylesheet" href="/premium.css" /> : null}</Head>
       <ToastProvider>
         {hideChrome ? page : <Layout>{page}</Layout>}
       </ToastProvider>

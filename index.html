@@ -17,14 +17,14 @@
     .bar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;
          position:sticky;top:0;background:rgba(11,12,16,.9);backdrop-filter:blur(6px);
          border-bottom:1px solid var(--border);padding:10px;margin:6px 0 12px}
-    select, input[type="date"]{
+    select, input[type="date"], button{
       background:var(--card);color:var(--text);border:1px solid var(--border);
       border-radius:8px;padding:8px 10px
     }
     .stats{display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 10px}
     .stat{background:var(--card);border:1px solid var(--border);padding:6px 10px;border-radius:8px}
-    table{width:100%;border-collapse:collapse}
-    thead th{position:sticky;top:72px;background:var(--bg);z-index:2;color:#b9c2d0;
+    table{width:100%;border-collapse:collapse;table-layout:fixed}
+    thead th{position:sticky;top:56px;background:var(--bg);z-index:2;color:#b9c2d0;
              text-align:left;font-weight:600;padding:10px;border-bottom:1px solid var(--border)}
     tbody td{padding:10px;border-bottom:1px solid var(--border);vertical-align:top}
     tbody tr:hover{background:rgba(59,130,246,.06)}
@@ -32,23 +32,21 @@
     .completed{color:#052814;background:rgba(16,185,129,.15);border-color:rgba(16,185,129,.35)}
     .inprogress{color:#2f2302;background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.35)}
     .notstarted{color:#2a2f3a;background:rgba(167,176,191,.12);border-color:rgba(167,176,191,.35)}
-    .mod{font-size:12px;color:var(--muted)}
     .nowrap{white-space:nowrap}
     .muted{color:var(--muted)}
     .sum{min-height:1.8em}
-    .spacer{flex:1}
-    .btn{background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:8px 10px;cursor:pointer}
+    .col-n{width:48px}
+    .col-mark{width:110px}
+    .col-item{width:280px}
+    .col-est,.col-comp{width:150px}
+    .col-dev,.col-deploy{width:auto}
+    .hint{font-size:12px;color:var(--muted)}
   </style>
 </head>
 <body>
   <div class="wrap">
     <h1>📋 IELTS Platform Implementation Tracker</h1>
-    <div class="legend">
-      Legend: <code>[ ]</code> Not started • <code>[~]</code> In progress • <code>[x]</code> Completed
-    </div>
-    <div class="legend">
-      Today: <b id="today"></b> — <span class="mod">Strict Phase-1 only (IELTS 4 modules + onboarding + AI eval)</span>
-    </div>
+    <div class="legend">Legend: <code>[ ]</code> Not started • <code>[~]</code> In progress • <code>[x]</code> Completed</div>
 
     <div class="stats" id="stats">
       <div class="stat">Total: <b id="tTotal">—</b></div>
@@ -58,8 +56,8 @@
     </div>
 
     <div class="bar">
-      <label for="filter">Filter status:</label>
-      <select id="filter">
+      <label for="statusFilter">Status:</label>
+      <select id="statusFilter">
         <option value="all">All</option>
         <option value="completed">Completed</option>
         <option value="inprogress">In progress</option>
@@ -67,27 +65,29 @@
         <option value="incomplete">Incomplete (not started + in progress)</option>
       </select>
 
-      <label for="dateFilter">Filter date:</label>
+      <span class="hint">|</span>
+
+      <label for="dateFilter">Date:</label>
       <input type="date" id="dateFilter" />
-      <select id="dateField">
-        <option value="estimated">Estimated</option>
-        <option value="completion">Completion</option>
+      <select id="dateMode">
+        <option value="either">Either (Estimate or Completion)</option>
+        <option value="estimate">Estimate only</option>
+        <option value="completion">Completion only</option>
       </select>
 
-      <button id="todayBtn" class="btn">Today’s targets</button>
-      <div class="spacer"></div>
-      <button id="reset" class="btn">Reset</button>
+      <button id="reset" style="margin-left:auto;cursor:pointer">Reset filters</button>
     </div>
 
     <table>
       <thead>
         <tr>
-          <th class="nowrap">#</th>
-          <th>Mark</th>
-          <th>Item</th>
-          <th>Developer summary (how to complete)</th>
-          <th class="nowrap">Estimated</th>
-          <th class="nowrap">Completion</th>
+          <th class="nowrap col-n">#</th>
+          <th class="col-mark">Mark</th>
+          <th class="col-item">Item</th>
+          <th class="col-est">Estimate</th>
+          <th class="col-comp">Completion</th>
+          <th class="col-dev">Developer summary</th>
+          <th class="col-deploy">Deployment summary</th>
         </tr>
       </thead>
       <tbody id="tbody">
@@ -97,262 +97,225 @@
   </div>
 
   <script>
-    // ------- DATA (status: "[x]" | "[~]" | "[ ]") ----------
-    const tasks = [
+    // ---------- HELPERS ----------
+    const todayISO = new Date().toISOString().slice(0,10);
+    const statusMap = { "[x]":"completed", "[~]":"inprogress", "[ ]":"notstarted" };
+    const pillClass = s => ({completed:"completed",inprogress:"inprogress",notstarted:"notstarted"}[s]||"notstarted");
+
+    // ---------- SOURCE LIST (existing items kept) ----------
+    const baseItems = [
       // 1. User Module (6)
-      ["[x]", "User Module — User registration & login (email, social, phone)"],
-      ["[x]", "User Module — Profile setup (goal band, country, level)"],
-      ["[ ]", "User Module — Role-based access (student, teacher, admin)"],
-      ["[ ]", "User Module — Daily streak & study calendar"],
-      ["[ ]", "User Module — Saved tests, bookmarked content"],
-      ["[ ]", "User Module — Language preference settings"],
+      ["[x]","User Module — User registration & login (email, social, phone)"],
+      ["[x]","User Module — Profile setup (goal band, country, level)"],
+      ["[ ]","User Module — Role-based access (student, teacher, admin)"],
+      ["[ ]","User Module — Daily streak & study calendar"],
+      ["[ ]","User Module — Saved tests, bookmarked content"],
+      ["[ ]","User Module — Language preference settings"],
       // 2. Learning Module (5)
-      ["[ ]", "Learning Module — Structured course library (Academic & General)"],
-      ["[ ]", "Learning Module — Grammar, vocabulary, collocations lessons"],
-      ["[x]", "Learning Module — IELTS strategy tips (all 4 skills)"],
-      ["[ ]", "Learning Module — AI-generated practice drills"],
-      ["[ ]", "Learning Module — Progressively unlocked learning paths"],
+      ["[ ]","Learning Module — Structured course library (Academic & General)"],
+      ["[ ]","Learning Module — Grammar, vocabulary, collocations lessons"],
+      ["[x]","Learning Module — IELTS strategy tips (all 4 skills)"],
+      ["[ ]","Learning Module — AI-generated practice drills"],
+      ["[ ]","Learning Module — Progressively unlocked learning paths"],
       // 3. Mock Test Module (6)
-      ["[ ]", "Mock Test Module — Full-length IELTS mock tests (timed)"],
-      ["[ ]", "Mock Test Module — Section-wise practice tests (Listening, Reading, Writing, Speaking)"],
-      ["[ ]", "Mock Test Module — Band score simulation"],
-      ["[ ]", "Mock Test Module — Real-time test timer & tab-switch detection"],
-      ["[ ]", "Mock Test Module — Auto-save test state"],
-      ["[ ]", "Mock Test Module — Performance analytics per mock"],
+      ["[ ]","Mock Test Module — Full-length IELTS mock tests (timed)"],
+      ["[ ]","Mock Test Module — Section-wise practice tests (Listening, Reading, Writing, Speaking)"],
+      ["[ ]","Mock Test Module — Band score simulation"],
+      ["[ ]","Mock Test Module — Real-time test timer & tab-switch detection"],
+      ["[ ]","Mock Test Module — Auto-save test state"],
+      ["[ ]","Mock Test Module — Performance analytics per mock"],
       // 4. AI Evaluation Module (6)
-      ["[x]", "AI Evaluation Module — Writing Task 1 & 2 feedback with band score"],
-      ["[x]", "AI Evaluation Module — Letter writing for General Training"],
-      ["[x]", "AI Evaluation Module — Speaking audio evaluation (fluency, vocab, grammar, pronunciation)"],
-      ["[x]", "AI Evaluation Module — Transcription + pronunciation scoring"],
-      ["[x]", "AI Evaluation Module — Instant feedback with model answer"],
-      ["[ ]", "AI Evaluation Module — AI re-evaluation option"],
+      ["[x]","AI Evaluation Module — Writing Task 1 & 2 feedback with band score"],
+      ["[x]","AI Evaluation Module — Letter writing for General Training"],
+      ["[x]","AI Evaluation Module — Speaking audio evaluation (fluency, vocab, grammar, pronunciation)"],
+      ["[x]","AI Evaluation Module — Transcription + pronunciation scoring"],
+      ["[x]","AI Evaluation Module — Instant feedback with model answer"],
+      ["[ ]","AI Evaluation Module — AI re-evaluation option"],
       // 5. Speaking Practice Module (6)
-      ["[x]", "Speaking Practice Module — Speaking test simulator (Parts 1, 2, 3)"],
-      ["[x]", "Speaking Practice Module — Voice recording and playback"],
-      ["[ ]", "Speaking Practice Module — AI or LLM-powered speaking partner"],
-      ["[ ]", "Speaking Practice Module — Accent adaptation (UK, US, AUS)"],
-      ["[ ]", "Speaking Practice Module — Roleplay conversations"],
-      ["[ ]", "Speaking Practice Module — Band prediction + detailed speaking report"],
+      ["[x]","Speaking Practice Module — Speaking test simulator (Parts 1, 2, 3)"],
+      ["[x]","Speaking Practice Module — Voice recording and playback"],
+      ["[ ]","Speaking Practice Module — AI or LLM-powered speaking partner"],
+      ["[ ]","Speaking Practice Module — Accent adaptation (UK, US, AUS)"],
+      ["[ ]","Speaking Practice Module — Roleplay conversations"],
+      ["[ ]","Speaking Practice Module — Band prediction + detailed speaking report"],
       // 6. Listening Module (6)
-      ["[~]", "Listening Module — Audio-based practice & tests"],
-      ["[~]", "Listening Module — Auto-play per section with transcript toggle"],
-      ["[~]", "Listening Module — Question types: MCQ, gap-fill, matching"],
-      ["[~]", "Listening Module — Real-time answer input"],
-      ["[~]", "Listening Module — Band scoring & answer review"],
-      ["[~]", "Listening Module — Highlight correct vs user answer"],
+      ["[~]","Listening Module — Audio-based practice & tests"],
+      ["[~]","Listening Module — Auto-play per section with transcript toggle"],
+      ["[~]","Listening Module — Question types: MCQ, gap-fill, matching"],
+      ["[~]","Listening Module — Real-time answer input"],
+      ["[~]","Listening Module — Band scoring & answer review"],
+      ["[~]","Listening Module — Highlight correct vs user answer"],
       // 7. Reading Module (6)
-      ["[x]", "Reading Module — Full passage with real IELTS question types"],
-      ["[ ]", "Reading Module — Support for TF/NG, Matching, MCQ, etc."],
-      ["[ ]", "Reading Module — Question-type-wise filtering"],
-      ["[x]", "Reading Module — Timer + live progress bar"],
-      ["[ ]", "Reading Module — AI answer explanation on review"],
-      ["[ ]", "Reading Module — Stats per passage & per type"],
+      ["[x]","Reading Module — Full passage with real IELTS question types"],
+      ["[ ]","Reading Module — Support for TF/NG, Matching, MCQ, etc."],
+      ["[ ]","Reading Module — Question-type-wise filtering"],
+      ["[x]","Reading Module — Timer + live progress bar"],
+      ["[ ]","Reading Module — AI answer explanation on review"],
+      ["[ ]","Reading Module — Stats per passage & per type"],
       // 8. Performance & Analytics Module (6)
-      ["[ ]", "Performance & Analytics — Skill-wise band progression"],
-      ["[ ]", "Performance & Analytics — Weekly/monthly reports"],
-      ["[ ]", "Performance & Analytics — Weakness detection & suggestions"],
-      ["[ ]", "Performance & Analytics — Leaderboard / percentile rank"],
-      ["[ ]", "Performance & Analytics — Study time tracker"],
-      ["[ ]", "Performance & Analytics — AI-generated personalized improvement plan"],
+      ["[ ]","Performance & Analytics — Skill-wise band progression"],
+      ["[ ]","Performance & Analytics — Weekly/monthly reports"],
+      ["[ ]","Performance & Analytics — Weakness detection & suggestions"],
+      ["[ ]","Performance & Analytics — Leaderboard / percentile rank"],
+      ["[ ]","Performance & Analytics — Study time tracker"],
+      ["[ ]","Performance & Analytics — AI-generated personalized improvement plan"],
       // 9. Adaptive Learning Module (5)
-      ["[ ]", "Adaptive Learning — Personalized test/lesson recommendations"],
-      ["[ ]", "Adaptive Learning — Smart revision cycles (spaced repetition)"],
-      ["[ ]", "Adaptive Learning — Dynamic difficulty adjustment"],
-      ["[ ]", "Adaptive Learning — Suggested exercises based on errors"],
-      ["[ ]", "Adaptive Learning — “Next Best Task” AI engine"],
+      ["[ ]","Adaptive Learning — Personalized test/lesson recommendations"],
+      ["[ ]","Adaptive Learning — Smart revision cycles (spaced repetition)"],
+      ["[ ]","Adaptive Learning — Dynamic difficulty adjustment"],
+      ["[ ]","Adaptive Learning — Suggested exercises based on errors"],
+      ["[ ]","Adaptive Learning — “Next Best Task” AI engine"],
       // 10. Teacher/Admin Module (6)
-      ["[ ]", "Teacher/Admin Module — User monitoring dashboard"],
-      ["[ ]", "Teacher/Admin Module — Writing & speaking review override"],
-      ["[ ]", "Teacher/Admin Module — Upload custom content/tests"],
-      ["[ ]", "Teacher/Admin Module — Approve new test papers"],
-      ["[ ]", "Teacher/Admin Module — View usage metrics & heatmaps"],
-      ["[ ]", "Teacher/Admin Module — Manage subscriptions"],
+      ["[ ]","Teacher/Admin Module — User monitoring dashboard"],
+      ["[ ]","Teacher/Admin Module — Writing & speaking review override"],
+      ["[ ]","Teacher/Admin Module — Upload custom content/tests"],
+      ["[ ]","Teacher/Admin Module — Approve new test papers"],
+      ["[ ]","Teacher/Admin Module — View usage metrics & heatmaps"],
+      ["[ ]","Teacher/Admin Module — Manage subscriptions"],
       // 11. Community & Support Module (5)
-      ["[ ]", "Community & Support — Discussion forums / study groups"],
-      ["[ ]", "Community & Support — Peer review for writing/speaking"],
-      ["[ ]", "Community & Support — Live chat with AI/teachers"],
-      ["[ ]", "Community & Support — Ask a doubt (with AI reply + upvote)"],
-      ["[ ]", "Community & Support — Leaderboards, badges, achievements"],
+      ["[ ]","Community & Support — Discussion forums / study groups"],
+      ["[ ]","Community & Support — Peer review for writing/speaking"],
+      ["[ ]","Community & Support — Live chat with AI/teachers"],
+      ["[ ]","Community & Support — Ask a doubt (with AI reply + upvote)"],
+      ["[ ]","Community & Support — Leaderboards, badges, achievements"],
       // 12. Monetization Module (5)
-      ["[ ]", "Monetization — Subscription tiers (free, premium, pro)"],
-      ["[ ]", "Monetization — Credits for feedback attempts"],
-      ["[ ]", "Monetization — Discount & referral code engine"],
-      ["[ ]", "Monetization — Trial vs full feature gating"],
-      ["[ ]", "Monetization — Stripe/PayPal integration"],
+      ["[ ]","Monetization — Subscription tiers (free, premium, pro)"],
+      ["[ ]","Monetization — Credits for feedback attempts"],
+      ["[ ]","Monetization — Discount & referral code engine"],
+      ["[ ]","Monetization — Trial vs full feature gating"],
+      ["[ ]","Monetization — Stripe/PayPal integration"],
       // 13. Infrastructure & Security Module (5)
-      ["[ ]", "Infrastructure & Security — Fullscreen + tab-switch lockdown during tests"],
-      ["[ ]", "Infrastructure & Security — Email & phone verification"],
-      ["[ ]", "Infrastructure & Security — GDPR-compliant data storage"],
-      ["[ ]", "Infrastructure & Security — AI plagiarism checker"],
-      ["[ ]", "Infrastructure & Security — Data export for review/history"],
+      ["[ ]","Infrastructure & Security — Fullscreen + tab-switch lockdown during tests"],
+      ["[ ]","Infrastructure & Security — Email & phone verification"],
+      ["[ ]","Infrastructure & Security — GDPR-compliant data storage"],
+      ["[ ]","Infrastructure & Security — AI plagiarism checker"],
+      ["[ ]","Infrastructure & Security — Data export for review/history"],
       // 14. Design System & UI (8)
-      ["[x]", "Design System & UI — Color tokens"],
-      ["[x]", "Design System & UI — Radius, spacing, typography tokens"],
-      ["[x]", "Design System & UI — DS primitives: Button, Card, Container, Badge, Ribbon, Input, Alert, NavLink, SocialIconLink, GradientText, StreakIndicator"],
-      ["[ ]", "Design System & UI — DS form components: Select, Checkbox, Radio, Toggle"],
-      ["[ ]", "Design System & UI — Toast/Notification service"],
-      ["[ ]", "Design System & UI — Storybook for DS components"],
-      ["[ ]", "Design System & UI — Icon optimization (Lucide/FA)"],
-      ["[ ]", "Design System & UI — Seasonal theming presets"],
-      // 15. Deployment & Optimization (5)
-      ["[ ]", "Deployment & Optimization — Client-only for time/random/localStorage components"],
-      ["[ ]", "Deployment & Optimization — Image/SVG optimization"],
-      ["[ ]", "Deployment & Optimization — SEO pass + structured data"],
-      ["[ ]", "Deployment & Optimization — Accessibility audit (WCAG AA)"],
-      ["[ ]", "Deployment & Optimization — Final performance QA"]
+      ["[x]","Design System & UI — Color tokens"],
+      ["[x]","Design System & UI — Radius, spacing, typography tokens"],
+      ["[x]","Design System & UI — DS primitives: Button, Card, Container, Badge, Ribbon, Input, Alert, NavLink, SocialIconLink, GradientText, StreakIndicator"],
+      ["[ ]","Design System & UI — DS form components: Select, Checkbox, Radio, Toggle"],
+      ["[ ]","Design System & UI — Toast/Notification service"],
+      ["[ ]","Design System & UI — Storybook for DS components"],
+      ["[ ]","Design System & UI — Icon optimization (Lucide/FA)"],
+      ["[ ]","Design System & UI — Seasonal theming presets"]
     ];
 
-    // ------- DEV GUIDES (auto-fill into "Developer summary" column for Phase-1 priorities) -------
-    const devGuides = {
-      // User
-      "User Module — Role-based access (student, teacher, admin)":
-        "Supabase: add enum user_role + column on profiles; write RLS per role. In app, centralize guards in lib/routeAccess.ts and redirect unauthorized routes.",
-      "User Module — Daily streak & study calendar":
-        "Table user_streaks(user_id,last_active,count). On valid activity: if last_active < today, increment else keep. Show chip with StreakIndicator in header.",
-      "User Module — Saved tests, bookmarked content":
-        "Table user_saves(user_id,entity_type,entity_id). API /api/saves/toggle (auth). Render save button; show count on cards.",
-      // Listening
-      "Listening Module — Band scoring & answer review":
-        "Create listening_attempts + listening_answers. POST /api/listening/submit -> compare with key, store per-Q correctness, compute band; redirect to /listening/review/[attemptId].",
-      "Listening Module — Highlight correct vs user answer":
-        "In review screen, render each Q: user vs correct; add .correct/.wrong classes and summary counts.",
-      "Listening Module — Real-time answer input":
-        "Auto-save input on blur/change to listening_answers; debounce 400ms; disable seek during active section.",
-      "Listening Module — Question types: MCQ, gap-fill, matching":
-        "Normalize schema (type, options jsonb, answer). Renderers per type; validate before submit.",
-      // Reading
-      "Reading Module — Support for TF/NG, Matching, MCQ, etc.":
-        "Unified renderer with strict types; keyboard support; persist answers in reading_answers; server scoring on submit.",
-      "Reading Module — AI answer explanation on review":
-        "POST /api/reading/explain with passage chunk + Q + key; return 2–3 line rationale; cache by attempt+q.",
-      // Writing
-      "AI Evaluation Module — AI re-evaluation option":
-        "POST /api/writing/reevaluate {attemptId, mode, focus[]}; store revision row; UI shows delta vs previous.",
-      // Mock tests
-      "Mock Test Module — Full-length IELTS mock tests (timed)":
-        "mock_attempts + mock_answers; per-section timer; fullscreen prompt; auto-save every 10s and on nav.",
-      "Mock Test Module — Section-wise practice tests (Listening, Reading, Writing, Speaking)":
-        "Reuse per-module pages; wrap in test shell to pass attemptId and collect results.",
-      "Mock Test Module — Band score simulation":
-        "Aggregate sub-scores using IELTS scale; store final band + breakdown; summary screen + export.",
-      "Mock Test Module — Real-time test timer & tab-switch detection":
-        "Use Page Visibility API; warn on blur; pause only if rules allow; log violations.",
-      "Mock Test Module — Auto-save test state":
-        "Local snapshot + server upsert; recover draft on reload by attemptId.",
-      // Performance
-      "Performance & Analytics — Skill-wise band progression":
-        "SQL view aggregating last N attempts per skill; API /api/performance/summary; small chart of trend.",
-      "Performance & Analytics — Weakness detection & suggestions":
-        "Heuristics on per-type accuracy; map to study tips; surface top 3 weaknesses."
-    };
+    // ---------- NEW: Placement module (top of list, prefilled) ----------
+    const placementPrefill = [
+      {
+        mark:"[~]",
+        item:"Placement — Quick 8‑item triage (2 per skill)",
+        estimate: todayISO,
+        completion:"",
+        dev:`Pages Router + DS: add <code>pages/placement/index.tsx</code> (landing) and <code>pages/placement/run.tsx</code> (runner). One item UI at a time (MCQ/short).`,
+        deploy:`Route link from Home “Start placement”. Validate dark/light.`
+      },
+      {
+        mark:"[ ]",
+        item:"Placement — Server scoring API",
+        estimate: todayISO,
+        completion:"",
+        dev:`Create <code>/api/placement/start</code> to issue items; <code>/api/placement/submit</code> to score. Replace rule‑based with AI later.`,
+        deploy:`Smoke test with sample answers; no DB required for MVP.`
+      },
+      {
+        mark:"[ ]",
+        item:"Placement — Persist attempt in Supabase",
+        estimate:"",
+        completion:"",
+        dev:`Tables: <code>placement_attempts</code>, <code>placement_answers</code>. Store per‑skill band + overall.`,
+        deploy:`Write server with RLS; dashboard reads latest attempt.`
+      },
+      {
+        mark:"[ ]",
+        item:"Placement — Personalized study plan",
+        estimate:"",
+        completion:"",
+        dev:`Generate plan from bands; push user to <code>/dashboard</code> with first tasks queued for each IELTS module.`,
+        deploy:`Track plan id; soft‑gate features by tier.`
+      }
+    ];
 
-    // ------- PRIORITY ESTIMATE PLAN (Estimated = expected completion date) -------
-    const estimateOffsets = {
-      // Week 1: User + Speaking polish
-      "User Module — Role-based access (student, teacher, admin)": 3,
-      "User Module — Daily streak & study calendar": 5,
-      "User Module — Saved tests, bookmarked content": 7,
-      // Week 2: Listening + Reading essentials
-      "Listening Module — Band scoring & answer review": 10,
-      "Listening Module — Highlight correct vs user answer": 11,
-      "Listening Module — Real-time answer input": 12,
-      "Listening Module — Question types: MCQ, gap-fill, matching": 13,
-      "Reading Module — Support for TF/NG, Matching, MCQ, etc.": 13,
-      "Reading Module — AI answer explanation on review": 14,
-      // Week 3: Mock Tests + Writing re-eval
-      "Mock Test Module — Full-length IELTS mock tests (timed)": 17,
-      "Mock Test Module — Section-wise practice tests (Listening, Reading, Writing, Speaking)": 18,
-      "Mock Test Module — Band score simulation": 19,
-      "Mock Test Module — Real-time test timer & tab-switch detection": 20,
-      "Mock Test Module — Auto-save test state": 21,
-      "AI Evaluation Module — AI re-evaluation option": 21,
-      // Week 4: Basic Performance/Analytics
-      "Performance & Analytics — Skill-wise band progression": 24,
-      "Performance & Analytics — Weakness detection & suggestions": 26
-    };
+    // ---------- Build unified tasks array of objects ----------
+    const tasks = [
+      ...placementPrefill,
+      ...baseItems.map(([mark,item]) => ({
+        mark, item, estimate:"", completion:"", dev:"", deploy:""
+      }))
+    ];
 
-    // ------- HELPERS ----------
+    // ---------- RENDER ----------
     const tbody = document.getElementById('tbody');
-    const filter = document.getElementById('filter');
-    const resetBtn = document.getElementById('reset');
-    const dateFilter = document.getElementById('dateFilter');
-    const dateField = document.getElementById('dateField');
-    const todayBtn = document.getElementById('todayBtn');
 
-    function todayString(){
-      const d = new Date();
-      const y = d.getFullYear();
-      const m = String(d.getMonth()+1).padStart(2,'0');
-      const day = String(d.getDate()).padStart(2,'0');
-      return `${y}-${m}-${day}`;
-    }
-    function addDays(base, n){
-      const d = new Date(base);
-      d.setDate(d.getDate()+n);
-      const y = d.getFullYear();
-      const m = String(d.getMonth()+1).padStart(2,'0');
-      const day = String(d.getDate()).padStart(2,'0');
-      return `${y}-${m}-${day}`;
-    }
-    const statusMap = { "[x]":"completed", "[~]":"inprogress", "[ ]":"notstarted" };
-    function pillClass(s){ return {completed:"completed",inprogress:"inprogress",notstarted:"notstarted"}[s]||"notstarted"; }
-
-    // ------- RENDER ----------
     function render(){
       tbody.innerHTML = "";
-      const today = todayString();
-
       tasks.forEach((t, idx) => {
-        const mark = statusMap[t[0]] || "notstarted";
-        const title = t[1];
+        const status = statusMap[t.mark] || "notstarted";
         const tr = document.createElement('tr');
-        tr.className = "row";
-        tr.dataset.status = mark;
-
-        const estimated = estimateOffsets[title] != null ? addDays(today, estimateOffsets[title]) : "";
-        const guide = devGuides[title] || "";
+        tr.dataset.status = status;
 
         tr.innerHTML = `
-          <td class="nowrap">${idx+1}</td>
-          <td><span class="pill ${pillClass(mark)}">${t[0]}</span></td>
-          <td>${title}</td>
-          <td class="muted sum" contenteditable="true" spellcheck="true">${guide}</td>
-          <td class="nowrap"><input class="date-est" type="date" value="${estimated}" /></td>
-          <td class="nowrap"><input class="date-comp" type="date" /></td>
+          <td class="nowrap col-n">${idx+1}</td>
+          <td class="col-mark"><span class="pill ${pillClass(status)}">${t.mark}</span></td>
+          <td class="col-item">${t.item}</td>
+          <td class="col-est"><input type="date" value="${t.estimate||""}" /></td>
+          <td class="col-comp"><input type="date" value="${t.completion||""}" /></td>
+          <td class="col-dev muted sum" contenteditable="true" spellcheck="true">${t.dev||""}</td>
+          <td class="col-deploy muted sum" contenteditable="true" spellcheck="true">${t.deploy||""}</td>
         `;
         tbody.appendChild(tr);
       });
       updateStats();
+      applyFilters();
     }
 
-    // ------- FILTER (Status + Date on Estimated/Completion) ----------
-    function applyFilter(){
-      const val = filter.value;
-      const chosenDate = dateFilter.value;
-      const field = dateField.value; // 'estimated' | 'completion'
-      const rows = tbody.querySelectorAll('tr');
+    // ---------- FILTERS ----------
+    const statusFilter = document.getElementById('statusFilter');
+    const dateFilter = document.getElementById('dateFilter');
+    const dateMode = document.getElementById('dateMode');
+    const resetBtn = document.getElementById('reset');
 
+    function applyFilters(){
+      const sVal = statusFilter.value;
+      const dVal = dateFilter.value;
+      const mVal = dateMode.value;
+
+      const rows = tbody.querySelectorAll('tr');
       rows.forEach(r => {
         const st = r.dataset.status;
-        let ok = true;
+        let show = true;
 
-        if (val === "completed") ok = st === "completed";
-        else if (val === "inprogress") ok = st === "inprogress";
-        else if (val === "notstarted") ok = st === "notstarted";
-        else if (val === "incomplete") ok = st !== "completed";
+        // Status filter
+        if (sVal === "completed") show = st === "completed";
+        else if (sVal === "inprogress") show = st === "inprogress";
+        else if (sVal === "notstarted") show = st === "notstarted";
+        else if (sVal === "incomplete") show = st !== "completed";
 
-        if (ok && chosenDate){
-          const sel = field === 'estimated' ? '.date-est' : '.date-comp';
-          const inp = r.querySelector(sel);
-          const v = inp ? inp.value : '';
-          if (v !== chosenDate) ok = false;
+        // Date filter
+        if (show && dVal){
+          const est = r.querySelector('.col-est input[type="date"]').value;
+          const comp = r.querySelector('.col-comp input[type="date"]').value;
+          if (mVal === "estimate") show = est === dVal;
+          else if (mVal === "completion") show = comp === dVal;
+          else show = (est === dVal) || (comp === dVal);
         }
 
-        r.style.display = ok ? "" : "none";
+        r.style.display = show ? "" : "none";
       });
     }
 
-    // ------- STATS ----------
+    statusFilter.addEventListener('change', applyFilters);
+    dateFilter.addEventListener('change', applyFilters);
+    dateMode.addEventListener('change', applyFilters);
+    resetBtn.addEventListener('click', () => {
+      statusFilter.value = "all";
+      dateFilter.value = "";
+      dateMode.value = "either";
+      applyFilters();
+    });
+
+    // ---------- STATS ----------
     function updateStats(){
       const rows = [...tbody.querySelectorAll('tr')];
       const total = rows.length;
@@ -365,27 +328,8 @@
       document.getElementById('tTodo').textContent  = todo;
     }
 
-    // ------- INIT & EVENTS -------
-    document.getElementById('today').textContent = todayString();
+    // init
     render();
-    applyFilter();
-
-    filter.addEventListener('change', applyFilter);
-    dateFilter.addEventListener('change', applyFilter);
-    dateField.addEventListener('change', applyFilter);
-
-    todayBtn.addEventListener('click', () => {
-      dateFilter.value = todayString();
-      dateField.value = 'estimated';
-      applyFilter();
-    });
-
-    resetBtn.addEventListener('click', () => {
-      filter.value="all";
-      dateFilter.value="";
-      dateField.value="estimated";
-      applyFilter();
-    });
   </script>
 </body>
 </html>

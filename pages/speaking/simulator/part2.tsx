@@ -21,6 +21,35 @@ const Recorder = dynamic(async () => {
 
 type Step = 'intro'|'prep'|'record'|'review';
 
+/* ---------- Bearer auth helper ---------- */
+async function getAccessToken(): Promise<string | null> {
+  if (typeof window === 'undefined') return null;
+  try {
+    const mod: any = await import('@/lib/supabaseBrowser');
+    const sb = mod?.default ?? mod?.supabaseBrowser ?? mod?.supabase ?? mod?.client ?? null;
+    if (sb?.auth?.getSession) {
+      const { data } = await sb.auth.getSession();
+      return data?.session?.access_token ?? null;
+    }
+  } catch {}
+  try {
+    const mod: any = await import('@/lib/supabaseClient');
+    const sb = mod?.default ?? mod?.supabase ?? mod?.client ?? null;
+    if (sb?.auth?.getSession) {
+      const { data } = await sb.auth.getSession();
+      return data?.session?.access_token ?? null;
+    }
+  } catch {}
+  return null;
+}
+async function authedFetch(input: RequestInfo | URL, init: RequestInit = {}) {
+  const headers = new Headers(init.headers || {});
+  if (!headers.has('Content-Type') && init.body) headers.set('Content-Type', 'application/json');
+  const token = await getAccessToken();
+  if (token && !headers.has('Authorization')) headers.set('Authorization', `Bearer ${token}`);
+  return fetch(input, { ...init, headers, credentials: 'include' });
+}
+
 export default function SpeakingSimPart2() {
   const [accent, setAccent] = useState<Accent>('UK');
   const [step, setStep] = useState<Step>('intro');
@@ -78,10 +107,12 @@ export default function SpeakingSimPart2() {
   const onSubmit = useCallback(async (blob: Blob, durationMs: number) => {
     try {
       setBusy(true);
-      const { attemptId } = await uploadSpeakingBlob(blob, 'p2', { durationMs, prompt, accent });
-      const { authHeaders } = await import('@/lib/supabaseBrowser');
-      const headers = await authHeaders({ 'Content-Type': 'application/json' } as any);
-      const r = await fetch('/api/speaking/evaluate', { method: 'POST', headers, body: JSON.stringify({ attemptId }) });
+      const meta = { durationMs, prompt, accent };
+      const { attemptId } = await uploadSpeakingBlob(blob, 'p2', meta);
+      const r = await authedFetch('/api/speaking/evaluate', {
+        method: 'POST',
+        body: JSON.stringify({ attemptId }),
+      });
       const data = await r.json();
       if (!r.ok) throw new Error(data.error || 'Evaluation failed');
       setResult(data);
@@ -106,7 +137,7 @@ export default function SpeakingSimPart2() {
             <Badge variant="info" className="mb-3">Settings</Badge>
             <AccentPicker value={accent} onChange={setAccent} />
             <div className="mt-4">
-              <Button onClick={() => prompt && tts.speak(prompt, { accent })} variant="secondary">Speak task again</Button>
+              <Button onClick={() => prompt && useTTS({ accent }).speak(prompt, { accent })} variant="secondary">Speak task again</Button>
             </div>
           </Card>
 

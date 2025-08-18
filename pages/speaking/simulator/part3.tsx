@@ -21,6 +21,35 @@ const Recorder = dynamic(async () => {
 
 type Step = 'intro'|'record'|'review';
 
+/* ---------- Bearer auth helper ---------- */
+async function getAccessToken(): Promise<string | null> {
+  if (typeof window === 'undefined') return null;
+  try {
+    const mod: any = await import('@/lib/supabaseBrowser');
+    const sb = mod?.default ?? mod?.supabaseBrowser ?? mod?.supabase ?? mod?.client ?? null;
+    if (sb?.auth?.getSession) {
+      const { data } = await sb.auth.getSession();
+      return data?.session?.access_token ?? null;
+    }
+  } catch {}
+  try {
+    const mod: any = await import('@/lib/supabaseClient');
+    const sb = mod?.default ?? mod?.supabase ?? mod?.client ?? null;
+    if (sb?.auth?.getSession) {
+      const { data } = await sb.auth.getSession();
+      return data?.session?.access_token ?? null;
+    }
+  } catch {}
+  return null;
+}
+async function authedFetch(input: RequestInfo | URL, init: RequestInit = {}) {
+  const headers = new Headers(init.headers || {});
+  if (!headers.has('Content-Type') && init.body) headers.set('Content-Type', 'application/json');
+  const token = await getAccessToken();
+  if (token && !headers.has('Authorization')) headers.set('Authorization', `Bearer ${token}`);
+  return fetch(input, { ...init, headers, credentials: 'include' });
+}
+
 export default function SpeakingSimPart3() {
   const [accent, setAccent] = useState<Accent>('UK');
   const [step, setStep] = useState<Step>('intro');
@@ -65,10 +94,12 @@ export default function SpeakingSimPart3() {
   const onComplete = useCallback(async (blob: Blob, durationMs: number) => {
     try {
       setBusy(true);
-      const { attemptId } = await uploadSpeakingBlob(blob, 'p3', { durationMs, prompt, accent });
-      const { authHeaders } = await import('@/lib/supabaseBrowser');
-      const headers = await authHeaders({ 'Content-Type': 'application/json' } as any);
-      const r = await fetch('/api/speaking/evaluate', { method: 'POST', headers, body: JSON.stringify({ attemptId }) });
+      const meta = { durationMs, prompt, accent };
+      const { attemptId } = await uploadSpeakingBlob(blob, 'p3', meta);
+      const r = await authedFetch('/api/speaking/evaluate', {
+        method: 'POST',
+        body: JSON.stringify({ attemptId }),
+      });
       const data = await r.json();
       if (!r.ok) throw new Error(data.error || 'Evaluation failed');
       setResult(data);
@@ -99,72 +130,72 @@ export default function SpeakingSimPart3() {
             </div>
           </Card>
 
-          <Card className="p-5 md:col-span-2">
-            {step === 'intro' && (
-              <div>
-                <p className="text-grayish">Deeper questions linked to your Part 2 response.</p>
-                <div className="mt-4"><Button onClick={start}>Start Part 3</Button></div>
-              </div>
-            )}
+        <Card className="p-5 md:col-span-2">
+          {step === 'intro' && (
+            <div>
+              <p className="text-grayish">Deeper questions linked to your Part 2 response.</p>
+              <div className="mt-4"><Button onClick={start}>Start Part 3</Button></div>
+            </div>
+          )}
 
-            {step === 'record' && (
-              <div>
-                <div className="mb-3">
-                  <div className="text-small opacity-80">Questions</div>
-                  <div className="p-3.5 rounded-ds border border-gray-200 dark:border-white/10 whitespace-pre-line">
-                    {prompt}
+          {step === 'record' && (
+            <div>
+              <div className="mb-3">
+                <div className="text-small opacity-80">Questions</div>
+                <div className="p-3.5 rounded-ds border border-gray-200 dark:border-white/10 whitespace-pre-line">
+                  {prompt}
+                </div>
+              </div>
+
+              {supported ? (
+                <Recorder maxSeconds={120} onComplete={onComplete} />
+              ) : (
+                <div className="rounded-ds border border-red-200/70 dark:border-red-400/30 p-4">
+                  <p className="font-medium text-red-600 dark:text-red-400">Microphone not available.</p>
+                  <ul className="list-disc pl-5 text-sm mt-2 opacity-80">
+                    <li>Allow mic access for <code>localhost</code>.</li>
+                    <li>Browser settings → Microphone → Allow.</li>
+                    <li>Disable Brave Shields (if using Brave).</li>
+                  </ul>
+                  <div className="mt-3">
+                    <Button variant="secondary" onClick={() => location.reload()}>Retry</Button>
                   </div>
                 </div>
+              )}
+            </div>
+          )}
 
-                {supported ? (
-                  <Recorder maxSeconds={120} onComplete={onComplete} />
-                ) : (
-                  <div className="rounded-ds border border-red-200/70 dark:border-red-400/30 p-4">
-                    <p className="font-medium text-red-600 dark:text-red-400">Microphone not available.</p>
-                    <ul className="list-disc pl-5 text-sm mt-2 opacity-80">
-                      <li>Allow mic access for <code>localhost</code>.</li>
-                      <li>Browser settings → Microphone → Allow.</li>
-                      <li>Disable Brave Shields (if using Brave).</li>
-                    </ul>
-                    <div className="mt-3">
-                      <Button variant="secondary" onClick={() => location.reload()}>Retry</Button>
-                    </div>
-                  </div>
-                )}
+          {step === 'review' && result && (
+            <div>
+              <Alert variant="success" title="Evaluation ready">
+                Overall band: <b>{result.band_overall}</b>
+              </Alert>
+              <div className="grid md:grid-cols-2 gap-4 mt-4">
+                <Card className="p-4">
+                  <div className="font-semibold mb-2">Band breakdown</div>
+                  <ul className="list-disc pl-5">
+                    <li>Fluency: {result.bands.fluency}</li>
+                    <li>Coherence: {result.bands.coherence}</li>
+                    <li>Lexical: {result.bands.lexical}</li>
+                    <li>Grammar: {result.bands.grammar}</li>
+                    <li>Pronunciation: {result.bands.pronunciation}</li>
+                  </ul>
+                </Card>
+                <Card className="p-4">
+                  <div className="font-semibold mb-2">Tips</div>
+                  <ul className="list-disc pl-5">{result.tips.map((t:string,i:number)=><li key={i}>{t}</li>)}</ul>
+                </Card>
               </div>
-            )}
-
-            {step === 'review' && result && (
-              <div>
-                <Alert variant="success" title="Evaluation ready">
-                  Overall band: <b>{result.band_overall}</b>
-                </Alert>
-                <div className="grid md:grid-cols-2 gap-4 mt-4">
-                  <Card className="p-4">
-                    <div className="font-semibold mb-2">Band breakdown</div>
-                    <ul className="list-disc pl-5">
-                      <li>Fluency: {result.bands.fluency}</li>
-                      <li>Coherence: {result.bands.coherence}</li>
-                      <li>Lexical: {result.bands.lexical}</li>
-                      <li>Grammar: {result.bands.grammar}</li>
-                      <li>Pronunciation: {result.bands.pronunciation}</li>
-                    </ul>
-                  </Card>
-                  <Card className="p-4">
-                    <div className="font-semibold mb-2">Tips</div>
-                    <ul className="list-disc pl-5">{result.tips.map((t:string,i:number)=><li key={i}>{t}</li>)}</ul>
-                  </Card>
-                </div>
-                <div className="mt-4">
-                  <Link href="/speaking/history">
-                    <Button variant="secondary">View history</Button>
-                  </Link>
-                </div>
+              <div className="mt-4">
+                <Link href="/speaking/history">
+                  <Button variant="secondary">View history</Button>
+                </Link>
               </div>
-            )}
+            </div>
+          )}
 
-            {error && <Alert variant="error" title="Something went wrong">{error}</Alert>}
-          </Card>
+          {error && <Alert variant="error" title="Something went wrong">{error}</Alert>}
+        </Card>
         </div>
       </Container>
     </section>
