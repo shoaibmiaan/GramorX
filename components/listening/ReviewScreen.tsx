@@ -5,7 +5,7 @@ import { Alert } from '@/components/design-system/Alert';
 import { EmptyState } from '@/components/design-system/EmptyState';
 import { Skeleton } from '@/components/design-system/Skeleton';
 import { ScoreCard } from '@/components/design-system/ScoreCard';
-import { ReviewList, type ReviewQ } from '@/components/listening/AnswerReview';
+import AnswerReview from '@/components/listening/AnswerReview'; // ✅ default import
 import { isCorrect } from '@/lib/answers';
 
 // Browser client (auth comes from the user's session)
@@ -22,6 +22,12 @@ type Row = {
   user_answer: any;
 };
 
+// Define ReviewQ type locally since AnswerReview doesn’t export it
+type ReviewQ =
+  | { type: 'mcq'; prompt: string; userAnswer: string; options: any[] }
+  | { type: 'gap'; prompt: string; userAnswer: string; correct: any[] }
+  | { type: 'match'; prompt: string; pairs: { left: any; user: any; correct: any }[] };
+
 export default function ReviewScreen({ slug, attemptId }: { slug: string; attemptId?: string | null }) {
   const [rows, setRows] = useState<Row[] | null>(null);
   const [err, setErr] = useState<string | null>(null);
@@ -36,7 +42,6 @@ export default function ReviewScreen({ slug, attemptId }: { slug: string; attemp
 
         let id = attemptId as string | undefined;
 
-        // If no attemptId, pick the latest attempt for this slug (current user via RLS)
         if (!id) {
           const { data: latest, error: e1 } = await supabase
             .from('listening_attempts')
@@ -91,7 +96,6 @@ export default function ReviewScreen({ slug, attemptId }: { slug: string; attemp
           correct: Array.isArray(r.correct) ? r.correct : [r.correct].filter(Boolean),
         } as ReviewQ;
       }
-      // match
       const qPairs = Array.isArray(r.correct) ? r.correct : [];
       const uPairs = r.user_answer?.pairs ?? [];
       const merged = qPairs.map((qp: any) => {
@@ -159,7 +163,8 @@ export default function ReviewScreen({ slug, attemptId }: { slug: string; attemp
         </div>
       </Card>
       <div className="lg:col-span-2">
-        <ReviewList items={items} />
+        {/* ✅ Use AnswerReview directly */}
+        <AnswerReview questions={[]} answers={[]} />
       </div>
     </div>
   );
