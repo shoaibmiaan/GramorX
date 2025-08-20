@@ -5,6 +5,7 @@ import * as StreakLib from '@/lib/streak';
 
 type Props = {
   className?: string;
+  value?: number; // ✅ allow external streak value
 };
 
 // Safe helpers (work even if lib exports are misconfigured)
@@ -19,12 +20,15 @@ const safeGetLocalDayKey = (d?: Date) => {
   }).format(d ?? new Date());
 };
 
-export const StreakIndicator: React.FC<Props> = ({ className = '' }) => {
+export const StreakIndicator: React.FC<Props> = ({ className = '', value }) => {
   const { current, lastDayKey, completeToday, loading } = useStreak();
 
   const [justCelebrated, setJustCelebrated] = useState(false);
   const todayKey = useMemo(() => safeGetLocalDayKey(), []);
   const autoTriedRef = useRef(false);
+
+  // Decide which streak value to use (prop > hook)
+  const streakValue = value !== undefined ? value : current;
 
   // Auto-claim once per mount if not yet claimed today
   useEffect(() => {
@@ -38,12 +42,12 @@ export const StreakIndicator: React.FC<Props> = ({ className = '' }) => {
 
   // subtle glow on change
   useEffect(() => {
-    if (!loading && current >= 0) {
+    if (!loading && streakValue >= 0) {
       setJustCelebrated(true);
       const t = setTimeout(() => setJustCelebrated(false), 1000);
       return () => clearTimeout(t);
     }
-  }, [current, loading]);
+  }, [streakValue, loading]);
 
   return (
     <div
@@ -54,11 +58,11 @@ export const StreakIndicator: React.FC<Props> = ({ className = '' }) => {
         justCelebrated ? 'shadow-[0_0_0_6px_rgba(0,187,249,0.25)] transition-shadow' : '',
         className,
       ].join(' ')}
-      aria-label={`Current streak ${current} days`}
-      title={`Streak: ${current}`}
+      aria-label={`Current streak ${streakValue} days`}
+      title={`Streak: ${streakValue}`}
     >
       <i className="fas fa-fire" aria-hidden="true" />
-      <span className="font-semibold tabular-nums">{Math.max(current, 0)}</span>
+      <span className="font-semibold tabular-nums">{Math.max(streakValue, 0)}</span>
     </div>
   );
 };
