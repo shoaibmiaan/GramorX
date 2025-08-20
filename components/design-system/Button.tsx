@@ -1,5 +1,6 @@
 // components/design-system/Button.tsx
-import React, { ReactNode } from 'react';
+import React from 'react';
+import type { ReactNode } from 'react';
 
 type ButtonVariant = 'primary' | 'secondary' | 'accent';
 
@@ -21,8 +22,14 @@ export const Button: React.FC<ButtonProps> = ({
   disabled = false,
 }) => {
   const classes = ['btn', `btn-${variant}`, className].filter(Boolean).join(' ');
+
   return (
-    <button type={type} onClick={onClick} disabled={disabled} className={classes}>
+    <button
+      type={type}
+      onClick={onClick}
+      disabled={disabled}
+      className={classes}
+    >
       {children}
     </button>
   );
