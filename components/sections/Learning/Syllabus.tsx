@@ -50,7 +50,9 @@ export const Syllabus: React.FC<Props> = ({ lessons, userProgress, courseSlug })
                 as="a"
                 href={href}
                 aria-disabled={!unlocked}
-                onClick={(e) => { if (!unlocked) e.preventDefault(); }}
+                onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
+                  if (!unlocked) e.preventDefault();
+                }}
                 variant={unlocked ? 'primary' : 'secondary'}
                 className="rounded-ds-xl"
               >
