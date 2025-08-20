@@ -1,36 +1,34 @@
 // components/design-system/Button.tsx
-import React from 'react';
-import type { ReactNode } from 'react';
+import React from "react";
+import type {
+  ReactNode,
+  ElementType,
+  ComponentPropsWithoutRef,
+} from "react";
 
-type ButtonVariant = 'primary' | 'secondary' | 'accent';
+type ButtonVariant = "primary" | "secondary" | "accent";
 
-interface ButtonProps {
+// Polymorphic Button props
+type ButtonProps<T extends ElementType> = {
+  as?: T;
   children: ReactNode;
   variant?: ButtonVariant;
   className?: string;
-  onClick?: () => void;
-  type?: 'button' | 'submit' | 'reset';
-  disabled?: boolean;
-}
+} & Omit<ComponentPropsWithoutRef<T>, "as" | "children" | "className">;
 
-export const Button: React.FC<ButtonProps> = ({
+export const Button = <T extends ElementType = "button">({
+  as,
   children,
-  variant = 'primary',
-  className = '',
-  onClick,
-  type = 'button',
-  disabled = false,
-}) => {
-  const classes = ['btn', `btn-${variant}`, className].filter(Boolean).join(' ');
+  variant = "primary",
+  className = "",
+  ...rest
+}: ButtonProps<T>) => {
+  const Component = as || "button";
+  const classes = ["btn", `btn-${variant}`, className].filter(Boolean).join(" ");
 
   return (
-    <button
-      type={type}
-      onClick={onClick}
-      disabled={disabled}
-      className={classes}
-    >
+    <Component className={classes} {...rest}>
       {children}
-    </button>
+    </Component>
   );
 };

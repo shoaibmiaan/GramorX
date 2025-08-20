@@ -30,7 +30,11 @@ export type ShortQuestion = {
   prompt: string;
 };
 
-export type Question = TFNGQuestion | MCQQuestion | MatchingQuestion | ShortQuestion;
+export type Question =
+  | TFNGQuestion
+  | MCQQuestion
+  | MatchingQuestion
+  | ShortQuestion;
 
 type Props = {
   index?: number;
@@ -49,7 +53,12 @@ type Props = {
  * - Persists answer via useReadingAnswers(slug)
  * - Keyboard accessible (Enter/Space toggles; Tab order natural)
  */
-export const QuestionRenderer: React.FC<Props> = ({ index, question, slug, onChange }) => {
+export const QuestionRenderer: React.FC<Props> = ({
+  index,
+  question,
+  slug,
+  onChange,
+}) => {
   const store: any = useReadingAnswers(slug); // tolerate different hook shapes
   const initialFromStore =
     (store?.answer && store.answer(question.id)) ??
@@ -71,7 +80,8 @@ export const QuestionRenderer: React.FC<Props> = ({ index, question, slug, onCha
     if (store?.setAnswer) store.setAnswer(question.id, v);
     else if (store?.set) store.set(question.id, v);
     else if (store?.update) store.update(question.id, v);
-    else if (store?.setAnswers) store.setAnswers((prev: any) => ({ ...(prev ?? {}), [question.id]: v }));
+    else if (store?.setAnswers)
+      store.setAnswers((prev: any) => ({ ...(prev ?? {}), [question.id]: v }));
     onChange?.(question.id, v);
     // lightweight local fallback so user never loses a selection
     try {
@@ -87,7 +97,11 @@ export const QuestionRenderer: React.FC<Props> = ({ index, question, slug, onCha
     const active = value ?? null;
 
     return (
-      <div className="flex flex-wrap gap-2" role="group" aria-label="True False Not Given">
+      <div
+        className="flex flex-wrap gap-2"
+        role="group"
+        aria-label="True False Not Given"
+      >
         {choices.map((c) => {
           const pressed = active === c;
           return (
@@ -98,7 +112,7 @@ export const QuestionRenderer: React.FC<Props> = ({ index, question, slug, onCha
               className="rounded-ds-xl"
               aria-pressed={pressed}
               onClick={() => commit(c)}
-              onKeyDown={(e) => {
+              onKeyDown={(e: React.KeyboardEvent<HTMLButtonElement>) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
                   commit(c);
@@ -118,7 +132,11 @@ export const QuestionRenderer: React.FC<Props> = ({ index, question, slug, onCha
     const opts = Array.isArray(q.options) ? q.options : [];
 
     return (
-      <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Multiple choice options">
+      <div
+        className="flex flex-wrap gap-2"
+        role="radiogroup"
+        aria-label="Multiple choice options"
+      >
         {opts.map((opt, i) => {
           const pressed = active === opt;
           return (
@@ -129,7 +147,7 @@ export const QuestionRenderer: React.FC<Props> = ({ index, question, slug, onCha
               className="rounded-ds-xl"
               aria-pressed={pressed}
               onClick={() => commit(opt)}
-              onKeyDown={(e) => {
+              onKeyDown={(e: React.KeyboardEvent<HTMLButtonElement>) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
                   commit(opt);
@@ -167,8 +185,16 @@ export const QuestionRenderer: React.FC<Props> = ({ index, question, slug, onCha
           const selectId = `${q.id}-match-${idx}`;
 
           return (
-            <div key={idx} className="grid items-center gap-2 sm:grid-cols-[1fr_minmax(180px,_240px)]">
-              <label htmlFor={selectId} className="text-small opacity-80">{p.left}</label>
+            <div
+              key={idx}
+              className="grid items-center gap-2 sm:grid-cols-[1fr_minmax(180px,_240px)]"
+            >
+              <label
+                htmlFor={selectId}
+                className="text-small opacity-80"
+              >
+                {p.left}
+              </label>
               <select
                 id={selectId}
                 className="rounded-ds border border-gray-200 dark:border-white/10 p-2 bg-white dark:bg-dark"
@@ -199,9 +225,13 @@ export const QuestionRenderer: React.FC<Props> = ({ index, question, slug, onCha
           aria-label="Answer"
           placeholder="Type your answer…"
           value={value ?? ''}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => commit(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            commit(e.target.value)
+          }
         />
-        <p className="text-small opacity-70 mt-2">Tip: one word only unless specified.</p>
+        <p className="text-small opacity-70 mt-2">
+          Tip: one word only unless specified.
+        </p>
       </div>
     );
   }
@@ -209,7 +239,9 @@ export const QuestionRenderer: React.FC<Props> = ({ index, question, slug, onCha
   return (
     <div>
       {index != null && (
-        <div className="text-small text-grayish mb-1">Question {index}</div>
+        <div className="text-small text-grayish mb-1">
+          Question {index}
+        </div>
       )}
       <div className="tight-block mb-4">{question.prompt}</div>
 
