@@ -1,7 +1,7 @@
 // pages/api/speaking/score.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { createClient } from '@supabase/supabase-js';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
-import { env } from '@/env';
 
 type Breakdown = { fluency: number; lexical: number; grammar: number; pronunciation: number };
 
@@ -17,9 +17,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const { attemptId } = req.body as { attemptId: string };
   if (!attemptId) return res.status(400).json({ error: 'Missing attemptId' });
 
-  const url = env.NEXT_PUBLIC_SUPABASE_URL;
-  const anon = env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  const { createClient } = await import('@supabase/supabase-js');
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
   const supabase = createClient(url, anon, {
     global: { headers: { Cookie: req.headers.cookie || '' } },
   });
@@ -52,8 +51,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // ---- 2. Transcribe all audio with Whisper ----
-    const { default: OpenAI } = await import('openai');
-    const openai = new OpenAI({ apiKey: env.OPENAI_API_KEY! });
+    const OpenAI = (await import('openai')).default;
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
     let fullTranscript = '';
 
     for (const audioUrl of signedUrls) {

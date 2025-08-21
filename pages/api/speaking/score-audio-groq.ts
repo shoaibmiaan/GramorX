@@ -40,6 +40,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const { audioBase64, mime, part, promptHint } = parsed.data;
 
+    const Groq = (await import('groq-sdk')).default;
+    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY! });
+
     // 1) write temp file (Groq SDK accepts file streams)
     const buf = Buffer.from(audioBase64, 'base64');
     const ext = mime.includes('mpeg') ? 'mp3' : mime.includes('wav') ? 'wav' : 'webm';

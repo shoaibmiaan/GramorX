@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
 import { z } from 'zod';
 
 const BodySchema = z.object({
@@ -54,7 +55,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   // 1) Auth (user must be logged in)
-  const { createServerSupabaseClient } = await import('@supabase/auth-helpers-nextjs');
   const supabase = createServerSupabaseClient({ req, res });
   const { data: userResp, error: authErr } = await supabase.auth.getUser();
   if (authErr || !userResp?.user) return res.status(401).json({ error: 'Unauthorized' });

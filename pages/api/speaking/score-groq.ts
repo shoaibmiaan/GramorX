@@ -1,7 +1,6 @@
 // pages/api/speaking/score-groq.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { z } from 'zod';
-import { env } from '@/env';
 
 const OutputSchema = z.object({
   fluency: z.number().min(0).max(9),
@@ -48,8 +47,8 @@ Rules
 `;
 
   try {
-    const { default: Groq } = await import('groq-sdk');
-    const groq = new Groq({ apiKey: env.GROQ_API_KEY! });
+    const Groq = (await import('groq-sdk')).default;
+    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY! });
     const completion = await groq.chat.completions.create({
       // Good free-tier model; you can switch to 8B if you hit limits
       model: 'llama-3.1-70b-versatile',
