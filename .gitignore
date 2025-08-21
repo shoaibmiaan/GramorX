@@ -11,3 +11,6 @@ pnpm-debug.log*
 
 .idea
 design-system.zip
+
+GramorX.zip
+*.tsbuildinfo
