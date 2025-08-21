@@ -1,10 +1,11 @@
 // lib/authServer.ts
 import type { NextApiRequest } from 'next';
 import { createClient } from '@supabase/supabase-js';
+import { env } from '@/env';
 
-const URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const SERVICE = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+const URL = env.NEXT_PUBLIC_SUPABASE_URL;
+const ANON = env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const SERVICE = env.SUPABASE_SERVICE_ROLE_KEY || '';
 
 function b64urlToJson(b64: string) {
   const pad = (s:string) => s + '=' * ((4 - (s.length % 4)) % 4);

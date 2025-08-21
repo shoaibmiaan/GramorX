@@ -1,14 +1,14 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import formidable, { File } from 'formidable';
-import fs from 'node:fs/promises';
-import pathMod from 'node:path';
+import type { File } from 'formidable';
 import { supabaseFromRequest } from '@/lib/apiAuth';
+import { env } from '@/env';
 
 export const config = { api: { bodyParser: false, sizeLimit: '25mb' } };
 
-function parseForm(req: NextApiRequest) {
+async function parseForm(req: NextApiRequest) {
+  const formidable = (await import('formidable')).default;
   const form = formidable({ multiples: false, maxFileSize: 25 * 1024 * 1024 });
-  return new Promise<{ fields: formidable.Fields; files: formidable.Files }>((resolve, reject) =>
+  return new Promise<{ fields: any; files: any }>((resolve, reject) =>
     form.parse(req, (err, fields, files) => (err ? reject(err) : resolve({ fields, files })))
   );
 }
@@ -17,9 +17,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const supabase = supabaseFromRequest(req);
-  const bucket = process.env.SPEAKING_BUCKET || 'speaking';
+  const bucket = env.SPEAKING_BUCKET || 'speaking';
 
   try {
+    const fs = await import('node:fs/promises');
+    const pathMod = await import('node:path');
     const { fields, files } = await parseForm(req);
     const attemptId = String(fields.attemptId || '');
     const context = String(fields.context || fields.part || 'p1'); // p1|p2|p3

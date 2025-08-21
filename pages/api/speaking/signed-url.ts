@@ -1,20 +1,6 @@
 // pages/api/speaking/signed-url.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { createClient } from '@supabase/supabase-js';
-
-const URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const SERVICE = process.env.SUPABASE_SERVICE_ROLE_KEY!; // <-- add to env (server only)
-
-// Server client for storage signing + DB auth checks
-const svc = createClient(URL, SERVICE, { auth: { persistSession: false } });
-
-// Helper to get the authed user from cookie or Bearer
-function authClient(req: NextApiRequest) {
-  const headers: Record<string, string> = {};
-  if (req.headers.authorization) headers['Authorization'] = String(req.headers.authorization);
-  return createClient(URL, ANON, { global: { headers }, auth: { persistSession: false } });
-}
+import { env } from '@/env';
 
 // Parse bucket/object from various inputs
 function parseStoragePath(input: string): { bucket: string; object: string } | { alreadySignedUrl: string } {
@@ -57,6 +43,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       res.setHeader('Allow', 'GET, POST');
       return res.status(405).json({ error: 'Method not allowed' });
     }
+
+    const { createClient } = await import('@supabase/supabase-js');
+    const URL = env.NEXT_PUBLIC_SUPABASE_URL;
+    const ANON = env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    const SERVICE = env.SUPABASE_SERVICE_ROLE_KEY!;
+
+    // Server client for storage signing + DB auth checks
+    const svc = createClient(URL, SERVICE, { auth: { persistSession: false } });
+
+    // Helper to get the authed user from cookie or Bearer
+    const authClient = (req: NextApiRequest) => {
+      const headers: Record<string, string> = {};
+      if (req.headers.authorization) headers['Authorization'] = String(req.headers.authorization);
+      return createClient(URL, ANON, { global: { headers }, auth: { persistSession: false } });
+    };
 
     // Inputs
     const body = req.method === 'POST' ? req.body ?? {} : {};
