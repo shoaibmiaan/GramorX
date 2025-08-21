@@ -2,7 +2,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { createClient } from '@supabase/supabase-js';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
-import OpenAI from 'openai';
 
 type Breakdown = { fluency: number; lexical: number; grammar: number; pronunciation: number };
 
@@ -52,6 +51,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // ---- 2. Transcribe all audio with Whisper ----
+    const OpenAI = (await import('openai')).default;
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
     let fullTranscript = '';
 

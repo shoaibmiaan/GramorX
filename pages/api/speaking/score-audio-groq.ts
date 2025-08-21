@@ -1,6 +1,5 @@
 // pages/api/speaking/score-audio-groq.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
-import Groq from 'groq-sdk';
 import { z } from 'zod';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -10,7 +9,6 @@ export const config = {
   api: { bodyParser: { sizeLimit: '25mb' } }, // plenty for short speaking parts
 };
 
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY! });
 
 const ScoreSchema = z.object({
   fluency: z.number().min(0).max(9),
@@ -37,6 +35,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!parsed.success) return res.status(400).json({ error: 'Bad request', issues: parsed.error.issues });
 
     const { audioBase64, mime, part, promptHint } = parsed.data;
+
+    const Groq = (await import('groq-sdk')).default;
+    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY! });
 
     // 1) write temp file (Groq SDK accepts file streams)
     const buf = Buffer.from(audioBase64, 'base64');
