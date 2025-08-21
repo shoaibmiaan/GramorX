@@ -1,3 +1,4 @@
+import { env } from "@/lib/env";
 // pages/api/premium/set-pin.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { createClient } from '@supabase/supabase-js';
@@ -20,8 +21,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   if (!/^\d{4,6}$/.test(String(newPin))) return res.status(400).json({ ok: false, reason: 'INVALID_NEW' });
 
   const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL as string,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string,
+    env.NEXT_PUBLIC_SUPABASE_URL as string,
+    env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string,
     { global: { headers: { Authorization: `Bearer ${token}` } } }
   );
 

@@ -1,3 +1,4 @@
+import { env } from "@/lib/env";
 // pages/api/speaking/partner/review/[attemptId].ts
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { createClient } from '@supabase/supabase-js';
@@ -14,9 +15,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ error: 'Invalid attemptId (must be UUID)' });
   }
 
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const url = env.NEXT_PUBLIC_SUPABASE_URL;
   const key =
-    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+    env.SUPABASE_SERVICE_ROLE_KEY || env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   const supabase = createClient(url, key, { auth: { persistSession: false } });
 
   // Fetch latest feedback and transcript for this attempt

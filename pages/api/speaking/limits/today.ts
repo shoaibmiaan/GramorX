@@ -1,6 +1,7 @@
+import { env } from "@/lib/env";
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getUserServer } from '@/lib/authServer';
-const DAILY_LIMIT = parseInt(process.env.SPEAKING_DAILY_LIMIT || '5', 10);
+const DAILY_LIMIT = parseInt(env.SPEAKING_DAILY_LIMIT || '5', 10);
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { user, supabase } = await getUserServer(req, res);

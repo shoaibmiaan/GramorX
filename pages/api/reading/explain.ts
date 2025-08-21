@@ -1,3 +1,4 @@
+import { env } from "@/lib/env";
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getAttempt } from './reading/submit';
 
@@ -35,7 +36,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       `Explain briefly (2–4 lines) why the correct answer is right. Focus on evidence from the passage; avoid revealing extra info not supported by it.`
     ].filter(Boolean).join('\n\n');
 
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = env.GEMINI_API_KEY;
     if (!apiKey) return res.status(500).json({ error: 'GEMINI_API_KEY missing in env' });
 
     const r = await fetch(`${GEMINI_ENDPOINT}?key=${apiKey}`, {

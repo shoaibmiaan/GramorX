@@ -1,3 +1,4 @@
+import { env } from "@/lib/env";
 // pages/api/speaking/score-audio-groq.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
 import Groq from 'groq-sdk';
@@ -10,7 +11,7 @@ export const config = {
   api: { bodyParser: { sizeLimit: '25mb' } }, // plenty for short speaking parts
 };
 
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY! });
+const groq = new Groq({ apiKey: env.GROQ_API_KEY });
 
 const ScoreSchema = z.object({
   fluency: z.number().min(0).max(9),
@@ -30,7 +31,7 @@ const ReqSchema = z.object({
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
-  if (!process.env.GROQ_API_KEY) return res.status(500).json({ error: 'GROQ_API_KEY missing' });
+  if (!env.GROQ_API_KEY) return res.status(500).json({ error: 'GROQ_API_KEY missing' });
 
   try {
     const parsed = ReqSchema.safeParse(req.body);

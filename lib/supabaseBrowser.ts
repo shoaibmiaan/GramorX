@@ -1,9 +1,10 @@
+import { env } from "@/lib/env";
 // lib/supabaseBrowser.ts
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/types/database';
 
-const url  = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const url  = env.NEXT_PUBLIC_SUPABASE_URL;
+const anon = env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 // Browser-side client (persists session)
 export const supabaseBrowser = createClient<Database>(url, anon, {

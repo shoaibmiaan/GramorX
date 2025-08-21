@@ -1,6 +1,7 @@
+import { env } from "@/lib/env";
 // lib/admin.ts
 export function getAdminEmails(): string[] {
-  const raw = process.env.ADMIN_EMAILS || '';
+  const raw = env.ADMIN_EMAILS || '';
   return raw
     .split(/[,\s]+/)
     .map((e) => e.trim().toLowerCase())

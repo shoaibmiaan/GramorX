@@ -1,3 +1,4 @@
+import { env } from "@/lib/env";
 // pages/api/placement/score.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
 
@@ -97,10 +98,10 @@ function localHeuristic(payload: ClientPayload): ScoreResult {
 
 // ---------- GROQ scorer (preferred if key exists) ----------
 async function callGroq(payload: ClientPayload): Promise<ScoreResult | null> {
-  const key = process.env.GROQ_API_KEY;
+  const key = env.GROQ_API_KEY;
   if (!key) return null;
 
-  const model = process.env.GROQ_MODEL || 'llama-3.1-70b-versatile';
+  const model = env.GROQ_MODEL || 'llama-3.1-70b-versatile';
   const userData = JSON.stringify(
     payload.answers.map(a => ({
       id: a.id,
@@ -173,7 +174,7 @@ Respond ONLY as compact JSON with this exact shape:
 
 // ---------- Gemini scorer (fallback if GROQ not present) ----------
 async function callGemini(payload: ClientPayload): Promise<ScoreResult | null> {
-  const key = process.env.GEMINI_API_KEY;
+  const key = env.GEMINI_API_KEY;
   if (!key) return null;
 
   const model = 'models/gemini-1.5-flash-latest:generateContent';

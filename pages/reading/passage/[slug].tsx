@@ -1,3 +1,4 @@
+import { env } from "@/lib/env";
 // pages/reading/passage/[slug].tsx
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import type { GetServerSideProps } from 'next';
@@ -33,8 +34,8 @@ type Props = {
 
 export const getServerSideProps: GetServerSideProps<Props> = async (ctx) => {
   const slug = String(ctx.params?.slug ?? '');
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+  const url = env.NEXT_PUBLIC_SUPABASE_URL;
+  const anon = env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   const supabase = createClient(url, anon, { auth: { persistSession: false } });
 
   const [{ data: passage }, { data: qRows }] = await Promise.all([

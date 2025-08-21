@@ -1,3 +1,4 @@
+import { env } from "@/lib/env";
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
@@ -37,7 +38,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   if (question.length > 200) return res.status(400).json({ ok: false, error: 'Keep it under 200 characters.' });
 
   try {
-    const key = process.env.GEMINI_API_KEY;
+    const key = env.GEMINI_API_KEY;
     if (!key) return res.status(500).json({ ok: false, error: 'Gemini key missing on server.' });
 
     const genAI = new GoogleGenerativeAI(key);

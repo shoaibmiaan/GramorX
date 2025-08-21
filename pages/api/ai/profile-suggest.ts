@@ -1,3 +1,4 @@
+import { env } from "@/lib/env";
 // pages/api/ai/profile-suggest.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
 
@@ -62,7 +63,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ error: 'english_level is required' });
   }
 
-  const key = process.env.OPENAI_API_KEY;
+  const key = env.OPENAI_API_KEY;
   if (!key) {
     return res.status(200).json(localHeuristic(payload));
   }

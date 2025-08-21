@@ -1,9 +1,10 @@
+import { env } from "@/lib/env";
 // pages/api/speaking/score-groq.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
 import Groq from 'groq-sdk';
 import { z } from 'zod';
 
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY! });
+const groq = new Groq({ apiKey: env.GROQ_API_KEY });
 
 const OutputSchema = z.object({
   fluency: z.number().min(0).max(9),

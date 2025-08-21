@@ -1,3 +1,4 @@
+import { env } from "@/lib/env";
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getUserServer } from '@/lib/authServer';
 import { supabaseServer } from '@/lib/supabaseServer';
@@ -16,7 +17,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     let feedback: string | null = null;
     try {
       // Gemini
-      const gemResp = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=' + process.env.GEMINI_API_KEY, {
+      const gemResp = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=' + env.GEMINI_API_KEY, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -35,7 +36,7 @@ Return band estimate and 2–3 lines of constructive feedback.` }] }]
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${process.env.GROQ_API_KEY}`
+          Authorization: `Bearer ${env.GROQ_API_KEY}`
         },
         body: JSON.stringify({
           model: 'llama3-8b-8192',

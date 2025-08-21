@@ -1,3 +1,4 @@
+import { env } from "@/lib/env";
 // pages/learning/strategies/index.tsx
 import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
@@ -55,8 +56,8 @@ function normalizeDrill(payload: any): DrillResult {
 }
 
 function getSupabase(): SupabaseClient {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+  const url = env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   return createClient(url, key);
 }
 

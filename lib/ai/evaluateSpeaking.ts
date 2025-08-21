@@ -1,3 +1,4 @@
+import { env } from "@/lib/env";
 // /lib/ai/evaluateSpeaking.ts
 import Groq from 'groq-sdk';
 
@@ -34,7 +35,7 @@ ${SYSTEM_JSON_SPEC}
 }
 
 // ---------- Gemini path ----------
-export async function evaluateWithGemini(input: EvalInputs, apiKey = process.env.GEMINI_API_KEY): Promise<Feedback | null> {
+export async function evaluateWithGemini(input: EvalInputs, apiKey = env.GEMINI_API_KEY): Promise<Feedback | null> {
   if (!apiKey) return null;
   // lightweight fetch to avoid adding SDK if you prefer
   const prompt = buildPrompt(input);
@@ -56,7 +57,7 @@ export async function evaluateWithGemini(input: EvalInputs, apiKey = process.env
 }
 
 // ---------- Groq LLM path (e.g., Llama 3.1 70B) ----------
-export async function evaluateWithGroq(input: EvalInputs, apiKey = process.env.GROQ_API_KEY): Promise<Feedback | null> {
+export async function evaluateWithGroq(input: EvalInputs, apiKey = env.GROQ_API_KEY): Promise<Feedback | null> {
   if (!apiKey) return null;
   const groq = new Groq({ apiKey });
   const prompt = buildPrompt(input);
@@ -81,7 +82,7 @@ export async function evaluateWithGroq(input: EvalInputs, apiKey = process.env.G
 }
 
 // ---------- Groq Whisper transcription ----------
-export async function transcribeWithGroq(audioBytes: Buffer, filename = 'audio.webm', apiKey = process.env.GROQ_API_KEY): Promise<string | null> {
+export async function transcribeWithGroq(audioBytes: Buffer, filename = 'audio.webm', apiKey = env.GROQ_API_KEY): Promise<string | null> {
   if (!apiKey) return null;
   const groq = new Groq({ apiKey });
   // The Groq SDK expects a File (Web API). In Node 18+, File exists globally.

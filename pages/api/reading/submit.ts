@@ -1,3 +1,4 @@
+import { env } from "@/lib/env";
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { scoreReading } from '@/lib/reading/scoring';
 import { v4 as uuid } from 'uuid';
@@ -11,7 +12,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const { slug, answers } = req.body as { slug: string; answers: Record<string, any> };
     if (!slug || !answers) return res.status(400).json({ error: 'Missing payload' });
 
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || `http://${req.headers.host}`;
+    const baseUrl = env.NEXT_PUBLIC_BASE_URL || `http://${req.headers.host}`;
     const paperRes = await fetch(`${baseUrl}/api/reading/test/${slug}`);
     const paper = await paperRes.json();
 

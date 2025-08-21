@@ -1,3 +1,4 @@
+import { env } from "@/lib/env";
 // pages/reading/review/index.tsx
 import React, { useEffect, useMemo, useState } from 'react';
 import type { GetServerSideProps, NextPage } from 'next';
@@ -78,8 +79,8 @@ export const getServerSideProps: GetServerSideProps<Props> = async (ctx) => {
     return { props: { passage: null, questions: [], error: 'Missing slug', notFound: false } };
   }
 
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+  const url = env.NEXT_PUBLIC_SUPABASE_URL;
+  const anon = env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url || !anon) {
     return {
       props: { passage: null, questions: [], error: 'Supabase env missing', notFound: false },
@@ -152,8 +153,8 @@ const ReviewPage: NextPage<Props> = ({ passage, questions, notFound, error }) =>
       try {
         // Attempt: fetch from DB if we have attemptId + token
         if (attemptId) {
-          const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-          const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+          const url = env.NEXT_PUBLIC_SUPABASE_URL;
+          const anon = env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
           const { createClient } = await import('@supabase/supabase-js');
           const supabase = createClient(url, anon);
           const { data: { session } } = await supabase.auth.getSession();

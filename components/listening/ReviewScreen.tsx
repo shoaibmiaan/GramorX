@@ -1,3 +1,4 @@
+import { env } from "@/lib/env";
 import React, { useEffect, useMemo, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import { Card } from '@/components/design-system/Card';
@@ -10,8 +11,8 @@ import { isCorrect } from '@/lib/answers';
 
 // Browser client (auth comes from the user's session)
 const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL as string,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string
+  env.NEXT_PUBLIC_SUPABASE_URL as string,
+  env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string
 );
 
 type Row = {

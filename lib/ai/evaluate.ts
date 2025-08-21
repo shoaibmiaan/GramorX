@@ -1,3 +1,4 @@
+import { env } from "@/lib/env";
 import type { BandFeedback } from "./schema";
 // MOCK evaluator (works offline). Replace with real calls later.
 export async function evaluateSpeakingMock(transcript: string): Promise<BandFeedback> {
@@ -13,6 +14,6 @@ export async function evaluateSpeakingMock(transcript: string): Promise<BandFeed
   return { band, criteria, summary: "Good overall performance. Improve collocations and consistency in tense usage for a higher band." };
 }
 // Provider placeholders (wire later)
-export async function evaluateWithOpenAI(prompt: string): Promise<BandFeedback> { if (!process.env.OPENAI_API_KEY) return evaluateSpeakingMock(prompt); return evaluateSpeakingMock(prompt); }
-export async function evaluateWithGemini(prompt: string): Promise<BandFeedback> { if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) return evaluateSpeakingMock(prompt); return evaluateSpeakingMock(prompt); }
-export async function evaluateWithGrok(prompt: string): Promise<BandFeedback> { if (!process.env.GROQ_API_KEY) return evaluateSpeakingMock(prompt); return evaluateSpeakingMock(prompt); }
+export async function evaluateWithOpenAI(prompt: string): Promise<BandFeedback> { if (!env.OPENAI_API_KEY) return evaluateSpeakingMock(prompt); return evaluateSpeakingMock(prompt); }
+export async function evaluateWithGemini(prompt: string): Promise<BandFeedback> { if (!env.GOOGLE_GENERATIVE_AI_API_KEY) return evaluateSpeakingMock(prompt); return evaluateSpeakingMock(prompt); }
+export async function evaluateWithGrok(prompt: string): Promise<BandFeedback> { if (!env.GROQ_API_KEY) return evaluateSpeakingMock(prompt); return evaluateSpeakingMock(prompt); }
