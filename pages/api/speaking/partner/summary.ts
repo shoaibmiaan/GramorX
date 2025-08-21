@@ -1,7 +1,6 @@
 // pages/api/speaking/partner/summary.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { createPagesServerClient } from '@supabase/auth-helpers-nextjs';
-import Groq from 'groq-sdk';
+import { env } from '@/env';
 
 export const config = { api: { bodyParser: true, sizeLimit: '1mb' } };
 
@@ -38,6 +37,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     const { attemptId, force } = req.body as { attemptId?: string; force?: boolean };
     if (!attemptId) return res.status(400).json({ error: 'Missing attemptId' });
 
+    const { createPagesServerClient } = await import('@supabase/auth-helpers-nextjs');
     const supabase = createPagesServerClient({ req, res });
     const { data: auth } = await supabase.auth.getUser();
     const user = auth?.user;
@@ -75,8 +75,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     const wc = transcript.split(/\s+/).filter(Boolean).length;
 
     // Call Groq (OpenAI-compatible)
-    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-    const model = process.env.GROQ_MODEL || 'llama-3.1-8b-instant';
+    const { default: Groq } = await import('groq-sdk');
+    const groq = new Groq({ apiKey: env.GROQ_API_KEY });
+    const model = env.GROQ_MODEL || 'llama-3.1-8b-instant';
 
     const sys =
       'You are an IELTS Speaking examiner. Evaluate the USER transcript ONLY. ' +
