@@ -25,6 +25,7 @@ export const Recorder: React.FC<Props> = ({
   const [isRecording, setIsRecording] = useState(false);
 
   const start = async () => {
+    if (typeof window === 'undefined') return;
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
@@ -67,22 +68,24 @@ export const Recorder: React.FC<Props> = ({
       setIsRecording(true);
 
       stopAtRef.current = Date.now() + maxMs;
-      if (timerRef.current) window.clearInterval(timerRef.current);
-      timerRef.current = window.setInterval(() => {
-        setSeconds((s) => {
-          const next = s + 1;
-          if (Date.now() >= (stopAtRef.current ?? 0)) {
-            if (mediaRec.current && mediaRec.current.state !== 'inactive') {
-              mediaRec.current.stop();
+      if (typeof window !== 'undefined') {
+        if (timerRef.current) window.clearInterval(timerRef.current);
+        timerRef.current = window.setInterval(() => {
+          setSeconds((s) => {
+            const next = s + 1;
+            if (Date.now() >= (stopAtRef.current ?? 0)) {
+              if (mediaRec.current && mediaRec.current.state !== 'inactive') {
+                mediaRec.current.stop();
+              }
+              if (timerRef.current) {
+                window.clearInterval(timerRef.current);
+                timerRef.current = null;
+              }
             }
-            if (timerRef.current) {
-              window.clearInterval(timerRef.current);
-              timerRef.current = null;
-            }
-          }
-          return next;
-        });
-      }, 1000);
+            return next;
+          });
+        }, 1000);
+      }
     } catch (e: any) {
       onError?.(e);
     }
@@ -93,7 +96,7 @@ export const Recorder: React.FC<Props> = ({
       if (mediaRec.current && mediaRec.current.state !== 'inactive') {
         mediaRec.current.stop();
       }
-      if (timerRef.current) {
+      if (typeof window !== 'undefined' && timerRef.current) {
         window.clearInterval(timerRef.current);
         timerRef.current = null;
       }
