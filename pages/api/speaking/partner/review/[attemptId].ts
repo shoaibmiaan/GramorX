@@ -1,6 +1,7 @@
+import { env } from "@/lib/env";
 // pages/api/speaking/partner/review/[attemptId].ts
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { env } from '@/env';
+import { createClient } from '@supabase/supabase-js';
 
 const isUuid = (v: any) =>
   typeof v === 'string' &&
@@ -15,8 +16,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   const url = env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = env.SUPABASE_SERVICE_ROLE_KEY || env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  const { createClient } = await import('@supabase/supabase-js');
+  const key =
+    env.SUPABASE_SERVICE_ROLE_KEY || env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   const supabase = createClient(url, key, { auth: { persistSession: false } });
 
   // Fetch latest feedback and transcript for this attempt

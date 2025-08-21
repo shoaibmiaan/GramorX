@@ -1,7 +1,8 @@
+import { env } from "@/lib/env";
 // pages/api/speaking/file.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { createClient } from '@supabase/supabase-js';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
-import { env } from '@/env';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
@@ -11,7 +12,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const url = env.NEXT_PUBLIC_SUPABASE_URL;
   const anon = env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  const { createClient } = await import('@supabase/supabase-js');
   const supabase = createClient(url, anon, {
     global: { headers: { Cookie: req.headers.cookie || '' } },
   });

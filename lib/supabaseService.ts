@@ -1,9 +1,9 @@
+import { env } from "@/lib/env";
 // lib/supabaseService.ts
 import { createClient } from '@supabase/supabase-js';
-import { env } from '@/env';
 
 export const supabaseService = createClient(
-  env.NEXT_PUBLIC_SUPABASE_URL,
+  env.NEXT_PUBLIC_SUPABASE_URL as string,
   env.SUPABASE_SERVICE_ROLE_KEY as string
 );
 

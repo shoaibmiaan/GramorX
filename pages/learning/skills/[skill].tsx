@@ -1,3 +1,4 @@
+import { env } from "@/lib/env";
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Image from 'next/image';
@@ -10,8 +11,8 @@ import { Alert } from '@/components/design-system/Alert';
 import { StreakIndicator } from '@/components/design-system/StreakIndicator';
 
 const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  env.NEXT_PUBLIC_SUPABASE_URL,
+  env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 );
 
 type CoachAI = {

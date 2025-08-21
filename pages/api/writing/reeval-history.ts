@@ -1,3 +1,4 @@
+import { env } from "@/lib/env";
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { createClient } from '@supabase/supabase-js';
 
@@ -6,8 +7,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (!attemptId) return res.status(400).json({ error: 'attemptId required' });
 
   const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    env.NEXT_PUBLIC_SUPABASE_URL,
+    env.SUPABASE_SERVICE_ROLE_KEY ?? env.NEXT_PUBLIC_SUPABASE_ANON_KEY
   );
 
   const { data, error } = await supabase

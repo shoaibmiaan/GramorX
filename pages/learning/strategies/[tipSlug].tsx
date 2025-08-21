@@ -1,3 +1,4 @@
+import { env } from "@/lib/env";
 // pages/learning/strategies/[tipSlug].tsx
 import Head from 'next/head';
 import type { GetServerSideProps } from 'next';
@@ -58,8 +59,8 @@ function normalizeDrill(payload: any): DrillResult {
 
 function getClient(): SupabaseClient {
   return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    env.NEXT_PUBLIC_SUPABASE_URL,
+    env.NEXT_PUBLIC_SUPABASE_ANON_KEY
   );
 }
 
@@ -72,7 +73,7 @@ export default function TipDetail({
 }) {
   const router = useRouter();
   const DEBUG =
-    process.env.NEXT_PUBLIC_DEBUG === '1' || (router.query.debug as string) === '1';
+    env.NEXT_PUBLIC_DEBUG === '1' || (router.query.debug as string) === '1';
 
   const [userId, setUserId] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
@@ -360,8 +361,8 @@ export default function TipDetail({
 
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
   const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    env.NEXT_PUBLIC_SUPABASE_URL,
+    env.NEXT_PUBLIC_SUPABASE_ANON_KEY
   );
 
   const slug = String(ctx.params?.tipSlug || '');

@@ -1,5 +1,7 @@
+import { env } from "@/lib/env";
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import { z } from 'zod';
 
 const BodySchema = z.object({
@@ -77,8 +79,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   // 4) Call Gemini
   try {
-    const { GoogleGenerativeAI } = await import('@google/generative-ai');
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY as string);
+    const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY as string);
     const model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro' }); // or 'gemini-1.5-flash' for cheaper/faster
 
     const prompt = promptForGemini({

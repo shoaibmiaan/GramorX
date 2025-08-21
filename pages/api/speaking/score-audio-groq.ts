@@ -1,12 +1,17 @@
+import { env } from "@/lib/env";
 // pages/api/speaking/score-audio-groq.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
+import Groq from 'groq-sdk';
 import { z } from 'zod';
-import { env } from '@/env';
+import fs from 'node:fs';
+import path from 'node:path';
+import os from 'node:os';
 
 export const config = {
   api: { bodyParser: { sizeLimit: '25mb' } }, // plenty for short speaking parts
 };
 
+const groq = new Groq({ apiKey: env.GROQ_API_KEY });
 
 const ScoreSchema = z.object({
   fluency: z.number().min(0).max(9),
@@ -29,19 +34,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (!env.GROQ_API_KEY) return res.status(500).json({ error: 'GROQ_API_KEY missing' });
 
   try {
-    const { default: Groq } = await import('groq-sdk');
-    const groq = new Groq({ apiKey: env.GROQ_API_KEY! });
-    const fs = await import('node:fs');
-    const path = await import('node:path');
-    const os = await import('node:os');
-
     const parsed = ReqSchema.safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ error: 'Bad request', issues: parsed.error.issues });
 
     const { audioBase64, mime, part, promptHint } = parsed.data;
-
-    const Groq = (await import('groq-sdk')).default;
-    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY! });
 
     // 1) write temp file (Groq SDK accepts file streams)
     const buf = Buffer.from(audioBase64, 'base64');

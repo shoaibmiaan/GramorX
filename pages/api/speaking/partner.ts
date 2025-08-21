@@ -1,9 +1,10 @@
+import { env } from "@/lib/env";
 // pages/api/speaking/partner.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 type HistoryMsg = { role: 'bot' | 'assistant' | 'user'; text: string };
 
-const GROQ = process.env.GROQ_API_KEY;
+const GROQ = env.GROQ_API_KEY;
 
 // Utility: keep errors short (no HTML blobs)
 function nice(e: any) {

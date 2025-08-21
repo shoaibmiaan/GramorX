@@ -1,3 +1,4 @@
+import { env } from "@/lib/env";
 // pages/speaking/index.tsx
 import React from 'react';
 import { GetServerSideProps } from 'next';
@@ -154,7 +155,7 @@ export default function SpeakingHub({
 export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
   const { user, supabase } = await getUserServer(req as any, res as any);
 
-  const limit = parseInt(process.env.SPEAKING_DAILY_LIMIT || '5', 10);
+  const limit = parseInt(env.SPEAKING_DAILY_LIMIT || '5', 10);
   if (!user) {
     return { props: { attempts: [], attemptsToday: 0, limit, signedIn: false } };
   }

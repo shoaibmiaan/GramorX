@@ -1,3 +1,4 @@
+import { env } from "@/lib/env";
 import React, { useState } from 'react';
 import type { GetServerSideProps } from 'next';
 import { useRouter } from 'next/router';
@@ -23,8 +24,8 @@ type Props = { attempt: Attempt | null };
 
 export const getServerSideProps: GetServerSideProps<Props> = async (ctx) => {
   const { attemptId } = ctx.query as { attemptId: string };
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+  const url = env.NEXT_PUBLIC_SUPABASE_URL;
+  const anon = env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   const supabase = createClient(url, anon, {
     global: { headers: { Cookie: ctx.req.headers.cookie || '' } },
   });

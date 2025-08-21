@@ -1,6 +1,7 @@
+import { env } from "@/lib/env";
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-const GROQ = process.env.GROQ_API_KEY;
+const GROQ = env.GROQ_API_KEY;
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {

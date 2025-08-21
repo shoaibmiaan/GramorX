@@ -1,3 +1,4 @@
+import { env } from "@/lib/env";
 // pages/learning/[slug].tsx
 import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
@@ -11,8 +12,8 @@ import { Badge } from '@/components/design-system/Badge';
 import { Alert } from '@/components/design-system/Alert';
 
 const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  env.NEXT_PUBLIC_SUPABASE_URL,
+  env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 );
 
 type Course = {

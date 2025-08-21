@@ -1,3 +1,4 @@
+import { env } from "@/lib/env";
 // lib/authServer.ts
 import type { NextApiRequest } from 'next';
 import { createClient } from '@supabase/supabase-js';

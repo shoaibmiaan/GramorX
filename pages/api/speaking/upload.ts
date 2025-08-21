@@ -1,3 +1,4 @@
+import { env } from "@/lib/env";
 import type { NextApiRequest, NextApiResponse } from 'next';
 import type { File } from 'formidable';
 import { supabaseFromRequest } from '@/lib/apiAuth';

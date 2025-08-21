@@ -1,3 +1,4 @@
+import { env } from "@/lib/env";
 // lib/supabaseAdmin.ts
 import { createClient } from '@supabase/supabase-js';
 // import type { Database } from '@/types/supabase'; // optional generated types
@@ -15,7 +16,7 @@ export const supabaseAdmin =
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
   });
 
-if (process.env.NODE_ENV !== 'production') {
+if (env.NODE_ENV !== 'production') {
   // @ts-ignore
   globalThis.__supabaseAdmin = supabaseAdmin;
 }
