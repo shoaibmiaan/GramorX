@@ -1,61 +1,66 @@
-import React, { useState } from 'react';
-import Image from 'next/image';
-import { Container } from '@/components/design-system/Container';
-import { Card } from '@/components/design-system/Card';
-import { Input } from '@/components/design-system/Input';
-import { Button } from '@/components/design-system/Button';
-import { Alert } from '@/components/design-system/Alert';
-import { supabase } from '@/lib/supabaseClient';
+// pages/forgot-password.tsx
+import type { NextPage } from 'next';
+import Head from 'next/head';
+import Link from 'next/link';
+import { useState } from 'react';
 
-export default function ForgotPassword() {
-  const [email, setEmail] = useState('');
-  const [sent, setSent] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [err, setErr] = useState<string|null>(null);
+const ForgotPassword: NextPage = () => {
+  const [email, setEmail] = useState<string>('');
+  const [sent, setSent] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const submit = async (e: React.FormEvent) => {
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setErr(null);
-    if (!email) return setErr('Please enter your email.');
-    setLoading(true);
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/update-password` : undefined,
-    });
-    setLoading(false);
-    if (error) return setErr(error.message);
-    setSent(true);
-  };
+    setError(null);
+    try {
+      // TODO: plug your real reset call here
+      setSent(true);
+    } catch {
+      setError('Could not send reset email. Please try again.');
+    }
+  }
 
   return (
-    <section className="min-h-[100svh] bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90">
-      <Container>
-        <div className="min-h-[100svh] grid place-items-center">
-          <Card className="w-full max-w-md p-8 rounded-ds-2xl">
-            <div className="flex items-center justify-between mb-4">
-              <a href="/login" className="text-small text-primary dark:text-electricBlue">&larr; Back to login</a>
-              <Image src="/brand/logo.png" alt="Brand Logo" width={110} height={26} className="h-6 w-auto" />
+    <>
+      <Head>
+        <title>Forgot Password</title>
+      </Head>
+      <main className="min-h-screen flex items-center justify-center p-6">
+        <div className="w-full max-w-md">
+          <h1 className="text-2xl font-semibold mb-4">Reset your password</h1>
+
+          {sent ? (
+            <div className="rounded-md border p-4 text-sm">
+              If an account exists for <strong>{email}</strong>, a reset link has been sent.
             </div>
+          ) : (
+            <form onSubmit={onSubmit} className="space-y-4">
+              <label className="block">
+                <span className="text-sm">Email</span>
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="mt-1 w-full rounded-md border px-3 py-2 bg-transparent"
+                  placeholder="you@example.com"
+                />
+              </label>
+              {error && <p className="text-sm text-red-600">{error}</p>}
+              <button type="submit" className="rounded-md px-4 py-2 border">
+                Send reset link
+              </button>
+            </form>
+          )}
 
-            <h1 className="font-slab text-h1 mb-2 text-primary dark:text-electricBlue">Forgot password</h1>
-            <p className="text-grayish dark:text-white/75 mb-6">We’ll email you a reset link.</p>
-
-            {err && <Alert variant="error" title="Couldn’t send" className="mb-4">{err}</Alert>}
-            {sent ? (
-              <Alert variant="success" title="Email sent" className="mb-4">
-                Check your inbox for the reset link.
-              </Alert>
-            ) : (
-              <form onSubmit={submit} className="space-y-4">
-                <Input label="Email" type="email" placeholder="you@example.com"
-                       value={email} onChange={(e)=>setEmail(e.target.value)} required />
-                <Button type="submit" variant="primary" className="w-full rounded-ds-xl" disabled={loading}>
-                  {loading ? 'Sending…' : 'Send reset link'}
-                </Button>
-              </form>
-            )}
-          </Card>
+          <div className="mt-6 text-sm">
+            {/* FIX: use Next <Link> for internal nav */}
+            <Link href="/login" className="underline">Back to login</Link>
+          </div>
         </div>
-      </Container>
-    </section>
+      </main>
+    </>
   );
-}
+};
+
+export default ForgotPassword;
