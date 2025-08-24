@@ -1,3 +1,4 @@
+import { env } from "@/lib/env";
 // pages/api/speaking/file.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { createClient } from '@supabase/supabase-js';
@@ -9,8 +10,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const filePath = req.query.path as string;
   if (!filePath) return res.status(400).json({ error: 'Missing path' });
 
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+  const url = env.NEXT_PUBLIC_SUPABASE_URL;
+  const anon = env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   const supabase = createClient(url, anon, {
     global: { headers: { Cookie: req.headers.cookie || '' } },
   });

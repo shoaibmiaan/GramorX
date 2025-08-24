@@ -1,3 +1,4 @@
+import { env } from "@/lib/env";
 /**
  * Supabase adapters for Reading.
  * No schema changes required. Adjust table/column names in the mappers to match your existing DB.
@@ -10,8 +11,8 @@
 import { createClient } from '@supabase/supabase-js';
 
 // Prefer service role for secure SSR inserts; fall back to anon for public reads.
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const serviceKey  = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabaseUrl = env.NEXT_PUBLIC_SUPABASE_URL;
+const serviceKey  = env.SUPABASE_SERVICE_ROLE_KEY || env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 export const supabaseServer = createClient(supabaseUrl, serviceKey);
 
 /** Shapes used by the Reading runner */

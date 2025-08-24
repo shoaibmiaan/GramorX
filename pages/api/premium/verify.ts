@@ -1,10 +1,11 @@
+import { env } from "@/lib/env";
 import type { NextApiRequest, NextApiResponse } from "next";
 import bcrypt from "bcryptjs";
 import { createServerSupabaseClient } from "@supabase/auth-helpers-nextjs";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 // Optional master override via env, e.g. PREMIUM_MASTER_PIN=123456
-const MASTER_PIN = process.env.PREMIUM_MASTER_PIN || "";
+const MASTER_PIN = env.PREMIUM_MASTER_PIN || "";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") return res.status(405).json({ ok: false, error: "Method not allowed" });

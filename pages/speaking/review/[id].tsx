@@ -1,4 +1,9 @@
+<<<<<<< HEAD
 import React, { useEffect, useRef, useState } from 'react';
+=======
+import { env } from "@/lib/env";
+import React, { useState } from 'react';
+>>>>>>> 4e94e6322611b22f93ab3e6364502036ed9a3d29
 import type { GetServerSideProps } from 'next';
 import { useRouter } from 'next/router';
 import { createClient } from '@supabase/supabase-js';
@@ -91,8 +96,8 @@ type Props = { attempt: Attempt | null };
  * ────────────────────────────*/
 export const getServerSideProps: GetServerSideProps<Props> = async (ctx) => {
   const { attemptId } = ctx.query as { attemptId: string };
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+  const url = env.NEXT_PUBLIC_SUPABASE_URL;
+  const anon = env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   const supabase = createClient(url, anon, {
     global: { headers: { Cookie: ctx.req.headers.cookie || '' } },
   });

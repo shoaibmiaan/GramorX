@@ -1,3 +1,4 @@
+import { env } from "@/lib/env";
 // pages/api/speaking/partner/summary.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { createPagesServerClient } from '@supabase/auth-helpers-nextjs';
@@ -75,8 +76,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     const wc = transcript.split(/\s+/).filter(Boolean).length;
 
     // Call Groq (OpenAI-compatible)
-    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-    const model = process.env.GROQ_MODEL || 'llama-3.1-8b-instant';
+    const groq = new Groq({ apiKey: env.GROQ_API_KEY });
+    const model = env.GROQ_MODEL || 'llama-3.1-8b-instant';
 
     const sys =
       'You are an IELTS Speaking examiner. Evaluate the USER transcript ONLY. ' +

@@ -8,9 +8,17 @@ export function useSpeech() {
   const timerRef = useRef<number | null>(null);
   const chunksRef = useRef<BlobPart[]>([]);
 
-  useEffect(() => () => { if (timerRef.current) window.clearInterval(timerRef.current); }, []);
+  useEffect(
+    () => () => {
+      if (typeof window !== 'undefined' && timerRef.current) {
+        window.clearInterval(timerRef.current);
+      }
+    },
+    []
+  );
 
   async function start() {
+    if (typeof window === 'undefined') return;
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     const rec = new MediaRecorder(stream, { mimeType: 'audio/webm' });
     chunksRef.current = [];
@@ -20,7 +28,9 @@ export function useSpeech() {
     setSeconds(0);
     setRecording(true);
     rec.start();
-    timerRef.current = window.setInterval(() => setSeconds(s => s + 1), 1000);
+    if (typeof window !== 'undefined') {
+      timerRef.current = window.setInterval(() => setSeconds(s => s + 1), 1000);
+    }
   }
 
   async function stop(): Promise<Blob> {
@@ -30,7 +40,9 @@ export function useSpeech() {
       rec.onstop = () => {
         const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
         setRecording(false);
-        if (timerRef.current) window.clearInterval(timerRef.current);
+        if (typeof window !== 'undefined' && timerRef.current) {
+          window.clearInterval(timerRef.current);
+        }
         resolve(blob);
       };
       rec.stop();
