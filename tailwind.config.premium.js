@@ -1,42 +1,48 @@
-/** @type {import('tailwindcss').Config} */
+/** Premium Tailwind Config (for building public/premium.css)
+ *  - Use a 'pr-' prefix so styles don't collide with the main site.
+ *  - Map utilities to CSS variables defined in styles/premium.css.
+ */
 module.exports = {
+  darkMode: ['class', '[data-pr-theme="carbon"]'],
+  prefix: 'pr-',
   content: [
-    "./components/premium-ui/**/*.{js,ts,jsx,tsx}",
-    "./pages/premium/**/*.{js,ts,jsx,tsx}",
-    "./styles/premium.css",
-    "./styles/premium-theme.css",
+    './premium-ui/**/*.{ts,tsx,js,jsx}',
+    './stories/**/*.{ts,tsx,js,jsx,mdx}',
+    './pages/**/*.{ts,tsx,js,jsx}',
+    './components/**/*.{ts,tsx,js,jsx}',
   ],
-  darkMode: "class",
-  prefix: "pr-",
   theme: {
     extend: {
-      fontFamily: {
-        premium: ["Poppins", "ui-sans-serif", "system-ui", "sans-serif"],
-      },
       colors: {
-        bg: "rgb(var(--pr-bg) / <alpha-value>)",
-        surface: "rgb(var(--pr-surface) / <alpha-value>)",
-        text: "rgb(var(--pr-text) / <alpha-value>)",
-        muted: "rgb(var(--pr-muted) / <alpha-value>)",
-        primary: "rgb(var(--pr-primary) / <alpha-value>)",
-        primaryFg: "rgb(var(--pr-primary-fg) / <alpha-value>)",
-        ring: "rgb(var(--pr-ring) / <alpha-value>)",
-        border: "rgb(var(--pr-border) / <alpha-value>)",
-        accent: "rgb(var(--pr-accent) / <alpha-value>)",
-        accentFg: "rgb(var(--pr-accent-fg) / <alpha-value>)",
-        success: "rgb(var(--pr-success) / <alpha-value>)",
-        warning: "rgb(var(--pr-warning) / <alpha-value>)",
-        danger: "rgb(var(--pr-danger) / <alpha-value>)",
+        bg: 'var(--pr-bg)',
+        fg: 'var(--pr-fg)',
+        card: 'var(--pr-card)',
+        border: 'var(--pr-border)',
+        primary: 'var(--pr-primary)',
+        on: {
+          primary: 'var(--pr-on-primary)',
+        },
+        accent: 'var(--pr-accent)',
+        danger: 'var(--pr-danger)',
+        warning: 'var(--pr-warning)',
+        success: 'var(--pr-success)',
       },
-      borderRadius: { xl: "14px", "2xl": "22px" },
-      boxShadow: { glass: "0 8px 24px rgba(0,0,0,0.12)", soft: "0 6px 16px rgba(0,0,0,0.10)" },
-      backdropBlur: { 12: "12px" },
-      keyframes: {
-        "fade-in": { "0%": { opacity: 0 }, "100%": { opacity: 1 } },
-        pop: { "0%": { transform: "scale(.96)", opacity: 0 }, "100%": { transform: "scale(1)", opacity: 1 } },
+      borderRadius: {
+        xl: 'var(--pr-radius)',
+        '2xl': 'calc(var(--pr-radius) + 8px)',
       },
-      animation: { "fade-in": "fade-in .25s ease-out", "pop-in": "pop .2s ease-out" },
+      boxShadow: {
+        md: 'var(--pr-shadow-md)',
+        lg: 'var(--pr-shadow-lg)',
+        ring: 'var(--pr-ring)',
+      },
+      transitionDuration: {
+        150: '150ms',
+        200: '200ms',
+      },
     },
   },
-  plugins: [],
+  plugins: [
+    require('tailwindcss-animate'),
+  ],
 };

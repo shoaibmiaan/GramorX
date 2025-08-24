@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { scoreReading } from '@/lib/reading/scoring';
-import { v4 as uuid } from 'uuid';
+import { randomUUID } from 'crypto';
 
 const ATTEMPTS: Record<string, any> = {};
 
@@ -16,14 +16,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const paper = await paperRes.json();
 
     const result = scoreReading(paper, answers);
-    const attemptId = uuid();
+    const attemptId = randomUUID();
 
     ATTEMPTS[attemptId] = { attemptId, slug, paperTitle: paper.title, paper, answers, result };
 
     return res.json({ attemptId });
-  } catch (e:any) {
+  } catch (e: any) {
     return res.status(500).json({ error: e?.message || 'Submit failed' });
   }
 }
 
-export function getAttempt(id: string) { return ATTEMPTS[id]; }
+export function getAttempt(id: string) {
+  return ATTEMPTS[id];
+}

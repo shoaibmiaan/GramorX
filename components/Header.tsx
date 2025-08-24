@@ -1,82 +1,158 @@
 // components/sections/Header.tsx
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
+import { useTheme } from 'next-themes';
 import { Container } from '@/components/design-system/Container';
-import { ThemeToggle } from '@/components/design-system/ThemeToggle';
-import { StreakIndicator } from '@/components/design-system/StreakIndicator';
 import { NavLink } from '@/components/design-system/NavLink';
 import { supabaseBrowser } from '@/lib/supabaseBrowser';
 import { UserMenu } from '@/components/design-system/UserMenu';
 
-const MODULE_LINKS = [
+type ModuleLink = { label: string; href: string; desc?: string };
+
+const MODULE_LINKS: ModuleLink[] = [
   { label: 'Listening', href: '/listening', desc: 'Audio comprehension drills' },
   { label: 'Reading', href: '/reading', desc: 'Short passages & skimming' },
   { label: 'Writing', href: '/writing', desc: 'Prompts, structure & style' },
   { label: 'Speaking', href: '/speaking', desc: 'Pronunciation & fluency' },
 ];
 
-// NOTE: “Success Stories” removed
-const NAV = [
+// Removed Join Waitlist
+const NAV: { href: string; label: string }[] = [
   { href: '#pricing', label: 'Pricing' },
-  { href: '#waitlist', label: 'Join Waitlist' },
 ];
 
-export const Header: React.FC<{ streak: number }> = ({ streak }) => {
+// 🔥 Fire streak pill (icon + value)
+function FireStreak({ value }: { value: number }) {
+  return (
+    <span
+      className="inline-flex items-center gap-1.5 rounded-full bg-orange-500/15 text-orange-300 px-2.5 py-1 text-sm font-semibold"
+      title="Daily streak"
+    >
+      <span aria-hidden>🔥</span>
+      <span className="tabular-nums">{value}</span>
+    </span>
+  );
+}
+
+// Icon-only theme toggle (no Light/Dark text)
+function IconOnlyThemeToggle() {
+  const { theme, setTheme, resolvedTheme } = useTheme();
+  const isDark = (theme ?? resolvedTheme) === 'dark';
+  return (
+    <button
+      type="button"
+      aria-label="Toggle theme"
+      onClick={() => setTheme(isDark ? 'light' : 'dark')}
+      className="inline-flex h-10 w-10 items-center justify-center rounded-lg hover:bg-purpleVibe/10"
+    >
+      {/* Moon / Sun icons (inline SVG, no text) */}
+      {isDark ? (
+        <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor" aria-hidden="true">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+        </svg>
+      ) : (
+        <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor" aria-hidden="true">
+          <path d="M6.76 4.84 5.34 3.42 3.92 4.84 5.34 6.26 6.76 4.84zM1 13h3v-2H1v2zm10 10h2v-3h-2v3zm9-10v-2h-3v2h3zm-2.76 7.16 1.42 1.42 1.42-1.42-1.42-1.42-1.42 1.42zM12 5a7 7 0 1 0 0 14 7 7 0 0 0 0-14zm7-1.58 1.42-1.42L19 0.58l-1.42 1.42L19 3.42zM4.84 17.24 3.42 18.66l1.42 1.42 1.42-1.42-1.42-1.42z" />
+        </svg>
+      )}
+    </button>
+  );
+}
+
+export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
   const router = useRouter();
 
-  // UI state
   const [openDesktopModules, setOpenDesktopModules] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileModulesOpen, setMobileModulesOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
-  // Auth state
   const [ready, setReady] = useState(false);
-  const [user, setUser] = useState<{
-    id: string | null;
-    email: string | null;
-    name: string | null;
-    avatarUrl: string | null;
-  }>({ id: null, email: null, name: null, avatarUrl: null });
+  const [role, setRole] = useState<string | null>(null);
+  const [user, setUser] = useState<{ id: string | null; email: string | null; name: string | null; avatarUrl: string | null }>({
+    id: null, email: null, name: null, avatarUrl: null,
+  });
 
-  // Refs
+  // Streak (kept from your last version, now rendered with FireStreak)
+  const [streakState, setStreakState] = useState<number>(streak ?? 0);
+  useEffect(() => { if (typeof streak === 'number') setStreakState(streak); }, [streak]);
+  const fetchStreak = useCallback(async () => {
+    if (typeof streak === 'number') return;
+    const { data: session } = await supabaseBrowser.auth.getSession();
+    const token = session?.session?.access_token;
+    if (!token) return;
+    const res = await fetch('/api/words/today', { headers: { Authorization: `Bearer ${token}` } });
+    if (res.ok) { const j = await res.json(); if (typeof j?.streakDays === 'number') setStreakState(j.streakDays); }
+  }, [streak]);
+  useEffect(() => { fetchStreak(); }, [fetchStreak]);
+  useEffect(() => {
+    const onChanged = (e: Event) => {
+      const ce = e as CustomEvent<{ value?: number }>;
+      if (typeof ce.detail?.value === 'number') setStreakState(ce.detail.value);
+      else fetchStreak();
+    };
+    window.addEventListener('streak:changed', onChanged as EventListener);
+    return () => window.removeEventListener('streak:changed', onChanged as EventListener);
+  }, [fetchStreak]);
+
+  // Solid header when scrolled or any menu open (fixes the “looks not right” overlay)
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 4);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+  const solidHeader = scrolled || openDesktopModules || mobileOpen;
+
   const modulesRef = useRef<HTMLLIElement>(null);
 
-  // Load session + subscribe to changes
   useEffect(() => {
     let cancelled = false;
+    const computeRole = async (uid: string | null, appMeta?: any, userMeta?: any) => {
+      let r: any = appMeta?.role ?? userMeta?.role ?? null;
+      if (!r && uid) {
+        const { data: prof } = await supabaseBrowser.from('profiles').select('role').eq('id', uid).single();
+        r = prof?.role ?? null;
+      }
+      return r ? String(r).toLowerCase() : null;
+    };
 
     const sync = async () => {
       const { data } = await supabaseBrowser.auth.getSession();
+      const s = data.session?.user ?? null;
+      const userMeta = (s?.user_metadata ?? {}) as Record<string, unknown>;
       if (!cancelled) {
-        const s = data.session?.user;
         setUser({
           id: s?.id ?? null,
           email: s?.email ?? null,
-          name: (s?.user_metadata as any)?.full_name ?? null,
-          avatarUrl: (s?.user_metadata as any)?.avatar_url ?? null,
+          name: typeof userMeta['full_name'] === 'string' ? (userMeta['full_name'] as string) : null,
+          avatarUrl: typeof userMeta['avatar_url'] === 'string' ? (userMeta['avatar_url'] as string) : null,
         });
+        const r = await computeRole(s?.id ?? null, s?.app_metadata, userMeta);
+        if (!cancelled) setRole(r);
         setReady(true);
       }
     };
     sync();
 
-    const { data: sub } = supabaseBrowser.auth.onAuthStateChange((_e, session) => {
-      const s = session?.user;
+    const { data: sub } = supabaseBrowser.auth.onAuthStateChange(async (_e, session) => {
+      const s = session?.user ?? null;
+      const userMeta = (s?.user_metadata ?? {}) as Record<string, unknown>;
       setUser({
         id: s?.id ?? null,
         email: s?.email ?? null,
-        name: (s?.user_metadata as any)?.full_name ?? null,
-        avatarUrl: (s?.user_metadata as any)?.avatar_url ?? null,
+        name: typeof userMeta['full_name'] === 'string' ? (userMeta['full_name'] as string) : null,
+        avatarUrl: typeof userMeta['avatar_url'] === 'string' ? (userMeta['avatar_url'] as string) : null,
       });
+      const r = await computeRole(s?.id ?? null, s?.app_metadata, userMeta);
+      setRole(r);
+      if (!s) setStreakState(0); // reset on sign-out
     });
 
-    return () => {
-      cancelled = true;
-      sub?.subscription?.unsubscribe();
-    };
+    return () => { cancelled = true; sub?.subscription?.unsubscribe(); };
   }, []);
 
-  // Close dropdowns on outside click / Esc
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
       const t = e.target as Node;
@@ -97,7 +173,6 @@ export const Header: React.FC<{ streak: number }> = ({ streak }) => {
     };
   }, []);
 
-  // Prevent body scroll when mobile menu open
   useEffect(() => {
     const preventTouch = (e: TouchEvent) => e.preventDefault();
     if (mobileOpen) {
@@ -115,36 +190,42 @@ export const Header: React.FC<{ streak: number }> = ({ streak }) => {
 
   const signOut = async () => {
     await supabaseBrowser.auth.signOut();
+    setStreakState(0);
     router.replace('/login');
   };
 
   return (
-    <header className="sticky top-0 z-50 header-glass">
+    <header
+      className={[
+        'sticky top-0 z-50 transition-colors',
+        solidHeader ? 'bg-lightBg dark:bg-dark border-b border-purpleVibe/20 shadow-sm' : 'header-glass',
+      ].join(' ')}
+    >
       <Container>
         <div className="flex items-center justify-between py-4 md:py-5">
-          {/* Brand */}
-          <a href="/" className="flex items-center gap-3 group">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/brand/logo.png" alt="GramorX logo" className="h-9 w-9 rounded-lg object-contain" />
-            <span className="font-slab font-bold text-2xl">
+          {/* Brand — bigger logo + name */}
+          <Link href="/" className="flex items-center gap-3 group" aria-label="Go to home">
+            <img src="/brand/logo.png" alt="GramorX logo" className="h-11 w-11 rounded-lg object-contain" />
+            <span className="font-slab font-bold text-3xl">
               <span className="text-gradient-primary group-hover:opacity-90 transition">GramorX</span>
             </span>
-          </a>
+          </Link>
 
-          {/* Desktop Nav */}
-          <nav className="hidden md:block">
+          {/* Desktop */}
+          <nav className="hidden md:block" aria-label="Primary">
             <ul className="flex items-center gap-3 relative">
-              {/* Modules mega menu (desktop) */}
               <li className="relative" ref={modulesRef}>
                 <button
-                  onClick={() => setOpenDesktopModules((v) => !v)}
+                  onClick={() => setOpenDesktopModules(v => !v)}
                   aria-expanded={openDesktopModules}
                   aria-haspopup="menu"
                   aria-controls="desktop-modules-menu"
                   className="px-3 py-2 rounded hover:bg-purpleVibe/10 flex items-center gap-2"
                 >
-                  Modules
-                  <i className={`fas fa-chevron-${openDesktopModules ? 'up' : 'down'} text-xs`} />
+                  <span>Modules</span>
+                  <svg className="w-3.5 h-3.5 opacity-80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                    <path d={openDesktopModules ? 'M6 15l6-6 6 6' : 'M6 9l6 6 6-6'} />
+                  </svg>
                 </button>
 
                 {openDesktopModules && (
@@ -154,7 +235,6 @@ export const Header: React.FC<{ streak: number }> = ({ streak }) => {
                     className="absolute left-1/2 -translate-x-1/2 top-full mt-3 w-[880px] max-w-[90vw] bg-lightBg dark:bg-dark border border-purpleVibe/20 rounded-2xl shadow-lg overflow-hidden"
                   >
                     <div className="grid grid-cols-12">
-                      {/* Left: menu columns */}
                       <div className="col-span-8 p-6 sm:p-7">
                         <div className="mb-3">
                           <h3 className="font-slab text-h3">Skill Modules</h3>
@@ -162,56 +242,55 @@ export const Header: React.FC<{ streak: number }> = ({ streak }) => {
                         </div>
                         <div className="grid sm:grid-cols-2 gap-3">
                           {MODULE_LINKS.map((m) => (
-                            <a
+                            <Link
                               key={m.href}
                               href={m.href}
                               className="group rounded-ds border border-transparent hover:border-purpleVibe/20 p-4 flex items-start gap-3 hover:bg-purpleVibe/10"
                               onClick={() => setOpenDesktopModules(false)}
+                              role="menuitem"
                             >
                               <div className="mt-1">
-                                <i className="fas fa-arrow-right" aria-hidden />
+                                <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                                  <path d="M5 12h14M13 5l7 7-7 7" />
+                                </svg>
                               </div>
                               <div>
                                 <div className="font-medium">{m.label}</div>
                                 {m.desc && <div className="text-small text-grayish">{m.desc}</div>}
                               </div>
-                            </a>
+                            </Link>
                           ))}
                         </div>
                       </div>
 
-                      {/* Right: callout */}
                       <div className="col-span-4 bg-purpleVibe/5 dark:bg-purpleVibe/10 p-6 sm:p-7 flex flex-col justify-between">
                         <div>
                           <div className="mb-2 font-slab text-h3">New here?</div>
                           <p className="text-small opacity-80">Take a quick placement to get a personalized start.</p>
                         </div>
-                        <a
+                        <Link
                           href="/placement"
                           className="mt-4 inline-flex items-center justify-center rounded-ds-xl px-4 py-2 font-semibold text-white bg-gradient-to-r from-purpleVibe to-electricBlue hover:opacity-90"
                           onClick={() => setOpenDesktopModules(false)}
+                          role="menuitem"
                         >
                           Start placement
-                          <i className="fas fa-arrow-right ml-2 text-xs" />
-                        </a>
+                          <span className="ml-2 inline-flex">
+                            <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                              <path d="M5 12h14M13 5l7 7-7 7" />
+                            </svg>
+                          </span>
+                        </Link>
                       </div>
                     </div>
                   </div>
                 )}
               </li>
 
-              {/* Learning hub entry */}
               <li><NavLink href="/learning" label="Learning" /></li>
-
-              {/* Other links (Success Stories removed) */}
-              {NAV.map((n) => (
-                <li key={n.href}><NavLink href={n.href} label={n.label} /></li>
-              ))}
-
-              {/* premium link */}
+              {NAV.map((n) => (<li key={n.href}><NavLink href={n.href} label={n.label} /></li>))}
               <li><NavLink href="/premium" label="premium" /></li>
 
-              {/* Auth area (Dashboard link removed) */}
               {ready ? (
                 user.id ? (
                   <li>
@@ -221,67 +300,75 @@ export const Header: React.FC<{ streak: number }> = ({ streak }) => {
                       name={user.name}
                       avatarUrl={user.avatarUrl}
                       onAvatarChange={(url) => setUser((u) => ({ ...u, avatarUrl: url }))}
-                      onSignOut={signOut}
+                      onSignOut={async () => { await supabaseBrowser.auth.signOut(); setStreakState(0); router.replace('/login'); }}
                     />
                   </li>
                 ) : (
                   <li>
-                    <a
+                    <Link
                       href="/login"
                       className="px-4 py-2 rounded-full bg-gradient-to-r from-purpleVibe to-electricBlue text-white font-semibold hover:opacity-90 transition"
                     >
                       Sign in
-                    </a>
+                    </Link>
                   </li>
                 )
               ) : (
                 <li><div className="h-9 w-24 rounded-full bg-gray-200 dark:bg-white/10 animate-pulse" /></li>
               )}
 
-              {/* Tools */}
-              <li><StreakIndicator value={streak} /></li>
-              <li><ThemeToggle /></li>
+              {/* 🔥 Fire streak + icon-only theme */}
+              <li><FireStreak value={streakState} /></li>
+              <li><IconOnlyThemeToggle /></li>
             </ul>
           </nav>
 
-          {/* Mobile right-side controls */}
+          {/* Mobile controls */}
           <div className="flex items-center gap-2 md:hidden">
-            <ThemeToggle />
+            <IconOnlyThemeToggle />
             <button
               aria-label="Toggle menu"
               aria-expanded={mobileOpen}
-              onClick={() => setMobileOpen((v) => !v)}
+              onClick={() => setMobileOpen(v => !v)}
               className="inline-flex h-10 w-10 items-center justify-center rounded-lg hover:bg-purpleVibe/10"
             >
-              {mobileOpen ? <i className="fas fa-times text-lg" /> : <i className="fas fa-bars text-lg" />}
+              {mobileOpen ? (
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                  <path d="M6 6l12 12M6 18L18 6" />
+                </svg>
+              ) : (
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                  <path d="M3 6h18M3 12h18M3 18h18" />
+                </svg>
+              )}
             </button>
           </div>
         </div>
       </Container>
 
-      {/* Mobile Menu Panel */}
+      {/* Mobile panel (solid background; no transparency when open) */}
       {mobileOpen && (
-        <div className="md:hidden border-t border-purpleVibe/20 bg-lightBg/95 dark:bg-dark/95 backdrop-blur-md">
+        <div className="md:hidden border-t border-purpleVibe/20 bg-lightBg dark:bg-dark shadow-lg">
           <Container>
             <div className="py-3 flex items-center justify-between">
-              <StreakIndicator value={streak} />
+              <FireStreak value={streakState} />
               {ready && user.id ? (
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={signOut}
+                    onClick={async () => { await supabaseBrowser.auth.signOut(); setStreakState(0); router.replace('/login'); }}
                     className="px-4 py-2 rounded-full bg-gradient-to-r from-purpleVibe to-electricBlue text-white font-semibold hover:opacity-90 transition"
                   >
                     Sign out
                   </button>
                 </div>
               ) : ready ? (
-                <a
+                <Link
                   href="/login"
                   className="px-4 py-2 rounded-full bg-gradient-to-r from-purpleVibe to-electricBlue text-white font-semibold hover:opacity-90 transition"
                   onClick={() => setMobileOpen(false)}
                 >
                   Sign in
-                </a>
+                </Link>
               ) : (
                 <div className="h-9 w-24 rounded-full bg-gray-200 dark:bg-white/10 animate-pulse" />
               )}
@@ -290,64 +377,65 @@ export const Header: React.FC<{ streak: number }> = ({ streak }) => {
             <nav aria-label="Mobile Navigation" className="pb-4">
               <ul className="flex flex-col gap-1">
                 <li>
-                  <a
+                  <Link
                     href="/learning"
                     className="block px-3 py-3 rounded-lg hover:bg-purpleVibe/10"
                     onClick={() => setMobileOpen(false)}
                   >
                     Learning
-                  </a>
+                  </Link>
                 </li>
 
-                {/* Modules accordion (mobile) */}
+                {/* Modules accordion */}
                 <li>
                   <button
                     className="w-full flex items-center justify-between px-3 py-3 rounded-lg hover:bg-purpleVibe/10"
-                    onClick={() => setMobileModulesOpen((v) => !v)}
+                    onClick={() => setMobileModulesOpen(v => !v)}
                     aria-expanded={mobileModulesOpen}
                     aria-controls="mobile-modules-list"
                   >
                     <span className="font-medium">Modules</span>
-                    <i className={`fas fa-chevron-${mobileModulesOpen ? 'up' : 'down'} text-xs`} />
+                    <svg className="w-3.5 h-3.5 opacity-80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                      <path d={mobileModulesOpen ? 'M6 15l6-6 6 6' : 'M6 9l6 6 6-6'} />
+                    </svg>
                   </button>
                   {mobileModulesOpen && (
                     <ul id="mobile-modules-list" className="mt-1 ml-2 rounded-lg border border-purpleVibe/20 overflow-hidden">
                       {MODULE_LINKS.map((m) => (
                         <li key={m.href}>
-                          <a
+                          <Link
                             href={m.href}
                             className="block px-4 py-3 hover:bg-purpleVibe/10"
                             onClick={() => setMobileOpen(false)}
                           >
                             {m.label}
-                          </a>
+                          </Link>
                         </li>
                       ))}
                     </ul>
                   )}
                 </li>
 
-                {/* Pricing + Waitlist */}
+                {/* Pricing (waitlist removed) */}
                 {NAV.map((n) => (
                   <li key={n.href}>
-                    <a
+                    <Link
                       href={n.href}
                       className="block px-3 py-3 rounded-lg hover:bg-purpleVibe/10"
                       onClick={() => setMobileOpen(false)}
                     >
                       {n.label}
-                    </a>
+                    </Link>
                   </li>
                 ))}
-
                 <li>
-                  <a
+                  <Link
                     href="/premium"
                     className="block px-3 py-3 rounded-lg hover:bg-purpleVibe/10"
                     onClick={() => setMobileOpen(false)}
                   >
                     premium
-                  </a>
+                  </Link>
                 </li>
               </ul>
             </nav>

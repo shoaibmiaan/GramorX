@@ -6,21 +6,20 @@ import { Button } from '@/components/design-system/Button';
 
 const tiers = [
   {
-    name: 'Basic',
-    price: '$19.99',
-    period: 'per month',
+    name: 'Compass',
+    price: 'Free',
+    period: 'no credit card required',
     featured: false,
     features: [
-      'Access to all learning materials',
-      '2 full mock tests per month',
-      '5 AI writing evaluations',
-      '3 speaking practice sessions',
-      'Basic performance analytics',
-      'Email support',
+      'IELTS basics — Listening • Reading • Writing • Speaking',
+      'Daily vocabulary quiz + streak',
+      '1 grammar drill / week',
+      '2 AI writing evaluations / month',
+      'Community access (read-only)',
     ],
   },
   {
-    name: 'Premium',
+    name: 'Rocket',
     price: '$34.99',
     period: 'per month',
     featured: true,
@@ -35,18 +34,17 @@ const tiers = [
     ],
   },
   {
-    name: 'Institutional',
-    price: 'Custom',
-    period: 'for schools & organizations',
+    name: 'Seedling',
+    price: '$19.99',
+    period: 'per month',
     featured: false,
     features: [
-      'Bulk student accounts',
-      'Teacher/admin dashboard',
-      'Custom content upload',
-      'Usage analytics & reports',
-      'Dedicated account manager',
-      'API access',
-      'Custom branding',
+      'All learning materials (4 modules)',
+      '2 full mock tests / month',
+      '5 AI writing evaluations / month',
+      '3 speaking practice sessions',
+      'Basic performance analytics',
+      'Email support',
     ],
   },
 ];
@@ -93,7 +91,7 @@ export const Pricing: React.FC = () => {
                 variant={t.featured ? 'primary' : 'secondary'}
                 className="w-full justify-center"
               >
-                {t.name === 'Institutional' ? 'Contact Sales' : 'Join Waitlist'}
+                Join Waitlist
               </Button>
             </Card>
           ))}

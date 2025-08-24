@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { getAttempt } from './reading/submit';
+import { getAttempt } from './submit';
 
 const GEMINI_ENDPOINT =
   'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
@@ -23,17 +23,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       `Passage title: ${att.paperTitle}`,
       att.paper?.passage ? `Passage:\n${att.paper.passage}` : '',
       `Question (Q${item.qNo}, type=${item.type}): ${item.prompt}`,
-      item.type === 'mcq' && att.paper ? (
-        // try to show options if available on paper
-        (() => {
-          const q = findPaperQuestion(att.paper, qid);
-          return q?.options?.length ? `Options: ${q.options.join(' | ')}` : '';
-        })()
-      ) : '',
+      item.type === 'mcq' && att.paper
+        ? (() => {
+            const q = findPaperQuestion(att.paper, qid);
+            return q?.options?.length ? `Options: ${q.options.join(' | ')}` : '';
+          })()
+        : '',
       `User answer: ${stringify(item.user)}`,
       `Correct answer: ${stringify(item.correct)}`,
-      `Explain briefly (2–4 lines) why the correct answer is right. Focus on evidence from the passage; avoid revealing extra info not supported by it.`
-    ].filter(Boolean).join('\n\n');
+      `Explain briefly (2–4 lines) why the correct answer is right. Focus on evidence from the passage; avoid revealing extra info not supported by it.`,
+    ]
+      .filter(Boolean)
+      .join('\n\n');
 
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) return res.status(500).json({ error: 'GEMINI_API_KEY missing in env' });
@@ -43,8 +44,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.2, maxOutputTokens: 220 }
-      })
+        generationConfig: { temperature: 0.2, maxOutputTokens: 220 },
+      }),
     });
     const j = await r.json();
     const text =
@@ -58,7 +59,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 }
 
 function stringify(v: any) {
-  try { return typeof v === 'string' ? v : JSON.stringify(v); } catch { return String(v); }
+  try {
+    return typeof v === 'string' ? v : JSON.stringify(v);
+  } catch {
+    return String(v);
+  }
 }
 
 function findPaperQuestion(paper: any, qid: string) {

@@ -1,3 +1,4 @@
+// design-system/tokens/colors.js
 module.exports = {
   primary: '#4361ee',
   primaryDark: '#3a56d4',
@@ -13,5 +14,11 @@ module.exports = {
   darker: '#070710',
   lightBg: '#f0f2f5',
   lightText: '#1a1a2e',
-  grayish: '#8a8a9c'
+  grayish: '#8a8a9c',
+
+  // Added (for desired_design alignment)
+  vibrantPurple: '#9d4edd', // alias for utilities (same hue as purpleVibe)
+  sunsetRed: '#ff4d4d',     // CTA gradient end
+  lightCard: '#ffffff',     // light surface bg
+  lightBorder: '#e0e0e0',   // light surface border
 };

@@ -6,7 +6,7 @@ import { Button } from '@/components/design-system/Button';
 import { Badge } from '@/components/design-system/Badge';
 import { Alert } from '@/components/design-system/Alert';
 import { AccentPicker, type Accent } from '@/components/speaking/AccentPicker';
-import { useTTS } from '@/components/speaking/useTTS';
+import { useTTS } from '@/hooks/useTTS';
 import Link from 'next/link';
 import { supabaseBrowser } from '@/lib/supabaseBrowser';
 import { useRouter } from 'next/router';

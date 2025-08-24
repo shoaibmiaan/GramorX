@@ -1,3 +1,4 @@
+// pages/listening/[slug].tsx
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
 import { supabase } from '@/lib/supabaseClient';
@@ -8,8 +9,21 @@ import { Badge } from '@/components/design-system/Badge';
 import { Alert } from '@/components/design-system/Alert';
 import { Input } from '@/components/design-system/Input';
 
-type MCQ = { id: string; qNo: number; type: 'mcq'; prompt: string; options: string[]; answer: string };
-type GAP = { id: string; qNo: number; type: 'gap'; prompt: string; answer: string };
+type MCQ = {
+  id: string;
+  qNo: number;
+  type: 'mcq';
+  prompt: string;
+  options: string[];
+  answer: string;
+};
+type GAP = {
+  id: string;
+  qNo: number;
+  type: 'gap';
+  prompt: string;
+  answer: string;
+};
 type Question = MCQ | GAP;
 
 type Section = {
@@ -33,62 +47,82 @@ export default function ListeningTestPage() {
   const router = useRouter();
   const { slug } = router.query as { slug?: string };
 
+  // --- Auth state ---
   const [userId, setUserId] = useState<string | null>(null);
+  const [authReady, setAuthReady] = useState(false); // <— key fix: gate UI until auth resolved
+
+  // --- Test + UI state ---
   const [test, setTest] = useState<ListeningTest | null>(null);
   const [currentIdx, setCurrentIdx] = useState(0);
   const [autoPlay, setAutoPlay] = useState(true);
   const [showTranscript, setShowTranscript] = useState(false);
   const [checked, setChecked] = useState(false);
 
+  // --- Save state ---
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
   // answers: questionId -> value
   const [answers, setAnswers] = useState<Record<string, string>>({});
 
-  // Audio & timing
+  // --- Audio & timing ---
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [ready, setReady] = useState(false);
-  const gapMsRef = useRef<number>(850); // small 700–1000ms gap
+  const gapMsRef = useRef<number>(850); // 700–1000ms gap feels natural
 
-  // Load auth user
+  // --- Load auth user (robust and race-free) ---
   useEffect(() => {
     let mounted = true;
+
+    // 1) Get current user (in case session already present)
     supabase.auth.getUser().then(({ data }) => {
-      if (mounted) setUserId(data.user?.id ?? null);
+      if (!mounted) return;
+      setUserId(data.user?.id ?? null);
+      setAuthReady(true);
     });
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
+
+    // 2) Subscribe to future changes (login/logout)
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!mounted) return;
       setUserId(session?.user?.id ?? null);
+      setAuthReady(true);
     });
+
     return () => {
       sub?.subscription.unsubscribe();
       mounted = false;
     };
   }, []);
 
-  // Load test from DB
+  // --- Load test from DB ---
   useEffect(() => {
     if (!slug) return;
+    let cancelled = false;
+
     (async () => {
-      const { data: t } = await supabase
+      const { data: t, error: tErr } = await supabase
         .from('lm_listening_tests')
         .select('slug,title,master_audio_url')
         .eq('slug', slug)
         .single();
 
-      if (!t) return;
+      if (tErr || !t || cancelled) return;
 
-      const { data: sections } = await supabase
+      const { data: sections, error: sErr } = await supabase
         .from('lm_listening_sections')
         .select('order_no,start_ms,end_ms,transcript')
         .eq('test_slug', slug)
         .order('order_no', { ascending: true });
 
-      const { data: questions } = await supabase
+      if (sErr || cancelled) return;
+
+      const { data: questions, error: qErr } = await supabase
         .from('lm_listening_questions')
         .select('id,q_no,type,prompt,options,answer,section_order')
         .eq('test_slug', slug)
         .order('q_no', { ascending: true });
+
+      if (qErr || cancelled) return;
 
       const secMap = new Map<number, Section>();
       (sections ?? []).forEach((s) => {
@@ -100,37 +134,50 @@ export default function ListeningTestPage() {
           questions: [],
         });
       });
+
       (questions ?? []).forEach((q) => {
         const sec = secMap.get(q.section_order);
         if (!sec) return;
-        sec.questions.push(
-          q.type === 'mcq'
-            ? {
-                id: q.id,
-                qNo: q.q_no,
-                type: 'mcq',
-                prompt: q.prompt,
-                options: q.options ?? [],
-                answer: q.answer,
-              }
-            : { id: q.id, qNo: q.q_no, type: 'gap', prompt: q.prompt, answer: q.answer }
-        );
+        if (q.type === 'mcq') {
+          sec.questions.push({
+            id: q.id,
+            qNo: q.q_no,
+            type: 'mcq',
+            prompt: q.prompt,
+            options: (q.options ?? []) as string[],
+            answer: q.answer,
+          });
+        } else {
+          sec.questions.push({
+            id: q.id,
+            qNo: q.q_no,
+            type: 'gap',
+            prompt: q.prompt,
+            answer: q.answer,
+          });
+        }
       });
 
       const ordered = [...secMap.values()]
         .sort((a, b) => a.orderNo - b.orderNo)
         .map((s) => ({ ...s, questions: [...s.questions].sort((a, b) => a.qNo - b.qNo) }));
 
-      setTest({
-        slug: t.slug,
-        title: t.title,
-        masterAudioUrl: t.master_audio_url,
-        sections: ordered,
-      });
+      if (!cancelled) {
+        setTest({
+          slug: t.slug,
+          title: t.title,
+          masterAudioUrl: t.master_audio_url,
+          sections: ordered,
+        });
+      }
     })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [slug]);
 
-  // Rehydrate WIP (answers + section) from localStorage
+  // --- Rehydrate WIP (answers + section) from localStorage ---
   useEffect(() => {
     if (!slug) return;
     try {
@@ -144,10 +191,10 @@ export default function ListeningTestPage() {
     }
   }, [slug]);
 
-  // Persist WIP to localStorage (debounced-ish)
+  // --- Persist WIP to localStorage (light debounce) ---
   useEffect(() => {
     if (!slug) return;
-    const id = setTimeout(() => {
+    const id = window.setTimeout(() => {
       const payload = JSON.stringify({ answers, currentIdx });
       localStorage.setItem(LS_KEY(slug), payload);
     }, 250);
@@ -156,12 +203,13 @@ export default function ListeningTestPage() {
 
   const currentSection = useMemo(() => test?.sections[currentIdx] ?? null, [test, currentIdx]);
 
-  // Audio slice auto-play + small gap between sections
+  // --- Audio slice auto-play + gap between sections ---
   useEffect(() => {
     if (!test || !currentSection) return;
 
     const audio = audioRef.current;
     if (!audio) return;
+
     let advanceTimer: number | null = null;
 
     const seekToStart = () => {
@@ -177,17 +225,14 @@ export default function ListeningTestPage() {
     };
 
     const onTimeUpdate = () => {
-      const t = audio.currentTime * 1000;
-      if (t >= currentSection.endMs - 25) {
+      const tMs = audio.currentTime * 1000;
+      if (tMs >= currentSection.endMs - 25) {
         audio.pause();
-        if (autoPlay) {
-          // add a tiny gap to avoid clipping
-          if (currentIdx < test.sections.length - 1 && advanceTimer == null) {
-            advanceTimer = window.setTimeout(() => {
-              setCurrentIdx((i) => i + 1);
-              advanceTimer = null;
-            }, gapMsRef.current);
-          }
+        if (autoPlay && currentIdx < test.sections.length - 1 && advanceTimer == null) {
+          advanceTimer = window.setTimeout(() => {
+            setCurrentIdx((i) => i + 1);
+            advanceTimer = null;
+          }, gapMsRef.current);
         }
       }
     };
@@ -207,6 +252,7 @@ export default function ListeningTestPage() {
     };
   }, [test, currentSection, autoPlay, currentIdx]);
 
+  // --- Answer helpers ---
   const handleMCQ = (q: MCQ, val: string) => {
     setAnswers((prev) => ({ ...prev, [q.id]: val }));
   };
@@ -216,32 +262,39 @@ export default function ListeningTestPage() {
   const normalize = (s: string) => s.replace(/\s+/g, ' ').trim().toLowerCase();
   const isCorrect = (q: Question) => {
     const a = answers[q.id] ?? '';
-    return q.type === 'mcq' ? a === (q as MCQ).answer : normalize(a) === normalize((q as GAP).answer);
+    return q.type === 'mcq'
+      ? a === (q as MCQ).answer
+      : normalize(a) === normalize((q as GAP).answer);
   };
 
-  // Persist answers to DB (user-scoped rows)
+  // --- Persist answers to DB (user-scoped rows) ---
   const persistAnswers = async () => {
     if (!userId || !test) return;
     setSaving(true);
     setSaveError(null);
     try {
       const rows = Object.entries(answers).map(([qid, ans]) => {
-        // find q_no by id for stable upsert
-        const q = test.sections.flatMap((s) => s.questions).find((q) => q.id === qid)!;
+        const q = test.sections.flatMap((s) => s.questions).find((qq) => qq.id === qid);
+        if (!q) return null;
         return { user_id: userId, test_slug: test.slug, q_no: q.qNo, answer: ans };
-      });
-      if (!rows.length) return;
+      }).filter(Boolean) as Array<{ user_id: string; test_slug: string; q_no: number; answer: string }>;
+
+      if (rows.length === 0) return;
+
       const { error } = await supabase
         .from('lm_listening_user_answers')
         .upsert(rows, { onConflict: 'user_id,test_slug,q_no' });
+
       if (error) throw error;
-    } catch (e: any) {
-      setSaveError(e.message ?? 'Failed to save');
+    } catch (e) {
+      const msg = (e as { message?: string })?.message ?? 'Failed to save';
+      setSaveError(msg);
     } finally {
       setSaving(false);
     }
   };
 
+  // --- Loading skeleton ---
   if (!test) {
     return (
       <section className="py-24">
@@ -253,6 +306,9 @@ export default function ListeningTestPage() {
       </section>
     );
   }
+
+  const secCount = test.sections.length;
+  const sliceSecs = currentSection ? Math.max(0, Math.round((currentSection.endMs - currentSection.startMs) / 1000)) : 0;
 
   return (
     <section className="py-24 bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90">
@@ -271,8 +327,8 @@ export default function ListeningTestPage() {
           </div>
         </div>
 
-        {/* Not logged-in notice */}
-        {!userId && (
+        {/* Not logged-in notice (only when auth is actually known) */}
+        {authReady && !userId && (
           <Alert variant="info" className="mt-6" title="Sign in to save progress">
             You can practice without signing in, but answers won’t be saved. (We only store your own rows; RLS enforced.)
           </Alert>
@@ -299,15 +355,6 @@ export default function ListeningTestPage() {
             <div className="flex items-center gap-2">
               <Button
                 variant="secondary"
-                /*
-                 * When navigating to the previous section we need to clamp the
-                 * index to zero to avoid negative indices.  The original
-                 * implementation had an extra closing parenthesis after the
-                 * `setCurrentIdx` callback which broke the JSX syntax and
-                 * prevented the file from compiling.  Remove the stray
-                 * parenthesis so that the anonymous callback is closed
-                 * properly.
-                 */
                 onClick={() => setCurrentIdx((i) => Math.max(0, i - 1))}
                 disabled={currentIdx === 0}
               >
@@ -315,8 +362,8 @@ export default function ListeningTestPage() {
               </Button>
               <Button
                 variant="secondary"
-                onClick={() => setCurrentIdx((i) => Math.min(test.sections.length - 1, i + 1))}
-                disabled={currentIdx === test.sections.length - 1}
+                onClick={() => setCurrentIdx((i) => Math.min(secCount - 1, i + 1))}
+                disabled={currentIdx === secCount - 1}
               >
                 Next →
               </Button>
@@ -324,7 +371,11 @@ export default function ListeningTestPage() {
                 onClick={() => {
                   const a = audioRef.current;
                   if (!a) return;
-                  a.paused ? a.play().catch(() => {}) : a.pause();
+                  if (a.paused) {
+                    a.play().catch(() => {});
+                  } else {
+                    a.pause();
+                  }
                 }}
               >
                 {ready && audioRef.current?.paused ? 'Play' : 'Pause'}
@@ -340,8 +391,7 @@ export default function ListeningTestPage() {
             </div>
           </div>
           <div className="mt-4 text-small opacity-80">
-            Section {currentSection?.orderNo} of {test.sections.length} •{' '}
-            {Math.round((currentSection!.endMs - currentSection!.startMs) / 1000)}s slice
+            Section {currentSection?.orderNo} of {secCount} • {sliceSecs}s slice
           </div>
         </Card>
 
@@ -389,9 +439,7 @@ export default function ListeningTestPage() {
                           className={`w-full text-left p-3.5 rounded-ds border ${cls}`}
                         >
                           <span className="mr-2">{opt}</span>
-                          {checked && correct && (
-                            <i className="fas fa-check-circle text-success" aria-hidden />
-                          )}
+                          {checked && correct && <i className="fas fa-check-circle text-success" aria-hidden />}
                           {checked && !correct && chosen && (
                             <i className="fas fa-times-circle text-sunsetOrange" aria-hidden />
                           )}
@@ -448,12 +496,12 @@ export default function ListeningTestPage() {
               <Button
                 onClick={async () => {
                   if (userId) await persistAnswers();
-                  // If last section -> go to Review page
-                  if (currentIdx >= test.sections.length - 1) {
-                    // clear draft on finish
+                  if (currentIdx >= secCount - 1) {
                     try {
-                      localStorage.removeItem(LS_KEY(slug));
-                    } catch {}
+                      if (slug) localStorage.removeItem(LS_KEY(slug));
+                    } catch {
+                      // ignore
+                    }
                     router.push(`/listening/${test.slug}/review`);
                   } else {
                     setCurrentIdx((i) => i + 1);
@@ -461,7 +509,7 @@ export default function ListeningTestPage() {
                   }
                 }}
               >
-                {currentIdx < test.sections.length - 1 ? 'Next section' : 'Finish & Review'}
+                {currentIdx < secCount - 1 ? 'Next section' : 'Finish & Review'}
               </Button>
             </>
           )}

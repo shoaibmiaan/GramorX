@@ -1,4 +1,6 @@
+// components/design-system/UserMenu.tsx
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import Link from 'next/link';
 import { supabaseBrowser } from '@/lib/supabaseBrowser';
 
 type MenuItem = {
@@ -163,12 +165,13 @@ export const UserMenu: React.FC<{
         aria-controls="user-menu"
         onClick={() => setOpen((v) => !v)}
         onKeyDown={onButtonKeyDown}
-        className="h-9 w-9 rounded-full bg-purpleVibe/15 text-purpleVibe font-semibold flex items-center justify-center hover:bg-purpleVibe/25 focus:outline-none focus:ring-2 focus:ring-purpleVibe"
+        className="h-9 w-9 rounded-full bg-vibrantPurple/15 text-vibrantPurple font-semibold flex items-center justify-center hover:bg-vibrantPurple/25 focus:outline-none focus:ring-2 focus:ring-vibrantPurple"
         title={email ?? name ?? 'User'}
       >
         {localAvatar ? (
+          // Using <img> here to avoid Next remote domain config issues
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={localAvatar} alt="" className="h-9 w-9 rounded-full object-cover" />
+          <img src={localAvatar} alt="" className="h-9 w-9 rounded-full object-cover" decoding="async" />
         ) : (
           fallbackInitial
         )}
@@ -181,17 +184,17 @@ export const UserMenu: React.FC<{
           ref={listRef}
           tabIndex={-1}
           onKeyDown={onMenuKeyDown}
-          className="absolute right-0 mt-2 w-64 rounded-2xl border border-purpleVibe/20 bg-lightBg dark:bg-dark shadow-lg overflow-hidden"
+          className="absolute right-0 mt-2 w-64 rounded-2xl border border-vibrantPurple/20 bg-lightBg dark:bg-dark shadow-lg overflow-hidden"
         >
           {showEmail && (email || name) && (
-            <div className="px-4 py-3 text-small text-grayish dark:text-white/70 border-b border-purpleVibe/15">
+            <div className="px-4 py-3 text-small text-grayish dark:text-white/70 border-b border-vibrantPurple/15">
               <div className="flex items-center gap-3">
-                <div className="h-9 w-9 rounded-full bg-purpleVibe/15 flex items-center justify-center overflow-hidden">
+                <div className="h-9 w-9 rounded-full bg-vibrantPurple/15 flex items-center justify-center overflow-hidden">
                   {localAvatar ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={localAvatar} alt="" className="h-9 w-9 object-cover" />
+                    <img src={localAvatar} alt="" className="h-9 w-9 object-cover" decoding="async" />
                   ) : (
-                    <span className="text-purpleVibe font-semibold">{fallbackInitial}</span>
+                    <span className="text-vibrantPurple font-semibold">{fallbackInitial}</span>
                   )}
                 </div>
                 <div>
@@ -204,7 +207,7 @@ export const UserMenu: React.FC<{
               <div className="mt-3">
                 <button
                   onClick={triggerUpload}
-                  className="text-small px-3 py-2 rounded-ds bg-purpleVibe/10 hover:bg-purpleVibe/15 font-medium"
+                  className="text-small px-3 py-2 rounded-ds bg-vibrantPurple/10 hover:bg-vibrantPurple/15 font-medium"
                   disabled={uploading}
                 >
                   {uploading ? 'Uploading…' : 'Change photo'}
@@ -222,12 +225,27 @@ export const UserMenu: React.FC<{
 
           <div className="py-1">
             {_items.map((it, idx) => {
-              const common = `w-full text-left px-4 py-3 flex items-center gap-2 hover:bg-purpleVibe/10 focus:bg-purpleVibe/10 focus:outline-none`;
+              const common =
+                'w-full text-left px-4 py-3 flex items-center gap-2 hover:bg-vibrantPurple/10 focus:bg-vibrantPurple/10 focus:outline-none';
               if (it.href) {
-                return (
+                const isInternal = it.href.startsWith('/') || it.href.startsWith('#');
+                return isInternal ? (
+                  <Link
+                    key={it.label}
+                    href={it.href}
+                    role="menuitem"
+                    ref={(el) => (itemRefs.current[idx] = el)}
+                    className={common}
+                    onClick={() => setOpen(false)}
+                  >
+                    {it.icon} <span>{it.label}</span>
+                  </Link>
+                ) : (
                   <a
                     key={it.label}
                     href={it.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     role="menuitem"
                     ref={(el) => (itemRefs.current[idx] = el)}
                     className={common}

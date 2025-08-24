@@ -1,79 +1,68 @@
-import React, { useState } from 'react';
+import React from 'react';
+import Link from 'next/link';
 import Image from 'next/image';
-import { Container } from '@/components/design-system/Container';
-import { Card } from '@/components/design-system/Card';
+import AuthLayout from '@/components/layouts/AuthLayout';
 import { Button } from '@/components/design-system/Button';
-import { Alert } from '@/components/design-system/Alert';
-import { supabase } from '@/lib/supabaseClient';
+import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser';
 
-export default function SignupLanding() {
-  const [err, setErr] = useState<string|null>(null);
-  const [loadingSocial, setLoadingSocial] = useState<'google'|'apple'|'facebook'|null>(null);
+export default function SignupOptions() {
+  async function signUpOAuth(provider: 'apple' | 'google' | 'facebook') {
+    await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/profile-setup` : undefined,
+      },
+    });
+  }
 
-  const onSocial = async (provider: 'google'|'apple'|'facebook') => {
-    try {
-      setErr(null);
-      setLoadingSocial(provider);
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider,
-        options: { redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/dashboard` : undefined },
-      });
-      if (error) setErr(error.message);
-    } catch (e: any) {
-      setErr(e?.message || `Could not continue with ${provider}.`);
-    } finally {
-      setLoadingSocial(null);
-    }
-  };
+  const RightPanel = (
+    <div className="h-full flex flex-col justify-between p-8 md:p-12 bg-gradient-to-br from-purpleVibe/10 via-electricBlue/5 to-neonGreen/10 dark:from-dark/50 dark:via-dark/30 dark:to-darker/60">
+      <div>
+        <div className="flex items-center gap-3 mb-6">
+          <Image src="/brand/logo.png" alt="GramorX" width={40} height={40} className="rounded-ds object-contain" priority />
+          <h2 className="font-slab text-h2 text-gradient-primary">Create your account</h2>
+        </div>
+        <p className="text-body text-grayish dark:text-gray-300 max-w-md">
+          Start your IELTS journey with AI support and personalized plans.
+        </p>
+        <ul className="mt-6 space-y-3 text-body text-grayish dark:text-gray-300">
+          <li className="flex items-center gap-3"><i className="fas fa-user-check" aria-hidden />Apple / Google / Facebook</li>
+          <li className="flex items-center gap-3"><i className="fas fa-envelope" aria-hidden />Email & password</li>
+          <li className="flex items-center gap-3"><i className="fas fa-mobile-alt" aria-hidden />Phone (OTP)</li>
+        </ul>
+      </div>
+      <div className="pt-8 text-small text-grayish dark:text-gray-400">
+        Already have an account? <Link href="/login" className="text-primary hover:underline">Log in</Link>
+      </div>
+    </div>
+  );
 
   return (
-    <section className="min-h-[100svh] bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90">
-      <Container>
-        <div className="min-h-[100svh] grid place-items-center">
-          <Card className="w-full max-w-md p-8 rounded-ds-2xl">
-            <div className="flex justify-center mb-6">
-              <div className="rounded-ds-2xl p-3 bg-purpleVibe/10 dark:bg-electricBlue/10 shadow-sm">
-                <Image src="/brand/logo.png" alt="Brand Logo" width={160} height={40} className="h-10 w-auto" priority />
-              </div>
-            </div>
-
-            <h1 className="font-slab text-display text-center mb-2 text-primary dark:text-electricBlue">
-              Start Your IELTS Journey
-            </h1>
-            <p className="text-center text-grayish dark:text-white/75 mb-6">
-              Create your account to begin.
-            </p>
-
-            {err && <Alert variant="error" title="Sign‑up issue" className="mb-4">{err}</Alert>}
-
-            <div className="grid gap-2">
-              <Button as="a" href="/signup/email" variant="secondary" className="w-full rounded-ds py-2 text-small">
-                <i className="far fa-envelope mr-2" aria-hidden /> Sign up with Email
-              </Button>
-              <Button as="a" href="/signup/phone" variant="secondary" className="w-full rounded-ds py-2 text-small">
-                <i className="fas fa-phone mr-2" aria-hidden /> Sign up with Phone
-              </Button>
-              <Button type="button" variant="secondary" className="w-full rounded-ds py-2 text-small"
-                      onClick={() => onSocial('google')} disabled={!!loadingSocial}>
-                <i className="fab fa-google mr-2" aria-hidden /> {loadingSocial==='google'?'Continuing…':'Continue with Google'}
-              </Button>
-              <Button type="button" variant="secondary" className="w-full rounded-ds py-2 text-small"
-                      onClick={() => onSocial('apple')} disabled={!!loadingSocial}>
-                <i className="fab fa-apple mr-2" aria-hidden /> {loadingSocial==='apple'?'Continuing…':'Continue with Apple'}
-              </Button>
-              <Button type="button" variant="secondary" className="w-full rounded-ds py-2 text-small"
-                      onClick={() => onSocial('facebook')} disabled={!!loadingSocial}>
-                <i className="fab fa-facebook-f mr-2" aria-hidden /> {loadingSocial==='facebook'?'Continuing…':'Continue with Facebook'}
-              </Button>
-            </div>
-
-            <div className="mt-6 text-center text-small text-grayish dark:text-white/60">
-              Already have an account?{' '}
-              <a href="/login" className="text-primary dark:text-electricBlue font-semibold">Log in</a>
-            </div>
-          </Card>
-        </div>
-      </Container>
-    </section>
+    <AuthLayout title="Sign up to GramorX" subtitle="Choose a sign-up method."
+      // @ts-expect-error TODO: AuthLayout supports an optional `right` slot
+      right={RightPanel}
+    >
+      <div className="grid gap-3">
+        <Button onClick={() => signUpOAuth('apple')} variant="secondary" className="rounded-ds-xl w-full">
+          <span className="inline-flex items-center gap-3"><i className="fab fa-apple text-xl" aria-hidden /> Sign up with Apple</span>
+        </Button>
+        <Button onClick={() => signUpOAuth('google')} variant="secondary" className="rounded-ds-xl w-full">
+          <span className="inline-flex items-center gap-3"><i className="fab fa-google text-xl" aria-hidden /> Sign up with Google</span>
+        </Button>
+        <Button onClick={() => signUpOAuth('facebook')} variant="secondary" className="rounded-ds-xl w-full">
+          <span className="inline-flex items-center gap-3"><i className="fab fa-facebook-f text-xl" aria-hidden /> Sign up with Facebook</span>
+        </Button>
+        <Button asChild variant="secondary" className="rounded-ds-xl w-full">
+          <Link href="/signup/password">
+            <span className="inline-flex items-center gap-3"><i className="fas fa-envelope text-xl" aria-hidden /> Sign up with Email</span>
+          </Link>
+        </Button>
+        <Button asChild variant="secondary" className="rounded-ds-xl w-full">
+          <Link href="/signup/phone">
+            <span className="inline-flex items-center gap-3"><i className="fas fa-sms text-xl" aria-hidden /> Sign up with Phone</span>
+          </Link>
+        </Button>
+      </div>
+    </AuthLayout>
   );
 }

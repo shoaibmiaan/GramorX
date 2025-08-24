@@ -1,19 +1,37 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { Container } from '@/components/design-system/Container';
-import Recorder from '@/components/speaking/Recorder';
+import Recorder, { RecorderHandle } from '@/components/speaking/Recorder';
 
-// ---------- Focus + Prompt bank ----------
+// ---------- Modes & Focus ----------
+type Mode = 'part1' | 'part2' | 'part3';
 type Focus = 'fluency' | 'lexical' | 'grammar' | 'pronunciation';
 const FOCI: Focus[] = ['fluency', 'lexical', 'grammar', 'pronunciation'];
 
-const PROMPTS: Record<Focus, { title: string; prep: number; speak: number; items: string[] }> = {
+// ---------- Prompt banks ----------
+const PART1 = {
+  title: 'Part 1 — Interview',
+  prep: 3,
+  speak: 45,
+  items: [
+    'Do you prefer mornings or evenings? Why?',
+    'What kind of music do you like listening to?',
+    'Do you enjoy cooking? Why or why not?',
+    'How do you usually spend your weekends?',
+    'Do you prefer reading e-books or printed books?',
+    'Do you use public transport often? Why?',
+    'What’s your favorite season of the year? Why?',
+    'Do you like to plan things or be spontaneous?',
+  ],
+};
+
+const PART2_FOCUS: Record<Focus, { title: string; prep: number; speak: number; items: string[] }> = {
   fluency: {
-    title: 'Fluency & Coherence',
-    prep: 15,
-    speak: 90,
+    title: 'Part 2 — Fluency & Coherence',
+    prep: 60,
+    speak: 120,
     items: [
       'Describe a routine you follow every day. Explain why you follow it and how it affects your productivity.',
       'Talk about a hobby you enjoy. How did you start it and how has it changed over time?',
@@ -22,9 +40,9 @@ const PROMPTS: Record<Focus, { title: string; prep: number; speak: number; items
     ],
   },
   lexical: {
-    title: 'Lexical Resource',
-    prep: 20,
-    speak: 90,
+    title: 'Part 2 — Lexical Resource',
+    prep: 60,
+    speak: 120,
     items: [
       'Describe a time you made a significant purchase. Evaluate its value using precise adjectives and collocations.',
       'Discuss environmental issues in your city. Use topic-specific vocabulary and idiomatic expressions.',
@@ -33,9 +51,9 @@ const PROMPTS: Record<Focus, { title: string; prep: number; speak: number; items
     ],
   },
   grammar: {
-    title: 'Grammatical Range & Accuracy',
-    prep: 20,
-    speak: 90,
+    title: 'Part 2 — Grammar',
+    prep: 60,
+    speak: 120,
     items: [
       'Talk about an event you had planned but had to cancel. Contrast expectations vs reality using complex sentences.',
       'Describe your long-term goals and how you would achieve them if circumstances were different.',
@@ -44,9 +62,9 @@ const PROMPTS: Record<Focus, { title: string; prep: number; speak: number; items
     ],
   },
   pronunciation: {
-    title: 'Pronunciation',
-    prep: 10,
-    speak: 60,
+    title: 'Part 2 — Pronunciation',
+    prep: 45,
+    speak: 90,
     items: [
       'Read a short summary of your favorite film, focusing on stress and intonation.',
       'Explain how to make your favorite recipe, emphasizing word linking and rhythm.',
@@ -54,6 +72,20 @@ const PROMPTS: Record<Focus, { title: string; prep: number; speak: number; items
       'Summarize a news story you read recently, aiming for clear vowel contrasts and consonant endings.',
     ],
   },
+};
+
+const PART3 = {
+  title: 'Part 3 — Discussion',
+  prep: 15,
+  speak: 90,
+  items: [
+    'How has technology changed the way people communicate? Do you think these changes are positive?',
+    'Should governments invest more in public transport or roads? Why?',
+    'Do advertisements influence people’s choices too much? How?',
+    'Is it better to study alone or in groups? Why?',
+    'How can cities become more environmentally friendly?',
+    'To what extent should schools focus on creativity vs. exams?',
+  ],
 };
 
 // ---------- Helpers: TTS / beep ----------
@@ -84,12 +116,11 @@ async function beep(ms = 250, freq = 880) {
   await ctx.close();
 }
 
-// ---------- Upload + Score (same fallbacks as simulator) ----------
+// ---------- Upload + Score ----------
 async function putSigned(url: string, file: File, headers?: Record<string, string>) {
   const res = await fetch(url, { method: 'PUT', body: file, headers: headers ?? { 'Content-Type': file.type } });
   if (!res.ok) throw new Error(`Upload failed (${res.status})`);
 }
-
 async function postMultipart(path: string, file: File) {
   const fd = new FormData();
   fd.append('file', file);
@@ -97,7 +128,6 @@ async function postMultipart(path: string, file: File) {
   if (!res.ok) throw new Error(`Upload failed (${res.status})`);
   return res.json();
 }
-
 async function uploadAudio(file: File): Promise<{ fileUrl: string }> {
   try {
     const signed = await fetch('/api/upload/signed-url', {
@@ -132,13 +162,13 @@ type ScoreResult = {
   overall?: number;
   feedback?: string;
 };
-
-async function scoreAudio(fileUrl: string, durationSec: number): Promise<ScoreResult> {
+async function scoreAudio(fileUrl: string, part: Mode, durationSec: number): Promise<ScoreResult> {
+  const p = part === 'part1' ? 'p1' : part === 'part2' ? 'p2' : 'p3';
   try {
     const r = await fetch('/api/ai/speaking/score-audio-groq', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ fileUrl, durationSec, part: 'p2' }),
+      body: JSON.stringify({ fileUrl, durationSec, part: p }),
     });
     if (r.ok) return await r.json();
   } catch {}
@@ -146,14 +176,14 @@ async function scoreAudio(fileUrl: string, durationSec: number): Promise<ScoreRe
     const r = await fetch('/api/ai/speaking/score', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ fileUrl, durationSec, section: 'part2' }),
+      body: JSON.stringify({ fileUrl, durationSec, section: part }),
     });
     if (r.ok) return await r.json();
   } catch {}
   const r = await fetch('/api/ai/speaking/evaluate', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ fileUrl, part: 2 }),
+    body: JSON.stringify({ fileUrl, part: part === 'part1' ? 1 : part === 'part2' ? 2 : 3 }),
   });
   if (!r.ok) throw new Error('Scoring failed');
   return r.json();
@@ -164,26 +194,42 @@ type Stage = 'idle' | 'prep' | 'record' | 'uploading' | 'scoring' | 'done' | 'er
 
 export default function SpeakingPracticePage() {
   const router = useRouter();
-  const qfocus = (router.query.focus as string | undefined)?.toLowerCase() as Focus | undefined;
-  const [focus, setFocus] = useState<Focus>(FOCI.includes(qfocus || 'fluency') ? (qfocus as Focus) : 'fluency');
 
-  // sync URL (shallow)
+  // URL-state (mode & focus)
+  const qmode = (router.query.mode as string | undefined)?.toLowerCase() as Mode | undefined;
+  const [mode, setMode] = useState<Mode>(qmode && ['part1','part2','part3'].includes(qmode) ? qmode : 'part2');
   useEffect(() => {
-    const current = (router.query.focus as string | undefined)?.toLowerCase();
-    if (current !== focus) {
-      const url = { pathname: router.pathname, query: { ...router.query, focus } };
-      router.replace(url, undefined, { shallow: true });
+    const current = (router.query.mode as string | undefined)?.toLowerCase();
+    if (current !== mode) {
+      router.replace({ pathname: router.pathname, query: { ...router.query, mode } }, undefined, { shallow: true });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [focus]);
+  }, [mode]);
 
-  const bank = PROMPTS[focus];
-  const [prompt, setPrompt] = useState<string>(() => bank.items[Math.floor(Math.random() * bank.items.length)]);
-
+  const qfocus = (router.query.focus as string | undefined)?.toLowerCase() as Focus | undefined;
+  const [focus, setFocus] = useState<Focus>(FOCI.includes(qfocus || 'fluency') ? (qfocus as Focus) : 'fluency');
   useEffect(() => {
-    // when focus changes, pick a new prompt & timers
-    setPrompt(PROMPTS[focus].items[Math.floor(Math.random() * PROMPTS[focus].items.length)]);
-  }, [focus]);
+    if (mode !== 'part2') return; // only sync focus in part2
+    const current = (router.query.focus as string | undefined)?.toLowerCase();
+    if (current !== focus) {
+      router.replace({ pathname: router.pathname, query: { ...router.query, mode, focus } }, undefined, { shallow: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focus, mode]);
+
+  // Active bank based on mode/focus
+  const bank = useMemo(() => {
+    if (mode === 'part1') return PART1;
+    if (mode === 'part3') return PART3;
+    return PART2_FOCUS[focus];
+  }, [mode, focus]);
+
+  const [prompt, setPrompt] = useState<string>(() => bank.items[Math.floor(Math.random() * bank.items.length)]);
+  useEffect(() => {
+    setPrompt(bank.items[Math.floor(Math.random() * bank.items.length)]);
+  }, [bank]);
+
+  const recRef = useRef<RecorderHandle | null>(null);
 
   const [ttsOn, setTtsOn] = useState(true);
   const [stage, setStage] = useState<Stage>('idle');
@@ -194,25 +240,33 @@ export default function SpeakingPracticePage() {
   const [fileUrl, setFileUrl] = useState<string | null>(null);
   const [duration, setDuration] = useState<number>(bank.speak);
 
-  // Rerun timers when focus changes
+  // Re-init timers when bank changes
   useEffect(() => {
-    setPrepLeft(PROMPTS[focus].prep);
-    setSpeakLeft(PROMPTS[focus].speak);
-    setDuration(PROMPTS[focus].speak);
-  }, [focus]);
+    setPrepLeft(bank.prep);
+    setSpeakLeft(bank.speak);
+    setDuration(bank.speak);
+  }, [bank]);
 
-  // Flow handlers
+  // Flow
   const startDrill = useCallback(() => {
     setError(null);
     setResult(null);
     setFileUrl(null);
-    setStage('prep');
-    // TTS
+    setStage(bank.prep > 0 ? 'prep' : 'record');
+
     if (ttsOn) {
-      speak(`${PROMPTS[focus].title}. You will have ${bank.prep} seconds to prepare, then speak for ${bank.speak} seconds.`);
-      speak(`Prompt: ${prompt}`, { rate: 1 });
+      if (mode === 'part1') {
+        speak('Part one. Please answer the question briefly.');
+        speak(`Question: ${prompt}`, { rate: 1 });
+      } else if (mode === 'part2') {
+        speak('Part two. You will have one minute to prepare, then speak for up to two minutes.', { rate: 0.95 });
+        speak(`Topic: ${prompt}`, { rate: 1 });
+      } else {
+        speak('Part three. You will discuss the following question. Take a short moment to think.', { rate: 0.95 });
+        speak(`Question: ${prompt}`, { rate: 1 });
+      }
     }
-  }, [ttsOn, focus, bank.prep, bank.speak, prompt]);
+  }, [bank.prep, mode, prompt, ttsOn]);
 
   // PREP
   useEffect(() => {
@@ -230,7 +284,7 @@ export default function SpeakingPracticePage() {
     return () => window.clearInterval(id);
   }, [stage, bank.prep]);
 
-  // RECORD countdown (Recorder auto-stop handles finalization)
+  // RECORD
   useEffect(() => {
     if (stage !== 'record') return;
     setSpeakLeft(bank.speak);
@@ -240,7 +294,8 @@ export default function SpeakingPracticePage() {
       setSpeakLeft((s) => {
         if (s <= 1) {
           window.clearInterval(id);
-          // Recorder will stop via maxDurationSec
+          // Ensure hard stop in case maxDuration fallback misses
+          recRef.current?.stop().catch(() => {});
         }
         return s - 1;
       });
@@ -248,22 +303,25 @@ export default function SpeakingPracticePage() {
     return () => window.clearInterval(id);
   }, [stage, bank.speak, ttsOn]);
 
-  // On recording complete → upload → score
-  const onComplete = useCallback(async (file: File, meta: { durationSec: number; mime: string }) => {
-    try {
-      setDuration(meta.durationSec || bank.speak);
-      setStage('uploading');
-      const up = await uploadAudio(file);
-      setFileUrl(up.fileUrl);
-      setStage('scoring');
-      const scored = await scoreAudio(up.fileUrl, meta.durationSec || bank.speak);
-      setResult(scored);
-      setStage('done');
-    } catch (e: any) {
-      setError(e?.message || 'Could not process recording.');
-      setStage('error');
-    }
-  }, [bank.speak]);
+  // On record complete → upload → score
+  const onComplete = useCallback(
+    async (file: File, meta: { durationSec: number; mime: string }) => {
+      try {
+        setDuration(meta.durationSec || bank.speak);
+        setStage('uploading');
+        const up = await uploadAudio(file);
+        setFileUrl(up.fileUrl);
+        setStage('scoring');
+        const scored = await scoreAudio(up.fileUrl, mode, meta.durationSec || bank.speak);
+        setResult(scored);
+        setStage('done');
+      } catch (e: any) {
+        setError(e?.message || 'Could not process recording.');
+        setStage('error');
+      }
+    },
+    [bank.speak, mode]
+  );
 
   const onError = useCallback((msg: string) => {
     setError(msg);
@@ -280,7 +338,7 @@ export default function SpeakingPracticePage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          section: 'part2', // practice defaults to part2-style monologue
+          section: mode, // 'part1' | 'part2' | 'part3'
           fileUrl,
           transcript: result.transcript,
           durationSec: duration,
@@ -292,7 +350,7 @@ export default function SpeakingPracticePage() {
             overall: result.overall,
             feedback: result.feedback,
           },
-          topic: PROMPTS[focus].title,
+          topic: bank.title,
           points: [prompt],
         }),
       });
@@ -321,23 +379,41 @@ export default function SpeakingPracticePage() {
           </div>
         </div>
 
-        {/* Focus selector */}
-        <div className="flex flex-wrap gap-2 mb-5">
-          {FOCI.map((f) => (
+        {/* Mode selector */}
+        <div className="flex flex-wrap gap-2 mb-4">
+          {(['part1','part2','part3'] as Mode[]).map((m) => (
             <button
-              key={f}
-              onClick={() => setFocus(f)}
+              key={m}
+              onClick={() => setMode(m)}
               className={`px-3 py-1.5 rounded-xl border text-sm ${
-                f === focus
-                  ? 'bg-blue-600 text-white border-blue-600'
+                m === mode
+                  ? 'bg-indigo-600 text-white border-indigo-600'
                   : 'border-gray-300 dark:border-white/10'
               }`}
             >
-              {PROMPTS[f].title}
+              {m === 'part1' ? 'Part 1' : m === 'part2' ? 'Part 2' : 'Part 3'}
             </button>
           ))}
+          {/* Focus visible only for Part 2 */}
+          {mode === 'part2' && (
+            <div className="ml-auto flex flex-wrap gap-2">
+              {FOCI.map((f) => (
+                <button
+                  key={f}
+                  onClick={() => setFocus(f)}
+                  className={`px-3 py-1.5 rounded-xl border text-sm ${
+                    f === focus
+                      ? 'bg-blue-600 text-white border-blue-600'
+                      : 'border-gray-300 dark:border-white/10'
+                  }`}
+                >
+                  {f.charAt(0).toUpperCase() + f.slice(1)}
+                </button>
+              ))}
+            </div>
+          )}
           <button
-            onClick={() => setPrompt(PROMPTS[focus].items[Math.floor(Math.random() * PROMPTS[focus].items.length)])}
+            onClick={() => setPrompt(bank.items[Math.floor(Math.random() * bank.items.length)])}
             className="ml-auto px-3 py-1.5 rounded-xl border border-gray-300 dark:border-white/10 text-sm"
           >
             New Prompt
@@ -346,7 +422,7 @@ export default function SpeakingPracticePage() {
 
         {/* Prompt card */}
         <div className="rounded-2xl border border-gray-200 dark:border-white/10 p-5 bg-white/60 dark:bg-white/5">
-          <div className="text-xs uppercase tracking-wide text-gray-500">{PROMPTS[focus].title}</div>
+          <div className="text-xs uppercase tracking-wide text-gray-500">{bank.title}</div>
           <p className="mt-2 text-base">{prompt}</p>
 
           {/* Timers */}
@@ -354,13 +430,19 @@ export default function SpeakingPracticePage() {
             <div className="rounded-xl border border-gray-200 dark:border-white/10 p-3 text-center">
               <div className="text-xs text-gray-500">Prep</div>
               <div className="font-mono text-xl">
-                {stage === 'prep' ? `${minutes(prepLeft)}:${seconds(prepLeft)}` : `${minutes(bank.prep)}:${seconds(bank.prep)}`}
+                {bank.prep > 0
+                  ? (stage === 'prep'
+                      ? `${minutes(prepLeft)}:${seconds(prepLeft)}`
+                      : `${minutes(bank.prep)}:${seconds(bank.prep)}`)
+                  : '—'}
               </div>
             </div>
             <div className="rounded-xl border border-gray-200 dark:border-white/10 p-3 text-center">
               <div className="text-xs text-gray-500">Speaking</div>
               <div className="font-mono text-xl">
-                {stage === 'record' ? `${minutes(speakLeft)}:${seconds(speakLeft)}` : `${minutes(bank.speak)}:${seconds(bank.speak)}`}
+                {stage === 'record'
+                  ? `${minutes(speakLeft)}:${seconds(speakLeft)}`
+                  : `${minutes(bank.speak)}:${seconds(bank.speak)}`}
               </div>
             </div>
           </div>
@@ -385,6 +467,7 @@ export default function SpeakingPracticePage() {
         {/* Recorder */}
         <div className="mt-6">
           <Recorder
+            ref={recRef}
             autoStart={stage === 'record'}
             maxDurationSec={bank.speak}
             onComplete={onComplete}
@@ -392,7 +475,7 @@ export default function SpeakingPracticePage() {
             className="bg-white/60 dark:bg-white/5"
           />
           <p className="mt-2 text-xs text-gray-500">
-            Recording auto-starts after prep and auto-stops at the time limit.
+            Recording auto-starts {bank.prep > 0 ? 'after prep' : 'immediately'} and auto-stops at the time limit.
           </p>
         </div>
 
@@ -420,7 +503,9 @@ export default function SpeakingPracticePage() {
               <div className="mt-4 rounded-2xl border border-gray-200 dark:border-white/10 p-4">
                 <div className="text-xs uppercase tracking-wide text-gray-500">AI Result</div>
                 <div className="mt-2">
-                  <div className="text-3xl font-semibold">{typeof result.overall === 'number' ? result.overall.toFixed(1) : '—'}</div>
+                  <div className="text-3xl font-semibold">
+                    {typeof result.overall === 'number' ? result.overall.toFixed(1) : '—'}
+                  </div>
                   <div className="mt-2 grid grid-cols-2 gap-2 text-sm">
                     <div>Fluency: <strong>{result.fluency ?? '—'}</strong></div>
                     <div>Pronunciation: <strong>{result.pronunciation ?? '—'}</strong></div>
@@ -434,7 +519,9 @@ export default function SpeakingPracticePage() {
                     </div>
                   )}
                   {result.feedback && (
-                    <p className="mt-3 text-sm text-gray-700 dark:text-gray-200 whitespace-pre-wrap">{result.feedback}</p>
+                    <p className="mt-3 text-sm text-gray-700 dark:text-gray-200 whitespace-pre-wrap">
+                      {result.feedback}
+                    </p>
                   )}
                   <div className="mt-4 flex gap-2">
                     <button onClick={saveAsAttempt} className="px-3 py-2 rounded-xl bg-blue-600 text-white">
@@ -449,7 +536,7 @@ export default function SpeakingPracticePage() {
             )}
           </div>
 
-          {/* Quick Nav */}
+          {/* Quick Nav + Tips */}
           <div className="md:col-span-1">
             <div className="rounded-2xl border border-gray-200 dark:border-white/10 p-4">
               <div className="text-xs uppercase tracking-wide text-gray-500">Quick Jump</div>
@@ -462,30 +549,48 @@ export default function SpeakingPracticePage() {
             </div>
 
             <div className="mt-4 rounded-2xl border border-gray-200 dark:border-white/10 p-4">
-              <div className="text-xs uppercase tracking-wide text-gray-500">Tips for {PROMPTS[focus].title}</div>
+              <div className="text-xs uppercase tracking-wide text-gray-500">
+                Tips {mode === 'part2' ? `for ${focus.charAt(0).toUpperCase() + focus.slice(1)}` : `for ${mode.toUpperCase()}`}
+              </div>
               <ul className="mt-2 list-disc pl-5 text-sm space-y-1">
-                {focus === 'fluency' && (
+                {mode === 'part1' && (
                   <>
-                    <li>Keep speaking—avoid long pauses; use fillers sparingly.</li>
-                    <li>Use signposting: “firstly… secondly… finally…”.</li>
+                    <li>Answer directly, then add 1–2 supporting details.</li>
+                    <li>Keep sentences clear; avoid long pauses.</li>
                   </>
                 )}
-                {focus === 'lexical' && (
+                {mode === 'part3' && (
                   <>
-                    <li>Paraphrase to avoid repetition; use collocations.</li>
-                    <li>Prefer precise adjectives/adverbs over generic words.</li>
+                    <li>State an opinion, justify it, then acknowledge the opposite side.</li>
+                    <li>Use linking: “however”, “on the other hand”, “moreover”.</li>
                   </>
                 )}
-                {focus === 'grammar' && (
+                {mode === 'part2' && (
                   <>
-                    <li>Mix simple, compound and complex sentences naturally.</li>
-                    <li>Watch subject–verb agreement and tense consistency.</li>
-                  </>
-                )}
-                {focus === 'pronunciation' && (
-                  <>
-                    <li>Chunk ideas into thought groups; drop pitch at sentence ends.</li>
-                    <li>Release final consonants; practice vowel length contrasts.</li>
+                    {focus === 'fluency' && (
+                      <>
+                        <li>Use signposting: firstly, secondly, finally.</li>
+                        <li>Keep going—avoid long pauses.</li>
+                      </>
+                    )}
+                    {focus === 'lexical' && (
+                      <>
+                        <li>Paraphrase; prefer precise collocations.</li>
+                        <li>Avoid repeating common words.</li>
+                      </>
+                    )}
+                    {focus === 'grammar' && (
+                      <>
+                        <li>Mix simple/complex sentences naturally.</li>
+                        <li>Mind tense consistency; S–V agreement.</li>
+                      </>
+                    )}
+                    {focus === 'pronunciation' && (
+                      <>
+                        <li>Use thought groups; stress content words.</li>
+                        <li>Release final consonants clearly.</li>
+                      </>
+                    )}
                   </>
                 )}
               </ul>

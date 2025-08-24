@@ -9,13 +9,16 @@
     "build:premium": "tailwindcss -i ./styles/premium.css -c tailwind.config.premium.js -o ./public/premium.css --minify",
     "start": "next start",
     "lint": "next lint",
-    "pin:hash": "ts-node tools/hash-pin.ts"
+    "pin:hash": "ts-node tools/hash-pin.ts",
+    "diagnose": "powershell -ExecutionPolicy Bypass -File .\\\\tools\\\\report-build-issues.ps1"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
+    "@radix-ui/react-slot": "^1.2.3",
     "@supabase/auth-helpers-nextjs": "^0.10.0",
     "@supabase/supabase-js": "^2.55.0",
     "bcryptjs": "^3.0.2",
+    "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "formidable": "^3.5.4",
     "groq-sdk": "^0.30.0",
@@ -25,6 +28,9 @@
     "openai": "^5.12.2",
     "react": "18.3.1",
     "react-dom": "18.3.1",
+    "tailwind-merge": "^2.6.0",
+    "tailwindcss-animate": "^1.0.7",
+    "twilio": "^5.8.0",
     "zod": "^3.25.76"
   },
   "devDependencies": {
@@ -33,6 +39,7 @@
     "autoprefixer": "^10.4.20",
     "concurrently": "^9.0.1",
     "eslint": "^8.57.0",
+    "eslint-config-next": "15.5.0",
     "postcss": "^8.4.41",
     "tailwindcss": "^3.4.10",
     "ts-node": "^10.9.2",

@@ -1,80 +1,82 @@
 import React, { useState } from 'react';
+import Link from 'next/link';
 import Image from 'next/image';
-import { useRouter } from 'next/router';
-import { Container } from '@/components/design-system/Container';
-import { Card } from '@/components/design-system/Card';
+import AuthLayout from '@/components/layouts/AuthLayout';
 import { Input } from '@/components/design-system/Input';
 import { Button } from '@/components/design-system/Button';
 import { Alert } from '@/components/design-system/Alert';
-import { supabase } from '@/lib/supabaseClient';
+import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser';
 
-export default function SignupPhone() {
-  const router = useRouter();
-  const [phone, setPhone] = useState(''), [otp, setOtp] = useState('');
-  const [sent, setSent] = useState(false);
-  const [loading, setLoading] = useState(false), [err, setErr] = useState<string|null>(null);
+export default function SignupWithPhone() {
+  const [phone, setPhone] = useState('');
+  const [code, setCode] = useState('');
+  const [stage, setStage] = useState<'request' | 'verify'>('request');
+  const [err, setErr] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const send = async () => {
+  async function requestOtp(e: React.FormEvent) {
+    e.preventDefault();
     setErr(null);
-    if (!phone) return setErr('Enter your phone number with country code.');
+    if (!phone) return setErr('Enter your phone number in E.164 format, e.g. +923001234567');
     setLoading(true);
-    const { error } = await supabase.auth.signInWithOtp({ phone, options: { channel: 'sms' } });
+    const { error } = await supabase.auth.signInWithOtp({ phone, options: { shouldCreateUser: true } });
     setLoading(false);
     if (error) return setErr(error.message);
-    setSent(true); // Supabase creates the user if new
-  };
+    setStage('verify');
+  }
 
-  const verify = async () => {
+  async function verifyOtp(e: React.FormEvent) {
+    e.preventDefault();
     setErr(null);
-    if (!otp) return setErr('Enter the verification code.');
+    if (!code) return setErr('Enter the 6-digit code.');
     setLoading(true);
-    const { error } = await supabase.auth.verifyOtp({ phone, token: otp, type: 'sms' });
+    const { data, error } = await supabase.auth.verifyOtp({ phone, token: code, type: 'sms' });
     setLoading(false);
     if (error) return setErr(error.message);
-    router.push('/dashboard');
-  };
+    if (data.session) window.location.assign('/profile-setup');
+  }
+
+  const RightPanel = (
+    <div className="h-full flex flex-col justify-between p-8 md:p-12 bg-gradient-to-br from-purpleVibe/10 via-electricBlue/5 to-neonGreen/10 dark:from-dark/50 dark:via-dark/30 dark:to-darker/60">
+      <div>
+        <div className="flex items-center gap-3 mb-6">
+          <Image src="/brand/logo.png" alt="GramorX" width={40} height={40} className="rounded-ds object-contain" priority />
+          <h2 className="font-slab text-h2 text-gradient-primary">Phone sign-up</h2>
+        </div>
+        <p className="text-body text-grayish dark:text-gray-300 max-w-md">Create your account with a one-time SMS code.</p>
+      </div>
+      <div className="pt-8 text-small text-grayish dark:text-gray-400">
+        Prefer email? <Link href="/signup/password" className="text-primary hover:underline">Use Email & Password</Link>
+      </div>
+    </div>
+  );
 
   return (
-    <section className="min-h-[100svh] bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90">
-      <Container>
-        <div className="min-h-[100svh] grid place-items-center">
-          <Card className="w-full max-w-md p-8 rounded-ds-2xl">
-            <div className="flex items-center justify-between mb-4">
-              <a href="/signup" className="text-small text-primary dark:text-electricBlue">&larr; Back</a>
-              <Image src="/brand/logo.png" alt="Brand Logo" width={110} height={26} className="h-6 w-auto" />
-            </div>
+    <AuthLayout title="Phone Verification" subtitle="Sign up with an SMS code."
+      // @ts-expect-error TODO: AuthLayout supports an optional `right` slot
+      right={RightPanel}
+    >
+      {err && <Alert variant="error" title="Error" className="mb-4">{err}</Alert>}
 
-            <h1 className="font-slab text-h1 mb-2 text-primary dark:text-electricBlue">Sign up with Phone</h1>
-            <p className="text-grayish dark:text-white/75 mb-6">We’ll text you a one‑time code.</p>
+      {stage === 'request' ? (
+        <form onSubmit={requestOtp} className="space-y-6 mt-2">
+          <Input label="Phone number" type="tel" placeholder="+923001234567" value={phone} onChange={(e)=>setPhone(e.target.value)} required />
+          <Button type="submit" variant="primary" className="w-full rounded-ds-xl" disabled={loading}>
+            {loading ? 'Sending…' : 'Send code'}
+          </Button>
+        </form>
+      ) : (
+        <form onSubmit={verifyOtp} className="space-y-6 mt-2">
+          <Input label="Verification code" inputMode="numeric" placeholder="123456" value={code} onChange={(e)=>setCode(e.target.value)} required />
+          <Button type="submit" variant="primary" className="w-full rounded-ds-xl" disabled={loading}>
+            {loading ? 'Verifying…' : 'Verify & Continue'}
+          </Button>
+        </form>
+      )}
 
-            {err && <Alert variant="error" title="Verification issue" className="mb-4">{err}</Alert>}
-
-            {!sent ? (
-              <div className="grid gap-4">
-                <Input label="Phone number" type="tel" placeholder="+92 300 1234567"
-                       value={phone} onChange={(e)=>setPhone(e.target.value)}
-                       hint="Include country code (e.g., +92 for Pakistan)" />
-                <Button variant="accent" className="w-full rounded-ds-xl" onClick={send} disabled={loading}>
-                  {loading ? 'Sending code…' : 'Send verification code'}
-                </Button>
-              </div>
-            ) : (
-              <div className="grid gap-4">
-                <Input label="Verification code" inputMode="numeric" placeholder="Enter 6‑digit code"
-                       value={otp} onChange={(e)=>setOtp(e.target.value)} />
-                <div className="flex gap-3">
-                  <Button variant="primary" className="flex-1 rounded-ds-xl" onClick={verify} disabled={loading}>
-                    {loading ? 'Verifying…' : 'Verify & Continue'}
-                  </Button>
-                  <Button variant="secondary" className="rounded-ds-xl" onClick={send} disabled={loading}>
-                    Resend
-                  </Button>
-                </div>
-              </div>
-            )}
-          </Card>
-        </div>
-      </Container>
-    </section>
+      <Button asChild variant="secondary" className="mt-6 rounded-ds-xl w-full">
+        <Link href="/signup">Back to Sign-up Options</Link>
+      </Button>
+    </AuthLayout>
   );
 }

@@ -1,260 +1,375 @@
-import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
-import { Card } from '@/components/design-system/Card';
-import { Button } from '@/components/design-system/Button';
-import { Badge } from '@/components/design-system/Badge';
-import { Alert } from '@/components/design-system/Alert';
-import { AudioBar } from '@/components/design-system/AudioBar';
+// components/listening/AudioSectionsPlayer.tsx
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-type Section = {
+type MCQ = {
   id: string;
-  order_no: number;
-  audio_url: string;
-  start_ms: number;
-  end_ms: number;
-  transcript?: string | null;
+  qNo: number;
+  type: 'mcq';
+  prompt: string;
+  options: string[];
+  answer: string;
 };
 
-type Props = {
-  sections: Section[];
-  /** small pause between sections when auto-advancing */
-  gapMs?: number;
-  /** notify parent when active section changes (optional) */
-  onSectionChange?: (orderNo: number) => void;
+type GAP = {
+  id: string;
+  qNo: number;
+  type: 'gap';
+  prompt: string;
+  answer: string;
 };
 
-export default function AudioSectionsPlayer({
+type MATCH = {
+  id: string;
+  qNo: number;
+  type: 'match';
+  left: string[];
+  right: string[];
+  pairs: Record<number, number>; // key: left index, value: right index
+};
+
+export type Question = MCQ | GAP | MATCH;
+
+export type ListeningSection = {
+  orderNo: number;
+  startMs: number;
+  endMs: number;
+  transcript?: string;
+  questions: Question[];
+};
+
+export type AudioSectionsPlayerProps = {
+  masterAudioUrl: string;
+  sections: ListeningSection[];
+  initialSectionIndex?: number;
+  autoAdvance?: boolean;       // default: true
+  allowSeek?: boolean;         // default: false (exam-like)
+  isSubmitted?: boolean;       // unlocks transcript
+  onReady?: () => void;
+  onPlay?: (sectionIndex: number) => void;
+  onPause?: (sectionIndex: number) => void;
+  onSectionChange?: (sectionIndex: number) => void;
+  className?: string;
+};
+
+function clamp(n: number, min: number, max: number) {
+  return Math.max(min, Math.min(max, n));
+}
+
+export const AudioSectionsPlayer: React.FC<AudioSectionsPlayerProps> = ({
+  masterAudioUrl,
   sections,
-  gapMs = 800,
+  initialSectionIndex = 0,
+  autoAdvance = true,
+  allowSeek = false,
+  isSubmitted = false,
+  onReady,
+  onPlay,
+  onPause,
   onSectionChange,
-}: Props) {
-  const ordered = useMemo(
-    () => [...sections].sort((a, b) => a.order_no - b.order_no),
-    [sections]
-  );
+  className = '',
+}) => {
+  // ---- SSR-safe mount gate (no conditional hooks) ----
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
 
-  const [i, setI] = useState(0);
-  const [showTranscript, setShowTranscript] = useState<Record<string, boolean>>({});
-  const [autoAdvance, setAutoAdvance] = useState(true);
+  // ---- refs & state ----
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const rafRef = useRef<number | null>(null);
+  const [ready, setReady] = useState(false);
   const [playing, setPlaying] = useState(false);
-  const [current, setCurrent] = useState(0);   // seconds within the section
-  const [duration, setDuration] = useState(0); // section duration in seconds
+  const [sectionIndex, setSectionIndex] = useState<number>(clamp(initialSectionIndex, 0, Math.max(0, sections.length - 1)));
+  const [localTimeMs, setLocalTimeMs] = useState<number>(0); // progress within section
 
-  const audioRef = useRef<HTMLAudioElement>(null);
-  const s = ordered[i];
-  const hasNext = i < ordered.length - 1;
+  const hasAudio = Boolean(masterAudioUrl);
+  const current = sections[sectionIndex];
 
-  if (!ordered.length) {
+  // Precomputed section bounds in seconds (HTMLAudio is seconds-based)
+  const bounds = useMemo(() => {
+    if (!current) return { startS: 0, endS: 0, lengthMs: 0 };
+    const startS = current.startMs / 1000;
+    const endS = current.endMs / 1000;
+    const lengthMs = current.endMs - current.startMs;
+    return { startS, endS, lengthMs };
+  }, [current]);
+
+  // ---- helpers (unconditional hooks) ----
+  const loadToSection = useCallback((sIndex: number) => {
+    const audio = audioRef.current;
+    const target = sections[sIndex];
+    if (!audio || !target) return;
+
+    // Jump to section start
+    audio.currentTime = target.startMs / 1000;
+    setLocalTimeMs(0);
+  }, [sections]);
+
+  const tick = useCallback(() => {
+    const audio = audioRef.current;
+    if (!audio || !current) return;
+
+    const nowS = audio.currentTime;
+    const nowMs = nowS * 1000;
+    const startMs = current.startMs;
+    const endMs = current.endMs;
+
+    // update progress within section
+    const within = clamp(nowMs - startMs, 0, Math.max(0, endMs - startMs));
+    setLocalTimeMs(within);
+
+    // stop/advance at section end
+    if (nowMs >= endMs - 10) {
+      // small guard
+      if (autoAdvance && sectionIndex < sections.length - 1) {
+        // advance to next section
+        const next = sectionIndex + 1;
+        setSectionIndex(next);
+        onSectionChange?.(next);
+        // queue jump on next frame to avoid stutter
+        requestAnimationFrame(() => {
+          loadToSection(next);
+          audio.play().catch(() => setPlaying(false));
+          onPlay?.(next);
+        });
+      } else {
+        // pause at the end
+        audio.pause();
+        setPlaying(false);
+        onPause?.(sectionIndex);
+      }
+    }
+
+    rafRef.current = requestAnimationFrame(tick);
+  }, [autoAdvance, current, loadToSection, onPause, onPlay, onSectionChange, sectionIndex, sections.length]);
+
+  const startRaf = useCallback(() => {
+    if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
+    rafRef.current = requestAnimationFrame(tick);
+  }, [tick]);
+
+  const stopRaf = useCallback(() => {
+    if (rafRef.current != null) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
+  }, []);
+
+  // ---- audio lifecycle ----
+  useEffect(() => {
+    if (!mounted || !hasAudio) return;
+    const audio = new Audio(masterAudioUrl);
+    audioRef.current = audio;
+
+    const handleCanPlay = () => {
+      setReady(true);
+      onReady?.();
+      // ensure we are at current section start
+      loadToSection(sectionIndex);
+    };
+
+    const handlePlay = () => {
+      setPlaying(true);
+      onPlay?.(sectionIndex);
+      startRaf();
+    };
+
+    const handlePause = () => {
+      setPlaying(false);
+      onPause?.(sectionIndex);
+      stopRaf();
+    };
+
+    audio.addEventListener('canplay', handleCanPlay);
+    audio.addEventListener('play', handlePlay);
+    audio.addEventListener('pause', handlePause);
+
+    // iOS: required attributes
+    audio.preload = 'auto';
+    audio.crossOrigin = 'anonymous';
+
+    return () => {
+      stopRaf();
+      audio.pause();
+      audio.removeEventListener('canplay', handleCanPlay);
+      audio.removeEventListener('play', handlePlay);
+      audio.removeEventListener('pause', handlePause);
+      audioRef.current = null;
+    };
+  }, [mounted, hasAudio, masterAudioUrl, onPause, onPlay, onReady, sectionIndex, startRaf, stopRaf, loadToSection]);
+
+  // jump audio when section changes (user nav)
+  useEffect(() => {
+    if (!ready) return;
+    loadToSection(sectionIndex);
+  }, [ready, sectionIndex, loadToSection]);
+
+  // ---- controls ----
+  const play = useCallback(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    // clamp to section window if user scrubbed
+    const nowS = audio.currentTime;
+    if (nowS < bounds.startS || nowS > bounds.endS) {
+      audio.currentTime = bounds.startS;
+    }
+    audio.play().catch(() => setPlaying(false));
+  }, [bounds.startS, bounds.endS]);
+
+  const pause = useCallback(() => {
+    audioRef.current?.pause();
+  }, []);
+
+  const prevSection = useCallback(() => {
+    const prev = clamp(sectionIndex - 1, 0, sections.length - 1);
+    if (prev === sectionIndex) return;
+    setSectionIndex(prev);
+    onSectionChange?.(prev);
+  }, [onSectionChange, sectionIndex, sections.length]);
+
+  const nextSection = useCallback(() => {
+    const next = clamp(sectionIndex + 1, 0, sections.length - 1);
+    if (next === sectionIndex) return;
+    setSectionIndex(next);
+    onSectionChange?.(next);
+  }, [onSectionChange, sectionIndex, sections.length]);
+
+  const onSeek = useCallback((pct: number) => {
+    if (!allowSeek) return; // locked in exam mode
+    const audio = audioRef.current;
+    if (!audio || !current) return;
+    const lengthMs = current.endMs - current.startMs;
+    const newWithinMs = clamp(Math.round(lengthMs * pct), 0, lengthMs);
+    audio.currentTime = (current.startMs + newWithinMs) / 1000;
+    setLocalTimeMs(newWithinMs);
+  }, [allowSeek, current]);
+
+  // ---- derived for UI ----
+  const pct = useMemo(() => {
+    const len = Math.max(1, bounds.endS * 1000 - bounds.startS * 1000);
+    return clamp(localTimeMs / len, 0, 1);
+  }, [bounds.endS, bounds.startS, localTimeMs]);
+
+  const mmss = useMemo(() => {
+    const secs = Math.floor(localTimeMs / 1000);
+    const m = Math.floor(secs / 60).toString().padStart(2, '0');
+    const s = (secs % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  }, [localTimeMs]);
+
+  // ---- render ----
+  if (!mounted) {
     return (
-      <Alert variant="warning" title="No audio">
-        No sections available.
-      </Alert>
+      <div className={`card-surface p-4 rounded-ds ${className}`}>
+        <div className="text-small opacity-80">Loading audio…</div>
+      </div>
     );
   }
 
-  // helper: (re)load a section, seek to start, try to play
-  const loadAndPlaySection = useCallback(
-    async (idx: number, autoplay = true) => {
-      const el = audioRef.current;
-      const sec = ordered[idx];
-      if (!el || !sec) return;
-
-      // If switching sections, swap media source first
-      if (el.src !== sec.audio_url) {
-        el.src = sec.audio_url;
-      }
-
-      const startS = (sec.start_ms ?? 0) / 1000;
-      const endS = (sec.end_ms ?? 0) / 1000;
-      const durS = Math.max(0, endS - startS);
-
-      try {
-        // seek to section start
-        el.currentTime = startS;
-      } catch {
-        await new Promise((r) => setTimeout(r, 50));
-        el.currentTime = startS;
-      }
-
-      setDuration(durS);
-      setCurrent(0);
-      setPlaying(false);
-
-      setI(idx);
-      onSectionChange?.(sec.order_no);
-
-      // Try to play if allowed
-      if (autoplay) {
-        try {
-          await el.play();
-          setPlaying(true);
-        } catch {
-          setPlaying(false); // user gesture required
-        }
-      }
-    },
-    [ordered, onSectionChange]
-  );
-
-  // Initial prime: load first section (don’t force autoplay)
-  useEffect(() => {
-    if (!ordered.length) return;
-    loadAndPlaySection(0, false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ordered.length]);
-
-  // Wire audio events for bounds + UI sync
-  useEffect(() => {
-    const el = audioRef.current;
-    if (!el || !s) return;
-
-    const startS = (s.start_ms ?? 0) / 1000;
-    const endS = (s.end_ms ?? 0) / 1000;
-
-    const onLoaded = () => {
-      const durS = Math.max(0, endS - startS);
-      setDuration(durS);
-      // If the media changed underneath, clamp to start
-      const local = Math.max(0, el.currentTime - startS);
-      setCurrent(Math.min(local, durS));
-    };
-
-    const onTime = () => {
-      const local = Math.max(0, el.currentTime - startS);
-      const durS = Math.max(0, endS - startS);
-      const clampedLocal = Math.min(local, durS);
-      setCurrent(clampedLocal);
-
-      // Hard stop at end bound
-      if (el.currentTime >= endS - 0.02) {
-        el.pause();
-        setPlaying(false);
-
-        // Optional auto-advance to next section after a small gap
-        if (autoAdvance && hasNext) {
-          const nextIdx = i + 1;
-          setTimeout(() => {
-            loadAndPlaySection(nextIdx);
-          }, gapMs);
-        }
-      }
-    };
-
-    const onPlay = () => setPlaying(true);
-    const onPause = () => setPlaying(false);
-    const onEnded = () => {
-      setPlaying(false);
-      if (autoAdvance && hasNext) {
-        const nextIdx = i + 1;
-        setTimeout(() => loadAndPlaySection(nextIdx), gapMs);
-      }
-    };
-
-    el.addEventListener('loadedmetadata', onLoaded);
-    el.addEventListener('timeupdate', onTime);
-    el.addEventListener('play', onPlay);
-    el.addEventListener('pause', onPause);
-    el.addEventListener('ended', onEnded);
-    return () => {
-      el.removeEventListener('loadedmetadata', onLoaded);
-      el.removeEventListener('timeupdate', onTime);
-      el.removeEventListener('play', onPlay);
-      el.removeEventListener('pause', onPause);
-      el.removeEventListener('ended', onEnded);
-    };
-  }, [i, s?.start_ms, s?.end_ms, autoAdvance, hasNext, gapMs, loadAndPlaySection]);
-
-  // Play/pause from the DS AudioBar
-  const togglePlay = () => {
-    const el = audioRef.current;
-    if (!el) return;
-    if (playing) el.pause();
-    else el.play().catch(() => {});
-  };
-
-  // Seek within the current section from the DS AudioBar
-  const handleSeek = (seconds: number) => {
-    const el = audioRef.current;
-    if (!el || !s) return;
-    const startS = (s.start_ms ?? 0) / 1000;
-    const endS = (s.end_ms ?? 0) / 1000;
-    const durS = Math.max(0, endS - startS);
-    const safe = Math.max(0, Math.min(seconds, durS));
-    el.currentTime = startS + safe;
-    setCurrent(safe);
-  };
-
-  const restartSection = () => loadAndPlaySection(i);
+  if (!hasAudio || !current) {
+    return (
+      <div className={`card-surface p-4 rounded-ds ${className}`}>
+        <div className="text-small opacity-80">No audio or sections available.</div>
+      </div>
+    );
+  }
 
   return (
-    <Card className="card-surface p-6 rounded-ds-2xl">
-      <div className="flex items-center gap-3">
-        <Badge variant="info" size="sm">
-          Section {s.order_no}
-        </Badge>
-
-        <Button variant="secondary" onClick={() => setAutoAdvance((v) => !v)}>
-          {autoAdvance ? 'Auto‑advance: On' : 'Auto‑advance: Off'}
-        </Button>
-
-        <div className="ml-auto flex gap-2">
-          <Button
-            variant="secondary"
-            disabled={i === 0}
-            onClick={() => loadAndPlaySection(Math.max(0, i - 1))}
+    <div className={`card-surface p-4 rounded-ds ${className}`}>
+      {/* Header / Section info */}
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <div className="text-small opacity-70">Section</div>
+          <div className="font-semibold">#{current.orderNo}</div>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={prevSection}
+            className="px-3 py-2 rounded-ds border border-gray-200 dark:border-white/10 hover:bg-white/5"
             aria-label="Previous section"
           >
-            Prev
-          </Button>
-          <Button
-            variant="secondary"
-            disabled={!hasNext}
-            onClick={() => loadAndPlaySection(Math.min(ordered.length - 1, i + 1))}
+            <i className="fas fa-step-backward" />
+          </button>
+          {playing ? (
+            <button
+              type="button"
+              onClick={pause}
+              className="px-4 py-2 rounded-ds-xl bg-primary text-white hover:opacity-90"
+              aria-label="Pause"
+            >
+              <i className="fas fa-pause" /> <span className="ml-2">Pause</span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={play}
+              disabled={!ready}
+              className="px-4 py-2 rounded-ds-xl bg-primary text-white disabled:opacity-50 hover:opacity-90"
+              aria-label="Play"
+            >
+              <i className="fas fa-play" /> <span className="ml-2">Play</span>
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={nextSection}
+            className="px-3 py-2 rounded-ds border border-gray-200 dark:border-white/10 hover:bg-white/5"
             aria-label="Next section"
           >
-            Next
-          </Button>
-          <Button variant="accent" onClick={restartSection} aria-label="Restart section">
-            Restart
-          </Button>
+            <i className="fas fa-step-forward" />
+          </button>
         </div>
       </div>
 
-      {/* Hidden native audio for actual playback; DS AudioBar drives UI */}
-      <audio ref={audioRef} className="sr-only" aria-hidden />
-
-      <div className="mt-3 text-small text-grayish">
-        Bounds: <code>{Math.floor((s.start_ms ?? 0) / 1000)}s → {Math.floor((s.end_ms ?? 0) / 1000)}s</code>
-      </div>
-
+      {/* Progress */}
       <div className="mt-4">
-        <AudioBar
-          current={current}
-          duration={duration}
-          playing={playing}
-          onSeek={handleSeek}
-          onTogglePlay={togglePlay}
-        />
-      </div>
-
-      <div className="mt-4">
-        <Button
-          variant="primary"
-          onClick={() => setShowTranscript((prev) => ({ ...prev, [s.id]: !prev[s.id] }))}
-          aria-expanded={!!showTranscript[s.id]}
+        <div className="flex items-center justify-between text-small opacity-70 mb-1">
+          <span>{mmss}</span>
+          <span>{Math.round(pct * 100)}%</span>
+        </div>
+        <div
+          className={`h-3 rounded-ds bg-gray-200 dark:bg-white/10 ${allowSeek ? 'cursor-pointer' : 'cursor-not-allowed'}`}
+          onClick={(e) => {
+            if (!allowSeek) return;
+            const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
+            const p = clamp((e.clientX - rect.left) / rect.width, 0, 1);
+            onSeek(p);
+          }}
+          role={allowSeek ? 'slider' : undefined}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={Math.round(pct * 100)}
         >
-          {showTranscript[s.id] ? 'Hide transcript' : 'Show transcript'}
-        </Button>
+          <div
+            className="h-3 rounded-ds bg-primary"
+            style={{ width: `${pct * 100}%` }}
+          />
+        </div>
+      </div>
 
-        {showTranscript[s.id] && (
-          <Card className="p-4 mt-3 rounded-ds-2xl">
-            {s.transcript ? (
-              <p className="whitespace-pre-wrap text-body opacity-90">{s.transcript}</p>
-            ) : (
-              <p className="text-small text-grayish">No transcript for this section.</p>
-            )}
-          </Card>
+      {/* Transcript */}
+      <div className="mt-4">
+        <div className="text-small opacity-70 mb-1">Transcript</div>
+        <div
+          className={`p-3.5 rounded-ds border border-gray-200 dark:border-white/10 ${isSubmitted ? '' : 'blur-sm select-none pointer-events-none'}`}
+          aria-live="polite"
+        >
+          {current.transcript ? (
+            <p className="opacity-90">{current.transcript}</p>
+          ) : (
+            <p className="opacity-60">No transcript available for this section.</p>
+          )}
+        </div>
+        {!isSubmitted && (
+          <div className="text-small opacity-60 mt-1">
+            Transcript will unlock after you submit.
+          </div>
         )}
       </div>
-    </Card>
+
+      {/* Hidden audio element holder (managed via ref) */}
+      <div className="sr-only" aria-hidden="true" />
+    </div>
   );
-}
+};
+
+export default AudioSectionsPlayer;

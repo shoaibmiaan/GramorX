@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
 import { Container } from '@/components/design-system/Container';
 import { AiTestDrive } from '@/components/ai/AiTestDrive';
@@ -74,7 +74,7 @@ export default function WritingHome() {
   }, [prompt, essay, mode, belowMin]);
 
   // ---- Sample loader ----
-  const useSample = (kind: TaskType) => {
+  const useSample = useCallback((kind: TaskType) => {
     setTaskType(kind);
     if (kind === 'T1') {
       setPrompt(
@@ -97,7 +97,7 @@ export default function WritingHome() {
     setBp1('');
     setBp2('');
     setConclusion('');
-  };
+  }, []);
 
   // ---- Timer logic ----
   useEffect(() => {
@@ -118,7 +118,9 @@ export default function WritingHome() {
 
   // ---- Autosave / Resume (localStorage) ----
   const STORAGE_KEY = (t: TaskType) => `writing_draft_${t}`;
+
   useEffect(() => {
+    if (typeof window === 'undefined') return; // SSR guard
     try {
       const raw = localStorage.getItem(STORAGE_KEY(taskType));
       if (!raw) return;
@@ -131,13 +133,14 @@ export default function WritingHome() {
       setBp2(j.bp2 ?? '');
       setConclusion(j.conclusion ?? '');
       if (taskType === 'GT') {
-        setLetterType(j.letterType ?? 'formal');
-        setTone(j.tone ?? 'neutral');
+        setLetterType((j.letterType as 'formal'|'informal'|'semi-formal') ?? 'formal');
+        setTone((j.tone as 'neutral'|'polite'|'friendly') ?? 'neutral');
       }
     } catch {}
   }, [taskType]);
 
   useEffect(() => {
+    if (typeof window === 'undefined') return; // SSR guard
     const payload = {
       prompt,
       essay,
@@ -154,9 +157,11 @@ export default function WritingHome() {
   }, [prompt, essay, notes, intro, bp1, bp2, conclusion, taskType, letterType, tone]);
 
   const clearDraft = () => {
-    try {
-      localStorage.removeItem(STORAGE_KEY(taskType));
-    } catch {}
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.removeItem(STORAGE_KEY(taskType));
+      } catch {}
+    }
     setPrompt('');
     setEssay('');
     setNotes('');
@@ -196,8 +201,8 @@ export default function WritingHome() {
       const data = await res.json();
       if (!data.id) throw new Error('No attempt id returned');
       router.push(`/writing/review/${data.id}`);
-    } catch (e: any) {
-      setErr(e.message || 'Something went wrong');
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : 'Something went wrong');
     } finally {
       setLoading(false);
     }
@@ -285,7 +290,9 @@ export default function WritingHome() {
                   <select
                     className="w-full p-3.5 rounded-ds border border-gray-200 dark:border-white/10 bg-white dark:bg-dark"
                     value={letterType}
-                    onChange={(e) => setLetterType(e.target.value as any)}
+                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                      setLetterType(e.target.value as 'formal'|'informal'|'semi-formal')
+                    }
                   >
                     <option value="formal">Formal</option>
                     <option value="semi-formal">Semi-formal</option>
@@ -297,7 +304,9 @@ export default function WritingHome() {
                   <select
                     className="w-full p-3.5 rounded-ds border border-gray-200 dark:border-white/10 bg-white dark:bg-dark"
                     value={tone}
-                    onChange={(e) => setTone(e.target.value as any)}
+                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                      setTone(e.target.value as 'neutral'|'polite'|'friendly')
+                    }
                   >
                     <option value="neutral">Neutral</option>
                     <option value="polite">Polite</option>

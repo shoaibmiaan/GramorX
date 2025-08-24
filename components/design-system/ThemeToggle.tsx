@@ -1,27 +1,22 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useTheme } from 'next-themes';
 
-export const ThemeToggle: React.FC<{ className?: string }> = ({ className = '' }) => {
-  const { theme, setTheme, resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => setMounted(true), []);
-
-  if (!mounted) return null; // Avoids hydration mismatch
-
-  const currentTheme = theme === 'system' ? resolvedTheme : theme;
+export function ThemeToggle() {
+  const { resolvedTheme, setTheme } = useTheme();
+  const isDark = (resolvedTheme ?? 'light') === 'dark';
 
   return (
     <button
-      onClick={() => setTheme(currentTheme === 'light' ? 'dark' : 'light')}
-      className={`p-2 rounded hover:bg-purpleVibe/10 transition ${className}`}
-      aria-label="Toggle Theme"
+      type="button"
+      onClick={() => setTheme(isDark ? 'light' : 'dark')}
+      className="inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm hover:shadow-sm
+                 bg-white/70 dark:bg-white/10 backdrop-blur
+                 border-black/10 dark:border-white/15"
+      aria-label="Toggle color theme"
+      title="Toggle theme"
     >
-      {currentTheme === 'light' ? (
-        <i className="fas fa-moon text-lg text-yellow-400" />
-      ) : (
-        <i className="fas fa-sun text-lg text-yellow-400" />
-      )}
+      <span aria-hidden className="text-base">{isDark ? '🌙' : '☀️'}</span>
+      <span className="opacity-80">{isDark ? 'Dark' : 'Light'}</span>
     </button>
   );
-};
+}

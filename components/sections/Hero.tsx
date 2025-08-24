@@ -1,49 +1,44 @@
 'use client';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { Container } from '@/components/design-system/Container';
 import { Button } from '@/components/design-system/Button';
 import { Card } from '@/components/design-system/Card';
 import { Alert } from '@/components/design-system/Alert';
+import { supabaseBrowser } from '@/lib/supabaseBrowser';
 
-type Word = { word: string; meaning: string; example: string };
+type WOD = {
+  word: { id: string; word: string; meaning: string; example: string | null };
+  learnedToday: boolean;
+  streakDays: number;
+  streakValueUSD: number;
+};
 
-const WORDS: Word[] = [
-  { word: 'serendipity', meaning: 'the occurrence of events by chance in a happy or beneficial way', example: 'Finding this platform was pure serendipity - it helped me achieve my target band!' },
-  { word: 'ubiquitous', meaning: 'present, appearing, or found everywhere', example: 'Mobile phones have become ubiquitous in modern society.' },
-  { word: 'eloquent', meaning: 'fluent or persuasive in speaking or writing', example: 'Her eloquent speech impressed the examiners during the speaking test.' },
-  { word: 'pragmatic', meaning: 'dealing with things sensibly and realistically', example: 'A pragmatic approach to IELTS preparation focuses on the most effective strategies.' },
-  { word: 'diligent', meaning: "having or showing care and conscientiousness in one's work or duties", example: 'Diligent students who practice daily see the fastest improvement.' },
-];
+type HeroProps = {
+  /** Optional callback if a parent wants to mirror the streak into header */
+  onStreakChange?: (n: number) => void;
+};
 
-export const Hero: React.FC<{ onStreakChange: (n: number) => void }> = ({ onStreakChange }) => {
+export const Hero: React.FC<HeroProps> = ({ onStreakChange }) => {
   const [mounted, setMounted] = useState(false);
 
+  // launch countdown (7 days from now – demo)
   const [target, setTarget] = useState<Date | null>(null);
   const [now, setNow] = useState<Date | null>(null);
-  const [streak, setStreak] = useState(0);
-  const [lastDate, setLastDate] = useState<string | null>(null);
-  const [word, setWord] = useState<Word | null>(null);
+
+  // word + streak (server-backed)
+  const [data, setData] = useState<WOD | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [auth, setAuth] = useState<'unknown' | 'authed' | 'guest'>('unknown');
 
   useEffect(() => {
     setMounted(true);
-
     const t = new Date();
     t.setDate(t.getDate() + 7);
     setTarget(t);
     setNow(new Date());
-
-    const s = typeof window !== 'undefined' ? localStorage.getItem('ieltsStreak') : null;
-    const ld = typeof window !== 'undefined' ? localStorage.getItem('ieltsLastLearned') : null;
-    if (s) setStreak(parseInt(s, 10));
-    if (ld) setLastDate(ld);
-
-    setWord(WORDS[Math.floor(Math.random() * WORDS.length)]);
-
     const id = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(id);
   }, []);
-
-  useEffect(() => { onStreakChange(streak); }, [streak, onStreakChange]);
 
   const diff = useMemo(() => {
     if (!target || !now) return { days: 0, hours: 0, minutes: 0, seconds: 0 };
@@ -56,18 +51,70 @@ export const Hero: React.FC<{ onStreakChange: (n: number) => void }> = ({ onStre
     return { days, hours, minutes, seconds };
   }, [target, now]);
 
-  function markLearned() {
-    const today = new Date().toDateString();
-    if (lastDate === today) return;
-    const newStreak = streak + 1;
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('ieltsStreak', String(newStreak));
-      localStorage.setItem('ieltsLastLearned', today);
+  // Load WOD + streak. Returns the fetched payload so callers can use the new value.
+  const load = useCallback(async (): Promise<WOD | null> => {
+    const { data: session } = await supabaseBrowser.auth.getSession();
+    const token = session?.session?.access_token;
+    if (!token) {
+      setAuth('guest');
+      setData(null);
+      onStreakChange?.(0);
+      return null;
     }
-    setStreak(newStreak);
-    setLastDate(today);
-    setTimeout(() => setWord(WORDS[Math.floor(Math.random() * WORDS.length)]), 5000);
-  }
+    setAuth('authed');
+    const res = await fetch('/api/words/today', {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (res.ok) {
+      const json: WOD = await res.json();
+      setData(json);
+      onStreakChange?.(json.streakDays ?? 0);
+
+      // NEW: broadcast to header & others
+      try {
+        window.dispatchEvent(new CustomEvent('streak:changed', { detail: { value: json.streakDays ?? 0 } }));
+      } catch {
+        // ignore
+      }
+
+      return json;
+    }
+    setData(null);
+    onStreakChange?.(0);
+    return null;
+  }, [onStreakChange]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const markLearned = async () => {
+    if (!data || data.learnedToday) return;
+    setBusy(true);
+    const { data: session } = await supabaseBrowser.auth.getSession();
+    const token = session?.session?.access_token;
+    if (!token) {
+      setBusy(false);
+      return;
+    }
+    const r = await fetch('/api/words/learn', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ wordId: data.word.id }),
+    });
+    setBusy(false);
+    if (r.ok) {
+      // Re-load to get updated streak, then broadcast.
+      const updated = await load();
+      if (updated) {
+        try {
+          window.dispatchEvent(new CustomEvent('streak:changed', { detail: { value: updated.streakDays ?? 0 } }));
+        } catch {
+          // ignore
+        }
+      }
+    }
+  };
 
   if (!mounted) {
     return (
@@ -75,7 +122,7 @@ export const Hero: React.FC<{ onStreakChange: (n: number) => void }> = ({ onStre
         <Container>
           <div className="max-w-2xl mx-auto text-center">
             <h1 className="font-slab text-5xl md:text-6xl font-bold mb-5 leading-tight">
-              <span className="text-gradient-accent">
+              <span className="text-gradient-primary">
                 ACHIEVE YOUR DREAM IELTS SCORE WITH AI-POWERED PREPARATION
               </span>
             </h1>
@@ -91,18 +138,19 @@ export const Hero: React.FC<{ onStreakChange: (n: number) => void }> = ({ onStre
       <Container>
         <div className="relative z-10 max-w-2xl mx-auto text-center">
           <h1 className="font-slab text-5xl md:text-6xl font-bold mb-5 leading-tight">
-            <span className="text-gradient-accent">
+            <span className="text-gradient-primary">
               ACHIEVE YOUR DREAM IELTS SCORE WITH AI-POWERED PREPARATION
             </span>
           </h1>
-          <p className="text-lg text-[#d0d0e0] mb-8 max-w-xl mx-auto">
-            Master all four IELTS skills with personalized feedback, adaptive learning paths, and realistic mock tests. Join thousands of
-            successful candidates who&apos;ve achieved Band 7+ with our platform.
+          <p className="text-lg text-muted-foreground mb-8 max-w-xl mx-auto">
+            Master all four IELTS skills with personalized feedback, adaptive learning paths, and realistic mock tests.
+            Join thousands of successful candidates who’ve achieved Band 7+ with our platform.
           </p>
 
+          {/* Countdown */}
           <Card className="inline-block p-6 rounded-2xl">
-            <div className="text-neonGreen font-semibold mb-3">PRE-LAUNCH ACCESS IN</div>
-            <div className="flex gap-5 justify-center">
+            <div className="text-primary font-semibold mb-3">PRE-LAUNCH ACCESS IN</div>
+            <div className="flex gap-5 justify-center" aria-live="polite">
               {['Days', 'Hours', 'Minutes', 'Seconds'].map((label, idx) => {
                 const values = [diff.days, diff.hours, diff.minutes, diff.seconds] as number[];
                 const value = values[idx] || 0;
@@ -111,83 +159,82 @@ export const Hero: React.FC<{ onStreakChange: (n: number) => void }> = ({ onStre
                     <div className="font-slab text-4xl md:text-5xl font-bold text-gradient-vertical">
                       {String(value).padStart(2, '0')}
                     </div>
-                    <div className="uppercase tracking-wide text-grayish text-sm mt-1">{label}</div>
+                    <div className="uppercase tracking-wide text-muted-foreground text-sm mt-1">{label}</div>
                   </div>
                 );
               })}
             </div>
           </Card>
 
+          {/* Word of the Day */}
           <Card className="mt-6 max-w-md p-6 rounded-2xl mx-auto">
-            <h3 className="text-neonGreen font-semibold text-xl mb-4">
+            <h3 className="text-primary font-semibold text-xl mb-4">
               <i className="fas fa-book mr-2" />
               Word of the Day
             </h3>
-            {word && (
-              <div className="mb-4">
-                <h4 className="text-3xl mb-1 text-neonGreen">{word.word}</h4>
-                <div className="text-[1.05rem] text-[#d0d0e0] mb-3">{word.meaning}</div>
-                <div className="italic text-electricBlue border-l-4 pl-4 border-electricBlue">"{word.example}"</div>
-              </div>
+
+            {auth === 'guest' && (
+              <Alert variant="info" className="mb-4">
+                Sign in to track your streak and unlock daily rewards.
+              </Alert>
             )}
-            <Button variant="accent" onClick={markLearned}>
-              <i className="fas fa-check-circle mr-2" />
-              Mark as Learned
-            </Button>
 
-            <div className="mt-4 rounded-xl p-4 bg-purpleVibe/15">
-              <div className="flex items-center gap-4">
-                <div className="text-2xl text-sunsetOrange">
-                  <i className="fas fa-fire" />
+            {data ? (
+              <>
+                <div className="mb-4">
+                  <h4 className="text-3xl mb-1 text-primary">{data.word.word}</h4>
+                  <div className="text-base text-muted-foreground mb-3">{data.word.meaning}</div>
+                  {data.word.example && (
+                    <div className="italic text-muted-foreground border-l-4 pl-4 border-border">
+                      “{data.word.example}”
+                    </div>
+                  )}
                 </div>
-                <div>
-                  <h4 className="font-semibold">Your Learning Streak</h4>
-                  <div>
-                    Current streak:{' '}
-                    <span className="font-bold text-sunsetOrange">
-                      {streak} {streak === 1 ? 'day' : 'days'}
-                    </span>
-                  </div>
-                  <div>
-                    Value at launch:{' '}
-                    <span className="font-bold text-neonGreen">
-                      ${(streak * 0.5).toFixed(2)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
 
-            <Alert variant="info" className="mt-4">
-              Maintain your streak! Each day you learn a new word, your streak increases. At launch,
-              your streak will be converted to dollars that you can apply to your subscription.
-            </Alert>
+                <Button variant={data.learnedToday ? 'secondary' : 'accent'} onClick={markLearned} disabled={busy || data.learnedToday}>
+                  <i className="fas fa-check-circle mr-2" />
+                  {data.learnedToday ? 'Learned today' : 'Mark as Learned'}
+                </Button>
+
+                <div className="mt-4 rounded-xl p-4 bg-card border border-border text-left">
+                  <div className="flex items-center gap-4">
+                    <div className="text-2xl" aria-hidden>
+                      <i className="fas fa-fire" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold">Your Learning Streak</h4>
+                      <div className="text-muted-foreground">
+                        Current streak:{' '}
+                        <span className="font-bold">
+                          {data.streakDays} {data.streakDays === 1 ? 'day' : 'days'}
+                        </span>
+                      </div>
+                      <div className="text-muted-foreground">
+                        Value at launch:{' '}
+                        <span className="font-bold">${(data.streakValueUSD ?? 0).toFixed(2)}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <Alert variant="info" className="mt-4">
+                  Maintain your streak! Each day you learn a new word, your streak increases. At launch, your streak converts
+                  into credits on your subscription.
+                </Alert>
+              </>
+            ) : auth === 'authed' ? (
+              <Alert variant="warning">No active words yet. Add words in the admin to start your daily streak.</Alert>
+            ) : null}
           </Card>
 
           <div className="flex gap-4 mt-8 justify-center">
-            <Button as="a" href="#waitlist" variant="primary">
+            <Button href="/#waitlist" variant="primary">
               Join Exclusive Waitlist
             </Button>
-            <Button as="a" href="#modules" variant="secondary">
+            <Button href="/learning" variant="secondary">
               Explore Features
             </Button>
           </div>
-        </div>
-
-        {/* Decorative rings on the right; kept absolute so they don't affect centering */}
-        <div className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2 w-1/2 max-w-[600px] opacity-80 hidden md:block">
-          <svg viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-            <circle cx="300" cy="300" r="200" fill="none" stroke="rgba(157, 78, 221, 0.3)" strokeWidth="20" />
-            <circle cx="300" cy="300" r="170" fill="none" stroke="rgba(0, 187, 249, 0.3)" strokeWidth="20" />
-            <circle cx="300" cy="300" r="140" fill="none" stroke="rgba(255, 107, 107, 0.3)" strokeWidth="20" />
-            <circle cx="300" cy="300" r="110" fill="none" stroke="rgba(128, 255, 219, 0.3)" strokeWidth="20" />
-            <text x="300" y="250" textAnchor="middle" fill="#9d4edd" fontSize="40" fontWeight="bold">Listening</text>
-            <text x="380" y="320" textAnchor="middle" fill="#00bbf9" fontSize="40" fontWeight="bold">Reading</text>
-            <text x="300" y="400" textAnchor="middle" fill="#ff6b6b" fontSize="40" fontWeight="bold">Writing</text>
-            <text x="220" y="320" textAnchor="middle" fill="#80ffdb" fontSize="40" fontWeight="bold">Speaking</text>
-            <circle cx="300" cy="300" r="30" fill="#9d4edd" />
-            <text x="300" y="310" textAnchor="middle" fill="white" fontSize="20">8.5</text>
-          </svg>
         </div>
       </Container>
     </section>

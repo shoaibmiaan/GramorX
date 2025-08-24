@@ -1,36 +1,116 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import Head from 'next/head';
+import Link from 'next/link';
+import { RoleGuard } from '@/components/auth/RoleGuard';
 import { Container } from '@/components/design-system/Container';
-import { Card } from '@/components/design-system/Card';
-import { Button } from '@/components/design-system/Button';
-import { Badge } from '@/components/design-system/Badge';
+import { supabaseBrowser } from '@/lib/supabaseBrowser';
+
+type Student = { id: string; full_name: string | null; email: string | null; created_at: string | null };
 
 export default function TeacherHome() {
+  const [students, setStudents] = useState<Student[]>([]);
+  const [q, setQ] = useState('');
+
+  useEffect(() => {
+    (async () => {
+      // Teachers can read students only (RLS enforces)
+      let query = supabaseBrowser
+        .from('profiles')
+        .select('id, full_name, email, created_at')
+        .eq('role', 'student')
+        .order('created_at', { ascending: false })
+        .limit(100);
+      if (q.trim()) {
+        query = query.ilike('full_name', `%${q}%`);
+      }
+      const { data } = await query;
+      setStudents((data ?? []) as Student[]);
+    })();
+  }, [q]);
+
   return (
-    <section className="py-24 bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90">
-      <Container>
-        <h1 className="font-slab text-4xl mb-3 text-gradient-primary">Teacher Portal</h1>
-        <p className="text-grayish max-w-2xl mb-10">Review attempts and monitor students.</p>
+    <RoleGuard allow={['teacher']}>
+      <Head><title>Teacher · Dashboard</title></Head>
+      <Container className="py-8">
+        <header className="flex items-center justify-between gap-3">
+          <h1 className="text-2xl font-semibold">Teacher Dashboard</h1>
+          <div className="flex gap-2">
+            <Link href="/admin" className="rounded-xl border px-3 py-2 hover:shadow-sm">Admin (if allowed)</Link>
+          </div>
+        </header>
 
-        <div className="grid gap-6 md:grid-cols-2">
-          <Card className="p-6 rounded-ds-2xl">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-h3 font-semibold">Writing Reviews</h3>
-              <Badge variant="info">T1/T2</Badge>
-            </div>
-            <p className="text-grayish mb-4">Browse & score essays.</p>
-            <Button as="a" href="/teacher/writing" variant="primary">Open</Button>
+        <section className="mt-6 grid gap-4 sm:grid-cols-3">
+          <Card title="Active Students" value="—" sub="RLS-scoped">
+            {/* Replace later with real count via RPC */}
           </Card>
+          <Card title="Attempts (7d)" value="—" sub="Demo" />
+          <Card title="Avg Score" value="—" sub="Demo" />
+        </section>
 
-          <Card className="p-6 rounded-ds-2xl">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-h3 font-semibold">Speaking Reviews</h3>
-              <Badge variant="info">Audio</Badge>
-            </div>
-            <p className="text-grayish mb-4">Listen & give band feedback.</p>
-            <Button as="a" href="/teacher/speaking" variant="secondary">Open</Button>
-          </Card>
-        </div>
+        <section className="mt-8">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="font-medium">Students</h2>
+            <input
+              className="rounded-xl border px-3 py-2 bg-transparent w-64"
+              placeholder="Search by name…"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+            />
+          </div>
+          <div className="rounded-2xl border overflow-hidden">
+            <table className="w-full text-sm">
+              <thead className="bg-black/5 dark:bg-white/5">
+                <tr>
+                  <th className="text-left p-3">Name</th>
+                  <th className="text-left p-3">Email</th>
+                  <th className="text-left p-3">Joined</th>
+                </tr>
+              </thead>
+              <tbody>
+                {students.map(s => (
+                  <tr key={s.id} className="border-t">
+                    <td className="p-3">{s.full_name ?? '—'}</td>
+                    <td className="p-3">{s.email ?? '—'}</td>
+                    <td className="p-3">{s.created_at ? new Date(s.created_at).toLocaleDateString() : '—'}</td>
+                  </tr>
+                ))}
+                {students.length === 0 && (
+                  <tr><td colSpan={3} className="p-6 text-center opacity-70">No students yet.</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section className="mt-8">
+          <h2 className="font-medium mb-3">Quick Actions</h2>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <Q href="/speaking/simulator" title="Open Speaking Simulator" desc="Demo session" />
+            <Q href="/reading" title="Assign Reading Set" desc="Pick any test" />
+            <Q href="/teacher" title="Create Cohort (soon)" desc="Group students" />
+            <Q href="/teacher" title="Review Attempts (soon)" desc="Moderation queue" />
+          </div>
+        </section>
       </Container>
-    </section>
+    </RoleGuard>
+  );
+}
+
+function Card({ title, value, sub, children }: { title: string; value: string; sub?: string; children?: React.ReactNode }) {
+  return (
+    <div className="rounded-2xl border bg-white/50 dark:bg-white/5 p-5">
+      <div className="text-sm opacity-70">{title}</div>
+      <div className="text-3xl font-bold mt-1">{value}</div>
+      {sub && <div className="text-xs opacity-60 mt-1">{sub}</div>}
+      {children}
+    </div>
+  );
+}
+function Q({ href, title, desc }: { href: string; title: string; desc: string }) {
+  return (
+    <Link href={href} className="rounded-2xl border p-4 hover:shadow-sm transition block">
+      <div className="font-medium">{title}</div>
+      <div className="text-sm opacity-70">{desc}</div>
+    </Link>
   );
 }

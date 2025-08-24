@@ -1,24 +1,25 @@
 // lib/supabaseBrowser.ts
 import { createClient } from '@supabase/supabase-js';
-import type { Database } from '@/types/database';
 
 const url  = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
-// Browser-side client (persists session)
-export const supabaseBrowser = createClient<Database>(url, anon, {
-  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
-});
+// HMR-safe singleton in dev to avoid multiple GoTrueClient instances
+const getClient = () =>
+  createClient(url, anon, {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      // keep default storageKey (sb-<project>-auth-token)
+    },
+  });
 
-// Helper: attach the current user's bearer token to fetch headers
-export async function authHeaders(init: Record<string, string> = {}) {
-  const { data: { session } } = await supabaseBrowser.auth.getSession();
-  return session?.access_token
-    ? { ...init, Authorization: `Bearer ${session.access_token}` }
-    : init;
+export const supabaseBrowser =
+  (typeof window !== 'undefined'
+    ? ((window as any).__supa ?? ((window as any).__supa = getClient()))
+    : getClient());
+
+// OPTIONAL: expose for console debugging in dev
+if (typeof window !== 'undefined' && process.env.NODE_ENV !== 'production') {
+  (window as any).supa = supabaseBrowser;
 }
-
-// (optional) non-persistent client
-export const supabase = createClient<Database>(url, anon, {
-  auth: { persistSession: false },
-});

@@ -1,22 +1,26 @@
-import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
+// middleware.ts
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
 export function middleware(req: NextRequest) {
   const { pathname, search } = req.nextUrl;
 
-  // Only guard premium pages; let /premium/lock itself pass
-  if (pathname.startsWith("/premium") && pathname !== "/premium/lock") {
-    const cookie = req.cookies.get("pr_access");
-    if (!cookie || cookie.value !== "1") {
-      const url = req.nextUrl.clone();
-      url.pathname = "/premium/lock";
-      url.searchParams.set("next", pathname + (search || ""));
-      return NextResponse.redirect(url);
-    }
+  // Only protect /premium/*
+  if (!pathname.startsWith('/premium')) return NextResponse.next();
+
+  // Allow the PIN page and verification API to be reachable without the cookie
+  if (pathname === '/premium/pin' || pathname.startsWith('/api/premium/verify-pin')) {
+    return NextResponse.next();
   }
-  return NextResponse.next();
+
+  const ok = req.cookies.get('pr_pin_ok')?.value === '1';
+  if (ok) return NextResponse.next();
+
+  // Not unlocked yet → bounce to PIN page with ?next=
+  const url = req.nextUrl.clone();
+  url.pathname = '/premium/pin';
+  url.search = `?next=${encodeURIComponent(pathname + (search || ''))}`;
+  return NextResponse.redirect(url);
 }
 
-export const config = {
-  matcher: ["/premium/:path*"],
-};
+export const config = { matcher: ['/premium/:path*'] };

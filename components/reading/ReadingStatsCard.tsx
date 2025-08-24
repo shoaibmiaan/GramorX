@@ -80,7 +80,7 @@ export function ReadingStatsCard() {
           <div className="font-semibold mb-1">Reading progress</div>
           <div className="text-sm text-gray-600 dark:text-grayish">Sign in to track your attempts and accuracy.</div>
         </div>
-        <Button as="a" href="/login" variant="primary" className="rounded-ds-xl">Sign in</Button>
+        <Button href="/login" variant="primary" className="rounded-ds-xl">Sign in</Button>
       </Card>
     );
   }

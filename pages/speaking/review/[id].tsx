@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import type { GetServerSideProps } from 'next';
 import { useRouter } from 'next/router';
 import { createClient } from '@supabase/supabase-js';
@@ -6,8 +6,74 @@ import { Container } from '@/components/design-system/Container';
 import { Card } from '@/components/design-system/Card';
 import { Badge } from '@/components/design-system/Badge';
 import { Button } from '@/components/design-system/Button';
-import { Transcript } from '@/components/speaking/Transcript';
 
+/** ─────────────────────────────
+ * Minimal in-file Transcript with TTS (no external hooks)
+ * Uses the browser Web Speech API; if unavailable, the Play button is disabled.
+ * ────────────────────────────*/
+type TranscriptProps = { text: string };
+const Transcript: React.FC<TranscriptProps> = ({ text }) => {
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const supported = typeof window !== 'undefined' && 'speechSynthesis' in window;
+
+  const stop = () => {
+    if (!supported) return;
+    window.speechSynthesis.cancel();
+    setIsSpeaking(false);
+  };
+
+  const play = () => {
+    if (!supported) return;
+    // Stop anything currently queued
+    window.speechSynthesis.cancel();
+
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'en-US';
+    u.rate = 1;
+    u.pitch = 1;
+
+    u.onend = () => setIsSpeaking(false);
+    u.onerror = () => setIsSpeaking(false);
+
+    utteranceRef.current = u;
+    setIsSpeaking(true);
+    window.speechSynthesis.speak(u);
+  };
+
+  useEffect(() => {
+    return () => {
+      // Cleanup on unmount
+      if (typeof window !== 'undefined') {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, []);
+
+  return (
+    <div className="rounded-ds-xl border border-border/60 p-4 bg-white/60 dark:bg-dark/40">
+      <div className="flex items-center justify-between gap-3 mb-3">
+        <div className="font-medium">AI Transcript</div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="primary"
+            onClick={isSpeaking ? stop : play}
+            disabled={!supported}
+            className="rounded-ds-xl"
+            title={supported ? (isSpeaking ? 'Stop voice' : 'Play voice') : 'Text-to-speech not supported'}
+          >
+            {supported ? (isSpeaking ? 'Stop' : 'Play') : 'TTS Unavailable'}
+          </Button>
+        </div>
+      </div>
+      <p className="whitespace-pre-wrap leading-relaxed text-body text-ink/90">{text}</p>
+    </div>
+  );
+};
+
+/** ─────────────────────────────
+ * Types
+ * ────────────────────────────*/
 type Breakdown = { fluency?: number; lexical?: number; grammar?: number; pronunciation?: number };
 type Attempt = {
   id: string;
@@ -18,9 +84,11 @@ type Attempt = {
   audio_urls: Record<string, string[]>;
   created_at: string;
 };
-
 type Props = { attempt: Attempt | null };
 
+/** ─────────────────────────────
+ * SSR: fetch attempt (requires Supabase envs)
+ * ────────────────────────────*/
 export const getServerSideProps: GetServerSideProps<Props> = async (ctx) => {
   const { attemptId } = ctx.query as { attemptId: string };
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -46,11 +114,18 @@ export const getServerSideProps: GetServerSideProps<Props> = async (ctx) => {
   return { props: { attempt: data as Attempt } };
 };
 
+/** ─────────────────────────────
+ * Page
+ * ────────────────────────────*/
 export default function SpeakingReview({ attempt: initial }: Props) {
-  const router = useRouter();
+  const router = useRouter(); // kept to avoid changing surrounding logic
   const [attempt, setAttempt] = useState<Attempt | null>(initial);
   const [pending, setPending] = useState(false);
   const [errMsg, setErrMsg] = useState<string | null>(null);
+
+  function isError(x: unknown): x is Error {
+    return typeof x === 'object' && x !== null && 'message' in x;
+  }
 
   async function generateScore() {
     if (!attempt?.id) return;
@@ -67,20 +142,19 @@ export default function SpeakingReview({ attempt: initial }: Props) {
         throw new Error(t || 'Scoring failed');
       }
       const data = await r.json() as {
-        transcript: string;
-        bandOverall: number;
-        criteria: Breakdown;
+        transcript?: string;
+        bandOverall?: number;
+        criteria?: Breakdown;
         notes?: string;
       };
-      // Update UI instantly
       setAttempt(prev => prev ? ({
         ...prev,
         transcript: data.transcript ?? prev.transcript,
         band_overall: typeof data.bandOverall === 'number' ? data.bandOverall : prev.band_overall,
         band_breakdown: data.criteria ?? prev.band_breakdown,
       }) : prev);
-    } catch (e: any) {
-      setErrMsg(e?.message || 'Something went wrong');
+    } catch (e: unknown) {
+      setErrMsg(isError(e) ? String((e as Error).message) : 'Something went wrong');
     } finally {
       setPending(false);
     }
@@ -144,7 +218,7 @@ export default function SpeakingReview({ attempt: initial }: Props) {
               </div>
             </div>
 
-            {/* Error inline (token-only styles) */}
+            {/* Error inline */}
             {errMsg && (
               <div className="mt-3 p-3.5 rounded-ds border border-sunsetOrange/30 bg-sunsetOrange/10 text-sunsetOrange text-small">
                 {errMsg}
@@ -155,11 +229,13 @@ export default function SpeakingReview({ attempt: initial }: Props) {
             <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2">
               {groups.map(([label, key]) => {
                 const val = b[key];
-                if (val == null) return (
-                  <Badge key={key} variant="neutral" className="rounded-ds-xl justify-center">
-                    {label}: —
-                  </Badge>
-                );
+                if (val == null) {
+                  return (
+                    <Badge key={key} variant="neutral" className="rounded-ds-xl justify-center">
+                      {label}: —
+                    </Badge>
+                  );
+                }
                 return (
                   <Badge key={key} variant="info" className="rounded-ds-xl justify-center">
                     {label}: <b className="ml-1">{val.toFixed(1)}</b>
