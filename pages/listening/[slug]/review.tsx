@@ -6,6 +6,8 @@ import { Card } from '@/components/design-system/Card';
 import { Button } from '@/components/design-system/Button';
 import { Badge } from '@/components/design-system/Badge';
 import { Alert } from '@/components/design-system/Alert';
+import { scoreAll, scoreOne } from '@/lib/listening/score';
+import { rawToBand } from '@/lib/listening/band';
 
 type Q = {
   id: string;
@@ -87,34 +89,18 @@ export default function ListeningReviewPage() {
     })();
   }, [slug, userId]);
 
-  const normalize = (s: string) => s?.toString().replace(/\s+/g, ' ').trim().toLowerCase();
-
   const result = useMemo(() => {
-    if (!questions.length) return { correct: 0, total: 0, pct: 0 };
-    let correct = 0;
-    for (const q of questions) {
-      const userAns = ua[q.qNo] ?? '';
-      const ok = q.type === 'mcq' ? userAns === q.answer : normalize(userAns) === normalize(q.answer);
-      if (ok) correct++;
-    }
-    const total = questions.length;
-    const pct = Math.round((correct / total) * 100);
-    return { correct, total, pct };
+    if (!questions.length) return { correct: 0, total: 0, pct: 0, band: 0 };
+    const qArr = questions.map((q) =>
+      q.type === 'mcq'
+        ? { qno: q.qNo, type: 'mcq', answer_key: { value: q.answer } }
+        : { qno: q.qNo, type: 'gap', answer_key: { text: q.answer } }
+    );
+    const aArr = Object.entries(ua).map(([qno, ans]) => ({ qno: Number(qno), answer: ans }));
+    const { total } = scoreAll(qArr as any, aArr);
+    const pct = Math.round((total / qArr.length) * 100);
+    return { correct: total, total: qArr.length, pct, band: rawToBand(total) };
   }, [questions, ua]);
-
-  const approxBand = (raw: number) => {
-    if (raw >= 39) return 9.0;
-    if (raw >= 37) return 8.5;
-    if (raw >= 35) return 8.0;
-    if (raw >= 32) return 7.5;
-    if (raw >= 30) return 7.0;
-    if (raw >= 26) return 6.5;
-    if (raw >= 23) return 6.0;
-    if (raw >= 18) return 5.5;
-    if (raw >= 16) return 5.0;
-    if (raw >= 13) return 4.5;
-    return 4.0;
-  };
 
   // Highlight helpers (token-based styles; no hex)
   const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -139,7 +125,7 @@ export default function ListeningReviewPage() {
 
   const renderTranscript = (raw: string, correct: string, user: string) => {
     if (!raw) return <em className="opacity-70">No transcript for this section.</em>;
-    const ok = normalize(user) === normalize(correct);
+    const ok = scoreOne({ qno: 0, type: 'gap', answer_key: { text: correct } }, user);
 
     if (!ok && user) {
       return (
@@ -241,7 +227,7 @@ export default function ListeningReviewPage() {
               Correct: {result.correct} / {result.total}
             </Badge>
             <Badge variant="info">Accuracy: {result.pct}%</Badge>
-            <Badge variant="warning">Band (approx): {approxBand(result.correct).toFixed(1)}</Badge>
+            <Badge variant="warning">Band (approx): {result.band.toFixed(1)}</Badge>
           </div>
         </Card>
 
@@ -249,7 +235,12 @@ export default function ListeningReviewPage() {
         <div className="grid gap-6 mt-8 md:grid-cols-2">
           {questions.map((q) => {
             const userAns = ua[q.qNo] ?? '';
-            const ok = q.type === 'mcq' ? userAns === q.answer : normalize(userAns) === normalize(q.answer);
+            const ok = scoreOne(
+              q.type === 'mcq'
+                ? { qno: q.qNo, type: 'mcq', answer_key: { value: q.answer } }
+                : { qno: q.qNo, type: 'gap', answer_key: { text: q.answer } },
+              userAns
+            );
             const transcript = transcripts[q.sectionOrder] ?? '';
             return (
               <Card key={q.id} className="p-6">
