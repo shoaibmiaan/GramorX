@@ -10,7 +10,6 @@ import { Layout } from '@/components/Layout';
 import { ToastProvider } from '@/components/design-system/Toast';
 import { supabaseBrowser } from '@/lib/supabaseBrowser';
 import {
-  isPublicRoute,
   isGuestOnlyRoute,
   canAccess,
   requiredRolesFor,
@@ -21,13 +20,13 @@ import {
 // Premium theme wrapper (kept for /premium paths)
 import { PremiumThemeProvider } from '@/premium-ui/theme/PremiumThemeProvider';
 
-// ⬇️ Impersonation banner
+// Impersonation banner
 import { ImpersonationBanner } from '@/components/admin/ImpersonationBanner';
 
-// ⬇️ Global Sidebar AI (Leo-style)
+// Global Sidebar AI
 import { SidebarAI } from '@/components/ai/SidebarAI';
 
-// ✅ Fonts via next/font (non-blocking)
+// Fonts
 import { Poppins, Roboto_Slab } from 'next/font/google';
 const poppins = Poppins({
   subsets: ['latin'],
@@ -77,10 +76,10 @@ export default function App({ Component, pageProps }: AppProps) {
   // --- Route guards (role-aware) ---
   const [isChecking, setIsChecking] = useState(true);
   const [role, setRole] = useState<AppRole | null>(null);
-  const [isAuthed, setIsAuthed] = useState<boolean>(false);
 
   useEffect(() => {
-    let mounted = true;
+    let active = true;
+
     (async () => {
       try {
         const {
@@ -88,12 +87,10 @@ export default function App({ Component, pageProps }: AppProps) {
         } = await supabaseBrowser.auth.getSession();
         const user = session?.user ?? null;
         const r = getUserRole(user);
+        if (!active) return;
 
-        if (!mounted) return;
-        setIsAuthed(!!user);
         setRole(r);
 
-        const publicR = isPublicRoute(pathname);
         const guestOnlyR = isGuestOnlyRoute(pathname);
 
         // If guest-only and user is logged in → send to dashboard
@@ -102,20 +99,27 @@ export default function App({ Component, pageProps }: AppProps) {
           return;
         }
 
-        // If protected and user lacks role → redirect to login with info
-        if (!publicR && !canAccess(pathname, r)) {
+        // If protected and user lacks role → login if unauthenticated, else 403
+        if (!canAccess(pathname, r)) {
           const need = requiredRolesFor(pathname);
-          router.replace({
-            pathname: '/login',
-            query: { next: pathname, need: Array.isArray(need) ? need.join(',') : need },
-          });
+          if (!r) {
+            router.replace({
+              pathname: '/login',
+              query: { next: pathname, need: Array.isArray(need) ? need.join(',') : need },
+            });
+          } else {
+            router.replace('/403');
+          }
           return;
         }
       } finally {
-        mounted = false;
-        setIsChecking(false);
+        if (active) setIsChecking(false);
       }
     })();
+
+    return () => {
+      active = false;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
 
@@ -131,7 +135,7 @@ export default function App({ Component, pageProps }: AppProps) {
   );
 
   return (
-    // ⬇️ Default to dark to match desired_design; class-based theming for DS tokens
+    // Default to dark; class-based theming for DS tokens
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
       <Head>
         {/* Non-blocking Font Awesome (kept for compatibility while migrating to icon components) */}
@@ -156,7 +160,7 @@ export default function App({ Component, pageProps }: AppProps) {
           />
         </noscript>
 
-        {/* Premium stylesheet only for /premium (existing pipeline) */}
+        {/* Premium stylesheet only for /premium */}
         {isPremium ? <link rel="stylesheet" href="/premium.css" /> : null}
       </Head>
 
@@ -164,20 +168,18 @@ export default function App({ Component, pageProps }: AppProps) {
       <div className={`${poppins.variable} ${slab.variable} ${poppins.className} min-h-screen`}>
         <ToastProvider>
           {showLayout ? (
-            // Regular pages: show banner inside the layout, above page content
             <Layout>
               <ImpersonationBanner />
               {pageBody}
             </Layout>
           ) : (
-            // No-chrome (premium, auth, or exam/focus) – still show banner
             <>
               <ImpersonationBanner />
               {pageBody}
             </>
           )}
 
-          {/* ⬇️ Global AI Sidebar (fixed, overlays anywhere) */}
+          {/* Global AI Sidebar */}
           <SidebarAI />
         </ToastProvider>
       </div>

@@ -10,7 +10,8 @@
     "start": "next start",
     "lint": "next lint",
     "pin:hash": "ts-node tools/hash-pin.ts",
-    "diagnose": "powershell -ExecutionPolicy Bypass -File .\\\\tools\\\\report-build-issues.ps1"
+    "diagnose": "powershell -ExecutionPolicy Bypass -File .\\\\tools\\\\report-build-issues.ps1",
+    "test": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\",\"verbatimModuleSyntax\":false}' node -r ts-node/register lib/routeAccess.test.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
