@@ -12,6 +12,8 @@ const envSchema = z.object({
   OPENAI_API_KEY: z.string().optional(),
   GEMINI_API_KEY: z.string().optional(),
   PREMIUM_MASTER_PIN: z.string().optional(),
+  STRIPE_SECRET_KEY: z.string().optional(),
+  STRIPE_WEBHOOK_SECRET: z.string().optional(),
   SPEAKING_DAILY_LIMIT: z.coerce.number().optional(),
   SPEAKING_BUCKET: z.string().optional(),
   NEXT_PUBLIC_DEBUG: z.string().optional(),
