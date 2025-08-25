@@ -8,6 +8,7 @@ import { Button } from '@/components/design-system/Button';
 import { Badge } from '@/components/design-system/Badge';
 import { Alert } from '@/components/design-system/Alert';
 import { Input } from '@/components/design-system/Input';
+import FocusGuard from '@/components/exam/FocusGuard';
 
 type MCQ = {
   id: string;
@@ -311,8 +312,10 @@ export default function ListeningTestPage() {
   const sliceSecs = currentSection ? Math.max(0, Math.round((currentSection.endMs - currentSection.startMs) / 1000)) : 0;
 
   return (
-    <section className="py-24 bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90">
-      <Container>
+    <>
+      <FocusGuard exam="listening" slug={slug} />
+      <section className="py-24 bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90">
+        <Container>
         {/* Header */}
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
@@ -515,6 +518,7 @@ export default function ListeningTestPage() {
           )}
         </div>
       </Container>
-    </section>
+      </section>
+    </>
   );
 }
