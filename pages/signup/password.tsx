@@ -11,6 +11,7 @@ export default function SignupWithPassword() {
   const [email, setEmail] = useState('');
   const [pw, setPw] = useState('');
   const [err, setErr] = useState<string | null>(null);
+  const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
 
   async function onSubmit(e: React.FormEvent) {
@@ -18,10 +19,19 @@ export default function SignupWithPassword() {
     setErr(null);
     if (!email || !pw) return setErr('Please fill in all fields.');
     setLoading(true);
-    const { error } = await supabase.auth.signUp({ email, password: pw });
+    const { error } = await supabase.auth.signUp({
+      email,
+      password: pw,
+      options: {
+        emailRedirectTo:
+          typeof window !== 'undefined'
+            ? `${window.location.origin}/auth/verify`
+            : undefined,
+      },
+    });
     setLoading(false);
     if (error) return setErr(error.message);
-    window.location.assign('/profile-setup');
+    setSent(true);
   }
 
   const RightPanel = (
@@ -45,13 +55,19 @@ export default function SignupWithPassword() {
       right={RightPanel}
     >
       {err && <Alert variant="error" title="Error" className="mb-4">{err}</Alert>}
-      <form onSubmit={onSubmit} className="space-y-6 mt-2">
-        <Input label="Email" type="email" placeholder="you@example.com" value={email} onChange={(e)=>setEmail(e.target.value)} required />
-        <Input label="Password" type="password" placeholder="Create a password" value={pw} onChange={(e)=>setPw(e.target.value)} required />
-        <Button type="submit" variant="primary" className="w-full rounded-ds-xl" disabled={loading}>
-          {loading ? 'Creating…' : 'Create account'}
-        </Button>
-      </form>
+      {sent ? (
+        <Alert variant="success" title="Check your email" className="mb-4">
+          We've sent a confirmation link to {email}. Follow it to continue.
+        </Alert>
+      ) : (
+        <form onSubmit={onSubmit} className="space-y-6 mt-2">
+          <Input label="Email" type="email" placeholder="you@example.com" value={email} onChange={(e)=>setEmail(e.target.value)} required />
+          <Input label="Password" type="password" placeholder="Create a password" value={pw} onChange={(e)=>setPw(e.target.value)} required />
+          <Button type="submit" variant="primary" className="w-full rounded-ds-xl" disabled={loading}>
+            {loading ? 'Creating…' : 'Create account'}
+          </Button>
+        </form>
+      )}
       <Button asChild variant="secondary" className="mt-6 rounded-ds-xl w-full">
         <Link href="/signup">Back to Sign-up Options</Link>
       </Button>
