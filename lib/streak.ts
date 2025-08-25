@@ -34,3 +34,23 @@ export const getDayKeyInTZ = (
     day: '2-digit',
   }).format(date);
 };
+
+/** Data returned by the streak API */
+export type StreakData = {
+  current_streak: number;
+  last_activity_date: string | null;
+};
+
+/** Fetch current streak for the logged-in user */
+export async function fetchStreak(): Promise<StreakData> {
+  const res = await fetch('/api/streak');
+  if (!res.ok) throw new Error('Failed to fetch streak');
+  return res.json();
+}
+
+/** Mark today's activity and return the updated streak */
+export async function incrementStreak(): Promise<StreakData> {
+  const res = await fetch('/api/streak', { method: 'POST' });
+  if (!res.ok) throw new Error('Failed to update streak');
+  return res.json();
+}
