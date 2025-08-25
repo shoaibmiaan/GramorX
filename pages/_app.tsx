@@ -14,6 +14,7 @@ import {
   isGuestOnlyRoute,
   canAccess,
   requiredRolesFor,
+  getUserRole,
   type AppRole,
 } from '@/lib/routeAccess';
 
@@ -86,10 +87,7 @@ export default function App({ Component, pageProps }: AppProps) {
           data: { session },
         } = await supabaseBrowser.auth.getSession();
         const user = session?.user ?? null;
-        const r =
-          (user?.user_metadata?.role as AppRole | undefined) ||
-          (user?.app_metadata?.role as AppRole | undefined) ||
-          null;
+        const r = getUserRole(user);
 
         if (!mounted) return;
         setIsAuthed(!!user);

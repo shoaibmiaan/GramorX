@@ -1,3 +1,4 @@
+// pages/signup/password.tsx
 import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -11,66 +12,110 @@ export default function SignupWithPassword() {
   const [email, setEmail] = useState('');
   const [pw, setPw] = useState('');
   const [err, setErr] = useState<string | null>(null);
-  const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setErr(null);
-    if (!email || !pw) return setErr('Please fill in all fields.');
-    setLoading(true);
-    const { error } = await supabase.auth.signUp({
-      email,
-      password: pw,
-      options: {
-        emailRedirectTo:
-          typeof window !== 'undefined'
-            ? `${window.location.origin}/auth/verify`
-            : undefined,
-      },
-    });
-    setLoading(false);
-    if (error) return setErr(error.message);
-    setSent(true);
+
+    if (!email || !pw) {
+      setErr('Please fill in all fields.');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const { error } = await supabase.auth.signUp({
+        email,
+        password: pw,
+        options: {
+          // After the user clicks the email link, they land on /auth/verify
+          emailRedirectTo:
+            typeof window !== 'undefined'
+              ? `${window.location.origin}/auth/verify`
+              : undefined,
+        },
+      });
+      setLoading(false);
+
+      if (error) {
+        setErr(error.message);
+        return;
+      }
+
+      // Redirect to verify page showing "link sent to <email>"
+      if (typeof window !== 'undefined') {
+        window.location.assign(`/auth/verify?email=${encodeURIComponent(email)}`);
+      }
+    } catch (e: any) {
+      setLoading(false);
+      setErr(e?.message || 'Something went wrong. Please try again.');
+    }
   }
 
-  const RightPanel = (
-    <div className="h-full flex flex-col justify-between p-8 md:p-12 bg-gradient-to-br from-purpleVibe/10 via-electricBlue/5 to-neonGreen/10 dark:from-dark/50 dark:via-dark/30 dark:to-darker/60">
-      <div>
-        <div className="flex items-center gap-3 mb-6">
-          <Image src="/brand/logo.png" alt="GramorX" width={40} height={40} className="rounded-ds object-contain" priority />
-          <h2 className="font-slab text-h2 text-gradient-primary">Create with Email</h2>
-        </div>
-        <p className="text-body text-grayish dark:text-gray-300 max-w-md">Set your email and password to get started.</p>
-      </div>
-      <div className="pt-8 text-small text-grayish dark:text-gray-400">
-        Prefer phone? <Link href="/signup/phone" className="text-primary hover:underline">Use Phone (OTP)</Link>
-      </div>
+  // Right side: large logo only (preserves your split-screen design)
+  const RightIllustration = (
+    <div className="hidden md:flex w-1/2 relative items-center justify-center bg-primary/10 dark:bg-dark">
+      <Image
+        src="/brand/logo.png"
+        alt="GramorX Logo"
+        width={420}
+        height={420}
+        className="object-contain"
+        priority
+      />
     </div>
   );
 
   return (
-    <AuthLayout title="Sign up with Email" subtitle="Create an account using email & password."
-      // @ts-expect-error TODO: AuthLayout supports an optional `right` slot
-      right={RightPanel}
+    <AuthLayout
+      title="Sign up with Email"
+      subtitle="Create an account using email & password."
+      rightIllustration={RightIllustration}
     >
-      {err && <Alert variant="error" title="Error" className="mb-4">{err}</Alert>}
-      {sent ? (
-        <Alert variant="success" title="Check your email" className="mb-4">
-          We've sent a confirmation link to {email}. Follow it to continue.
+      {err && (
+        <Alert variant="error" title="Error" className="mb-4">
+          {err}
         </Alert>
-      ) : (
-        <form onSubmit={onSubmit} className="space-y-6 mt-2">
-          <Input label="Email" type="email" placeholder="you@example.com" value={email} onChange={(e)=>setEmail(e.target.value)} required />
-          <Input label="Password" type="password" placeholder="Create a password" value={pw} onChange={(e)=>setPw(e.target.value)} required />
-          <Button type="submit" variant="primary" className="w-full rounded-ds-xl" disabled={loading}>
-            {loading ? 'Creating…' : 'Create account'}
-          </Button>
-        </form>
       )}
-      <Button asChild variant="secondary" className="mt-6 rounded-ds-xl w-full">
-        <Link href="/signup">Back to Sign-up Options</Link>
-      </Button>
+
+      <form onSubmit={onSubmit} className="space-y-6 mt-2">
+        <Input
+          label="Email"
+          type="email"
+          placeholder="you@example.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          autoComplete="email"
+        />
+        <Input
+          label="Password"
+          type="password"
+          placeholder="Create a password"
+          value={pw}
+          onChange={(e) => setPw(e.target.value)}
+          required
+          autoComplete="new-password"
+        />
+        <Button
+          type="submit"
+          variant="primary"
+          className="w-full rounded-ds-xl"
+          disabled={loading}
+        >
+          {loading ? 'Creating…' : 'Create account'}
+        </Button>
+      </form>
+
+      <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <Button asChild variant="secondary" className="rounded-ds-xl w-full">
+          <Link href="/signup">Back to Sign-up Options</Link>
+        </Button>
+        <Button asChild variant="ghost" className="rounded-ds-xl w-full">
+          <Link href="/login">Already have an account? Log in</Link>
+        </Button>
+      </div>
     </AuthLayout>
   );
 }
