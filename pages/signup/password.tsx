@@ -18,10 +18,19 @@ export default function SignupWithPassword() {
     setErr(null);
     if (!email || !pw) return setErr('Please fill in all fields.');
     setLoading(true);
-    const { error } = await supabase.auth.signUp({ email, password: pw });
+    const { error } = await supabase.auth.signUp({
+      email,
+      password: pw,
+      options: {
+        emailRedirectTo:
+          typeof window !== 'undefined'
+            ? `${window.location.origin}/auth/verify`
+            : undefined,
+      },
+    });
     setLoading(false);
     if (error) return setErr(error.message);
-    window.location.assign('/profile-setup');
+    window.location.assign(`/auth/verify?email=${encodeURIComponent(email)}`);
   }
 
   const RightPanel = (

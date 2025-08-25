@@ -19,7 +19,7 @@ export default function LoginWithPhone() {
     setErr(null);
     if (!phone) return setErr('Enter your phone number in E.164 format, e.g. +923001234567');
     setLoading(true);
-    const { error } = await supabase.auth.signInWithOtp({ phone, options: { shouldCreateUser: true } });
+    const { error } = await supabase.auth.signInWithOtp({ phone, options: { shouldCreateUser: false } });
     setLoading(false);
     if (error) return setErr(error.message);
     setStage('verify');
