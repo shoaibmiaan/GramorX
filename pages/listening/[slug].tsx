@@ -8,6 +8,9 @@ import { Button } from '@/components/design-system/Button';
 import { Badge } from '@/components/design-system/Badge';
 import { Alert } from '@/components/design-system/Alert';
 import { Input } from '@/components/design-system/Input';
+import { Timer } from '@/components/design-system/Timer';
+import { scoreAll } from '@/lib/listening/score';
+import { rawToBand } from '@/lib/listening/band';
 
 type MCQ = {
   id: string;
@@ -42,6 +45,7 @@ type ListeningTest = {
 };
 
 const LS_KEY = (slug?: string) => (slug ? `listen:${slug}` : '');
+const TOTAL_TIME_SEC = 30 * 60; // 30‑minute timer
 
 export default function ListeningTestPage() {
   const router = useRouter();
@@ -64,6 +68,10 @@ export default function ListeningTestPage() {
 
   // answers: questionId -> value
   const [answers, setAnswers] = useState<Record<string, string>>({});
+
+  // --- Timer ---
+  const [timeLeft, setTimeLeft] = useState(TOTAL_TIME_SEC);
+  const submittedRef = useRef(false);
 
   // --- Audio & timing ---
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -294,6 +302,52 @@ export default function ListeningTestPage() {
     }
   };
 
+  // --- Submit attempt via RPC (score + band) ---
+  const submitAttempt = async () => {
+    if (!test || !userId) return;
+    const flat = test.sections.flatMap((s) => s.questions);
+    const questionsForScore = flat.map((q) =>
+      q.type === 'mcq'
+        ? { qno: q.qNo, type: 'mcq', answer_key: { value: q.answer } }
+        : { qno: q.qNo, type: 'gap', answer_key: { text: q.answer } }
+    );
+    const answersArr = Object.entries(answers)
+      .map(([qid, ans]) => {
+        const q = flat.find((qq) => qq.id === qid);
+        if (!q) return null;
+        return { qno: q.qNo, answer: ans };
+      })
+      .filter(Boolean) as { qno: number; answer: any }[];
+
+    const { total, perSection } = scoreAll(questionsForScore as any, answersArr);
+    const band = rawToBand(total);
+
+    await supabase.rpc('save_listening_attempt', {
+      test_slug: test.slug,
+      answers: answersArr,
+      score: total,
+      band,
+      section_scores: perSection,
+      duration_sec: TOTAL_TIME_SEC - Math.ceil(timeLeft),
+    });
+  };
+
+  const handleAutoSubmit = () => {
+    if (submittedRef.current) return;
+    submittedRef.current = true;
+    setChecked(true);
+    (async () => {
+      if (userId) {
+        await persistAnswers();
+        await submitAttempt();
+      }
+      try {
+        if (slug) localStorage.removeItem(LS_KEY(slug));
+      } catch {}
+      router.push(`/listening/${test.slug}/review`);
+    })();
+  };
+
   // --- Loading skeleton ---
   if (!test) {
     return (
@@ -320,6 +374,12 @@ export default function ListeningTestPage() {
             <p className="text-grayish">Auto-play per section • Transcript toggle • Answer highlighting</p>
           </div>
           <div className="flex items-center gap-3">
+            <Timer
+              initialSeconds={TOTAL_TIME_SEC}
+              onTick={(s) => setTimeLeft(Math.ceil(s))}
+              onComplete={handleAutoSubmit}
+              running={!submittedRef.current}
+            />
             <Badge variant={autoPlay ? 'success' : 'warning'}>Auto-play: {autoPlay ? 'On' : 'Off'}</Badge>
             <Button variant="secondary" onClick={() => setAutoPlay((v) => !v)}>
               Toggle Auto-play
@@ -495,13 +555,16 @@ export default function ListeningTestPage() {
               </Button>
               <Button
                 onClick={async () => {
-                  if (userId) await persistAnswers();
+                  if (userId) {
+                    await persistAnswers();
+                    if (currentIdx >= secCount - 1) {
+                      await submitAttempt();
+                    }
+                  }
                   if (currentIdx >= secCount - 1) {
                     try {
                       if (slug) localStorage.removeItem(LS_KEY(slug));
-                    } catch {
-                      // ignore
-                    }
+                    } catch {}
                     router.push(`/listening/${test.slug}/review`);
                   } else {
                     setCurrentIdx((i) => i + 1);
