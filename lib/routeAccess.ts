@@ -38,7 +38,11 @@ export const requiredRolesFor = (path: string): AppRole[] | null => {
 };
 
 export const canAccess = (path: string, role: AppRole | null | undefined): boolean => {
+  if (isPublicRoute(path)) return true;
+
   const needed = requiredRolesFor(path);
-  if (!needed) return true; // no special role required
-  return !!role && needed.includes(role);
+  if (needed) return !!role && needed.includes(role);
+
+  // Protected route with no specific gate still requires some valid role.
+  return !!role;
 };

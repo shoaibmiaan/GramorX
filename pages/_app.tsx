@@ -9,13 +9,7 @@ import '@/styles/globals.css';
 import { Layout } from '@/components/Layout';
 import { ToastProvider } from '@/components/design-system/Toast';
 import { supabaseBrowser } from '@/lib/supabaseBrowser';
-import {
-  isPublicRoute,
-  isGuestOnlyRoute,
-  canAccess,
-  requiredRolesFor,
-  type AppRole,
-} from '@/lib/routeAccess';
+import { isGuestOnlyRoute, canAccess, requiredRolesFor, type AppRole } from '@/lib/routeAccess';
 
 // Premium theme wrapper (kept for /premium paths)
 import { PremiumThemeProvider } from '@/premium-ui/theme/PremiumThemeProvider';
@@ -76,7 +70,6 @@ export default function App({ Component, pageProps }: AppProps) {
   // --- Route guards (role-aware) ---
   const [isChecking, setIsChecking] = useState(true);
   const [role, setRole] = useState<AppRole | null>(null);
-  const [isAuthed, setIsAuthed] = useState<boolean>(false);
 
   useEffect(() => {
     let mounted = true;
@@ -92,10 +85,8 @@ export default function App({ Component, pageProps }: AppProps) {
           null;
 
         if (!mounted) return;
-        setIsAuthed(!!user);
         setRole(r);
 
-        const publicR = isPublicRoute(pathname);
         const guestOnlyR = isGuestOnlyRoute(pathname);
 
         // If guest-only and user is logged in → send to dashboard
@@ -104,13 +95,17 @@ export default function App({ Component, pageProps }: AppProps) {
           return;
         }
 
-        // If protected and user lacks role → redirect to login with info
-        if (!publicR && !canAccess(pathname, r)) {
+        // If protected and user lacks role → login if unauthenticated, else 403
+        if (!canAccess(pathname, r)) {
           const need = requiredRolesFor(pathname);
-          router.replace({
-            pathname: '/login',
-            query: { next: pathname, need: Array.isArray(need) ? need.join(',') : need },
-          });
+          if (!r) {
+            router.replace({
+              pathname: '/login',
+              query: { next: pathname, need: Array.isArray(need) ? need.join(',') : need },
+            });
+          } else {
+            router.replace('/403');
+          }
           return;
         }
       } finally {
