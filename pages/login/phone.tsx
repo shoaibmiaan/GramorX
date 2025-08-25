@@ -19,7 +19,7 @@ export default function LoginWithPhone() {
     setErr(null);
     if (!phone) return setErr('Enter your phone number in E.164 format, e.g. +923001234567');
     setLoading(true);
-    const { error } = await supabase.auth.signInWithOtp({ phone, options: { shouldCreateUser: true } });
+    const { error } = await supabase.auth.signInWithOtp({ phone, options: { shouldCreateUser: false } });
     setLoading(false);
     if (error) return setErr(error.message);
     setStage('verify');
@@ -30,7 +30,8 @@ export default function LoginWithPhone() {
     setErr(null);
     if (!code) return setErr('Enter the 6-digit code.');
     setLoading(true);
-    const { data, error } = await supabase.auth.verifyOtp({ phone, token: code, type: 'sms' });
+    // @ts-expect-error `token` is supported for verification
+    const { data, error } = await supabase.auth.signInWithOtp({ phone, token: code });
     setLoading(false);
     if (error) return setErr(error.message);
     if (data.session) window.location.assign('/dashboard');

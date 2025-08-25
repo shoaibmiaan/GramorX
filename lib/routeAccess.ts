@@ -1,5 +1,13 @@
 // lib/routeAccess.ts
+import type { User } from '@supabase/supabase-js';
+
 export type AppRole = 'student' | 'teacher' | 'admin';
+
+// Extract role from user/app metadata (null if none)
+export const getUserRole = (user: User | null | undefined): AppRole | null =>
+  (user?.user_metadata?.role as AppRole | undefined) ||
+  (user?.app_metadata?.role as AppRole | undefined) ||
+  null;
 
 export const isPublicRoute = (path: string) => {
   // Allow-list public pages. Adjust as needed.

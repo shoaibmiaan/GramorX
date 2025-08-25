@@ -9,18 +9,24 @@ import '@/styles/globals.css';
 import { Layout } from '@/components/Layout';
 import { ToastProvider } from '@/components/design-system/Toast';
 import { supabaseBrowser } from '@/lib/supabaseBrowser';
-import { isGuestOnlyRoute, canAccess, requiredRolesFor, type AppRole } from '@/lib/routeAccess';
+import {
+  isGuestOnlyRoute,
+  canAccess,
+  requiredRolesFor,
+  getUserRole,
+  type AppRole,
+} from '@/lib/routeAccess';
 
 // Premium theme wrapper (kept for /premium paths)
 import { PremiumThemeProvider } from '@/premium-ui/theme/PremiumThemeProvider';
 
-// ⬇️ Impersonation banner
+// Impersonation banner
 import { ImpersonationBanner } from '@/components/admin/ImpersonationBanner';
 
-// ⬇️ Global Sidebar AI (Leo-style)
+// Global Sidebar AI
 import { SidebarAI } from '@/components/ai/SidebarAI';
 
-// ✅ Fonts via next/font (non-blocking)
+// Fonts
 import { Poppins, Roboto_Slab } from 'next/font/google';
 const poppins = Poppins({
   subsets: ['latin'],
@@ -72,19 +78,17 @@ export default function App({ Component, pageProps }: AppProps) {
   const [role, setRole] = useState<AppRole | null>(null);
 
   useEffect(() => {
-    let mounted = true;
+    let active = true;
+
     (async () => {
       try {
         const {
           data: { session },
         } = await supabaseBrowser.auth.getSession();
         const user = session?.user ?? null;
-        const r =
-          (user?.user_metadata?.role as AppRole | undefined) ||
-          (user?.app_metadata?.role as AppRole | undefined) ||
-          null;
+        const r = getUserRole(user);
+        if (!active) return;
 
-        if (!mounted) return;
         setRole(r);
 
         const guestOnlyR = isGuestOnlyRoute(pathname);
@@ -109,10 +113,13 @@ export default function App({ Component, pageProps }: AppProps) {
           return;
         }
       } finally {
-        mounted = false;
-        setIsChecking(false);
+        if (active) setIsChecking(false);
       }
     })();
+
+    return () => {
+      active = false;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
 
@@ -128,7 +135,7 @@ export default function App({ Component, pageProps }: AppProps) {
   );
 
   return (
-    // ⬇️ Default to dark to match desired_design; class-based theming for DS tokens
+    // Default to dark; class-based theming for DS tokens
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
       <Head>
         {/* Non-blocking Font Awesome (kept for compatibility while migrating to icon components) */}
@@ -153,7 +160,7 @@ export default function App({ Component, pageProps }: AppProps) {
           />
         </noscript>
 
-        {/* Premium stylesheet only for /premium (existing pipeline) */}
+        {/* Premium stylesheet only for /premium */}
         {isPremium ? <link rel="stylesheet" href="/premium.css" /> : null}
       </Head>
 
@@ -161,20 +168,18 @@ export default function App({ Component, pageProps }: AppProps) {
       <div className={`${poppins.variable} ${slab.variable} ${poppins.className} min-h-screen`}>
         <ToastProvider>
           {showLayout ? (
-            // Regular pages: show banner inside the layout, above page content
             <Layout>
               <ImpersonationBanner />
               {pageBody}
             </Layout>
           ) : (
-            // No-chrome (premium, auth, or exam/focus) – still show banner
             <>
               <ImpersonationBanner />
               {pageBody}
             </>
           )}
 
-          {/* ⬇️ Global AI Sidebar (fixed, overlays anywhere) */}
+          {/* Global AI Sidebar */}
           <SidebarAI />
         </ToastProvider>
       </div>
