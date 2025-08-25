@@ -8,6 +8,7 @@ import { Badge } from '@/components/design-system/Badge';
 import { Alert } from '@/components/design-system/Alert';
 import { QuestionBlock } from '@/components/reading/QuestionBlock';
 import { QuestionNav } from '@/components/reading/QuestionNav';
+import FocusGuard from '@/components/exam/FocusGuard';
 
 type BaseQ = { id: string; qNo: number; type: 'mcq'|'tfng'|'ynng'|'gap'|'match'; prompt: string };
 type MCQ = BaseQ & { type: 'mcq'; options: string[]; answer?: string };
@@ -199,8 +200,10 @@ export default function ReadingRunnerPage() {
   const ss = Math.max(0, (secondsLeft ?? 0) % 60).toString().padStart(2, '0');
 
   return (
-    <section className="py-24 bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90">
-      <Container>
+    <>
+      <FocusGuard exam="reading" slug={slug} />
+      <section className="py-24 bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90">
+        <Container>
         {!test ? (
           err ? <Alert variant="error" title="Error">{err}</Alert> : (
             <Card className="p-6"><div className="animate-pulse h-6 w-40 bg-gray-200 dark:bg-white/10 rounded" /></Card>
@@ -284,8 +287,9 @@ export default function ReadingRunnerPage() {
             </div>
           </>
         )}
-      </Container>
-    </section>
+        </Container>
+      </section>
+    </>
   );
 }
 
