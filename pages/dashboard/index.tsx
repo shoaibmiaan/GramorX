@@ -2,14 +2,17 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Image from 'next/image';
+
 import { Container } from '@/components/design-system/Container';
 import { Card } from '@/components/design-system/Card';
 import { Button } from '@/components/design-system/Button';
 import { Badge } from '@/components/design-system/Badge';
 import { Alert } from '@/components/design-system/Alert';
 import { StreakIndicator } from '@/components/design-system/StreakIndicator';
+
 import { supabaseBrowser } from '@/lib/supabaseBrowser';
 import { ReadingStatsCard } from '@/components/reading/ReadingStatsCard';
+
 import { useStreak } from '@/hooks/useStreak';
 import { getDayKeyInTZ } from '@/lib/streak';
 import StudyCalendar from '@/components/feature/StudyCalendar';
@@ -41,7 +44,13 @@ export default function Dashboard() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<Profile | null>(null);
-  const { current: streak, lastDayKey, loading: streakLoading, completeToday } = useStreak();
+
+  const {
+    current: streak,
+    lastDayKey,
+    loading: streakLoading,
+    completeToday,
+  } = useStreak();
 
   const handleShare = () => {
     const text = `I'm studying for IELTS on GramorX with a ${streak}-day streak!`;
@@ -57,52 +66,65 @@ export default function Dashboard() {
     let cancelled = false;
 
     (async () => {
-      if (typeof window !== 'undefined') {
-        const url = window.location.href;
-        if (url.includes('code=') || url.includes('access_token=')) {
-          const { error } = await supabaseBrowser.auth.exchangeCodeForSession(url);
-          if (!error) router.replace('/dashboard');
+      try {
+        if (typeof window !== 'undefined') {
+          const url = window.location.href;
+          if (url.includes('code=') || url.includes('access_token=')) {
+            const { error } = await supabaseBrowser.auth.exchangeCodeForSession(url);
+            if (!error) {
+              router.replace('/dashboard');
+              return;
+            }
+          }
         }
-      }
-      const { data: { session } } = await supabaseBrowser.auth.getSession();
 
-      if (!session?.user) {
-        router.replace('/login');
-        return;
-      }
+        const {
+          data: { session },
+        } = await supabaseBrowser.auth.getSession();
 
-      const { data, error } = await supabaseBrowser
-        .from('user_profiles')
-        .select('*')
-        .eq('user_id', session.user.id)
-        .maybeSingle();
+        if (!session?.user) {
+          router.replace('/login');
+          return;
+        }
 
-      if (cancelled) return;
+        const { data, error } = await supabaseBrowser
+          .from('user_profiles')
+          .select('*')
+          .eq('user_id', session.user.id)
+          .maybeSingle();
 
-      if (error) {
-        console.error(error);
+        if (cancelled) return;
+
+        if (error) {
+          console.error(error);
+          setLoading(false);
+          return;
+        }
+
+        if (!data || data.draft) {
+          // Your setup page path is /profile/setup in this codebase.
+          router.replace('/profile/setup');
+          return;
+        }
+
+        setProfile(data as Profile);
         setLoading(false);
-        return;
+      } catch (e) {
+        console.error(e);
+        if (!cancelled) setLoading(false);
       }
-
-      if (!data || data.draft) {
-        router.replace('/profile-setup');
-        return;
-      }
-
-      setProfile(data as Profile);
-
-      setLoading(false);
     })();
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [router]);
 
   useEffect(() => {
     if (streakLoading) return;
     const today = getDayKeyInTZ();
     if (lastDayKey !== today) {
-      completeToday().catch(() => {});
+      void completeToday().catch(() => {});
     }
   }, [streakLoading, lastDayKey, completeToday]);
 
@@ -136,21 +158,21 @@ export default function Dashboard() {
             </h1>
             <p className="text-grayish">Let’s hit your target band with a personalized plan.</p>
           </div>
-        <div className="flex items-center gap-4">
-          <StreakIndicator value={streak} />
-          {streak >= 7 && (
-            <Badge variant="success" size="sm">🔥 {streak}-day streak!</Badge>
-          )}
-          {profile?.avatar_url ? (
-            <Image
-              src={profile.avatar_url}
-              alt="Avatar"
-              width={56}
-              height={56}
-              className="rounded-full ring-2 ring-primary/40"
-            />
-          ) : null}
-        </div>
+
+          <div className="flex items-center gap-4">
+            <StreakIndicator value={streak} />
+            {streak >= 7 && <Badge variant="success" size="sm">🔥 {streak}-day streak!</Badge>}
+
+            {profile?.avatar_url ? (
+              <Image
+                src={profile.avatar_url}
+                alt="Avatar"
+                width={56}
+                height={56}
+                className="rounded-full ring-2 ring-primary/40"
+              />
+            ) : null}
+          </div>
         </div>
 
         {/* Top summary cards */}
@@ -222,7 +244,6 @@ export default function Dashboard() {
             </div>
           </Card>
 
-          {/* New: Reading Student Analysis */}
           <ReadingStatsCard />
         </div>
 
@@ -232,9 +253,14 @@ export default function Dashboard() {
             <h3 className="font-slab text-h3 mb-2">Skill Focus</h3>
             {(ai.sequence ?? []).length ? (
               <ul className="list-disc pl-6 text-body">
-                {ai.sequence!.map((s, i) => (
+                {(ai.sequence ?? []).map((s, i, arr) => (
                   <li key={s}>
-                    {s} {i === 0 ? '- prioritize' : i === ai.sequence!.length - 1 ? '- strong' : ''}
+                    {s}{' '}
+                    {i === 0
+                      ? '- prioritize'
+                      : i === arr.length - 1
+                      ? '- strong'
+                      : ''}
                   </li>
                 ))}
               </ul>
@@ -259,7 +285,7 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        {/* Plan coach notes */}
+        {/* Coach notes */}
         <div className="mt-10">
           <Card className="p-6 rounded-ds-2xl">
             <h3 className="font-slab text-h3">Coach Notes</h3>
@@ -275,7 +301,7 @@ export default function Dashboard() {
               </Alert>
             )}
             <div className="mt-4">
-              <Button as="a" href="/profile-setup" variant="secondary" className="rounded-ds-xl">
+              <Button as="a" href="/profile/setup" variant="secondary" className="rounded-ds-xl">
                 Edit Profile
               </Button>
             </div>

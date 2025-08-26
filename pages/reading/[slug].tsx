@@ -9,6 +9,7 @@ import { Alert } from '@/components/design-system/Alert';
 import { QuestionBlock } from '@/components/reading/QuestionBlock';
 import { QuestionNav } from '@/components/reading/QuestionNav';
 import FocusGuard from '@/components/exam/FocusGuard';
+import { BookmarkButton } from '@/components/BookmarkButton';
 
 type BaseQ = { id: string; qNo: number; type: 'mcq'|'tfng'|'ynng'|'gap'|'match'; prompt: string };
 type MCQ = BaseQ & { type: 'mcq'; options: string[]; answer?: string };
@@ -227,6 +228,7 @@ export default function ReadingRunnerPage() {
                 ) : null
               ))}
 
+              <BookmarkButton resourceId={slug || ''} type="reading" />
               <Button variant="secondary" className="rounded-ds" onClick={() => router.back()}>Exit</Button>
               <Button variant="primary" className="rounded-ds" onClick={() => submit()} disabled={submitting}>
                 {submitting ? 'Submitting…' : 'Submit'}
