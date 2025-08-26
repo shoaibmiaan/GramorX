@@ -10,10 +10,12 @@ module.exports = {
   },
   spacing: {
     // extends Tailwind's scale with project-specific steps
-    3.5: '0.875rem', // 14px
-    18: '4.5rem',    // 72px
-    22: '5.5rem',    // 88px
-    30: '7.5rem'     // 120px
+    3.5: '0.875rem',  // 14px
+    17.5: '4.375rem', // 70px
+    18: '4.5rem',     // 72px
+    22: '5.5rem',     // 88px
+    30: '7.5rem',     // 120px
+    220: '55rem'      // 880px
   },
   typeScale: {
     // Existing

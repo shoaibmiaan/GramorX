@@ -116,7 +116,7 @@ export const Modules: React.FC = () => {
                   {m.status}
                 </Badge>
 
-                <div className="w-[70px] h-[70px] rounded-full flex items-center justify-center mb-6 text-white text-2xl bg-gradient-to-br from-purpleVibe to-electricBlue">
+                <div className="w-17.5 h-17.5 rounded-full flex items-center justify-center mb-6 text-white text-2xl bg-gradient-to-br from-purpleVibe to-electricBlue">
                   <i className={`fas ${m.icon}`} />
                 </div>
                 <h3 className="text-xl font-semibold mb-3 flex items-center gap-2">

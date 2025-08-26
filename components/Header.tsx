@@ -232,7 +232,7 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
                   <div
                     id="desktop-modules-menu"
                     role="menu"
-                    className="absolute left-1/2 -translate-x-1/2 top-full mt-3 w-[880px] max-w-[90vw] bg-lightBg dark:bg-dark border border-purpleVibe/20 rounded-2xl shadow-lg overflow-hidden"
+                    className="absolute left-1/2 -translate-x-1/2 top-full mt-3 w-220 max-w-[90vw] bg-lightBg dark:bg-dark border border-purpleVibe/20 rounded-2xl shadow-lg overflow-hidden"
                   >
                     <div className="grid grid-cols-12">
                       <div className="col-span-8 p-6 sm:p-7">
