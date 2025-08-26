@@ -10,7 +10,9 @@ import { Alert } from '@/components/design-system/Alert';
 import { StreakIndicator } from '@/components/design-system/StreakIndicator';
 import { supabaseBrowser } from '@/lib/supabaseBrowser';
 import { ReadingStatsCard } from '@/components/reading/ReadingStatsCard';
-import { fetchStreak } from '@/lib/streak';
+import { useStreak } from '@/hooks/useStreak';
+import { getDayKeyInTZ } from '@/lib/streak';
+import StudyCalendar from '@/components/feature/StudyCalendar';
 
 type AIPlan = {
   suggestedGoal?: number;
@@ -37,7 +39,7 @@ export default function Dashboard() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [streak, setStreak] = useState(0);
+  const { current: streak, lastDayKey, loading: streakLoading, completeToday } = useStreak();
 
   useEffect(() => {
     let cancelled = false;
@@ -78,16 +80,19 @@ export default function Dashboard() {
 
       setProfile(data as Profile);
 
-      try {
-        const s = await fetchStreak();
-        setStreak(s.current_streak || 0);
-      } catch {}
-
       setLoading(false);
     })();
 
     return () => { cancelled = true; };
   }, [router]);
+
+  useEffect(() => {
+    if (streakLoading) return;
+    const today = getDayKeyInTZ();
+    if (lastDayKey !== today) {
+      completeToday().catch(() => {});
+    }
+  }, [streakLoading, lastDayKey, completeToday]);
 
   if (loading) {
     return (
@@ -119,18 +124,18 @@ export default function Dashboard() {
             </h1>
             <p className="text-grayish">Let’s hit your target band with a personalized plan.</p>
           </div>
-          <div className="flex items-center gap-4">
-            <StreakIndicator value={streak} />
-            {profile?.avatar_url ? (
-              <Image
-                src={profile.avatar_url}
-                alt="Avatar"
-                width={56}
-                height={56}
-                className="rounded-full ring-2 ring-primary/40"
-              />
-            ) : null}
-          </div>
+        <div className="flex items-center gap-4">
+          <StreakIndicator value={streak} />
+          {profile?.avatar_url ? (
+            <Image
+              src={profile.avatar_url}
+              alt="Avatar"
+              width={56}
+              height={56}
+              className="rounded-full ring-2 ring-primary/40"
+            />
+          ) : null}
+        </div>
         </div>
 
         {/* Top summary cards */}
@@ -166,6 +171,11 @@ export default function Dashboard() {
               ))}
             </div>
           </Card>
+        </div>
+
+        {/* Study calendar */}
+        <div className="mt-10">
+          <StudyCalendar />
         </div>
 
         {/* Actions + Reading stats */}
