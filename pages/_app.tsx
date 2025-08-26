@@ -85,7 +85,15 @@ export default function App({ Component, pageProps }: AppProps) {
         const {
           data: { session },
         } = await supabaseBrowser.auth.getSession();
-        const user = session?.user ?? null;
+
+        const expiresAt = session?.expires_at;
+        if (!expiresAt || expiresAt <= Date.now() / 1000) {
+          await supabaseBrowser.auth.signOut();
+          router.replace('/login');
+          return;
+        }
+
+        const user = session.user ?? null;
         const r = getUserRole(user);
         if (!active) return;
 
@@ -122,6 +130,22 @@ export default function App({ Component, pageProps }: AppProps) {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
+
+  // Periodically verify session expiration for long-lived pages
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      const {
+        data: { session },
+      } = await supabaseBrowser.auth.getSession();
+      const expiresAt = session?.expires_at;
+      if (!expiresAt || expiresAt <= Date.now() / 1000) {
+        await supabaseBrowser.auth.signOut();
+        router.replace('/login');
+      }
+    }, 5 * 60 * 1000); // every 5 minutes
+
+    return () => clearInterval(interval);
+  }, [router]);
 
   if (isChecking) return <GuardSkeleton />;
 
