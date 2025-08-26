@@ -27,7 +27,7 @@ export default function LoginOptions() {
         options: {
           redirectTo:
             typeof window !== 'undefined'
-              ? `${window.location.origin}/dashboard`
+              ? `${window.location.origin}/auth/callback`
               : undefined,
         },
       });
