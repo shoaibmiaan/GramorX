@@ -13,6 +13,7 @@ import { env } from '@/lib/env';
 import { initIdleTimeout } from '@/utils/idleTimeout';
 import {
   isGuestOnlyRoute,
+  isPublicRoute,
   canAccess,
   requiredRolesFor,
   getUserRole,
@@ -94,20 +95,25 @@ export default function App({ Component, pageProps }: AppProps) {
           data: { session },
         } = await supabaseBrowser.auth.getSession();
 
+        const guestOnlyR = isGuestOnlyRoute(pathname);
+        const publicR = isPublicRoute(pathname);
+
+        let currentSession = session;
         const expiresAt = session?.expires_at;
-        if (!expiresAt || expiresAt <= Date.now() / 1000) {
+        if (session && expiresAt && expiresAt <= Date.now() / 1000) {
           await supabaseBrowser.auth.signOut();
-          router.replace('/login');
-          return;
+          currentSession = null;
+          if (!guestOnlyR && !publicR) {
+            router.replace('/login');
+            return;
+          }
         }
 
-        const user = session.user ?? null;
+        const user = currentSession?.user ?? null;
         const r = getUserRole(user);
         if (!active) return;
 
         setRole(r);
-
-        const guestOnlyR = isGuestOnlyRoute(pathname);
 
         // If guest-only and user is logged in → send to dashboard
         if (guestOnlyR && user) {
@@ -146,9 +152,14 @@ export default function App({ Component, pageProps }: AppProps) {
         data: { session },
       } = await supabaseBrowser.auth.getSession();
       const expiresAt = session?.expires_at;
-      if (!expiresAt || expiresAt <= Date.now() / 1000) {
+      if (session && expiresAt && expiresAt <= Date.now() / 1000) {
         await supabaseBrowser.auth.signOut();
-        router.replace('/login');
+        if (
+          !isGuestOnlyRoute(router.pathname) &&
+          !isPublicRoute(router.pathname)
+        ) {
+          router.replace('/login');
+        }
       }
     }, 5 * 60 * 1000); // every 5 minutes
 
