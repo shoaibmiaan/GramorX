@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { supabaseAdmin } from '@/lib/supabaseServer';
+import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -15,7 +15,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const { reevalId } = req.body as { reevalId?: string };
   if (!reevalId) return res.status(400).json({ error: 'reevalId is required' });
 
-  const admin = supabaseAdmin();
+  const admin = supabaseAdmin;
   const { data: row, error: e1 } = await admin
     .from('writing_reevals')
     .select('id, attempt_id, band_overall, band_breakdown, feedback')
