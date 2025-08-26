@@ -13,10 +13,22 @@ const ForgotPassword: NextPage = () => {
     e.preventDefault();
     setError(null);
     try {
-      // TODO: plug your real reset call here
+      const res = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || data.message || 'Could not send reset email. Please try again.');
+      }
+
       setSent(true);
-    } catch {
-      setError('Could not send reset email. Please try again.');
+    } catch (err: any) {
+      setError(err.message || 'Could not send reset email. Please try again.');
     }
   }
 
