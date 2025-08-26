@@ -9,6 +9,8 @@ import '@/styles/globals.css';
 import { Layout } from '@/components/Layout';
 import { ToastProvider } from '@/components/design-system/Toast';
 import { supabaseBrowser } from '@/lib/supabaseBrowser';
+import { env } from '@/lib/env';
+import { initIdleTimeout } from '@/utils/idleTimeout';
 import {
   isGuestOnlyRoute,
   canAccess,
@@ -72,6 +74,12 @@ export default function App({ Component, pageProps }: AppProps) {
 
   // Show Layout (header/footer) only if not premium, not auth page, not other no-chrome pages
   const showLayout = !isPremium && !isAuthPage && !isNoChromeRoute;
+
+  // --- Idle timeout ---
+  useEffect(() => {
+    const cleanup = initIdleTimeout(env.NEXT_PUBLIC_IDLE_TIMEOUT_MINUTES);
+    return cleanup;
+  }, []);
 
   // --- Route guards (role-aware) ---
   const [isChecking, setIsChecking] = useState(true);

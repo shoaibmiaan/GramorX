@@ -12,6 +12,7 @@ const envSchema = z.object({
   STRIPE_SECRET_KEY: z.string().optional(),
   STRIPE_WEBHOOK_SECRET: z.string().optional(),
   NEXT_PUBLIC_BASE_URL: z.string().url().optional(),
+  NEXT_PUBLIC_IDLE_TIMEOUT_MINUTES: z.coerce.number().default(30),
   ADMIN_EMAILS: z.string().optional(),
   SPEAKING_DAILY_LIMIT: z.coerce.number().optional(),
   SPEAKING_BUCKET: z.string().optional(),
