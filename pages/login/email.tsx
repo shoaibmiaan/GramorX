@@ -21,7 +21,13 @@ export default function LoginWithEmail() {
     const { error, data } = await supabase.auth.signInWithPassword({ email, password: pw });
     setLoading(false);
     if (error) return setErr(error.message);
-    if (data.session) window.location.assign('/dashboard');
+    if (data.session) {
+      await supabase.auth.setSession({
+        access_token: data.session.access_token,
+        refresh_token: data.session.refresh_token,
+      });
+      window.location.assign('/dashboard');
+    }
   }
 
   const RightPanel = (
