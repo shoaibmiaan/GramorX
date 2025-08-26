@@ -1,8 +1,7 @@
-import { env } from "@/lib/env";
 // pages/api/admin/premium/set-pin.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { createClient } from '@supabase/supabase-js';
-import { supabaseService, isAdminEmail } from '@/lib/supabaseService';
+import { supabaseService } from '@/lib/supabaseService';
+import { requireRole } from '@/lib/requireRole';
 
 type Resp =
   | { ok: true; status: 'CREATED' | 'UPDATED'; userId: string }
@@ -13,23 +12,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
 
   try {
-    // Identify caller
-    const authHdr = req.headers.authorization || '';
-    const token = authHdr.startsWith('Bearer ') ? authHdr.slice(7) : null;
-    if (!token) return res.status(401).json({ error: 'Unauthorized' });
-
-    // Get caller’s email from anon client (only to identify who is calling)
-    const supabaseCaller = createClient(
-      env.NEXT_PUBLIC_SUPABASE_URL as string,
-      env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string,
-      { global: { headers: { Authorization: `Bearer ${token}` } } }
-    );
-    const { data: userData, error: userErr } = await supabaseCaller.auth.getUser();
-    if (userErr || !userData?.user) return res.status(401).json({ error: 'Unauthorized' });
-
-    if (!isAdminEmail(userData.user.email)) {
-      return res.status(403).json({ ok: false, reason: 'NOT_ADMIN' });
-    }
+    await requireRole(req, ['admin']);
 
     // Parse input
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;

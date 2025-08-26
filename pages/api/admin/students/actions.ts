@@ -1,6 +1,7 @@
 // pages/api/admin/students/actions.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { requireRole } from '@/lib/requireRole';
 
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL ||
@@ -27,6 +28,11 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<ApiOk | ApiErr>
 ) {
+  try {
+    await requireRole(req, ['admin']);
+  } catch {
+    return res.status(403).json({ error: 'Forbidden' });
+  }
   try {
     if (req.method !== 'POST') {
       return res.status(405).json({ error: 'Method not allowed' });

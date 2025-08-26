@@ -1,7 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { createClient } from '@supabase/supabase-js';
-import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
-import { extractRole } from '@/lib/roles';
+import { requireRole } from '@/lib/requireRole';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -10,11 +9,9 @@ const supabase = createClient(
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') return res.status(405).json({ ok: false, error: 'Method not allowed' });
-
-  const supa = createServerSupabaseClient({ req, res });
-  const { data: { user } } = await supa.auth.getUser();
-  const role = extractRole(user);
-  if (role !== 'teacher' && role !== 'admin') {
+  try {
+    await requireRole(req, ['teacher', 'admin']);
+  } catch {
     return res.status(403).json({ ok: false, error: 'Forbidden' });
   }
 

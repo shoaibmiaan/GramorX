@@ -1,6 +1,7 @@
 // pages/api/admin/students/list.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { requireRole } from '@/lib/requireRole';
 
 type Row = {
   id: string;
@@ -25,6 +26,11 @@ function ymdToIsoStart(ymd: string) { return `${ymd}T00:00:00.000Z`; }
 function ymdToIsoEnd(ymd: string)   { return `${ymd}T23:59:59.999Z`; }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse<Resp | {error:string}>) {
+  try {
+    await requireRole(req, ['admin']);
+  } catch {
+    return res.status(403).json({ error: 'Forbidden' });
+  }
   try {
     const { from, to, q, cohort, role, status, page='1', size='20' } = req.query as Record<string,string|undefined>;
     const pageNum = Math.max(1, parseInt(page || '1', 10));
