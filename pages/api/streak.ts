@@ -2,15 +2,18 @@ import { env } from "@/lib/env";
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { createClient } from '@supabase/supabase-js';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const url = env.NEXT_PUBLIC_SUPABASE_URL;
-  const anon = env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  const supabase = createClient(url, anon, {
-    global: { headers: { Cookie: req.headers.cookie || '' } },
-  });
+type StreakResponse = { current_streak: number; last_activity_date: string | null };
+type ErrorResponse = { error: string };
 
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse<StreakResponse | ErrorResponse>) {
+  const supabase = createClient(
+    env.NEXT_PUBLIC_SUPABASE_URL,
+    env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    { global: { headers: { Cookie: req.headers.cookie || '' } } }
+  );
+
+  const { data: { user }, error: userErr } = await supabase.auth.getUser();
+  if (userErr || !user) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
@@ -33,11 +36,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   if (req.method === 'POST') {
     const today = new Date().toISOString().split('T')[0];
-    const { data: existing } = await supabase
+    const { data: existing, error: fetchErr } = await supabase
       .from('user_streaks')
       .select('current_streak, last_activity_date')
       .eq('user_id', user.id)
       .maybeSingle();
+
+    if (fetchErr) {
+      return res.status(500).json({ error: fetchErr.message });
+    }
 
     let newStreak = 1;
     if (existing) {
@@ -69,5 +76,5 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   res.setHeader('Allow', 'GET,POST');
-  return res.status(405).end('Method Not Allowed');
+  return res.status(405).json({ error: 'Method Not Allowed' });
 }
