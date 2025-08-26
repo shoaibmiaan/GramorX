@@ -1,7 +1,6 @@
 // twilio-sms-webhook.js
 import express from "express";
 import bodyParser from "body-parser";
-import { twiml } from "twilio";
 import Twilio from "twilio";
 import { createClient } from "@supabase/supabase-js";
 
@@ -15,7 +14,6 @@ if (!TWILIO_AUTH_TOKEN || !SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
   process.exit(1);
 }
 
-const twilioHelper = Twilio(); // only for validation; auth token comes below
 const supa = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
 // Validate Twilio signature middleware
@@ -52,9 +50,10 @@ app.post("/twilio/sms-status", validateTwilio, async (req, res) => {
       received_at: new Date().toISOString(),
     };
 
-    await supa.from("message_statuses").upsert(payload, { onConflict: "message_sid" });
+    await supa
+      .from("message_statuses")
+      .upsert(payload, { onConflict: "message_sid" });
 
-    console.log("Twilio status saved:", payload);
     res.status(200).send("OK");
   } catch (err) {
     console.error("Webhook error:", err);
