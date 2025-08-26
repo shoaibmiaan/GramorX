@@ -195,8 +195,8 @@ export default function WaitlistSection() {
           )}
         </div>
 
-        {/* Glassy violet card with soft border + 20px radius */}
-        <Card className="card-glass rounded-[20px] p-6 md:p-8 max-w-4xl mx-auto">
+        {/* Glassy violet card with soft border + token-based radius */}
+        <Card className="card-glass rounded-ds-xl p-6 md:p-8 max-w-4xl mx-auto">
           <form onSubmit={onSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {/* Row 1 */}
             <div>
