@@ -1,7 +1,5 @@
 import { env } from "@/lib/env";
-// lib/supabaseAdmin.ts
 import { createClient } from '@supabase/supabase-js';
-// import type { Database } from '@/types/supabase'; // optional generated types
 
 const url = env.NEXT_PUBLIC_SUPABASE_URL;
 const serviceRoleKey = env.SUPABASE_SERVICE_ROLE_KEY;
@@ -11,11 +9,15 @@ if (!serviceRoleKey) throw new Error('Missing SUPABASE_SERVICE_ROLE_KEY');
 
 export const supabaseAdmin =
   globalThis.__supabaseAdmin ??
-  createClient(/* <Database> */ url, serviceRoleKey, {
+  createClient(url, serviceRoleKey, {
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
   });
 
 if (env.NODE_ENV !== 'production') {
-  // @ts-ignore
   globalThis.__supabaseAdmin = supabaseAdmin;
+}
+
+declare global {
+  // eslint-disable-next-line no-var
+  var __supabaseAdmin: ReturnType<typeof createClient> | undefined;
 }

@@ -1,7 +1,7 @@
 import { env } from "@/lib/env";
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getUserServer } from '@/lib/authServer';
-import { supabaseServer } from '@/lib/supabaseServer';
+import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -50,7 +50,7 @@ Return band estimate and 2–3 lines of constructive feedback.` }] }]
     }
 
     // --- Save in Supabase ---
-    await supabaseServer.from('speaking_attempts')
+    await supabaseAdmin.from('speaking_attempts')
       .update({ [`feedback_part${part}`]: feedback })
       .eq('id', attemptId)
       .eq('user_id', user.id);
