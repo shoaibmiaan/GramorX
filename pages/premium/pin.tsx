@@ -50,7 +50,7 @@ export default function PremiumPinPage() {
         <title>Enter Premium PIN</title>
       </Head>
 
-      <main className="min-h-screen grid place-items-center bg-lightBg text-lightText dark:bg-gradient-to-br dark:from-darker dark:to-dark dark:text-white">
+      <main className="min-h-[100dvh] grid place-items-center bg-lightBg text-lightText dark:bg-gradient-to-br dark:from-darker dark:to-dark dark:text-white">
         <section className="w-full max-w-md mx-auto p-6">
           <div className="card-surface rounded-ds-2xl border border-purpleVibe/20 p-6 md:p-8 shadow-sm">
             <h1 className="font-slab text-h2 mb-2">Enter Premium PIN</h1>

@@ -37,7 +37,7 @@ const ForgotPassword: NextPage = () => {
       <Head>
         <title>Forgot Password</title>
       </Head>
-      <main className="min-h-screen flex items-center justify-center p-6">
+      <main className="min-h-[100dvh] flex items-center justify-center p-6">
         <div className="w-full max-w-md">
           <h1 className="text-2xl font-semibold mb-4">Reset your password</h1>
 

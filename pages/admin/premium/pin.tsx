@@ -31,7 +31,7 @@ export default function AdminPremiumPin() {
   };
 
   return (
-    <main className="pr-min-h-screen pr-flex pr-items-center pr-justify-center pr-bg-gradient-to-b pr-from-black pr-to-neutral-900 pr-text-white pr-p-4">
+    <main className="pr-min-h-[100dvh] pr-flex pr-items-center pr-justify-center pr-bg-gradient-to-b pr-from-black pr-to-neutral-900 pr-text-white pr-p-4">
       <div className="pr-w-full pr-max-w-md pr-space-y-4 pr-rounded-xl pr-border pr-border-white/10 pr-bg-white/5 pr-backdrop-blur pr-p-6">
         <h1 className="pr-text-xl pr-font-semibold">Admin · Premium PIN</h1>
 
