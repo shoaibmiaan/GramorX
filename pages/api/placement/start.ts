@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { randomUUID } from 'crypto';
+import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
 type Skill = 'listening'|'reading'|'writing'|'speaking';
 type Item = {
@@ -104,6 +105,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     )
   );
 
-  const attemptId = randomUUID(); // TODO: persist later
+  const attemptId = randomUUID();
+
+  const { error } = await supabaseAdmin
+    .from('placement_attempts')
+    .insert({ id: attemptId, items });
+
+  if (error) return res.status(500).json({ error: error.message });
+
   res.status(200).json({ attemptId, items });
 }
