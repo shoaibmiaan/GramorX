@@ -216,7 +216,7 @@ export default function SpeakingPart3() {
           <p className="mt-2 text-base">{prompt}</p>
 
           {/* Timers */}
-          <div className="mt-4 grid grid-cols-2 gap-3">
+          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="rounded-xl border border-gray-200 dark:border-white/10 p-3 text-center">
               <div className="text-xs text-gray-500">Prep</div>
               <div className="font-mono text-xl">{stage === 'prep' ? `${minutes(prepLeft)}:${seconds(prepLeft)}` : '00:15'}</div>
@@ -274,7 +274,7 @@ export default function SpeakingPart3() {
                 <div className="text-xs uppercase tracking-wide text-gray-500">AI Result</div>
                 <div className="mt-2">
                   <div className="text-3xl font-semibold">{typeof result.overall === 'number' ? result.overall.toFixed(1) : '—'}</div>
-                  <div className="mt-2 grid grid-cols-2 gap-2 text-sm">
+                  <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
                     <div>Fluency: <strong>{result.fluency ?? '—'}</strong></div>
                     <div>Pronunciation: <strong>{result.pronunciation ?? '—'}</strong></div>
                     <div>Lexical: <strong>{result.lexical ?? '—'}</strong></div>
@@ -302,7 +302,7 @@ export default function SpeakingPart3() {
           <div className="md:col-span-1">
             <div className="rounded-2xl border border-gray-200 dark:border-white/10 p-4">
               <div className="text-xs uppercase tracking-wide text-gray-500">Quick Jump</div>
-              <div className="mt-2 grid grid-cols-2 gap-2 text-sm">
+              <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
                 <Link href="/speaking/simulator" className="rounded-lg border border-gray-200 dark:border-white/10 p-2 text-center">Simulator Hub</Link>
                 <Link href="/speaking/simulator/part1" className="rounded-lg border border-gray-200 dark:border-white/10 p-2 text-center">Part 1</Link>
                 <Link href="/speaking/simulator/part2" className="rounded-lg border border-gray-200 dark:border-white/10 p-2 text-center">Part 2</Link>
