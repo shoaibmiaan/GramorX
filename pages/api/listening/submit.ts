@@ -1,24 +1,31 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { rawToBand } from '@/lib/listening/band';
 import { scoreAll } from '@/lib/listening/score';
 
 type Body = { test_slug: string; answers: { qno:number; answer:any }[]; meta?: any };
 
-async function getUserId(req: NextApiRequest) {
-  // TODO: integrate with your auth. For now, accept x-user-id header for dev.
-  const uid = req.headers['x-user-id'];
-  if (typeof uid === 'string' && uid) return uid;
-  // If you use Supabase Auth Helpers, you can parse the cookie/JWT here.
-  throw new Error('Unauthenticated');
+async function getUserId(req: NextApiRequest, res: NextApiResponse) {
+  // Parse and verify the Supabase auth session from cookies
+  const supabase = createServerSupabaseClient({ req, res });
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
+  if (error || !user) throw new Error('Unauthenticated');
+  return user.id;
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).end();
 
   let userId: string;
-  try { userId = await getUserId(req); }
-  catch { return res.status(401).json({ error: 'Unauthenticated' }); }
+  try {
+    userId = await getUserId(req, res);
+  } catch {
+    return res.status(401).json({ error: 'Unauthenticated' });
+  }
 
   const { test_slug, answers, meta }: Body = req.body || {};
   if (!test_slug || !Array.isArray(answers)) return res.status(400).json({ error: 'Invalid payload' });
