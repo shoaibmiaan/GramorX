@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/router';
 import AuthLayout from '@/components/layouts/AuthLayout';
 import { Button } from '@/components/design-system/Button';
 import { Alert } from '@/components/design-system/Alert';
@@ -16,24 +17,66 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 
 export default function LoginOptions() {
   const [err, setErr] = useState<string | null>(null);
-  const [busy, setBusy] = useState<string | null>(null);
+  const [busy, setBusy] = useState<'apple' | 'google' | 'facebook' | null>(null);
+  const [selectedRole, setSelectedRole] = useState<string | null>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!router.isReady) return;
+    const roleQuery = typeof router.query.role === 'string' ? router.query.role : null;
+
+    if (roleQuery) {
+      setSelectedRole(roleQuery);
+      if (typeof window !== 'undefined') localStorage.setItem('selectedRole', roleQuery);
+    } else if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('selectedRole');
+      if (stored) {
+        setSelectedRole(stored);
+        router.replace(
+          { pathname: router.pathname, query: { ...router.query, role: stored } },
+          undefined,
+          { shallow: true }
+        );
+      }
+    }
+  }, [router]);
+
+  function chooseRole(role: string) {
+    setSelectedRole(role);
+    if (typeof window !== 'undefined') localStorage.setItem('selectedRole', role);
+    router.replace(
+      { pathname: router.pathname, query: { ...router.query, role } },
+      undefined,
+      { shallow: true }
+    );
+  }
+
+  function clearRole() {
+    setSelectedRole(null);
+    if (typeof window !== 'undefined') localStorage.removeItem('selectedRole');
+    const { role, ...rest } = router.query;
+    router.replace({ pathname: router.pathname, query: { ...rest } }, undefined, { shallow: true });
+  }
 
   async function oauth(provider: 'apple' | 'google' | 'facebook') {
     try {
       setErr(null);
       setBusy(provider);
+
+      const origin = typeof window !== 'undefined' ? window.location.origin : undefined;
+      const next = `/dashboard${selectedRole ? `?role=${encodeURIComponent(selectedRole)}` : ''}`;
+      const redirectTo = origin
+        ? `${origin}/auth/callback?next=${encodeURIComponent(next)}`
+        : undefined;
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
-        options: {
-          redirectTo:
-            typeof window !== 'undefined'
-              ? `${window.location.origin}/auth/callback`
-              : undefined,
-        },
+        options: { redirectTo },
       });
       if (error) throw error;
-    } catch (e: any) {
-      setErr(e?.message ?? 'Unable to continue.');
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : 'Unable to continue.';
+      setErr(message);
       setBusy(null);
     }
   }
@@ -54,7 +97,8 @@ export default function LoginOptions() {
           <h2 className="font-slab text-h2 text-gradient-primary">Sign in to GramorX</h2>
         </div>
         <p className="text-body text-grayish dark:text-gray-300 max-w-md">
-          One account for all IELTS modules — Listening, Reading, Writing, and Speaking — with AI feedback and progress tracking.
+          One account for all IELTS modules — Listening, Reading, Writing, and Speaking — with AI
+          feedback and progress tracking.
         </p>
 
         <ul className="mt-6 space-y-3 text-body text-grayish dark:text-gray-300">
@@ -94,82 +138,104 @@ export default function LoginOptions() {
   );
 
   return (
-    <AuthLayout
-      title="Welcome back"
-      subtitle="Choose a sign-in method."
-      right={RightPanel}
-    >
+    <AuthLayout title="Welcome back" subtitle="Choose a sign-in method." right={RightPanel}>
       {err && (
         <Alert variant="error" title="Error" className="mb-4">
           {err}
         </Alert>
       )}
 
-      <SectionLabel>Continue with</SectionLabel>
+      {!selectedRole ? (
+        <>
+          <SectionLabel>Sign in as</SectionLabel>
+          <div className="grid gap-3">
+            <Button onClick={() => chooseRole('student')} variant="secondary" className="rounded-ds-xl w-full">
+              Student
+            </Button>
+            <Button onClick={() => chooseRole('teacher')} variant="secondary" className="rounded-ds-xl w-full">
+              Teacher
+            </Button>
+          </div>
+        </>
+      ) : (
+        <>
+          <SectionLabel>Continue with</SectionLabel>
 
-      {/* Unified list — same button pattern for all methods */}
-      <div className="grid gap-3">
-        <Button
-          onClick={() => oauth('apple')}
-          disabled={busy === 'apple'}
-          variant="secondary"
-          className="rounded-ds-xl w-full"
-        >
-          <span className="inline-flex items-center gap-3">
-            <i className="fab fa-apple text-xl" aria-hidden />
-            {busy === 'apple' ? 'Opening Apple…' : 'Continue with Apple'}
-          </span>
-        </Button>
+          <div className="grid gap-3">
+            <Button
+              onClick={() => oauth('apple')}
+              disabled={busy === 'apple'}
+              variant="secondary"
+              className="rounded-ds-xl w-full"
+            >
+              <span className="inline-flex items-center gap-3">
+                <i className="fab fa-apple text-xl" aria-hidden />
+                {busy === 'apple' ? 'Opening Apple…' : 'Continue with Apple'}
+              </span>
+            </Button>
 
-        <Button
-          onClick={() => oauth('google')}
-          disabled={busy === 'google'}
-          variant="secondary"
-          className="rounded-ds-xl w-full"
-        >
-          <span className="inline-flex items-center gap-3">
-            <i className="fab fa-google text-xl" aria-hidden />
-            {busy === 'google' ? 'Opening Google…' : 'Continue with Google'}
-          </span>
-        </Button>
+            <Button
+              onClick={() => oauth('google')}
+              disabled={busy === 'google'}
+              variant="secondary"
+              className="rounded-ds-xl w-full"
+            >
+              <span className="inline-flex items-center gap-3">
+                <i className="fab fa-google text-xl" aria-hidden />
+                {busy === 'google' ? 'Opening Google…' : 'Continue with Google'}
+              </span>
+            </Button>
 
-        <Button
-          onClick={() => oauth('facebook')}
-          disabled={busy === 'facebook'}
-          variant="secondary"
-          className="rounded-ds-xl w-full"
-        >
-          <span className="inline-flex items-center gap-3">
-            <i className="fab fa-facebook-f text-xl" aria-hidden />
-            {busy === 'facebook' ? 'Opening Facebook…' : 'Continue with Facebook'}
-          </span>
-        </Button>
+            <Button
+              onClick={() => oauth('facebook')}
+              disabled={busy === 'facebook'}
+              variant="secondary"
+              className="rounded-ds-xl w-full"
+            >
+              <span className="inline-flex items-center gap-3">
+                <i className="fab fa-facebook-f text-xl" aria-hidden />
+                {busy === 'facebook' ? 'Opening Facebook…' : 'Continue with Facebook'}
+              </span>
+            </Button>
 
-        <Button asChild variant="secondary" className="rounded-ds-xl w-full">
-          <Link href="/login/email" aria-label="Sign in with Email and Password">
-            <span className="inline-flex items-center gap-3">
-              <i className="fas fa-envelope text-xl" aria-hidden />
-              Email (Password)
-            </span>
-          </Link>
-        </Button>
+            <Button asChild variant="secondary" className="rounded-ds-xl w-full">
+              <Link
+                href={`/login/email${selectedRole ? `?role=${selectedRole}` : ''}`}
+                aria-label="Sign in with Email and Password"
+              >
+                <span className="inline-flex items-center gap-3">
+                  <i className="fas fa-envelope text-xl" aria-hidden />
+                  Email (Password)
+                </span>
+              </Link>
+            </Button>
 
-        <Button asChild variant="secondary" className="rounded-ds-xl w-full">
-          <Link href="/login/phone" aria-label="Sign in with Phone OTP">
-            <span className="inline-flex items-center gap-3">
-              <i className="fas fa-sms text-xl" aria-hidden />
-              Phone (OTP)
-            </span>
-          </Link>
-        </Button>
-      </div>
+            <Button asChild variant="secondary" className="rounded-ds-xl w-full">
+              <Link
+                href={`/login/phone${selectedRole ? `?role=${selectedRole}` : ''}`}
+                aria-label="Sign in with Phone OTP"
+              >
+                <span className="inline-flex items-center gap-3">
+                  <i className="fas fa-sms text-xl" aria-hidden />
+                  Phone (OTP)
+                </span>
+              </Link>
+            </Button>
+          </div>
 
-      <div className="mt-6 text-center text-small text-grayish dark:text-gray-400">
-        New here?{' '}
-        <Link href="/signup" className="text-primary hover:underline">
-          Create an account
-        </Link>
-      </div>
+          <div className="mt-6 flex items-center justify-between text-small text-grayish dark:text-gray-400">
+            <div>
+              New here?{' '}
+              <Link href={`/signup${selectedRole ? `?role=${selectedRole}` : ''}`} className="text-primary hover:underline">
+                Create an account
+              </Link>
+            </div>
+            <button className="underline decoration-dotted hover:no-underline" onClick={clearRole}>
+              Change role
+            </button>
+          </div>
+        </>
+      )}
     </AuthLayout>
   );
 }
