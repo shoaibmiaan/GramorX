@@ -1,66 +1,64 @@
-// components/design-system/index.tsx
-// Central barrel for the Design System.
-// Usage: import { Button, Card, Container, ... } from '@/components/design-system';
+import type { NextApiRequest, NextApiResponse } from 'next';
+import { z } from 'zod';
+import { supabaseService as supabase } from '@/lib/supabaseService'; // server key client
 
-// ——— Primitives
-export { Button } from './Button';
-export { Card } from './Card';
-export { Container } from './Container';
-export { Ribbon } from './Ribbon';
-export { Badge } from './Badge';
-export { GradientText } from './GradientText';
-export { AudioBar } from './AudioBar';
+// POST body schema
+const Body = z.object({
+  slug: z.string().min(1),
+  // answers: { [questionId: string]: string | string[] }
+  answers: z.record(z.union([z.string(), z.array(z.string())])),
+});
 
-// ——— Forms
-export { Input } from './Input';
+type AnswerValue = string | string[];
 
-// ——— Feedback
-export { Alert } from './Alert';
-export { ToastProvider } from './Toast';
+function norm(val: AnswerValue): string {
+  if (Array.isArray(val)) return val.map(v => v.trim().toLowerCase()).sort().join('|');
+  return val.trim().toLowerCase();
+}
 
-// ——— Navigation
-export { NavLink } from './NavLink';
-export { SocialIconLink } from './SocialIconLink';
-export { UserMenu } from './UserMenu';
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-// ——— Utilities
-export { ThemeToggle } from './ThemeToggle';
-export { Timer } from './Timer';
-export { StreakIndicator } from './StreakIndicator';
+  const parsed = Body.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid payload', issues: parsed.error.flatten() });
+  }
+  const { slug, answers } = parsed.data;
 
-// ——— IELTS (export only if these exist; otherwise comment out)
-// Listening
-export { default as AudioSectionsPlayer } from '../listening/AudioSectionsPlayer';
-export { default as AnswerReview } from '../listening/AnswerReview';
-export { default as ReviewScreen } from '../listening/ReviewScreen';
-// Reading
-export { default as QuestionBlock } from '../reading/QuestionBlock';
-export { default as QuestionNav } from '../reading/QuestionNav';
-export { default as QuestionRenderer } from '../reading/QuestionRenderer';
-// Speaking
-export { default as Recorder } from '../speaking/Recorder';
+  // TODO: Adjust table/columns to your schema if different.
+  // Expect a table with: id, slug, correct_answer, type
+  const { data: questions, error } = await supabase
+    .from('reading_questions')
+    .select('id, slug, correct_answer, type')
+    .eq('slug', slug);
 
-// ——— Premium/Admin (export only if these exist; otherwise comment out)
-export { default as PinGate } from '../../premium-ui/PinGate';
-export { default as PinManager } from '../../premium-ui/PinManager';
-export { default as PinLock } from '../../premium-ui/composed/PinLock';
+  if (error) return res.status(500).json({ error: 'DB query failed', detail: error.message });
+  if (!questions || questions.length === 0) return res.status(404).json({ error: 'No questions for slug' });
 
-// ——— Future DS components (enable when files land)
-// export { Select } from './Select';
-// export { Textarea } from './Textarea';
-// export { Checkbox } from './Checkbox';
-// export { RadioGroup } from './RadioGroup';
-// export { Switch } from './Switch';
-// export { Modal } from './Dialog';
-// export { Drawer } from './Drawer';
-// export { Tooltip } from './Tooltip';
-// export { Popover } from './Popover';
-// export { Tabs } from './Tabs';
-// export { Pagination } from './Pagination';
-// export { Table } from './Table';
-// export { DataTable } from './DataTable';
-// export { Skeleton } from './Skeleton';
-// export { Spinner } from './Spinner';
-// export { Progress } from './Progress';
-// export { EmptyState } from './EmptyState';
-// export { ErrorState } from './ErrorState';
+  const resultDetails = questions.map(q => {
+    const qid = String(q.id);
+    const userAns = answers[qid];
+    const correct = q.correct_answer as unknown as AnswerValue;
+    const isCorrect = userAns != null && norm(userAns) === norm(correct);
+    return {
+      id: qid,
+      type: q.type ?? null,
+      userAnswer: userAns ?? null,
+      correctAnswer: correct ?? null,
+      isCorrect,
+    };
+  });
+
+  const total = resultDetails.length;
+  const correctCount = resultDetails.filter(d => d.isCorrect).length;
+  const wrong = total - correctCount;
+  const score = total > 0 ? Math.round((correctCount / total) * 100) : 0;
+
+  return res.status(200).json({
+    slug,
+    total,
+    correct: correctCount,
+    wrong,
+    score,
+    details: resultDetails,
+  });
