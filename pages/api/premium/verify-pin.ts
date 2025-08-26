@@ -1,4 +1,3 @@
-import { env } from "@/lib/env";
 // pages/api/premium/verify-pin.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { scryptSync, timingSafeEqual } from 'crypto';
@@ -23,46 +22,8 @@ function rateLimit(key: string) {
     buckets.set(key, { resetAt, count: 1 });
     return { ok: true, remaining: RATE - 1, resetAt };
   }
-<<<<<<< HEAD
   if (bucket.count >= RATE) {
     return { ok: false, remaining: 0, resetAt: bucket.resetAt };
-=======
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method Not Allowed' });
-  }
-
-  try {
-    const auth = req.headers.authorization || '';
-    const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
-    if (!token) return res.status(401).json({ error: 'Unauthorized' });
-
-    const { pin } = (typeof req.body === 'string' ? JSON.parse(req.body) : req.body) ?? {};
-    if (!pin || !/^\d{4,6}$/.test(pin)) {
-      return res.status(400).json({ error: 'PIN must be 4–6 digits' });
-    }
-
-    const supabase = createClient(
-      env.NEXT_PUBLIC_SUPABASE_URL as string,
-      env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string,
-      { global: { headers: { Authorization: `Bearer ${token}` } } }
-    );
-
-    // Call secure RPC
-    const { data, error } = await supabase.rpc('verify_premium_pin', { input_pin: pin });
-
-    if (error) {
-      // If table row doesn’t exist for the user, treat as "NO_PIN_SET"
-      if (error.message?.toLowerCase().includes('permission') || error.code === 'PGRST301') {
-        return res.status(200).json({ success: false, reason: 'NO_PIN_SET' });
-      }
-      return res.status(500).json({ error: error.message });
-    }
-
-    if (data === true) return res.status(200).json({ success: true });
-    return res.status(200).json({ success: false, reason: 'INVALID_PIN' });
-  } catch (e: any) {
-    return res.status(500).json({ error: e?.message ?? 'Internal Error' });
->>>>>>> 4e94e6322611b22f93ab3e6364502036ed9a3d29
   }
   bucket.count += 1;
   return { ok: true, remaining: RATE - bucket.count, resetAt: bucket.resetAt };
