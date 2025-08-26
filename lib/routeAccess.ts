@@ -20,13 +20,16 @@ export const isPublicRoute = (path: string) => {
 
   // Auth pages should stay public:
   if (path === '/login' || path.startsWith('/login/')) return true;
-  if (path === '/signup') return true;
+  if (path === '/signup' || path.startsWith('/signup/')) return true;
 
   return false; // everything else is protected
 };
 
 export const isGuestOnlyRoute = (path: string) =>
-  path === '/login' || path.startsWith('/login/') || path === '/signup';
+  path === '/login' ||
+  path.startsWith('/login/') ||
+  path === '/signup' ||
+  path.startsWith('/signup/');
 
 // ---- Role gates -------------------------------------------------------------
 
