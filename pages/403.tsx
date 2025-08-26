@@ -13,7 +13,7 @@ const ForbiddenPage: NextPage<Props> = () => {
       <Head>
         <title>403 — Forbidden</title>
       </Head>
-      <main className="min-h-screen flex items-center justify-center p-6">
+      <main className="min-h-[100dvh] flex items-center justify-center p-6">
         <div className="max-w-lg w-full text-center">
           <h1 className="text-4xl font-bold mb-2">403</h1>
           <p className="text-lg text-gray-600 dark:text-gray-300">

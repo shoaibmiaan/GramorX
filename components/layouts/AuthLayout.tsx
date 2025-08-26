@@ -31,7 +31,7 @@ export default function AuthLayout({
 }: Props) {
   const rightContent = right ?? rightIllustration ?? <DefaultRight />;
   return (
-    <div className="min-h-screen flex bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90">
+    <div className="min-h-[100dvh] flex bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90">
       {/* Left: content */}
       <div className="flex flex-col justify-center w-full md:w-1/2 px-8 py-12">
         <div className="flex justify-between items-center mb-8">

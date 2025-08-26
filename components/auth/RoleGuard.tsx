@@ -35,7 +35,7 @@ export function RoleGuard({ allow, children }: Props) {
 
   if (ok === null) {
     return (
-      <div className="min-h-screen grid place-items-center">
+      <div className="min-h-[100dvh] grid place-items-center">
         <div className="animate-pulse h-6 w-40 rounded bg-gray-200 dark:bg-white/10" />
       </div>
     );

@@ -20,7 +20,7 @@ export default function ImpAs() {
   return (
     <>
       <Head><title>Switching…</title></Head>
-      <div className="min-h-screen grid place-items-center">
+      <div className="min-h-[100dvh] grid place-items-center">
         <div className="animate-pulse text-sm opacity-70">Switching to impersonated session…</div>
       </div>
     </>

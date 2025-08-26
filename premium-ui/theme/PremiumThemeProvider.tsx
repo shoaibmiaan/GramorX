@@ -61,7 +61,7 @@ export function PremiumThemeProvider({ children, initialTheme }: Props) {
   return (
     <ThemeCtx.Provider value={value}>
       {/* wrapper can hold bg/surface classes for quick theming */}
-      <div className="pr min-h-screen bg-[var(--pr-bg)] text-[var(--pr-fg)]">
+      <div className="pr min-h-[100dvh] bg-[var(--pr-bg)] text-[var(--pr-fg)]">
         {children}
       </div>
     </ThemeCtx.Provider>

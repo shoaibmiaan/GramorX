@@ -48,7 +48,7 @@ const slab = Roboto_Slab({
 // Minimal loading shell for route guards
 function GuardSkeleton() {
   return (
-    <div className="min-h-screen grid place-items-center">
+    <div className="min-h-[100dvh] grid place-items-center">
       <div className="animate-pulse h-6 w-40 bg-gray-200 dark:bg-white/10 rounded" />
     </div>
   );
@@ -220,7 +220,7 @@ function InnerApp({ Component, pageProps }: AppProps) {
       </Head>
 
       {/* Apply fonts to the whole app; DS uses var(--font-sans)/var(--font-display) */}
-      <div className={`${poppins.variable} ${slab.variable} ${poppins.className} min-h-screen`}>
+      <div className={`${poppins.variable} ${slab.variable} ${poppins.className} min-h-[100dvh]`}>
         <ToastProvider>
           {showLayout ? (
             <Layout>
