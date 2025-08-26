@@ -41,6 +41,7 @@ export default function ProfileSetup() {
   const [country, setCountry] = useState('');
   const [level, setLevel] = useState<typeof LEVELS[number] | ''>('');
   const [goal, setGoal] = useState<number>(7.0);
+  const [examDate, setExamDate] = useState('');
   const [prefs, setPrefs] = useState<string[]>([]);
   const [time, setTime] = useState<string>('');
   const [lang, setLang] = useState('en');
@@ -77,6 +78,7 @@ export default function ProfileSetup() {
         setCountry(data.country ?? '');
         setLevel((data.english_level as any) ?? '');
         setGoal(Number(data.goal_band ?? 7.0));
+        setExamDate(data.exam_date ?? '');
         setPrefs((data.study_prefs as string[]) ?? []);
         setTime(data.time_commitment ?? '');
         setLang(data.preferred_language ?? 'en');
@@ -119,6 +121,7 @@ export default function ProfileSetup() {
       country,
       english_level: level || null,
       goal_band: goal || null,
+      exam_date: examDate || null,
       study_prefs: prefs,
       time_commitment: time || null,
       preferred_language: lang || 'en',
@@ -214,6 +217,14 @@ export default function ProfileSetup() {
                       </div>
                     </label>
                   </div>
+
+                  <Input
+                    type="date"
+                    label="Exam date"
+                    value={examDate}
+                    onChange={e => setExamDate(e.target.value)}
+                    className="md:col-span-2"
+                  />
 
                   <Select
                     label={t('profileSetup.preferredLanguage')}

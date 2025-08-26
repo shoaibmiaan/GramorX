@@ -1,5 +1,5 @@
 import type { User } from '@supabase/supabase-js';
-import { supabaseBrowser } from '@/lib/supabaseBrowser';
+import { supabaseBrowser } from './supabaseBrowser';
 
 // Centralized user-role helpers. Roles are mutually exclusive and ordered by
 // privilege (admin > teacher > student).
