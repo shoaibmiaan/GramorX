@@ -13,6 +13,7 @@ import { ReadingStatsCard } from '@/components/reading/ReadingStatsCard';
 import { useStreak } from '@/hooks/useStreak';
 import { getDayKeyInTZ } from '@/lib/streak';
 import StudyCalendar from '@/components/feature/StudyCalendar';
+import GoalRoadmap from '@/components/feature/GoalRoadmap';
 
 type AIPlan = {
   suggestedGoal?: number;
@@ -31,6 +32,7 @@ type Profile = {
   time_commitment: string | null;
   preferred_language: string | null;
   avatar_url: string | null;
+  exam_date?: string | null;
   ai_recommendation: AIPlan | null;
   draft: boolean;
 };
@@ -40,6 +42,16 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<Profile | null>(null);
   const { current: streak, lastDayKey, loading: streakLoading, completeToday } = useStreak();
+
+  const handleShare = () => {
+    const text = `I'm studying for IELTS on GramorX with a ${streak}-day streak!`;
+    const url = typeof window !== 'undefined' ? window.location.href : '';
+    if (typeof navigator !== 'undefined' && (navigator as any).share) {
+      (navigator as any).share({ title: 'My IELTS progress', text, url }).catch(() => {});
+    } else if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(`${text} ${url}`).catch(() => {});
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -126,6 +138,9 @@ export default function Dashboard() {
           </div>
         <div className="flex items-center gap-4">
           <StreakIndicator value={streak} />
+          {streak >= 7 && (
+            <Badge variant="success" size="sm">🔥 {streak}-day streak!</Badge>
+          )}
           {profile?.avatar_url ? (
             <Image
               src={profile.avatar_url}
@@ -178,6 +193,11 @@ export default function Dashboard() {
           <StudyCalendar />
         </div>
 
+        {/* Goal roadmap */}
+        <div className="mt-10">
+          <GoalRoadmap examDate={profile?.exam_date ?? null} />
+        </div>
+
         {/* Actions + Reading stats */}
         <div className="mt-10 grid gap-6 lg:grid-cols-[1fr_.9fr]">
           <Card className="p-6 rounded-ds-2xl">
@@ -196,11 +216,32 @@ export default function Dashboard() {
               <Button as="a" href="/reading" variant="secondary" className="rounded-ds-xl">
                 Practice Reading
               </Button>
+              <Button onClick={handleShare} variant="secondary" className="rounded-ds-xl">
+                Share Progress
+              </Button>
             </div>
           </Card>
 
           {/* New: Reading Student Analysis */}
           <ReadingStatsCard />
+        </div>
+
+        {/* Skill analytics */}
+        <div className="mt-10">
+          <Card className="p-6 rounded-ds-2xl">
+            <h3 className="font-slab text-h3 mb-2">Skill Focus</h3>
+            {(ai.sequence ?? []).length ? (
+              <ul className="list-disc pl-6 text-body">
+                {ai.sequence!.map((s, i) => (
+                  <li key={s}>
+                    {s} {i === 0 ? '- prioritize' : i === ai.sequence!.length - 1 ? '- strong' : ''}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-body">Add preferences in your profile to see analytics.</p>
+            )}
+          </Card>
         </div>
 
         {/* Upgrade */}
