@@ -5,6 +5,7 @@ const envSchema = z.object({
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string(),
   SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
   NEXT_PUBLIC_BASE_URL: z.string().url().optional(),
+  NEXT_PUBLIC_IDLE_TIMEOUT_MINUTES: z.coerce.number().default(30),
   ADMIN_EMAILS: z.string().optional(),
   GOOGLE_GENERATIVE_AI_API_KEY: z.string().optional(),
   GROQ_API_KEY: z.string().optional(),
