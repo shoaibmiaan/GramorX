@@ -8,6 +8,11 @@ type Props = {
   title: string;
   subtitle?: string;
   children: React.ReactNode;
+  /**
+   * Optional element rendered on the right side of the layout.
+   * `rightIllustration` is kept for backwards compatibility.
+   */
+  right?: React.ReactNode;
   rightIllustration?: React.ReactNode;
 };
 
@@ -17,7 +22,14 @@ const DefaultRight = () => (
   </div>
 );
 
-export default function AuthLayout({ title, subtitle, children, rightIllustration }: Props) {
+export default function AuthLayout({
+  title,
+  subtitle,
+  children,
+  right,
+  rightIllustration,
+}: Props) {
+  const rightContent = right ?? rightIllustration ?? <DefaultRight />;
   return (
     <div className="min-h-screen flex bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90">
       {/* Left: content */}
@@ -35,7 +47,7 @@ export default function AuthLayout({ title, subtitle, children, rightIllustratio
       </div>
 
       {/* Right: illustration */}
-      {rightIllustration ?? <DefaultRight />}
+      {rightContent}
 
       {/* Theme toggle */}
       <div className="absolute top-4 right-4">

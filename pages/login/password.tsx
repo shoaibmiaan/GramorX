@@ -42,10 +42,7 @@ export default function LoginWithPassword() {
   );
 
   return (
-    <AuthLayout title="Sign in with Email" subtitle="Use your email & password."
-      // @ts-expect-error TODO: AuthLayout supports an optional `right` slot
-      right={RightPanel}
-    >
+    <AuthLayout title="Sign in with Email" subtitle="Use your email & password." right={RightPanel}>
       {err && <Alert variant="error" title="Error" className="mb-4">{err}</Alert>}
       <form onSubmit={onSubmit} className="space-y-6 mt-2">
         <Input label="Email" type="email" placeholder="you@example.com" value={email} onChange={(e)=>setEmail(e.target.value)} required />

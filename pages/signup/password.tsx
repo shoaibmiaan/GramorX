@@ -54,7 +54,7 @@ export default function SignupWithPassword() {
   }
 
   // Right side: large logo only (preserves your split-screen design)
-  const RightIllustration = (
+  const RightPanel = (
     <div className="hidden md:flex w-1/2 relative items-center justify-center bg-primary/10 dark:bg-dark">
       <Image
         src="/brand/logo.png"
@@ -71,7 +71,7 @@ export default function SignupWithPassword() {
     <AuthLayout
       title="Sign up with Email"
       subtitle="Create an account using email & password."
-      rightIllustration={RightIllustration}
+      right={RightPanel}
     >
       {err && (
         <Alert variant="error" title="Error" className="mb-4">

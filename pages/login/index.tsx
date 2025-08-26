@@ -97,7 +97,6 @@ export default function LoginOptions() {
     <AuthLayout
       title="Welcome back"
       subtitle="Choose a sign-in method."
-      // @ts-expect-error TODO: AuthLayout supports an optional `right` slot in this build
       right={RightPanel}
     >
       {err && (
