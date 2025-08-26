@@ -6,6 +6,7 @@ import { Input } from '@/components/design-system/Input';
 import { Button } from '@/components/design-system/Button';
 import { Alert } from '@/components/design-system/Alert';
 import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser';
+import { redirectByRole } from '@/lib/routeAccess';
 
 export default function LoginWithPassword() {
   const [email, setEmail] = useState('');
@@ -26,7 +27,7 @@ export default function LoginWithPassword() {
         access_token: data.session.access_token,
         refresh_token: data.session.refresh_token,
       });
-      window.location.assign('/dashboard');
+      redirectByRole(data.session.user);
     }
   }
 

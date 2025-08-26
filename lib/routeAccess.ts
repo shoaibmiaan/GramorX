@@ -54,3 +54,14 @@ export const canAccess = (path: string, role: AppRole | null | undefined): boole
   // Protected route with no specific gate still requires some valid role.
   return !!role;
 };
+
+// Determine the correct app destination based on user role and redirect.
+export const redirectByRole = (user: User | null | undefined) => {
+  const role = getUserRole(user);
+  const path =
+    role === 'teacher' ? '/teacher' : role === 'admin' ? '/admin' : '/dashboard';
+  if (typeof window !== 'undefined') {
+    window.location.assign(path);
+  }
+  return path;
+};

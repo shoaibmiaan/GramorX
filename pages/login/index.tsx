@@ -17,19 +17,17 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 
 export default function LoginOptions() {
   const [err, setErr] = useState<string | null>(null);
-  const [busy, setBusy] = useState<string | null>(null);
+  const [busy, setBusy] = useState<'apple' | 'google' | 'facebook' | null>(null);
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
     if (!router.isReady) return;
-    const roleQuery =
-      typeof router.query.role === 'string' ? router.query.role : null;
+    const roleQuery = typeof router.query.role === 'string' ? router.query.role : null;
+
     if (roleQuery) {
       setSelectedRole(roleQuery);
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('selectedRole', roleQuery);
-      }
+      if (typeof window !== 'undefined') localStorage.setItem('selectedRole', roleQuery);
     } else if (typeof window !== 'undefined') {
       const stored = localStorage.getItem('selectedRole');
       if (stored) {
@@ -45,9 +43,7 @@ export default function LoginOptions() {
 
   function chooseRole(role: string) {
     setSelectedRole(role);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('selectedRole', role);
-    }
+    if (typeof window !== 'undefined') localStorage.setItem('selectedRole', role);
     router.replace(
       { pathname: router.pathname, query: { ...router.query, role } },
       undefined,
@@ -55,22 +51,32 @@ export default function LoginOptions() {
     );
   }
 
+  function clearRole() {
+    setSelectedRole(null);
+    if (typeof window !== 'undefined') localStorage.removeItem('selectedRole');
+    const { role, ...rest } = router.query;
+    router.replace({ pathname: router.pathname, query: { ...rest } }, undefined, { shallow: true });
+  }
+
   async function oauth(provider: 'apple' | 'google' | 'facebook') {
     try {
       setErr(null);
       setBusy(provider);
+
+      const origin = typeof window !== 'undefined' ? window.location.origin : undefined;
+      const next = `/dashboard${selectedRole ? `?role=${encodeURIComponent(selectedRole)}` : ''}`;
+      const redirectTo = origin
+        ? `${origin}/auth/callback?next=${encodeURIComponent(next)}`
+        : undefined;
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
-        options: {
-          redirectTo:
-            typeof window !== 'undefined'
-              ? `${window.location.origin}/dashboard${selectedRole ? `?role=${selectedRole}` : ''}`
-              : undefined,
-        },
+        options: { redirectTo },
       });
       if (error) throw error;
-    } catch (e: any) {
-      setErr(e?.message ?? 'Unable to continue.');
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : 'Unable to continue.';
+      setErr(message);
       setBusy(null);
     }
   }
@@ -91,7 +97,8 @@ export default function LoginOptions() {
           <h2 className="font-slab text-h2 text-gradient-primary">Sign in to GramorX</h2>
         </div>
         <p className="text-body text-grayish dark:text-gray-300 max-w-md">
-          One account for all IELTS modules — Listening, Reading, Writing, and Speaking — with AI feedback and progress tracking.
+          One account for all IELTS modules — Listening, Reading, Writing, and Speaking — with AI
+          feedback and progress tracking.
         </p>
 
         <ul className="mt-6 space-y-3 text-body text-grayish dark:text-gray-300">
@@ -131,11 +138,7 @@ export default function LoginOptions() {
   );
 
   return (
-    <AuthLayout
-      title="Welcome back"
-      subtitle="Choose a sign-in method."
-      right={RightPanel}
-    >
+    <AuthLayout title="Welcome back" subtitle="Choose a sign-in method." right={RightPanel}>
       {err && (
         <Alert variant="error" title="Error" className="mb-4">
           {err}
@@ -146,18 +149,10 @@ export default function LoginOptions() {
         <>
           <SectionLabel>Sign in as</SectionLabel>
           <div className="grid gap-3">
-            <Button
-              onClick={() => chooseRole('student')}
-              variant="secondary"
-              className="rounded-ds-xl w-full"
-            >
+            <Button onClick={() => chooseRole('student')} variant="secondary" className="rounded-ds-xl w-full">
               Student
             </Button>
-            <Button
-              onClick={() => chooseRole('teacher')}
-              variant="secondary"
-              className="rounded-ds-xl w-full"
-            >
+            <Button onClick={() => chooseRole('teacher')} variant="secondary" className="rounded-ds-xl w-full">
               Teacher
             </Button>
           </div>
@@ -166,7 +161,6 @@ export default function LoginOptions() {
         <>
           <SectionLabel>Continue with</SectionLabel>
 
-          {/* Unified list — same button pattern for all methods */}
           <div className="grid gap-3">
             <Button
               onClick={() => oauth('apple')}
@@ -229,14 +223,16 @@ export default function LoginOptions() {
             </Button>
           </div>
 
-          <div className="mt-6 text-center text-small text-grayish dark:text-gray-400">
-            New here?{' '}
-            <Link
-              href={`/signup${selectedRole ? `?role=${selectedRole}` : ''}`}
-              className="text-primary hover:underline"
-            >
-              Create an account
-            </Link>
+          <div className="mt-6 flex items-center justify-between text-small text-grayish dark:text-gray-400">
+            <div>
+              New here?{' '}
+              <Link href={`/signup${selectedRole ? `?role=${selectedRole}` : ''}`} className="text-primary hover:underline">
+                Create an account
+              </Link>
+            </div>
+            <button className="underline decoration-dotted hover:no-underline" onClick={clearRole}>
+              Change role
+            </button>
           </div>
         </>
       )}
