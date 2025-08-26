@@ -36,9 +36,20 @@ import { useRouter } from 'next/router';
  }
 
  function useProvider() {
-  // Keep simple; default 'auto'. Can expose UI later if needed.
-  const [p] = useState<Provider>('auto');
-  return { provider: p };
+  // Allow runtime selection and persist in localStorage
+  const [p, setP] = useState<Provider>(() => {
+    if (!isBrowser) return 'auto';
+    try {
+      return (localStorage.getItem('gx-provider') as Provider) || 'auto';
+    } catch {
+      return 'auto';
+    }
+  });
+  useEffect(() => {
+    if (!isBrowser) return;
+    try { localStorage.setItem('gx-provider', p); } catch {}
+  }, [p]);
+  return { provider: p, setProvider: setP };
  }
 
  function useIsMobile() {
@@ -147,7 +158,7 @@ import { useRouter } from 'next/router';
 
   // Chat state
   const { items, setItems } = useLocalHistory();
-  const { provider } = useProvider();
+  const { provider, setProvider } = useProvider();
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<ConnState>('idle');
@@ -454,16 +465,26 @@ import { useRouter } from 'next/router';
 
         {/* Header */}
         <div className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border">
-          <div className="flex items-center justify-between px-3 md:px-4 h-14">
-            <div className="flex items-center gap-2 min-w-0">
-              <span className="font-semibold truncate">GramorX AI</span>
-              <span className={`inline-block h-2 w-2 rounded-full ${statusDot}`} aria-label={`status: ${status}`} />
-            </div>
-            <div className="flex items-center gap-2">
-              <button onClick={newChat} className="h-8 px-3 rounded-md bg-card border border-border hover:bg-accent text-caption" aria-label="New chat">New</button>
-              <button onClick={() => setOpen(false)} className="h-8 w-8 rounded-md bg-card border border-border grid place-items-center" aria-label="Close">✕</button>
-            </div>
+        <div className="flex items-center justify-between px-3 md:px-4 h-14">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="font-semibold truncate">GramorX AI</span>
+            <span className={`inline-block h-2 w-2 rounded-full ${statusDot}`} aria-label={`status: ${status}`} />
           </div>
+          <div className="flex items-center gap-2">
+            <select
+              value={provider}
+              onChange={(e) => setProvider(e.target.value as Provider)}
+              className="h-8 rounded-md bg-card border border-border px-2 text-caption"
+            >
+              <option value="auto">auto</option>
+              <option value="gemini">gemini</option>
+              <option value="groq">groq</option>
+              <option value="openai">openai</option>
+            </select>
+            <button onClick={newChat} className="h-8 px-3 rounded-md bg-card border border-border hover:bg-accent text-caption" aria-label="New chat">New</button>
+            <button onClick={() => setOpen(false)} className="h-8 w-8 rounded-md bg-card border border-border grid place-items-center" aria-label="Close">✕</button>
+          </div>
+        </div>
           {statusNote && (
             <div className="px-3 md:px-4 py-1 text-tiny text-muted-foreground bg-muted border-t border-border">
               {statusNote}
