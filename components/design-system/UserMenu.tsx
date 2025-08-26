@@ -2,6 +2,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { supabaseBrowser } from '@/lib/supabaseBrowser';
+import { useLocale } from '@/lib/locale';
 
 type MenuItem = {
   label: string;
@@ -31,6 +32,7 @@ export const UserMenu: React.FC<{
   onSignOut,
   showEmail = true,
 }) => {
+  const { locale, setLocale, t } = useLocale();
   const [open, setOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [localAvatar, setLocalAvatar] = useState<string | null>(avatarUrl ?? null);
@@ -222,6 +224,27 @@ export const UserMenu: React.FC<{
               </div>
             </div>
           )}
+
+          <div className="px-4 py-3 border-b border-vibrantPurple/15">
+            <label className="block text-small mb-1">{t('userMenu.language')}</label>
+            <select
+              className="w-full rounded-md bg-lightBg dark:bg-dark border border-vibrantPurple/20 px-2 py-1"
+              value={locale}
+              onChange={async (e) => {
+                const lang = e.target.value;
+                setLocale(lang);
+                await supabaseBrowser
+                  .from('user_profiles')
+                  .update({ preferred_language: lang })
+                  .eq('user_id', userId);
+              }}
+            >
+              <option value="en">English</option>
+              <option value="ur">Urdu</option>
+              <option value="ar">Arabic</option>
+              <option value="hi">Hindi</option>
+            </select>
+          </div>
 
           <div className="py-1">
             {_items.map((it, idx) => {

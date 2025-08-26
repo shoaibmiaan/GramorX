@@ -1,0 +1,15 @@
+{
+  "home": {
+    "title": "گرامور ایکس میں خوش آمدید"
+  },
+  "profileSetup": {
+    "completeProfile": "اپنی پروفائل مکمل کریں",
+    "description": "ہم آپ کے مطالعہ منصوبہ کو AI سے بہتر بنائیں گے اور آپ کے ڈیش بورڈ کو حسبِ ضرورت بنائیں گے۔",
+    "preferredLanguage": "ترجیحی زبان",
+    "saveDraft": "ڈرافٹ محفوظ کریں",
+    "finishContinue": "ختم کریں اور جاری رکھیں"
+  },
+  "userMenu": {
+    "language": "زبان"
+  }
+}
