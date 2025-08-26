@@ -10,6 +10,7 @@ import { Alert } from '@/components/design-system/Alert';
 import { StreakIndicator } from '@/components/design-system/StreakIndicator';
 import { supabaseBrowser } from '@/lib/supabaseBrowser';
 import { ReadingStatsCard } from '@/components/reading/ReadingStatsCard';
+import { SavedItems } from '@/components/dashboard/SavedItems';
 import { fetchStreak } from '@/lib/streak';
 
 type AIPlan = {
@@ -191,6 +192,10 @@ export default function Dashboard() {
 
           {/* New: Reading Student Analysis */}
           <ReadingStatsCard />
+        </div>
+
+        <div className="mt-10">
+          <SavedItems />
         </div>
 
         {/* Upgrade */}
