@@ -210,11 +210,10 @@ export default function ListeningTestPage() {
     return () => clearTimeout(id);
   }, [answers, currentIdx, slug]);
 
-  const currentSection = useMemo(() => test?.sections[currentIdx] ?? null, [test, currentIdx]);
-
   // --- Audio slice auto-play + gap between sections ---
   useEffect(() => {
-    if (!test || !currentSection) return;
+    const section = test?.sections[currentIdx] ?? null;
+    if (!test || !section) return;
 
     const audio = audioRef.current;
     if (!audio) return;
@@ -222,7 +221,7 @@ export default function ListeningTestPage() {
     let advanceTimer: number | null = null;
 
     const seekToStart = () => {
-      audio.currentTime = currentSection.startMs / 1000;
+      audio.currentTime = section.startMs / 1000;
       setReady(true);
       if (autoPlay) {
         audio.play().catch(() => {});
@@ -235,7 +234,7 @@ export default function ListeningTestPage() {
 
     const onTimeUpdate = () => {
       const tMs = audio.currentTime * 1000;
-      if (tMs >= currentSection.endMs - 25) {
+      if (tMs >= section.endMs - 25) {
         audio.pause();
         if (autoPlay && currentIdx < test.sections.length - 1 && advanceTimer == null) {
           advanceTimer = window.setTimeout(() => {
@@ -259,7 +258,7 @@ export default function ListeningTestPage() {
         clearTimeout(advanceTimer);
       }
     };
-  }, [test, currentSection, autoPlay, currentIdx]);
+  }, [test, autoPlay, currentIdx]);
 
   // --- Answer helpers ---
   const handleMCQ = (q: MCQ, val: string) => {
