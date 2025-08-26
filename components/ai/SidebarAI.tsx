@@ -133,17 +133,44 @@ import { useRouter } from 'next/router';
   // Open state — always closed on refresh
   const [open, setOpen] = useState<boolean>(false);
 
-  // Width (desktop only)
-  const [width, setWidth] = useState<number>(420);
+  // LocalStorage keys
+  const LS_WIDTH = 'gx-ai-width';
+  const LS_M_HEIGHT = 'gx-ai-mheight';
+
+  // Width (desktop only) — persist to localStorage
+  const [width, setWidth] = useState<number>(() => {
+    if (isBrowser) {
+      const raw = localStorage.getItem(LS_WIDTH);
+      const parsed = raw ? parseInt(raw, 10) : NaN;
+      if (!Number.isNaN(parsed)) return Math.min(Math.max(parsed, 340), 720);
+    }
+    return 420;
+  });
 
   // Mobile dock height (split-screen). Defaults to ~46% of viewport height.
-  const [mHeight, setMHeight] = useState<number>(() => (isBrowser ? Math.round(window.innerHeight * 0.46) : 420));
+  const [mHeight, setMHeight] = useState<number>(() => {
+    if (isBrowser) {
+      const raw = localStorage.getItem(LS_M_HEIGHT);
+      const parsed = raw ? parseInt(raw, 10) : NaN;
+      if (!Number.isNaN(parsed)) return parsed;
+      return Math.round(window.innerHeight * 0.46);
+    }
+    return 420;
+  });
   useEffect(() => {
     if (!isBrowser) return;
     const on = () => setMHeight(Math.round(window.innerHeight * 0.46));
     window.addEventListener('resize', on);
     return () => window.removeEventListener('resize', on);
   }, []);
+
+  useEffect(() => {
+    if (isBrowser) localStorage.setItem(LS_WIDTH, String(width));
+  }, [width]);
+
+  useEffect(() => {
+    if (isBrowser) localStorage.setItem(LS_M_HEIGHT, String(mHeight));
+  }, [mHeight]);
 
   // Chat state
   const { items, setItems } = useLocalHistory();
