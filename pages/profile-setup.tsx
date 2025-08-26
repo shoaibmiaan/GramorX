@@ -1,7 +1,6 @@
-import { env } from "@/lib/env";
 import React, { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
-import { createClient } from '@supabase/supabase-js';
+import { useLocale } from '@/lib/locale';
 import { Container } from '@/components/design-system/Container';
 import { Card } from '@/components/design-system/Card';
 import { Input } from '@/components/design-system/Input';
@@ -9,18 +8,10 @@ import { Button } from '@/components/design-system/Button';
 import { Badge } from '@/components/design-system/Badge';
 import { Alert } from '@/components/design-system/Alert';
 import { Select } from '@/components/design-system/Select';
+import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser';
 
-/** Supabase browser client */
-const supabase = createClient(
-  env.NEXT_PUBLIC_SUPABASE_URL,
-  env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-  {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false,
-    },
-  }
-);
+// Using the shared browser client ensures auth state is persisted
+// and reused across pages.
 
 const COUNTRIES = ['Pakistan','India','Bangladesh','United Arab Emirates','Saudi Arabia','United Kingdom','United States','Canada','Australia','New Zealand'];
 const LEVELS: Array<'Beginner'|'Elementary'|'Pre-Intermediate'|'Intermediate'|'Upper-Intermediate'|'Advanced'> = ['Beginner','Elementary','Pre-Intermediate','Intermediate','Upper-Intermediate','Advanced'];
@@ -29,6 +20,7 @@ const PREFS = ['Listening','Reading','Writing','Speaking'];
 
 export default function ProfileSetup() {
   const router = useRouter();
+  const { t, setLocale } = useLocale();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -39,6 +31,7 @@ export default function ProfileSetup() {
   const [country, setCountry] = useState('');
   const [level, setLevel] = useState<typeof LEVELS[number] | ''>('');
   const [goal, setGoal] = useState<number>(7.0);
+  const [examDate, setExamDate] = useState('');
   const [prefs, setPrefs] = useState<string[]>([]);
   const [time, setTime] = useState<string>('');
   const [lang, setLang] = useState('en');
@@ -75,6 +68,7 @@ export default function ProfileSetup() {
         setCountry(data.country ?? '');
         setLevel((data.english_level as any) ?? '');
         setGoal(Number(data.goal_band ?? 7.0));
+        setExamDate(data.exam_date ?? '');
         setPrefs((data.study_prefs as string[]) ?? []);
         setTime(data.time_commitment ?? '');
         setLang(data.preferred_language ?? 'en');
@@ -117,6 +111,7 @@ export default function ProfileSetup() {
       country,
       english_level: level || null,
       goal_band: goal || null,
+      exam_date: examDate || null,
       study_prefs: prefs,
       time_commitment: time || null,
       preferred_language: lang || 'en',
@@ -148,8 +143,8 @@ export default function ProfileSetup() {
         <Container>
           <div className="max-w-5xl mx-auto grid gap-6 lg:grid-cols-[1.2fr_.8fr]">
             <div>
-              <h1 className="font-slab text-display text-gradient-primary">Complete your profile</h1>
-              <p className="text-grayish mt-2">We’ll tune your study plan with AI and personalize your dashboard.</p>
+              <h1 className="font-slab text-display text-gradient-primary">{t('profileSetup.completeProfile')}</h1>
+              <p className="text-grayish mt-2">{t('profileSetup.description')}</p>
 
               {error && <Alert variant="error" title="Unable to save">{error}</Alert>}
               {notice && <Alert variant="success" title={notice} />}
@@ -213,7 +208,22 @@ export default function ProfileSetup() {
                     </label>
                   </div>
 
-                  <Select label="Preferred UI language" value={lang} onChange={e=>setLang(e.target.value)}>
+                  <Input
+                    type="date"
+                    label="Exam date"
+                    value={examDate}
+                    onChange={e => setExamDate(e.target.value)}
+                    className="md:col-span-2"
+                  />
+
+                  <Select
+                    label={t('profileSetup.preferredLanguage')}
+                    value={lang}
+                    onChange={e => {
+                      setLang(e.target.value);
+                      setLocale(e.target.value);
+                    }}
+                  >
                     <option value="en">English</option>
                     <option value="ur">Urdu</option>
                     <option value="ar">Arabic</option>
@@ -225,10 +235,10 @@ export default function ProfileSetup() {
 
                 <div className="mt-6 flex flex-wrap gap-3">
                   <Button onClick={()=>saveProfile(false)} disabled={saving} variant="secondary" className="rounded-ds-xl">
-                    {saving ? 'Saving…' : 'Save draft'}
+                    {saving ? 'Saving…' : t('profileSetup.saveDraft')}
                   </Button>
                   <Button onClick={()=>saveProfile(true)} disabled={saving || !canSubmit} variant="primary" className="rounded-ds-xl">
-                    {saving ? 'Saving…' : 'Finish & continue'}
+                    {saving ? 'Saving…' : t('profileSetup.finishContinue')}
                   </Button>
                 </div>
               </Card>

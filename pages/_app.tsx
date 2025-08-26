@@ -10,9 +10,11 @@ import { Layout } from '@/components/Layout';
 import { ToastProvider } from '@/components/design-system/Toast';
 import { supabaseBrowser } from '@/lib/supabaseBrowser';
 import { env } from '@/lib/env';
+import { LanguageProvider, useLocale } from '@/lib/locale';
 import { initIdleTimeout } from '@/utils/idleTimeout';
 import {
   isGuestOnlyRoute,
+  isPublicRoute,
   canAccess,
   requiredRolesFor,
   getUserRole,
@@ -52,7 +54,8 @@ function GuardSkeleton() {
   );
 }
 
-export default function App({ Component, pageProps }: AppProps) {
+function InnerApp({ Component, pageProps }: AppProps) {
+  const { setLocale } = useLocale();
   const router = useRouter();
   const pathname = router.pathname;
 
@@ -94,20 +97,35 @@ export default function App({ Component, pageProps }: AppProps) {
           data: { session },
         } = await supabaseBrowser.auth.getSession();
 
+        const guestOnlyR = isGuestOnlyRoute(pathname);
+        const publicR = isPublicRoute(pathname);
+
+        let currentSession = session;
         const expiresAt = session?.expires_at;
-        if (!expiresAt || expiresAt <= Date.now() / 1000) {
+        if (session && expiresAt && expiresAt <= Date.now() / 1000) {
           await supabaseBrowser.auth.signOut();
-          router.replace('/login');
-          return;
+          currentSession = null;
+          if (!guestOnlyR && !publicR) {
+            router.replace('/login');
+            return;
+          }
         }
 
-        const user = session.user ?? null;
+        const user = currentSession?.user ?? null;
         const r = getUserRole(user);
         if (!active) return;
 
         setRole(r);
 
-        const guestOnlyR = isGuestOnlyRoute(pathname);
+        if (user) {
+          const { data: profile } = await supabaseBrowser
+            .from('user_profiles')
+            .select('preferred_language')
+            .eq('user_id', user.id)
+            .maybeSingle();
+          const lang = profile?.preferred_language || 'en';
+          setLocale(lang);
+        }
 
         // If guest-only and user is logged in → send to dashboard
         if (guestOnlyR && user) {
@@ -146,9 +164,14 @@ export default function App({ Component, pageProps }: AppProps) {
         data: { session },
       } = await supabaseBrowser.auth.getSession();
       const expiresAt = session?.expires_at;
-      if (!expiresAt || expiresAt <= Date.now() / 1000) {
+      if (session && expiresAt && expiresAt <= Date.now() / 1000) {
         await supabaseBrowser.auth.signOut();
-        router.replace('/login');
+        if (
+          !isGuestOnlyRoute(router.pathname) &&
+          !isPublicRoute(router.pathname)
+        ) {
+          router.replace('/login');
+        }
       }
     }, 5 * 60 * 1000); // every 5 minutes
 
@@ -216,5 +239,13 @@ export default function App({ Component, pageProps }: AppProps) {
         </ToastProvider>
       </div>
     </ThemeProvider>
+  );
+}
+
+export default function App(props: AppProps) {
+  return (
+    <LanguageProvider>
+      <InnerApp {...props} />
+    </LanguageProvider>
   );
 }

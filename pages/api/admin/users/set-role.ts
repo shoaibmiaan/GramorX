@@ -2,6 +2,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { createClient } from '@supabase/supabase-js';
 import { requireRole } from '@/lib/requireRole';
+import type { Role } from '@/lib/roles';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -15,7 +16,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   } catch {
     return res.status(403).json({ error: 'Forbidden' });
   }
-  const { userId, role }: { userId: string; role: 'student' | 'teacher' | 'admin' } = req.body;
+  const { userId, role }: { userId: string; role: Role } = req.body;
 
   // 1) set canonical role in app_metadata (JWT claim)
   const { error: metaErr } = await supabaseAdmin.auth.admin.updateUserById(userId, {

@@ -1,0 +1,15 @@
+{
+  "home": {
+    "title": "Welcome to GramorX"
+  },
+  "profileSetup": {
+    "completeProfile": "Complete your profile",
+    "description": "We’ll tune your study plan with AI and personalize your dashboard.",
+    "preferredLanguage": "Preferred UI language",
+    "saveDraft": "Save draft",
+    "finishContinue": "Finish & continue"
+  },
+  "userMenu": {
+    "language": "Language"
+  }
+}
