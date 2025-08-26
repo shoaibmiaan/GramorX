@@ -20,7 +20,7 @@ const tiers = [
   },
   {
     name: 'Rocket',
-    price: '$34.99',
+    price: '$14.99',
     period: 'per month',
     featured: true,
     features: [
@@ -35,7 +35,7 @@ const tiers = [
   },
   {
     name: 'Seedling',
-    price: '$19.99',
+    price: '$9.99',
     period: 'per month',
     featured: false,
     features: [
