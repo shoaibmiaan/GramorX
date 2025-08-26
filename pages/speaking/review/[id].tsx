@@ -1,9 +1,5 @@
-<<<<<<< HEAD
 import React, { useEffect, useRef, useState } from 'react';
-=======
-import { env } from "@/lib/env";
-import React, { useState } from 'react';
->>>>>>> 4e94e6322611b22f93ab3e6364502036ed9a3d29
+import { env } from '@/lib/env';
 import type { GetServerSideProps } from 'next';
 import { useRouter } from 'next/router';
 import { createClient } from '@supabase/supabase-js';
