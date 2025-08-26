@@ -53,10 +53,7 @@ export default function LoginWithPhone() {
   );
 
   return (
-    <AuthLayout title="Phone Verification" subtitle="Sign in with an SMS code."
-      // @ts-expect-error TODO: AuthLayout supports an optional `right` slot
-      right={RightPanel}
-    >
+    <AuthLayout title="Phone Verification" subtitle="Sign in with an SMS code." right={RightPanel}>
       {err && <Alert variant="error" title="Error" className="mb-4">{err}</Alert>}
 
       {stage === 'request' ? (
