@@ -427,11 +427,10 @@ import { useRouter } from 'next/router';
         </button>
       )}
 
-      {/* Outside click catcher (does NOT darken UI) */}
+      {/* Darkened overlay behind the sidebar */}
       {open && (
         <div
-          className="fixed z-[60]"
-          style={isMobile ? { left: 0, right: 0, top: 0, bottom: mHeight } : { left: 0, top: 0, bottom: 0, right: width }}
+          className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm"
           onClick={() => setOpen(false)}
           aria-hidden
         />
