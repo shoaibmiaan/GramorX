@@ -29,11 +29,48 @@ import { useRouter } from 'next/router';
  const isBrowser = typeof window !== 'undefined';
 
 // ---- Helpers
- function useLocalHistory() {
-  // No persistence by request: fresh on reload
-  const [items, setItems] = useState<Msg[]>([]);
-  return { items, setItems };
- }
+function useLocalHistory(persist: boolean) {
+  const key = 'gx-ai:sidebar-thread';
+  const [items, setItems] = useState<Msg[]>(() => {
+    if (!persist || !isBrowser) return [];
+    try {
+      const raw = localStorage.getItem(key);
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? (parsed as Msg[]) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  // Load stored history when enabling persistence later
+  useEffect(() => {
+    if (!persist || !isBrowser) return;
+    try {
+      const raw = localStorage.getItem(key);
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      setItems(Array.isArray(parsed) ? (parsed as Msg[]) : []);
+    } catch {
+      setItems([]);
+    }
+  }, [persist]);
+
+  // Persist to localStorage
+  useEffect(() => {
+    if (!persist || !isBrowser) return;
+    try {
+      localStorage.setItem(key, JSON.stringify(items));
+    } catch {}
+  }, [items, persist]);
+
+  const clear = useCallback(() => {
+    setItems([]);
+    if (isBrowser) try { localStorage.removeItem(key); } catch {}
+  }, []);
+
+  return { items, setItems, clear };
+}
 
  function useProvider() {
   // Keep simple; default 'auto'. Can expose UI later if needed.
@@ -145,8 +182,17 @@ import { useRouter } from 'next/router';
     return () => window.removeEventListener('resize', on);
   }, []);
 
+  // Persistence toggle
+  const [persist, setPersist] = useState<boolean>(() =>
+    isBrowser ? localStorage.getItem('gx-ai:sidebar-persist') === '1' : false
+  );
+  useEffect(() => {
+    if (!isBrowser) return;
+    localStorage.setItem('gx-ai:sidebar-persist', persist ? '1' : '0');
+  }, [persist]);
+
   // Chat state
-  const { items, setItems } = useLocalHistory();
+  const { items, setItems, clear } = useLocalHistory(persist);
   const { provider } = useProvider();
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -343,6 +389,14 @@ import { useRouter } from 'next/router';
     setTimeout(() => textareaRef.current?.focus(), 0);
   }, [setItems]);
 
+  const clearHistory = useCallback(() => {
+    clear();
+    setInput('');
+    setStatusNote('');
+    setStreamingId(null);
+    setTimeout(() => textareaRef.current?.focus(), 0);
+  }, [clear]);
+
   // Voice recognition (browser only)
   const startVoice = useCallback(() => {
     if (!voiceSupported) { setStatusNote('Voice input is not supported.'); setTimeout(() => setStatusNote(''), 1500); return; }
@@ -460,6 +514,16 @@ import { useRouter } from 'next/router';
               <span className={`inline-block h-2 w-2 rounded-full ${statusDot}`} aria-label={`status: ${status}`} />
             </div>
             <div className="flex items-center gap-2">
+              <label className="flex items-center gap-1 text-caption">
+                <input
+                  type="checkbox"
+                  className="h-3 w-3"
+                  checked={persist}
+                  onChange={(e) => setPersist(e.target.checked)}
+                />
+                Remember
+              </label>
+              <button onClick={clearHistory} className="h-8 px-3 rounded-md bg-card border border-border hover:bg-accent text-caption" aria-label="Clear history">Clear</button>
               <button onClick={newChat} className="h-8 px-3 rounded-md bg-card border border-border hover:bg-accent text-caption" aria-label="New chat">New</button>
               <button onClick={() => setOpen(false)} className="h-8 w-8 rounded-md bg-card border border-border grid place-items-center" aria-label="Close">✕</button>
             </div>
