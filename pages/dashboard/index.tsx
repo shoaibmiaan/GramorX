@@ -2,16 +2,21 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Image from 'next/image';
+
 import { Container } from '@/components/design-system/Container';
 import { Card } from '@/components/design-system/Card';
 import { Button } from '@/components/design-system/Button';
 import { Badge } from '@/components/design-system/Badge';
 import { Alert } from '@/components/design-system/Alert';
 import { StreakIndicator } from '@/components/design-system/StreakIndicator';
+
 import { supabaseBrowser } from '@/lib/supabaseBrowser';
 import { ReadingStatsCard } from '@/components/reading/ReadingStatsCard';
-import { SavedItems } from '@/components/dashboard/SavedItems';
-import { fetchStreak } from '@/lib/streak';
+
+import { useStreak } from '@/hooks/useStreak';
+import { getDayKeyInTZ } from '@/lib/streak';
+import StudyCalendar from '@/components/feature/StudyCalendar';
+import GoalRoadmap from '@/components/feature/GoalRoadmap';
 
 type AIPlan = {
   suggestedGoal?: number;
@@ -30,6 +35,7 @@ type Profile = {
   time_commitment: string | null;
   preferred_language: string | null;
   avatar_url: string | null;
+  exam_date?: string | null;
   ai_recommendation: AIPlan | null;
   draft: boolean;
 };
@@ -38,57 +44,89 @@ export default function Dashboard() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [streak, setStreak] = useState(0);
+
+  const {
+    current: streak,
+    lastDayKey,
+    loading: streakLoading,
+    completeToday,
+  } = useStreak();
+
+  const handleShare = () => {
+    const text = `I'm studying for IELTS on GramorX with a ${streak}-day streak!`;
+    const url = typeof window !== 'undefined' ? window.location.href : '';
+    if (typeof navigator !== 'undefined' && (navigator as any).share) {
+      (navigator as any).share({ title: 'My IELTS progress', text, url }).catch(() => {});
+    } else if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(`${text} ${url}`).catch(() => {});
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;
 
     (async () => {
-      if (typeof window !== 'undefined') {
-        const url = window.location.href;
-        if (url.includes('code=') || url.includes('access_token=')) {
-          const { error } = await supabaseBrowser.auth.exchangeCodeForSession(url);
-          if (!error) router.replace('/dashboard');
-        }
-      }
-      const { data: { session } } = await supabaseBrowser.auth.getSession();
-
-      if (!session?.user) {
-        router.replace('/login');
-        return;
-      }
-
-      const { data, error } = await supabaseBrowser
-        .from('user_profiles')
-        .select('*')
-        .eq('user_id', session.user.id)
-        .maybeSingle();
-
-      if (cancelled) return;
-
-      if (error) {
-        console.error(error);
-        setLoading(false);
-        return;
-      }
-
-      if (!data || data.draft) {
-        router.replace('/profile-setup');
-        return;
-      }
-
-      setProfile(data as Profile);
-
       try {
-        const s = await fetchStreak();
-        setStreak(s.current_streak || 0);
-      } catch {}
+        if (typeof window !== 'undefined') {
+          const url = window.location.href;
+          if (url.includes('code=') || url.includes('access_token=')) {
+            const { error } = await supabaseBrowser.auth.exchangeCodeForSession(url);
+            if (!error) {
+              router.replace('/dashboard');
+              return;
+            }
+          }
+        }
 
-      setLoading(false);
+        const {
+          data: { session },
+        } = await supabaseBrowser.auth.getSession();
+
+        if (!session?.user) {
+          router.replace('/login');
+          return;
+        }
+
+        const { data, error } = await supabaseBrowser
+          .from('user_profiles')
+          .select('*')
+          .eq('user_id', session.user.id)
+          .maybeSingle();
+
+        if (cancelled) return;
+
+        if (error) {
+          console.error(error);
+          setLoading(false);
+          return;
+        }
+
+        if (!data || data.draft) {
+          // Your setup page path is /profile/setup in this codebase.
+          router.replace('/profile/setup');
+          return;
+        }
+
+        setProfile(data as Profile);
+        setLoading(false);
+      } catch (e) {
+        console.error(e);
+        if (!cancelled) setLoading(false);
+      }
     })();
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [router]);
+
+  useEffect(() => {
+    if (streakLoading) return;
+    const today = getDayKeyInTZ();
+    if (lastDayKey !== today) {
+      void completeToday().catch(() => {});
+    }
+  }, [streakLoading, lastDayKey, completeToday]);
 
   if (loading) {
     return (
@@ -120,8 +158,11 @@ export default function Dashboard() {
             </h1>
             <p className="text-grayish">Let’s hit your target band with a personalized plan.</p>
           </div>
+
           <div className="flex items-center gap-4">
             <StreakIndicator value={streak} />
+            {streak >= 7 && <Badge variant="success" size="sm">🔥 {streak}-day streak!</Badge>}
+
             {profile?.avatar_url ? (
               <Image
                 src={profile.avatar_url}
@@ -169,6 +210,16 @@ export default function Dashboard() {
           </Card>
         </div>
 
+        {/* Study calendar */}
+        <div className="mt-10">
+          <StudyCalendar />
+        </div>
+
+        {/* Goal roadmap */}
+        <div className="mt-10">
+          <GoalRoadmap examDate={profile?.exam_date ?? null} />
+        </div>
+
         {/* Actions + Reading stats */}
         <div className="mt-10 grid gap-6 lg:grid-cols-[1fr_.9fr]">
           <Card className="p-6 rounded-ds-2xl">
@@ -187,15 +238,36 @@ export default function Dashboard() {
               <Button as="a" href="/reading" variant="secondary" className="rounded-ds-xl">
                 Practice Reading
               </Button>
+              <Button onClick={handleShare} variant="secondary" className="rounded-ds-xl">
+                Share Progress
+              </Button>
             </div>
           </Card>
 
-          {/* New: Reading Student Analysis */}
           <ReadingStatsCard />
         </div>
 
+        {/* Skill analytics */}
         <div className="mt-10">
-          <SavedItems />
+          <Card className="p-6 rounded-ds-2xl">
+            <h3 className="font-slab text-h3 mb-2">Skill Focus</h3>
+            {(ai.sequence ?? []).length ? (
+              <ul className="list-disc pl-6 text-body">
+                {(ai.sequence ?? []).map((s, i, arr) => (
+                  <li key={s}>
+                    {s}{' '}
+                    {i === 0
+                      ? '- prioritize'
+                      : i === arr.length - 1
+                      ? '- strong'
+                      : ''}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-body">Add preferences in your profile to see analytics.</p>
+            )}
+          </Card>
         </div>
 
         {/* Upgrade */}
@@ -213,7 +285,7 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        {/* Plan coach notes */}
+        {/* Coach notes */}
         <div className="mt-10">
           <Card className="p-6 rounded-ds-2xl">
             <h3 className="font-slab text-h3">Coach Notes</h3>
@@ -229,7 +301,7 @@ export default function Dashboard() {
               </Alert>
             )}
             <div className="mt-4">
-              <Button as="a" href="/profile-setup" variant="secondary" className="rounded-ds-xl">
+              <Button as="a" href="/profile/setup" variant="secondary" className="rounded-ds-xl">
                 Edit Profile
               </Button>
             </div>

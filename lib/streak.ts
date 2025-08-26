@@ -42,15 +42,40 @@ export type StreakData = {
 };
 
 /** Fetch current streak for the logged-in user */
+const handle = async (res: Response, fallbackMsg: string): Promise<StreakData> => {
+  let json: any = null;
+  try {
+    json = await res.json();
+  } catch {
+    // ignore
+  }
+  if (!res.ok) {
+    throw new Error(json?.error || fallbackMsg);
+  }
+  return {
+    current_streak: json?.current_streak ?? 0,
+    last_activity_date: json?.last_activity_date ?? null,
+  };
+};
+
+/** Fetch current streak for the logged-in user */
 export async function fetchStreak(): Promise<StreakData> {
-  const res = await fetch('/api/streak');
-  if (!res.ok) throw new Error('Failed to fetch streak');
-  return res.json();
+  try {
+    const res = await fetch('/api/streak');
+    return await handle(res, 'Failed to fetch streak');
+  } catch (e) {
+    console.error(e);
+    throw e;
+  }
 }
 
 /** Mark today's activity and return the updated streak */
 export async function incrementStreak(): Promise<StreakData> {
-  const res = await fetch('/api/streak', { method: 'POST' });
-  if (!res.ok) throw new Error('Failed to update streak');
-  return res.json();
+  try {
+    const res = await fetch('/api/streak', { method: 'POST' });
+    return await handle(res, 'Failed to update streak');
+  } catch (e) {
+    console.error(e);
+    throw e;
+  }
 }

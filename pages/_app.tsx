@@ -10,6 +10,7 @@ import { Layout } from '@/components/Layout';
 import { ToastProvider } from '@/components/design-system/Toast';
 import { supabaseBrowser } from '@/lib/supabaseBrowser';
 import { env } from '@/lib/env';
+import { LanguageProvider, useLocale } from '@/lib/locale';
 import { initIdleTimeout } from '@/utils/idleTimeout';
 import {
   isGuestOnlyRoute,
@@ -53,7 +54,8 @@ function GuardSkeleton() {
   );
 }
 
-export default function App({ Component, pageProps }: AppProps) {
+function InnerApp({ Component, pageProps }: AppProps) {
+  const { setLocale } = useLocale();
   const router = useRouter();
   const pathname = router.pathname;
 
@@ -114,6 +116,16 @@ export default function App({ Component, pageProps }: AppProps) {
         if (!active) return;
 
         setRole(r);
+
+        if (user) {
+          const { data: profile } = await supabaseBrowser
+            .from('user_profiles')
+            .select('preferred_language')
+            .eq('user_id', user.id)
+            .maybeSingle();
+          const lang = profile?.preferred_language || 'en';
+          setLocale(lang);
+        }
 
         // If guest-only and user is logged in → send to dashboard
         if (guestOnlyR && user) {
@@ -227,5 +239,13 @@ export default function App({ Component, pageProps }: AppProps) {
         </ToastProvider>
       </div>
     </ThemeProvider>
+  );
+}
+
+export default function App(props: AppProps) {
+  return (
+    <LanguageProvider>
+      <InnerApp {...props} />
+    </LanguageProvider>
   );
 }
