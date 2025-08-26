@@ -1,7 +1,5 @@
-import { env } from "@/lib/env";
 import React, { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
-import { createClient } from '@supabase/supabase-js';
 import { useLocale } from '@/lib/locale';
 import { Container } from '@/components/design-system/Container';
 import { Card } from '@/components/design-system/Card';
@@ -10,18 +8,10 @@ import { Button } from '@/components/design-system/Button';
 import { Badge } from '@/components/design-system/Badge';
 import { Alert } from '@/components/design-system/Alert';
 import { Select } from '@/components/design-system/Select';
+import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser';
 
-/** Supabase browser client */
-const supabase = createClient(
-  env.NEXT_PUBLIC_SUPABASE_URL,
-  env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-  {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false,
-    },
-  }
-);
+// Using the shared browser client ensures auth state is persisted
+// and reused across pages.
 
 const COUNTRIES = ['Pakistan','India','Bangladesh','United Arab Emirates','Saudi Arabia','United Kingdom','United States','Canada','Australia','New Zealand'];
 const LEVELS: Array<'Beginner'|'Elementary'|'Pre-Intermediate'|'Intermediate'|'Upper-Intermediate'|'Advanced'> = ['Beginner','Elementary','Pre-Intermediate','Intermediate','Upper-Intermediate','Advanced'];

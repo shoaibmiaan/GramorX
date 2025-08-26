@@ -9,8 +9,10 @@ const anon = env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const getClient = () =>
   createClient(url, anon, {
     auth: {
-      persistSession: false,
-      autoRefreshToken: false,
+      // Persist the auth session so that verification links
+      // and page reloads keep the user logged in.
+      persistSession: true,
+      autoRefreshToken: true,
       // keep default storageKey (sb-<project>-auth-token)
     },
   });
