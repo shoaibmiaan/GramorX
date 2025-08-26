@@ -8,6 +8,7 @@ import { Container } from '@/components/design-system/Container';
 // import { Card } from '@/components/design-system/Card';
 // import { Button } from '@/components/design-system/Button';
 import { RoleGuard } from '@/components/auth/RoleGuard';
+import { useToast } from '@/components/design-system/Toast';
 
 // ---- Types ----
 type KPI = { label: string; value: string; sub?: string; href?: string };
@@ -58,6 +59,8 @@ export default function AdminIndex() {
   const [range, setRange] = useState<'7d' | '30d' | '90d'>('7d');
   const [module, setModule] = useState<'all' | 'listening' | 'reading' | 'writing' | 'speaking'>('all');
   const [q, setQ] = useState(''); // global quick search filter (signups, tickets)
+
+  const { success, error: toastError } = useToast();
 
   // 🧪 Demo data — replace with Supabase later
   const kpis: KPI[] = useMemo(
@@ -180,15 +183,29 @@ export default function AdminIndex() {
     URL.revokeObjectURL(url);
   };
 
-  // Handlers (placeholders; wire to API when ready)
-  const approvePost = (slug: string) => {
-    // TODO: POST /api/blog/moderate { action: 'approve', slug }
-    alert(`Approve: ${slug} (wire to /api/blog/moderate)`);
+  // Handlers
+  const moderatePost = async (slug: string, action: 'approve' | 'reject') => {
+    try {
+      const res = await fetch('/api/blog/moderate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, slug }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        success(
+          data?.message || `Post ${action === 'approve' ? 'approved' : 'rejected'}`
+        );
+      } else {
+        toastError(data?.error || 'Moderation failed');
+      }
+    } catch (err) {
+      toastError(err instanceof Error ? err.message : 'Moderation failed');
+    }
   };
-  const rejectPost = (slug: string) => {
-    // TODO: POST /api/blog/moderate { action: 'reject', slug }
-    alert(`Reject: ${slug} (wire to /api/blog/moderate)`);
-  };
+
+  const approvePost = (slug: string) => moderatePost(slug, 'approve');
+  const rejectPost = (slug: string) => moderatePost(slug, 'reject');
 
   const filteredSignups = signups.filter((s) =>
     q ? (s.name + s.email).toLowerCase().includes(q.toLowerCase()) : true
