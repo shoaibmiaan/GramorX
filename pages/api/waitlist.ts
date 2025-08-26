@@ -1,20 +1,11 @@
-<<<<<<< HEAD
 // pages/api/waitlist.ts
-=======
-import { env } from "@/lib/env";
->>>>>>> 4e94e6322611b22f93ab3e6364502036ed9a3d29
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { z } from 'zod';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
-<<<<<<< HEAD
 type Ok = { ok: true; id: string | null; duplicate: boolean; message: string };
 type Fail = { ok: false; error: string; issues?: { field: string; message: string }[] };
 type Out = Ok | Fail;
-=======
-const supabaseUrl = env.NEXT_PUBLIC_SUPABASE_URL;
-const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY; // keep secret
->>>>>>> 4e94e6322611b22f93ab3e6364502036ed9a3d29
 
 // Accept both your UI keys and earlier variants; mark optionals as optional.
 const InSchema = z.object({
