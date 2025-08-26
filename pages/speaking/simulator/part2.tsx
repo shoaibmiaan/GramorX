@@ -329,7 +329,7 @@ export default function SpeakingPart2() {
               </ul>
 
               {/* Timers */}
-              <div className="mt-5 grid grid-cols-2 gap-3">
+              <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="rounded-xl border border-gray-200 dark:border-white/10 p-3 text-center">
                   <div className="text-xs text-gray-500">Prep</div>
                   <div className="font-mono text-xl">
@@ -393,7 +393,7 @@ export default function SpeakingPart2() {
                   <div className="text-3xl font-semibold">
                     {typeof result.overall === 'number' ? result.overall.toFixed(1) : '—'}
                   </div>
-                  <div className="mt-2 grid grid-cols-2 gap-2 text-sm">
+                  <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
                     <div>Fluency: <strong>{result.fluency ?? '—'}</strong></div>
                     <div>Pronunciation: <strong>{result.pronunciation ?? '—'}</strong></div>
                     <div>Lexical: <strong>{result.lexical ?? '—'}</strong></div>
