@@ -2,7 +2,6 @@ import { env } from "@/lib/env";
 // lib/authServer.ts
 import type { NextApiRequest } from 'next';
 import { createClient } from '@supabase/supabase-js';
-import { env } from '@/env';
 
 const URL = env.NEXT_PUBLIC_SUPABASE_URL;
 const ANON = env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
