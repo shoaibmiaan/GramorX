@@ -1,6 +1,7 @@
 // /pages/api/admin/dashboard.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { requireRole } from '@/lib/requireRole';
 
 type Stat = { label: string; value: string; sub?: string };
 type Signup = { id: string; name: string; email: string; joinedAt: string; cohort?: string };
@@ -270,6 +271,11 @@ async function studentsPaged(fromIso: string, toIso: string, cohort?: string, q?
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse<Payload | { error: string }>) {
+  try {
+    await requireRole(req, ['admin']);
+  } catch {
+    return res.status(403).json({ error: 'Forbidden' });
+  }
   try {
     const {
       from: fromYmd,

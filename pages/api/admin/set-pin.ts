@@ -1,29 +1,20 @@
-import { env } from "@/lib/env";
+import { env } from '@/lib/env';
 // pages/api/admin/set-pin.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { createClient } from '@supabase/supabase-js';
-import { createServerClient } from '@supabase/auth-helpers-nextjs';
-import { isAdminEmail } from '@/lib/admin';
+import { requireRole } from '@/lib/requireRole';
 
 type Resp = { ok: true; status: string } | { ok: false; error: string };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse<Resp>) {
-  if (req.method !== 'POST') return res.status(405).json({ ok: false, error: 'Method Not Allowed' });
+  if (req.method !== 'POST')
+    return res.status(405).json({ ok: false, error: 'Method Not Allowed' });
 
-  // 1) Verify requester is logged-in admin (from cookies)
-  const supabaseSSR = createServerClient(
-    env.NEXT_PUBLIC_SUPABASE_URL as string,
-    env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string,
-    { cookies: { get: (k) => req.cookies[k], set: () => {}, remove: () => {} } }
-  );
-
-  const {
-    data: { user },
-    error: userErr,
-  } = await supabaseSSR.auth.getUser();
-
-  if (userErr || !user?.email) return res.status(401).json({ ok: false, error: 'Unauthorized' });
-  if (!isAdminEmail(user.email)) return res.status(403).json({ ok: false, error: 'Forbidden' });
+  try {
+    await requireRole(req, ['admin']);
+  } catch {
+    return res.status(403).json({ ok: false, error: 'Forbidden' });
+  }
 
   // 2) Input validation
   const { email, newPin } = (typeof req.body === 'string' ? JSON.parse(req.body) : req.body) ?? {};
