@@ -32,6 +32,7 @@ html, body, #__next { height: 100%; }
 
   --color-lightCard:     255 255 255;  /* #ffffff */
   --color-lightBorder:   224 224 224;  /* #e0e0e0 */
+  --color-mutedText:     208 208 224;  /* #d0d0e0 */
 }
 
 /* Light = default; Dark via .dark on <html> (next-themes) */
