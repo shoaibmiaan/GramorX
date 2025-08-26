@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button } from '@/components/design-system/Button';
+import { Button } from './Button';
 
 export type EmptyStateProps = {
   /** Heading text */

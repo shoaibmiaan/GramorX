@@ -41,9 +41,9 @@ export { default as QuestionRenderer } from '../reading/QuestionRenderer';
 export { default as Recorder } from '../speaking/Recorder';
 
 // ——— Premium/Admin (export only if these exist; otherwise comment out)
-export { default as PinGate } from '../../premium-ui/PinGate';
-export { default as PinManager } from '../../premium-ui/PinManager';
-export { default as PinLock } from '../../premium-ui/composed/PinLock';
+// export { default as PinGate } from '../../premium-ui/PinGate';
+// export { default as PinManager } from '../../premium-ui/PinManager';
+// export { default as PinLock } from '../../premium-ui/composed/PinLock';
 
 // ——— Future DS components (enable when files land)
 // export { Select } from './Select';
