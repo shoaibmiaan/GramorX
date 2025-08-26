@@ -30,5 +30,7 @@ module.exports = {
     displayLg: ['3.5rem', { lineHeight: '1.2', letterSpacing: '-0.02em' }], // 56px — big hero
     h4: ['1.25rem', { lineHeight: '1.4' }],    // 20px — useful for card titles
     caption: ['0.75rem', { lineHeight: '1.4' }], // 12px — helper/labels
+    tiny: ['0.6875rem', { lineHeight: '1.4' }],  // 11px — fine print
+    micro: ['0.625rem', { lineHeight: '1.4' }], // 10px — micro text
   }
 };
