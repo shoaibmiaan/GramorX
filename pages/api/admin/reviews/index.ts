@@ -1,19 +1,19 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { createClient } from '@supabase/supabase-js';
+import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
+import { extractRole } from '@/lib/roles';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY! // needs RLS-bypass (server only)
 );
 
-type Role = 'student'|'teacher'|'admin';
-
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') return res.status(405).json({ ok: false, error: 'Method not allowed' });
 
-  // simple role check (JWT should be provided by middleware if you have one)
-  // You can also use your own authServer util; keeping minimal here.
-  const role = (req.headers['x-role'] as Role | undefined) ?? 'admin'; // TODO: replace with real guard
+  const supa = createServerSupabaseClient({ req, res });
+  const { data: { user } } = await supa.auth.getUser();
+  const role = extractRole(user);
   if (role !== 'teacher' && role !== 'admin') {
     return res.status(403).json({ ok: false, error: 'Forbidden' });
   }
