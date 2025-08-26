@@ -1,4 +1,4 @@
-import { env } from "@/lib/env";
+import { supabaseAdmin } from '@/lib/supabaseAdmin';
 /**
  * Supabase adapters for Reading.
  * No schema changes required. Adjust table/column names in the mappers to match your existing DB.
@@ -8,12 +8,8 @@ import { env } from "@/lib/env";
  *  - In /api/reading/submit.ts, import saveAttemptToSupabase(...) to persist attempts.
  */
 
-import { createClient } from '@supabase/supabase-js';
-
-// Prefer service role for secure SSR inserts; fall back to anon for public reads.
-const supabaseUrl = env.NEXT_PUBLIC_SUPABASE_URL;
-const serviceKey  = env.SUPABASE_SERVICE_ROLE_KEY || env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-export const supabaseServer = createClient(supabaseUrl, serviceKey);
+// Reuse the server-side admin client
+export const supabaseServer = supabaseAdmin;
 
 /** Shapes used by the Reading runner */
 export type Paper = {
