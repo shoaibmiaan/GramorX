@@ -1,6 +1,8 @@
 // pages/index.tsx
 import React, { useCallback, useEffect, useState } from 'react';
+import Head from 'next/head';
 import dynamic from 'next/dynamic';
+import { useLocale } from '@/lib/locale';
 
 // Robust dynamic import for Hero: supports default OR named export
 const Hero = dynamic(
@@ -21,6 +23,7 @@ const Pricing = (PricingMod as any).Pricing ?? (PricingMod as any).default;
 const Waitlist = (WaitlistMod as any).Waitlist ?? (WaitlistMod as any).default;
 
 export default function HomePage() {
+  const { t } = useLocale();
   // keep your streak logic intact
   const [streak, setStreak] = useState(0);
   const onStreakChange = useCallback((n: number) => setStreak(n), []);
@@ -50,6 +53,9 @@ export default function HomePage() {
 
   return (
     <>
+      <Head>
+        <title>{t('home.title')}</title>
+      </Head>
       <Hero streak={streak} onStreakChange={onStreakChange} />
 
       <section

@@ -2,6 +2,7 @@ import { env } from "@/lib/env";
 import React, { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
 import { createClient } from '@supabase/supabase-js';
+import { useLocale } from '@/lib/locale';
 import { Container } from '@/components/design-system/Container';
 import { Card } from '@/components/design-system/Card';
 import { Input } from '@/components/design-system/Input';
@@ -29,6 +30,7 @@ const PREFS = ['Listening','Reading','Writing','Speaking'];
 
 export default function ProfileSetup() {
   const router = useRouter();
+  const { t, setLocale } = useLocale();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -148,8 +150,8 @@ export default function ProfileSetup() {
         <Container>
           <div className="max-w-5xl mx-auto grid gap-6 lg:grid-cols-[1.2fr_.8fr]">
             <div>
-              <h1 className="font-slab text-display text-gradient-primary">Complete your profile</h1>
-              <p className="text-grayish mt-2">We’ll tune your study plan with AI and personalize your dashboard.</p>
+              <h1 className="font-slab text-display text-gradient-primary">{t('profileSetup.completeProfile')}</h1>
+              <p className="text-grayish mt-2">{t('profileSetup.description')}</p>
 
               {error && <Alert variant="error" title="Unable to save">{error}</Alert>}
               {notice && <Alert variant="success" title={notice} />}
@@ -213,7 +215,14 @@ export default function ProfileSetup() {
                     </label>
                   </div>
 
-                  <Select label="Preferred UI language" value={lang} onChange={e=>setLang(e.target.value)}>
+                  <Select
+                    label={t('profileSetup.preferredLanguage')}
+                    value={lang}
+                    onChange={e => {
+                      setLang(e.target.value);
+                      setLocale(e.target.value);
+                    }}
+                  >
                     <option value="en">English</option>
                     <option value="ur">Urdu</option>
                     <option value="ar">Arabic</option>
@@ -225,10 +234,10 @@ export default function ProfileSetup() {
 
                 <div className="mt-6 flex flex-wrap gap-3">
                   <Button onClick={()=>saveProfile(false)} disabled={saving} variant="secondary" className="rounded-ds-xl">
-                    {saving ? 'Saving…' : 'Save draft'}
+                    {saving ? 'Saving…' : t('profileSetup.saveDraft')}
                   </Button>
                   <Button onClick={()=>saveProfile(true)} disabled={saving || !canSubmit} variant="primary" className="rounded-ds-xl">
-                    {saving ? 'Saving…' : 'Finish & continue'}
+                    {saving ? 'Saving…' : t('profileSetup.finishContinue')}
                   </Button>
                 </div>
               </Card>
