@@ -110,7 +110,7 @@ import { useRouter } from 'next/router';
       return (
         <pre
           key={`pre-${i}`}
-          className="whitespace-pre-wrap rounded-xl bg-card text-muted-foreground border border-border p-3 text-[12px] overflow-x-auto"
+          className="whitespace-pre-wrap rounded-xl bg-card text-muted-foreground border border-border p-3 text-caption overflow-x-auto"
         >
           {chunk}
         </pre>
@@ -420,7 +420,7 @@ import { useRouter } from 'next/router';
       {!open && (
         <button
           onClick={() => setOpen(true)}
-          className="fixed bottom-5 right-5 z-[60] rounded-full shadow-lg px-4 py-3 text-sm font-semibold bg-primary text-primary-foreground hover:opacity-90 active:scale-95"
+          className="fixed bottom-5 right-5 z-[60] rounded-full shadow-lg px-4 py-3 text-small font-semibold bg-primary text-primary-foreground hover:opacity-90 active:scale-95"
           title="Open AI (Alt+A)"
         >
           ✨ AI
@@ -460,12 +460,12 @@ import { useRouter } from 'next/router';
               <span className={`inline-block h-2 w-2 rounded-full ${statusDot}`} aria-label={`status: ${status}`} />
             </div>
             <div className="flex items-center gap-2">
-              <button onClick={newChat} className="h-8 px-3 rounded-md bg-card border border-border hover:bg-accent text-xs" aria-label="New chat">New</button>
+              <button onClick={newChat} className="h-8 px-3 rounded-md bg-card border border-border hover:bg-accent text-caption" aria-label="New chat">New</button>
               <button onClick={() => setOpen(false)} className="h-8 w-8 rounded-md bg-card border border-border grid place-items-center" aria-label="Close">✕</button>
             </div>
           </div>
           {statusNote && (
-            <div className="px-3 md:px-4 py-1 text-[11px] text-muted-foreground bg-muted border-t border-border">
+            <div className="px-3 md:px-4 py-1 text-tiny text-muted-foreground bg-muted border-t border-border">
               {statusNote}
             </div>
           )}
@@ -479,30 +479,30 @@ import { useRouter } from 'next/router';
           {items.length === 0 && (
             <div className="text-center">
               <div className="inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-gradient-to-br from-primary/15 to-accent/15 border border-border mb-3">
-                <span className="text-lg">✨</span>
+                <span className="text-h4">✨</span>
               </div>
-              <div className="text-sm">
+              <div className="text-small">
                 Hi, I’m your coach — hired for you by your Partner GramorX. Speak or type to begin.
               </div>
               <div className="mt-3 flex items-center justify-center gap-2">
-                <button onClick={newChat} className="text-xs rounded-full px-3 py-1 bg-card border border-border hover:bg-accent">New chat</button>
-                <button onClick={toggleVoice} disabled={!voiceSupported} className="text-xs rounded-full px-3 py-1 border border-border bg-card hover:bg-accent disabled:opacity-50" title={voiceSupported ? (listening ? 'Stop voice' : 'Speak') : 'Voice not supported'}>
+                <button onClick={newChat} className="text-caption rounded-full px-3 py-1 bg-card border border-border hover:bg-accent">New chat</button>
+                <button onClick={toggleVoice} disabled={!voiceSupported} className="text-caption rounded-full px-3 py-1 border border-border bg-card hover:bg-accent disabled:opacity-50" title={voiceSupported ? (listening ? 'Stop voice' : 'Speak') : 'Voice not supported'}>
                   🎙 {listening ? 'Stop' : 'Speak'}
                 </button>
               </div>
-              <div className="mt-2 text-[11px] text-muted-foreground/80">Tip: Alt+A toggles anywhere.</div>
+              <div className="mt-2 text-tiny text-muted-foreground/80">Tip: Alt+A toggles anywhere.</div>
             </div>
           )}
 
           {items.map((m) => (
             <div
               key={m.id}
-              className={`rounded-2xl px-3 py-2 text-sm leading-relaxed border ${
+              className={`rounded-2xl px-3 py-2 text-small leading-relaxed border ${
                 m.role === 'user' ? 'bg-accent text-accent-foreground border-accent' : 'bg-card text-card-foreground border-border'
               }`}
               aria-live={m.id === streamingId ? 'polite' : undefined}
             >
-              <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">
+              <div className="text-micro uppercase tracking-wider text-muted-foreground mb-1">
                 {m.role === 'user' ? 'You' : 'GramorX AI'}
               </div>
               <div className="prose prose-sm dark:prose-invert max-w-none">
@@ -512,7 +512,7 @@ import { useRouter } from 'next/router';
           ))}
 
           {loading && (
-            <div className="text-xs text-muted-foreground animate-pulse">Thinking…</div>
+            <div className="text-caption text-muted-foreground animate-pulse">Thinking…</div>
           )}
         </div>
 
@@ -537,13 +537,13 @@ import { useRouter } from 'next/router';
               }}
               rows={1}
               placeholder="Type or tap 🎙 to speak… (Enter to send, Shift+Enter = new line)"
-              className="w-full resize-none rounded-2xl border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/40"
+              className="w-full resize-none rounded-2xl border border-border bg-background px-3 py-2 text-small outline-none focus:ring-2 focus:ring-primary/40"
               style={{ maxHeight: 148 }}
             />
             <button
               onClick={() => send()}
               disabled={loading || !input.trim() || !!streamingId}
-              className="rounded-2xl h-10 min-w-[88px] px-4 md:px-3 text-sm font-semibold bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-50"
+              className="rounded-2xl h-10 min-w-[88px] px-4 md:px-3 text-small font-semibold bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-50"
             >
               Send
             </button>

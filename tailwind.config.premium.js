@@ -2,6 +2,7 @@
  *  - Use a 'pr-' prefix so styles don't collide with the main site.
  *  - Map utilities to CSS variables defined in styles/premium.css.
  */
+const scale = require('./design-system/tokens/scale.js');
 module.exports = {
   darkMode: ['class', '[data-pr-theme="carbon"]'],
   prefix: 'pr-',
@@ -40,6 +41,7 @@ module.exports = {
         150: '150ms',
         200: '200ms',
       },
+      fontSize: { ...scale.typeScale },
     },
   },
   plugins: [
