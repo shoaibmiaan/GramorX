@@ -43,6 +43,13 @@ export default function Dashboard() {
     let cancelled = false;
 
     (async () => {
+      if (typeof window !== 'undefined') {
+        const url = window.location.href;
+        if (url.includes('code=') || url.includes('access_token=')) {
+          const { error } = await supabaseBrowser.auth.exchangeCodeForSession(url);
+          if (!error) router.replace('/dashboard');
+        }
+      }
       const { data: { session } } = await supabaseBrowser.auth.getSession();
 
       if (!session?.user) {

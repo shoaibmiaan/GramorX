@@ -33,7 +33,13 @@ export default function SignupWithPhone() {
     const { data, error } = await supabase.auth.verifyOtp({ phone, token: code, type: 'sms' });
     setLoading(false);
     if (error) return setErr(error.message);
-    if (data.session) window.location.assign('/profile-setup');
+    if (data.session) {
+      await supabase.auth.setSession({
+        access_token: data.session.access_token,
+        refresh_token: data.session.refresh_token,
+      });
+      window.location.assign('/profile-setup');
+    }
   }
 
   const RightPanel = (

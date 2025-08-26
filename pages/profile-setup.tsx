@@ -13,7 +13,13 @@ import { Select } from '@/components/design-system/Select';
 /** Supabase browser client */
 const supabase = createClient(
   env.NEXT_PUBLIC_SUPABASE_URL,
-  env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+    },
+  }
 );
 
 const COUNTRIES = ['Pakistan','India','Bangladesh','United Arab Emirates','Saudi Arabia','United Kingdom','United States','Canada','Australia','New Zealand'];
@@ -43,6 +49,13 @@ export default function ProfileSetup() {
   useEffect(() => {
     (async () => {
       setLoading(true);
+      if (typeof window !== 'undefined') {
+        const url = window.location.href;
+        if (url.includes('code=') || url.includes('access_token=')) {
+          const { error } = await supabase.auth.exchangeCodeForSession(url);
+          if (!error) router.replace('/profile-setup');
+        }
+      }
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) {
         router.replace('/login');
