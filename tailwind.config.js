@@ -31,7 +31,8 @@ module.exports = {
         lightText:     'rgb(var(--color-lightText) / <alpha-value>)',
         grayish:       'rgb(var(--color-grayish) / <alpha-value>)',
         lightCard:     'rgb(var(--color-lightCard) / <alpha-value>)',
-        lightBorder:    'rgb(var(--color-lightBorder) / <alpha-value>)',
+        lightBorder:   'rgb(var(--color-lightBorder) / <alpha-value>)',
+        mutedText:     'rgb(var(--color-mutedText) / <alpha-value>)',
       },
 
       borderRadius: {

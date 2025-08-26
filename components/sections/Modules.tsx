@@ -127,7 +127,7 @@ export const Modules: React.FC = () => {
                   {m.bullets.map((b) => (
                     <li
                       key={b}
-                      className="py-2 pl-6 border-b border-dashed border-purpleVibe/20 relative text-[#d0d0e0] dark:text-[#d0d0e0]"
+                      className="py-2 pl-6 border-b border-dashed border-purpleVibe/20 relative text-mutedText dark:text-mutedText"
                     >
                       <span className="absolute left-0 top-2 text-neonGreen font-bold">
                         ✓

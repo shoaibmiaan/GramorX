@@ -78,7 +78,7 @@ export const Pricing: React.FC = () => {
                 {t.features.map((f) => (
                   <li
                     key={f}
-                    className="py-2 border-b border-dashed border-purpleVibe/20 text-[#d0d0e0] dark:text-[#d0d0e0]"
+                    className="py-2 border-b border-dashed border-purpleVibe/20 text-mutedText dark:text-mutedText"
                   >
                     {f}
                   </li>
