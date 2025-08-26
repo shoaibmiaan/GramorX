@@ -118,10 +118,10 @@ export const Hero: React.FC<HeroProps> = ({ onStreakChange }) => {
 
   if (!mounted) {
     return (
-      <section className="min-h-[60vh] grid place-items-center py-24 relative">
+      <section className="min-h-[60vh] grid place-items-center py-20 sm:py-24 relative">
         <Container>
           <div className="max-w-2xl mx-auto text-center">
-            <h1 className="font-slab text-5xl md:text-6xl font-bold mb-5 leading-tight">
+            <h1 className="font-slab text-4xl sm:text-5xl md:text-6xl font-bold mb-5 leading-tight">
               <span className="text-gradient-primary">
                 ACHIEVE YOUR DREAM IELTS SCORE WITH AI-POWERED PREPARATION
               </span>
@@ -134,10 +134,10 @@ export const Hero: React.FC<HeroProps> = ({ onStreakChange }) => {
   }
 
   return (
-    <section className="min-h-[100vh] flex items-center justify-center py-24 relative">
+    <section className="min-h-[100vh] flex items-center justify-center py-20 sm:py-24 relative">
       <Container>
         <div className="relative z-10 max-w-2xl mx-auto text-center">
-          <h1 className="font-slab text-5xl md:text-6xl font-bold mb-5 leading-tight">
+          <h1 className="font-slab text-4xl sm:text-5xl md:text-6xl font-bold mb-5 leading-tight">
             <span className="text-gradient-primary">
               ACHIEVE YOUR DREAM IELTS SCORE WITH AI-POWERED PREPARATION
             </span>
