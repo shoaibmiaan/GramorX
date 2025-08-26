@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { supabaseBrowser } from '@/lib/supabaseBrowser';
-
-type Role = 'admin' | 'teacher' | 'student';
+import { getCurrentRole, Role } from '@/lib/roles';
 type Props = { allow: Role | Role[]; children: React.ReactNode };
 
 const asSet = (a: Role | Role[]) => new Set(Array.isArray(a) ? a : [a]);
@@ -15,30 +13,8 @@ export function RoleGuard({ allow, children }: Props) {
   useEffect(() => {
     let cancelled = false;
 
-    const getRole = async (): Promise<Role | null> => {
-      const { data } = await supabaseBrowser.auth.getSession();
-      const user = data.session?.user ?? null;
-
-      if (!user) return null;
-
-      let role: any =
-        (user.app_metadata as any)?.role ??
-        (user.user_metadata as any)?.role ??
-        null;
-
-      if (!role && user.id) {
-        const { data: prof } = await supabaseBrowser
-          .from('profiles')
-          .select('role')
-          .eq('id', user.id)
-          .single();
-        role = prof?.role ?? null;
-      }
-      return role ? String(role).toLowerCase() as Role : null;
-    };
-
     (async () => {
-      const r = await getRole();
+      const r = await getCurrentRole();
 
       // Admin can access everything. Teachers can access teacher pages.
       const pass =

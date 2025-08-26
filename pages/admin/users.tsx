@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { supabaseBrowser } from '@/lib/supabaseBrowser';
+import { RoleGuard } from '@/components/auth/RoleGuard';
 import { Container } from '@/components/design-system/Container';
 import { Card } from '@/components/design-system/Card';
 import { Button } from '@/components/design-system/Button';
@@ -14,7 +15,7 @@ type Profile = {
 
 const ROLES: Profile['role'][] = ['student','teacher','admin'];
 
-export default function AdminUsers() {
+function AdminUsers() {
   const [loading, setLoading] = useState(true);
   const [changingId, setChangingId] = useState<string | null>(null);
   const [rows, setRows] = useState<Profile[]>([]);
@@ -155,5 +156,13 @@ export default function AdminUsers() {
         </Card>
       </Container>
     </section>
+  );
+}
+
+export default function AdminUsersPage() {
+  return (
+    <RoleGuard allow="admin">
+      <AdminUsers />
+    </RoleGuard>
   );
 }
