@@ -6,6 +6,7 @@ import { Container } from '@/components/design-system/Container';
 import { Card } from '@/components/design-system/Card';
 import { Button } from '@/components/design-system/Button';
 import { GradientText } from '@/components/design-system/GradientText';
+import { PREFS } from '@/lib/profile-options';
 
 export default function PlacementResult() {
   return (
@@ -16,7 +17,7 @@ export default function PlacementResult() {
           <h1 className="font-slab text-display mb-3"><GradientText>Your estimated bands</GradientText></h1>
           <Card className="p-6 rounded-ds-2xl">
             <div className="grid sm:grid-cols-4 gap-4 text-center">
-              {['Listening','Reading','Writing','Speaking'].map(s=>(
+              {PREFS.map(s=>(
                 <div key={s} className="p-4 rounded-ds border border-gray-200 dark:border-white/10">
                   <div className="text-small opacity-80">{s}</div>
                   <div className="text-h1">—</div>
