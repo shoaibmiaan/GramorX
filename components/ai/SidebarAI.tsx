@@ -201,7 +201,7 @@ export function SidebarAI() {
   const [open, setOpen] = useState<boolean>(false);
 
   // Width (desktop only)
-  const [width, setWidth] = useState<number>(420);
+  the const [width, setWidth] = useState<number>(420);
 
   // Mobile dock height (split-screen). Defaults to ~46% of viewport height.
   const [mHeight, setMHeight] = useState<number>(() => (isBrowser ? Math.round(window.innerHeight * 0.46) : 420));
