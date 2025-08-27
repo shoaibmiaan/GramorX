@@ -17,6 +17,8 @@ export const Input: React.FC<InputProps> = ({
   className = '',
   ...props
 }) => {
+  const id = React.useId();
+  const feedbackId = `${id}-feedback`;
   const base = [
     'w-full rounded-ds border bg-white text-lightText placeholder-gray-500',
     'focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary',
@@ -27,21 +29,42 @@ export const Input: React.FC<InputProps> = ({
   const invalid = error ? 'border-sunsetOrange focus:ring-sunsetOrange focus:border-sunsetOrange' : '';
 
   return (
-    <label className={`block ${className}`}>
-      {label && <span className="mb-1.5 inline-block text-small text-gray-600 dark:text-grayish">{label}</span>}
+    <div className={`block ${className}`}>
+      {label && (
+        <label
+          htmlFor={id}
+          className="mb-1.5 inline-block text-small text-gray-600 dark:text-grayish"
+        >
+          {label}
+        </label>
+      )}
       <div className={`relative flex items-center ${error ? 'text-sunsetOrange' : ''}`}>
         {iconLeft && <span className="absolute left-3 text-gray-500 dark:text-white/50">{iconLeft}</span>}
         <input
+          id={id}
           className={`${base} ${invalid} ${iconLeft ? 'pl-10' : 'pl-4'} ${iconRight ? 'pr-10' : 'pr-4'} py-3`}
+          aria-describedby={error || hint ? feedbackId : undefined}
+          aria-invalid={Boolean(error)}
           {...props}
         />
         {iconRight && <span className="absolute right-3 text-gray-500 dark:text-white/50">{iconRight}</span>}
       </div>
       {error ? (
-        <span className="mt-1 block text-small text-sunsetOrange">{error}</span>
+        <span
+          id={feedbackId}
+          aria-live="polite"
+          className="mt-1 block text-small text-sunsetOrange"
+        >
+          {error}
+        </span>
       ) : hint ? (
-        <span className="mt-1 block text-small text-gray-600 dark:text-grayish">{hint}</span>
+        <span
+          id={feedbackId}
+          className="mt-1 block text-small text-gray-600 dark:text-grayish"
+        >
+          {hint}
+        </span>
       ) : null}
-    </label>
+    </div>
   );
 };
