@@ -5,6 +5,7 @@ import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
 import { Container } from '@/components/design-system/Container';
 import { Card } from '@/components/design-system/Card';
 import { Badge } from '@/components/design-system/Badge';
+import ChallengeScore from '@/components/review/ChallengeScore';
 import { ReevalPanel } from '@/components/writing/ReevalPanel';
 import { ReevalHistory, type ReevalRow } from '@/components/writing/ReevalHistory';
 import { useToast } from '@/components/design-system/Toast';
@@ -93,6 +94,8 @@ export default function WritingReview({ attempt: initialAttempt, reevals, isAdmi
               <Badge variant="info" size="sm">Lexical: {attempt.band_breakdown.lexical}</Badge>
               <Badge variant="info" size="sm">Grammar: {attempt.band_breakdown.grammar}</Badge>
             </div>
+
+            <ChallengeScore attemptId={attempt.id} type="writing" />
 
             <h3 className="text-h3 mt-6">Model Answer (Reference)</h3>
             <div className="prose dark:prose-invert max-w-none mt-2">
