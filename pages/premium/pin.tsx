@@ -3,13 +3,22 @@ import * as React from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 
+function isInternalRoute(url: string) {
+  return url.startsWith('/') && !url.startsWith('//') && !url.includes('://');
+}
+
 export default function PremiumPinPage() {
   const router = useRouter();
-  const nextUrl =
+  let nextUrl =
     typeof router.query.next === 'string' && router.query.next ? router.query.next : '/premium';
 
   const [pin, setPin] = React.useState('');
   const [loading, setLoading] = React.useState(false);
+
+  if (!isInternalRoute(nextUrl)) {
+    nextUrl = '/premium';
+  }
+
   const [err, setErr] = React.useState<string | null>(null);
   const inputRef = React.useRef<HTMLInputElement>(null);
 
