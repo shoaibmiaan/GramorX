@@ -17,6 +17,7 @@ import { useStreak } from '@/hooks/useStreak';
 import { getDayKeyInTZ } from '@/lib/streak';
 import StudyCalendar from '@/components/feature/StudyCalendar';
 import GoalRoadmap from '@/components/feature/GoalRoadmap';
+import MotivationCoach from '@/components/coach/MotivationCoach';
 
 type AIPlan = {
   suggestedGoal?: number;
@@ -283,6 +284,11 @@ export default function Dashboard() {
               </Button>
             </div>
           </Card>
+        </div>
+
+        {/* Motivation coach */}
+        <div className="mt-10">
+          <MotivationCoach />
         </div>
 
         {/* Coach notes */}
