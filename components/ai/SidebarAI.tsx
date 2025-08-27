@@ -201,7 +201,7 @@ export function SidebarAI() {
   const [open, setOpen] = useState<boolean>(false);
 
   // Width (desktop only)
-  the const [width, setWidth] = useState<number>(420);
+  const [width, setWidth] = useState<number>(420);
 
   // Mobile dock height (split-screen). Defaults to ~46% of viewport height.
   const [mHeight, setMHeight] = useState<number>(() => (isBrowser ? Math.round(window.innerHeight * 0.46) : 420));
@@ -236,7 +236,9 @@ export function SidebarAI() {
   // Voice state
   const [listening, setListening] = useState(false);
   const recRef = useRef<any>(null);
-  const voiceSupported = typeof window !== 'undefined' && ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition);
+  const voiceSupported =
+    typeof window !== 'undefined' &&
+    (((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition));
   const [voiceDenied, setVoiceDenied] = useState(false);
 
   // Refs
