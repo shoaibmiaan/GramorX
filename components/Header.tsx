@@ -155,6 +155,15 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
   }, []);
 
   useEffect(() => {
+    const onAvatarChanged = (e: Event) => {
+      const ce = e as CustomEvent<{ url: string }>;
+      setUser((u) => ({ ...u, avatarUrl: ce.detail.url }));
+    };
+    window.addEventListener('profile:avatar-changed', onAvatarChanged as EventListener);
+    return () => window.removeEventListener('profile:avatar-changed', onAvatarChanged as EventListener);
+  }, []);
+
+  useEffect(() => {
     const onClick = (e: MouseEvent) => {
       const t = e.target as Node;
       if (modulesRef.current && !modulesRef.current.contains(t)) setOpenDesktopModules(false);
@@ -300,7 +309,6 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
                       email={user.email}
                       name={user.name}
                       avatarUrl={user.avatarUrl}
-                      onAvatarChange={(url) => setUser((u) => ({ ...u, avatarUrl: url }))}
                       onSignOut={async () => { await supabaseBrowser.auth.signOut(); setStreakState(0); router.replace('/login'); }}
                     />
                   </li>

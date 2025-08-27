@@ -3,7 +3,6 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { supabaseBrowser } from '@/lib/supabaseBrowser';
 import { useLocale } from '@/lib/locale';
-import { useToast } from './Toast';
 
 type MenuItem = {
   label: string;
@@ -19,7 +18,6 @@ export const UserMenu: React.FC<{
   avatarUrl?: string | null;
   className?: string;
   items?: MenuItem[];          // You can pass Profile/Account items from Header
-  onAvatarChange?: (url: string) => void; // callback after successful upload
   onSignOut?: () => void | Promise<void>;
   showEmail?: boolean;
 }> = ({
@@ -29,20 +27,16 @@ export const UserMenu: React.FC<{
   avatarUrl = null,
   className = '',
   items,
-  onAvatarChange,
   onSignOut,
   showEmail = true,
 }) => {
   const { locale, setLocale, t } = useLocale();
   const [open, setOpen] = useState(false);
-  const [uploading, setUploading] = useState(false);
   const [localAvatar, setLocalAvatar] = useState<string | null>(avatarUrl ?? null);
-  const { error: toastError } = useToast();
 
   const btnRef = useRef<HTMLButtonElement | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
   const itemRefs = useRef<Array<HTMLAnchorElement | HTMLButtonElement | null>>([]);
-  const fileRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => setLocalAvatar(avatarUrl ?? null), [avatarUrl]);
 
@@ -114,57 +108,6 @@ export const UserMenu: React.FC<{
     }
   };
 
-  const triggerUpload = () => fileRef.current?.click();
-
-  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
-      toastError('Please select a JPG, PNG, or WEBP image.');
-      return;
-    }
-    if (file.size > 3 * 1024 * 1024) {
-      toastError('Image too large. Max 3 MB.');
-      return;
-    }
-
-    setUploading(true);
-    try {
-      // Path like: <uid>/avatar-<timestamp>.<ext>
-      const ext = file.name.split('.').pop() || 'jpg';
-      const path = `${userId}/avatar-${Date.now()}.${ext}`;
-
-      const { error: upErr } = await supabaseBrowser
-        .storage
-        .from('avatars')
-        .upload(path, file, { upsert: true, contentType: file.type });
-
-      if (upErr) throw upErr;
-
-      const { data: pub } = supabaseBrowser.storage.from('avatars').getPublicUrl(path);
-      const publicUrl = pub.publicUrl;
-
-      // Save to user metadata so Header/session can use it
-      const { error: updErr } = await supabaseBrowser.auth.updateUser({ data: { avatar_url: publicUrl } });
-      if (updErr) throw updErr;
-
-      const { error: profErr } = await supabaseBrowser
-        .from('user_profiles')
-        .update({ avatar_url: publicUrl })
-        .eq('user_id', userId);
-      if (profErr) throw profErr;
-
-      setLocalAvatar(publicUrl);
-      onAvatarChange?.(publicUrl);
-    } catch (err: any) {
-      console.error(err);
-      toastError(err?.message || 'Could not upload image. Please try again.');
-    } finally {
-      setUploading(false);
-      // keep menu open to show immediate change
-    }
-  };
-
   return (
     <div className={`relative ${className}`}>
       <button
@@ -211,24 +154,6 @@ export const UserMenu: React.FC<{
                   <div className="font-medium text-lightText dark:text-white">{name ?? email}</div>
                   {email && name && <div className="opacity-80">{email}</div>}
                 </div>
-              </div>
-
-              {/* Change photo action */}
-              <div className="mt-3">
-                <button
-                  onClick={triggerUpload}
-                  className="text-small px-3 py-2 rounded-ds bg-vibrantPurple/10 hover:bg-vibrantPurple/15 font-medium"
-                  disabled={uploading}
-                >
-                  {uploading ? 'Uploading…' : 'Change photo'}
-                </button>
-                <input
-                  ref={fileRef}
-                  type="file"
-                  accept="image/png,image/jpeg,image/webp"
-                  className="hidden"
-                  onChange={handleFile}
-                />
               </div>
             </div>
           )}
