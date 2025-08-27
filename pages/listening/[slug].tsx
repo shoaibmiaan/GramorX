@@ -2,14 +2,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
 import { supabase } from '@/lib/supabaseClient';
-import { Container } from '@/components/design-system/Container';
+import { ExamLayout } from '@/premium-ui/exam/ExamLayout';
 import { Card } from '@/components/design-system/Card';
 import { Button } from '@/components/design-system/Button';
 import { Badge } from '@/components/design-system/Badge';
 import { Alert } from '@/components/design-system/Alert';
 import { Input } from '@/components/design-system/Input';
 import FocusGuard from '@/components/exam/FocusGuard';
-import { Timer } from '@/components/design-system/Timer';
 import { scoreAll } from '@/lib/listening/score';
 import { rawToBand } from '@/lib/listening/band';
 import { BookmarkButton } from '@/components/BookmarkButton';
@@ -392,21 +391,24 @@ export default function ListeningTestPage() {
   // --- Loading skeleton ---
   if (!test) {
     return (
-      <section className="py-24">
-        <Container>
-          <Card className="p-6">
-            <div className="animate-pulse h-6 w-40 bg-gray-200 dark:bg-white/10 rounded" />
-          </Card>
-        </Container>
-      </section>
+      <ExamLayout title="Listening" attemptId={slug} seconds={TOTAL_TIME_SEC}>
+        <Card className="p-6">
+          <div className="animate-pulse h-6 w-40 bg-gray-200 dark:bg-white/10 rounded" />
+        </Card>
+      </ExamLayout>
     );
   }
 
   return (
-    <>
+    <ExamLayout
+      title={test.title}
+      attemptId={slug}
+      totalParts={secCount}
+      seconds={TOTAL_TIME_SEC}
+      onTick={(s) => setTimeLeft(Math.ceil(s))}
+      onTimeUp={handleAutoSubmit}
+    >
       <FocusGuard exam="listening" slug={slug} />
-      <section className="py-24 bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90">
-        <Container>
           {/* Header */}
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
@@ -415,12 +417,6 @@ export default function ListeningTestPage() {
             </div>
             <div className="flex items-center gap-3">
               <BookmarkButton resourceId={slug || ''} type="listening" />
-              <Timer
-                initialSeconds={TOTAL_TIME_SEC}
-                onTick={(s) => setTimeLeft(Math.ceil(s))}
-                onComplete={handleAutoSubmit}
-                running={!submittedRef.current}
-              />
               <Badge variant={autoPlay ? 'success' : 'warning'}>Auto-play: {autoPlay ? 'On' : 'Off'}</Badge>
               <Button variant="secondary" onClick={() => setAutoPlay((v) => !v)}>
                 Toggle Auto-play
@@ -624,8 +620,6 @@ export default function ListeningTestPage() {
               </>
             )}
           </div>
-        </Container>
-      </section>
-    </>
+    </ExamLayout>
   );
 }

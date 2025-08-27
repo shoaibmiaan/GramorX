@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
 import dynamic from 'next/dynamic';
-import { Container } from '@/components/design-system/Container';
+import { ExamLayout } from '@/premium-ui/exam/ExamLayout';
 import { Card } from '@/components/design-system/Card';
 import { Button } from '@/components/design-system/Button';
 import { Badge } from '@/components/design-system/Badge';
@@ -41,7 +41,6 @@ export default function ReadingRunnerPage() {
   const [err, setErr] = useState<string|undefined>();
   const [answers, setAnswers] = useState<Record<string, AnswerValue>>({});
   const [flags, setFlags] = useState<Record<string, boolean>>({});
-  const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
@@ -63,30 +62,13 @@ export default function ReadingRunnerPage() {
         const savedFlags = window.localStorage.getItem(`reading:${slug}:flags`);
         if (saved) setAnswers(JSON.parse(saved));
         if (savedFlags) setFlags(JSON.parse(savedFlags));
-
-        setSecondsLeft(data.durationMinutes * 60);
       } catch (e:any) {
         setErr(e?.message || 'Failed to load test');
       }
     })();
   }, [slug]);
 
-  // countdown + time-up auto-submit
-  useEffect(() => {
-    if (secondsLeft == null || secondsLeft <= 0) return;
-    const t = setInterval(() => {
-      setSecondsLeft(s => {
-        if (s == null) return s;
-        if (s <= 1) {
-          clearInterval(t);
-          if (!submitting) submit(true);
-          return 0;
-        }
-        return s - 1;
-      });
-    }, 1000);
-    return () => clearInterval(t);
-  }, [secondsLeft]); // eslint-disable-line
+  // countdown handled by ExamLayout via onTick/onTimeUp
 
   // autosave answers/flags
   useEffect(() => {
@@ -206,101 +188,117 @@ export default function ReadingRunnerPage() {
     return map;
   }, [flatQuestions, answers]);
 
-  const mm = Math.max(0, Math.floor((secondsLeft ?? 0) / 60));
-  const ss = Math.max(0, (secondsLeft ?? 0) % 60).toString().padStart(2, '0');
 
   return (
-    <>
+    <ExamLayout
+      title={test ? test.title : 'Reading'}
+      attemptId={slug}
+      totalParts={test?.sections.length}
+      seconds={test ? test.durationMinutes * 60 : undefined}
+      onTimeUp={() => submit(true)}
+    >
       <FocusGuard exam="reading" slug={slug} />
-      <section className="py-24 bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90">
-        <Container>
-        {!test ? (
-          err ? <Alert variant="error" title="Error">{err}</Alert> : (
-            <Card className="p-6"><div className="animate-pulse h-6 w-40 bg-gray-200 dark:bg-white/10 rounded" /></Card>
-          )
+      {!test ? (
+        err ? (
+          <Alert variant="error" title="Error">
+            {err}
+          </Alert>
         ) : (
-          <>
-            {/* Sticky bar */}
-            <div className="sticky top-16 z-10 card-surface border border-gray-200 dark:border-white/10 rounded-ds p-3 flex items-center gap-3 flex-wrap">
-              <Badge variant="info">Time Left: {mm}:{ss}</Badge>
-              <div className="flex-1 h-2 bg-gray-200/60 dark:bg-white/10 rounded-ds" aria-label="Progress" role="progressbar" aria-valuenow={progressPct} aria-valuemin={0} aria-valuemax={100}>
-                <div className="h-2 bg-primary rounded-ds" style={{ width: `${progressPct}%` }} />
+          <Card className="p-6">
+            <div className="animate-pulse h-6 w-40 bg-gray-200 dark:bg-white/10 rounded" />
+          </Card>
+        )
+      ) : (
+        <>
+          {/* Sticky bar */}
+          <div className="sticky top-16 z-10 card-surface border border-gray-200 dark:border-white/10 rounded-ds p-3 flex items-center gap-3 flex-wrap">
+            <div
+              className="flex-1 h-2 bg-gray-200/60 dark:bg-white/10 rounded-ds"
+              aria-label="Progress"
+              role="progressbar"
+              aria-valuenow={progressPct}
+              aria-valuemin={0}
+              aria-valuemax={100}
+            >
+              <div className="h-2 bg-primary rounded-ds" style={{ width: `${progressPct}%` }} />
+            </div>
+            <Badge variant={progressPct === 100 ? 'success' : 'warning'}>{progressPct}%</Badge>
+
+            {/* Per-type progress badges */}
+            {(['tfng', 'ynng', 'mcq', 'gap', 'match'] as const).map((t) =>
+              typeProgress[t] ? (
+                <Badge key={t} variant="neutral" size="sm" className="uppercase">
+                  {t}: {typeProgress[t].answered}/{typeProgress[t].total}
+                </Badge>
+              ) : null
+            )}
+
+            <BookmarkButton resourceId={slug || ''} type="reading" />
+            <Button variant="secondary" className="rounded-ds" onClick={() => router.back()}>
+              Exit
+            </Button>
+            <Button variant="primary" className="rounded-ds" onClick={() => submit()} disabled={submitting}>
+              {submitting ? 'Submitting…' : 'Submit'}
+            </Button>
+          </div>
+
+          {/* Layout: main + sidebar */}
+          <div className="mt-6 grid gap-6 lg:grid-cols-12">
+            {/* Main */}
+            <div className="lg:col-span-9">
+              {/* Passage */}
+              <Card className="p-6">
+                <h1 className="text-h2 font-semibold mb-2">{test.title}</h1>
+                <p className="text-body whitespace-pre-line">{test.passage}</p>
+              </Card>
+
+              {/* Sections & questions */}
+              <div className="mt-6 grid gap-6">
+                {test.sections.map((sec) => (
+                  <Card key={sec.orderNo} className="p-6">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <h2 className="text-h3 font-semibold">{sec.title || `Section ${sec.orderNo}`}</h2>
+                        {sec.instructions && <p className="text-grayish">{sec.instructions}</p>}
+                      </div>
+                      <Badge variant="neutral" size="sm">
+                        {sec.questions.length} Qs
+                      </Badge>
+                    </div>
+                    <div className="mt-4 grid gap-4">
+                      {sec.questions.map((q) => (
+                        <QuestionBlock
+                          key={q.id}
+                          q={q as any}
+                          value={answers[q.id]?.value}
+                          flagged={!!flags[q.id]}
+                          onFlag={() => toggleFlag(q.id)}
+                          onChange={(val) => onAnswer(q.id, q.type, val)}
+                        />
+                      ))}
+                    </div>
+                  </Card>
+                ))}
               </div>
-              <Badge variant={progressPct===100 ? 'success' : 'warning'}>{progressPct}%</Badge>
-
-              {/* Per-type progress badges */}
-              {(['tfng','ynng','mcq','gap','match'] as const).map(t => (
-                typeProgress[t] ? (
-                  <Badge key={t} variant="neutral" size="sm" className="uppercase">
-                    {t}: {typeProgress[t].answered}/{typeProgress[t].total}
-                  </Badge>
-                ) : null
-              ))}
-
-              <BookmarkButton resourceId={slug || ''} type="reading" />
-              <Button variant="secondary" className="rounded-ds" onClick={() => router.back()}>Exit</Button>
-              <Button variant="primary" className="rounded-ds" onClick={() => submit()} disabled={submitting}>
-                {submitting ? 'Submitting…' : 'Submit'}
-              </Button>
             </div>
 
-            {/* Layout: main + sidebar */}
-            <div className="mt-6 grid gap-6 lg:grid-cols-12">
-              {/* Main */}
-              <div className="lg:col-span-9">
-                {/* Passage */}
-                <Card className="p-6">
-                  <h1 className="text-h2 font-semibold mb-2">{test.title}</h1>
-                  <p className="text-body whitespace-pre-line">{test.passage}</p>
-                </Card>
-
-                {/* Sections & questions */}
-                <div className="mt-6 grid gap-6">
-                  {test.sections.map(sec => (
-                    <Card key={sec.orderNo} className="p-6">
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <h2 className="text-h3 font-semibold">{sec.title || `Section ${sec.orderNo}`}</h2>
-                          {sec.instructions && <p className="text-grayish">{sec.instructions}</p>}
-                        </div>
-                        <Badge variant="neutral" size="sm">{sec.questions.length} Qs</Badge>
-                      </div>
-                      <div className="mt-4 grid gap-4">
-                        {sec.questions.map(q => (
-                          <QuestionBlock
-                            key={q.id}
-                            q={q as any}
-                            value={answers[q.id]?.value}
-                            flagged={!!flags[q.id]}
-                            onFlag={() => toggleFlag(q.id)}
-                            onChange={(val) => onAnswer(q.id, q.type, val)}
-                          />
-                        ))}
-                      </div>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-
-              {/* Sidebar navigator */}
-              <div className="lg:col-span-3">
-                <QuestionNav
-                  questions={flatQuestions.map(q => ({ id: q.id, qNo: q.qNo, type: q.type }))}
-                  answers={answers}
-                  flags={flags}
-                  statusFilter={statusFilter}
-                  onStatusFilter={setStatusFilter}
-                  typeFilter={typeFilter}
-                  onTypeFilter={setTypeFilter}
-                  onJump={(qid) => scrollToQuestion(qid)}
-                />
-              </div>
+            {/* Sidebar navigator */}
+            <div className="lg:col-span-3">
+              <QuestionNav
+                questions={flatQuestions.map((q) => ({ id: q.id, qNo: q.qNo, type: q.type }))}
+                answers={answers}
+                flags={flags}
+                statusFilter={statusFilter}
+                onStatusFilter={setStatusFilter}
+                typeFilter={typeFilter}
+                onTypeFilter={setTypeFilter}
+                onJump={(qid) => scrollToQuestion(qid)}
+              />
             </div>
-          </>
-        )}
-        </Container>
-      </section>
-    </>
+          </div>
+        </>
+      )}
+    </ExamLayout>
   );
 }
 

@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useRouter } from 'next/router';
-import { ExamShell } from '@/premium-ui/exam/ExamShell';
+import { ExamLayout } from '@/premium-ui/exam/ExamLayout';
 import { PrAudioPlayer } from '@/premium-ui/components/PrAudioPlayer';
 import { PrButton } from '@/premium-ui/components/PrButton';
 
@@ -19,7 +19,7 @@ const onPrev = () => setPart(p => Math.max(1, p - 1));
 
 
 return (
-<ExamShell title={`Listening • ${slug}`} totalParts={total} currentPart={part} seconds={60 * 10} onTimeUp={() => alert('Time up!')}>
+<ExamLayout title={`Listening • ${slug}`} totalParts={total} currentPart={part} seconds={60 * 10} onTimeUp={() => alert('Time up!')}>
 <div className="pr-space-y-4">
 <PrAudioPlayer src="/audio/sample-listening.mp3" />
 <div className="pr-grid md:pr-grid-cols-2 pr-gap-4">
@@ -45,6 +45,6 @@ return (
 <PrButton onClick={onNext} disabled={part === total}>Next</PrButton>
 </div>
 </div>
-</ExamShell>
+</ExamLayout>
 );
 }
