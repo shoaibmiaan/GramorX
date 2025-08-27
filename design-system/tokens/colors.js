@@ -22,5 +22,7 @@ module.exports = {
   sunsetRed: '#ff4d4d',     // CTA gradient end
   lightCard: '#ffffff',     // light surface bg
   lightBorder: '#e0e0e0',   // light surface border
+  // Generic border token (alias of lightBorder)
+  border: '#e0e0e0',
   mutedText: '#d0d0e0',     // subtle text color
 };
