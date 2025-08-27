@@ -17,25 +17,73 @@ import React, {
   useState,
   Fragment,
 } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+// Attempt to use rehype-highlight for code fences if available.
+/* eslint-disable @typescript-eslint/no-var-requires */
+let rehypeHighlight: any;
+try {
+  // Optional dependency; falls back gracefully if missing.
+  // @ts-expect-error TODO: add types for rehype-highlight
+  rehypeHighlight = require('rehype-highlight');
+} catch {}
+/* eslint-enable @typescript-eslint/no-var-requires */
 import { useRouter } from 'next/router';
 
 // ---- Types
- type Msg = { id: string; role: 'user' | 'assistant'; content: string };
- type WireMsg = { role: 'system' | 'user' | 'assistant'; content: string };
- type Provider = 'auto' | 'gemini' | 'groq' | 'openai';
- type ConnState = 'idle' | 'connecting' | 'streaming' | 'stalled' | 'error' | 'offline';
+type Msg = { id: string; role: 'user' | 'assistant'; content: string };
+type WireMsg = { role: 'system' | 'user' | 'assistant'; content: string };
+type Provider = 'auto' | 'gemini' | 'groq' | 'openai';
+type ConnState = 'idle' | 'connecting' | 'streaming' | 'stalled' | 'error' | 'offline';
 
 // ---- Local flags
- const isBrowser = typeof window !== 'undefined';
+const isBrowser = typeof window !== 'undefined';
 
 // ---- Helpers
- function useLocalHistory() {
-  // No persistence by request: fresh on reload
-  const [items, setItems] = useState<Msg[]>([]);
-  return { items, setItems };
- }
+function useLocalHistory(persist: boolean) {
+  const key = 'gx-ai:sidebar-thread';
+  const [items, setItems] = useState<Msg[]>(() => {
+    if (!persist || !isBrowser) return [];
+    try {
+      const raw = localStorage.getItem(key);
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? (parsed as Msg[]) : [];
+    } catch {
+      return [];
+    }
+  });
 
- function useProvider() {
+  // Load stored history when enabling persistence later
+  useEffect(() => {
+    if (!persist || !isBrowser) return;
+    try {
+      const raw = localStorage.getItem(key);
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      setItems(Array.isArray(parsed) ? (parsed as Msg[]) : []);
+    } catch {
+      setItems([]);
+    }
+  }, [persist]);
+
+  // Persist to localStorage
+  useEffect(() => {
+    if (!persist || !isBrowser) return;
+    try {
+      localStorage.setItem(key, JSON.stringify(items));
+    } catch {}
+  }, [items, persist]);
+
+  const clear = useCallback(() => {
+    setItems([]);
+    if (isBrowser) try { localStorage.removeItem(key); } catch {}
+  }, []);
+
+  return { items, setItems, clear };
+}
+
+function useProvider() {
   // Allow runtime selection and persist in localStorage
   const [p, setP] = useState<Provider>(() => {
     if (!isBrowser) return 'auto';
@@ -50,9 +98,9 @@ import { useRouter } from 'next/router';
     try { localStorage.setItem('gx-provider', p); } catch {}
   }, [p]);
   return { provider: p, setProvider: setP };
- }
+}
 
- function useIsMobile() {
+function useIsMobile() {
   const [m, setM] = useState<boolean>(() => (isBrowser ? window.innerWidth < 768 : true));
   useEffect(() => {
     if (!isBrowser) return;
@@ -61,9 +109,9 @@ import { useRouter } from 'next/router';
     return () => window.removeEventListener('resize', on);
   }, []);
   return m;
- }
+}
 
- function friendlyAdvice(err: string, isOffline: boolean) {
+function friendlyAdvice(err: string, isOffline: boolean) {
   if (isOffline) return 'You are offline — check your internet.';
   const s = (err || '').toLowerCase();
   if (s.includes('timeout')) return 'The link is slow or down — try again in a moment.';
@@ -73,10 +121,10 @@ import { useRouter } from 'next/router';
     return 'Service API key missing/invalid — contact admin.';
   if (s.includes('404')) return 'API route not found — ensure /pages/api/ai/* exists and restart dev.';
   return 'System issue — try again or switch provider.';
- }
+}
 
- // --- Streaming helper (SSE -> chunks)
- async function* streamChat(messages: WireMsg[], provider: Provider) {
+// --- Streaming helper (SSE -> chunks)
+async function* streamChat(messages: WireMsg[], provider: Provider) {
   const qs = provider === 'auto' ? '' : `?p=${provider}`;
   const body = { messages: messages.map((m) => ({ role: m.role, content: m.content })) };
   const res = await fetch(`/api/ai/chat${qs}`, {
@@ -110,34 +158,43 @@ import { useRouter } from 'next/router';
       }
     }
   }
- }
+}
 
- // --- Minimal md-ish renderer (and strip bullet prefixes)
- function renderBlocks(raw: string) {
-  const parts = raw.split(/```/g);
-  return parts.map((chunk, i) => {
-    const isCode = i % 2 === 1;
-    if (isCode) {
-      return (
-        <pre
-          key={`pre-${i}`}
-          className="whitespace-pre-wrap rounded-xl bg-card text-muted-foreground border border-border p-3 text-caption overflow-x-auto"
-        >
-          {chunk}
-        </pre>
-      );
-    }
-    // Strip leading list markers: *, -, or 1.
-    const clean = chunk.replace(/^\s*([*\-]|\d+\.)\s+/gm, '');
-    return (
-      <p key={`p-${i}`} className="whitespace-pre-wrap leading-relaxed">
-        {clean}
-      </p>
-    );
-  });
- }
+// --- Markdown renderer with bullet stripping and code fencing
+export function renderMarkdown(raw: string) {
+  return (
+    <ReactMarkdown
+      remarkPlugins={[remarkGfm]}
+      rehypePlugins={rehypeHighlight ? [rehypeHighlight] : []}
+      skipHtml
+      components={{
+        // Strip bullets by rendering lists as plain paragraphs
+        ul: ({ children }) => <>{children}</>,
+        ol: ({ children }) => <>{children}</>,
+        li: ({ children }) => (
+          <p className="whitespace-pre-wrap leading-relaxed">{children}</p>
+        ),
+        p: ({ children }) => (
+          <p className="whitespace-pre-wrap leading-relaxed">{children}</p>
+        ),
+        code({ inline, className, children }) {
+          if (inline) {
+            return <code className={className}>{children}</code>;
+          }
+          return (
+            <pre className="whitespace-pre-wrap rounded-xl bg-card text-muted-foreground border border-border p-3 text-caption overflow-x-auto">
+              <code className={className}>{children}</code>
+            </pre>
+          );
+        },
+      }}
+    >
+      {raw}
+    </ReactMarkdown>
+  );
+}
 
- export function SidebarAI() {
+export function SidebarAI() {
   const router = useRouter();
   const isMobile = useIsMobile();
 
@@ -156,18 +213,32 @@ import { useRouter } from 'next/router';
     return () => window.removeEventListener('resize', on);
   }, []);
 
-  // Chat state
-  const { items, setItems } = useLocalHistory();
+  // Persistence toggle
+  const [persist, setPersist] = useState<boolean>(() =>
+    isBrowser ? localStorage.getItem('gx-ai:sidebar-persist') === '1' : false
+  );
+  useEffect(() => {
+    if (!isBrowser) return;
+    localStorage.setItem('gx-ai:sidebar-persist', persist ? '1' : '0');
+  }, [persist]);
+
+  // Chat state (with clear for history)
+  const { items, setItems, clear } = useLocalHistory(persist);
+
+  // Provider state (selectable)
   const { provider, setProvider } = useProvider();
+
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<ConnState>('idle');
   const [statusNote, setStatusNote] = useState<string>('');
   const [streamingId, setStreamingId] = useState<string | null>(null);
+
   // Voice state
   const [listening, setListening] = useState(false);
   const recRef = useRef<any>(null);
   const voiceSupported = typeof window !== 'undefined' && ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition);
+  const [voiceDenied, setVoiceDenied] = useState(false);
 
   // Refs
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -221,24 +292,22 @@ import { useRouter } from 'next/router';
   useEffect(() => {
     if (!isBrowser) return;
     const root = document.documentElement;
-    const app = document.getElementById('__next');
-    if (!app) return;
     if (open) {
       if (isMobile) {
         root.classList.add('gx-ai-open-bottom');
         root.classList.remove('gx-ai-open');
-        app.style.paddingBottom = `${mHeight}px`;
-        app.style.paddingRight = '';
+        root.style.setProperty('--gx-ai-bottom', `${mHeight}px`);
+        root.style.setProperty('--gx-ai-right', '0px');
       } else {
         root.classList.add('gx-ai-open');
         root.classList.remove('gx-ai-open-bottom');
-        app.style.paddingRight = `${width}px`;
-        app.style.paddingBottom = '';
+        root.style.setProperty('--gx-ai-right', `${width}px`);
+        root.style.setProperty('--gx-ai-bottom', '0px');
       }
     } else {
       root.classList.remove('gx-ai-open', 'gx-ai-open-bottom');
-      app.style.paddingRight = '';
-      app.style.paddingBottom = '';
+      root.style.setProperty('--gx-ai-right', '0px');
+      root.style.setProperty('--gx-ai-bottom', '0px');
     }
   }, [open, width, mHeight, isMobile]);
 
@@ -354,13 +423,22 @@ import { useRouter } from 'next/router';
     setTimeout(() => textareaRef.current?.focus(), 0);
   }, [setItems]);
 
+  const clearHistory = useCallback(() => {
+    clear();
+    setInput('');
+    setStatusNote('');
+    setStreamingId(null);
+    setTimeout(() => textareaRef.current?.focus(), 0);
+  }, [clear]);
+
   // Voice recognition (browser only)
   const startVoice = useCallback(() => {
     if (!voiceSupported) { setStatusNote('Voice input is not supported.'); setTimeout(() => setStatusNote(''), 1500); return; }
-    if (listening) return;
+    if (listening || voiceDenied) return;
     const SR: any = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     const rec = new SR();
     rec.lang = 'en-US'; rec.interimResults = true; rec.maxAlternatives = 1;
+    let errored = false;
     rec.onstart = () => { setListening(true); setStatusNote('Listening…'); };
     let finalText = '';
     rec.onresult = (e: any) => {
@@ -372,10 +450,26 @@ import { useRouter } from 'next/router';
       const next = (finalText + ' ' + draft).trim();
       setInput(next);
     };
-    rec.onerror = () => { setListening(false); setStatus('error'); setStatusNote('Mic error.'); };
-    rec.onend = () => { setListening(false); setStatusNote(''); textareaRef.current?.focus(); };
+    rec.onerror = (e: any) => {
+      errored = true;
+      setListening(false);
+      setStatus('error');
+      if (e?.error === 'not-allowed') {
+        setStatusNote('Microphone access denied. Enable it in your browser settings.');
+        setVoiceDenied(true);
+        setTimeout(() => { setStatus('idle'); setStatusNote(''); }, 4000);
+      } else {
+        setStatusNote('Mic error.');
+        setTimeout(() => { setStatus('idle'); setStatusNote(''); }, 1500);
+      }
+    };
+    rec.onend = () => {
+      setListening(false);
+      if (!errored) setStatusNote('');
+      textareaRef.current?.focus();
+    };
     recRef.current = rec; rec.start();
-  }, [voiceSupported, listening]);
+  }, [voiceSupported, listening, voiceDenied]);
 
   const stopVoice = useCallback(() => { try { recRef.current?.stop(); } catch {} setListening(false); }, []);
   const toggleVoice = useCallback(() => { listening ? stopVoice() : startVoice(); }, [listening, startVoice, stopVoice]);
@@ -438,11 +532,10 @@ import { useRouter } from 'next/router';
         </button>
       )}
 
-      {/* Outside click catcher (does NOT darken UI) */}
+      {/* Darkened overlay behind the sidebar */}
       {open && (
         <div
-          className="fixed z-[60]"
-          style={isMobile ? { left: 0, right: 0, top: 0, bottom: mHeight } : { left: 0, top: 0, bottom: 0, right: width }}
+          className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm"
           onClick={() => setOpen(false)}
           aria-hidden
         />
@@ -465,26 +558,39 @@ import { useRouter } from 'next/router';
 
         {/* Header */}
         <div className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border">
-        <div className="flex items-center justify-between px-3 md:px-4 h-14">
-          <div className="flex items-center gap-2 min-w-0">
-            <span className="font-semibold truncate">GramorX AI</span>
-            <span className={`inline-block h-2 w-2 rounded-full ${statusDot}`} aria-label={`status: ${status}`} />
+          <div className="flex items-center justify-between px-3 md:px-4 h-14">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="font-semibold truncate">GramorX AI</span>
+              <span className={`inline-block h-2 w-2 rounded-full ${statusDot}`} aria-label={`status: ${status}`} />
+            </div>
+            <div className="flex items-center gap-2">
+              <select
+                value={provider}
+                onChange={(e) => setProvider(e.target.value as Provider)}
+                className="h-8 rounded-md bg-card border border-border px-2 text-caption"
+                aria-label="AI provider"
+              >
+                <option value="auto">auto</option>
+                <option value="gemini">gemini</option>
+                <option value="groq">groq</option>
+                <option value="openai">openai</option>
+              </select>
+
+              <label className="flex items-center gap-1 text-caption">
+                <input
+                  type="checkbox"
+                  className="h-3 w-3"
+                  checked={persist}
+                  onChange={(e) => setPersist(e.target.checked)}
+                />
+                Remember
+              </label>
+
+              <button onClick={clearHistory} className="h-8 px-3 rounded-md bg-card border border-border hover:bg-accent text-caption" aria-label="Clear history">Clear</button>
+              <button onClick={newChat} className="h-8 px-3 rounded-md bg-card border border-border hover:bg-accent text-caption" aria-label="New chat">New</button>
+              <button onClick={() => setOpen(false)} className="h-8 w-8 rounded-md bg-card border border-border grid place-items-center" aria-label="Close">✕</button>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <select
-              value={provider}
-              onChange={(e) => setProvider(e.target.value as Provider)}
-              className="h-8 rounded-md bg-card border border-border px-2 text-caption"
-            >
-              <option value="auto">auto</option>
-              <option value="gemini">gemini</option>
-              <option value="groq">groq</option>
-              <option value="openai">openai</option>
-            </select>
-            <button onClick={newChat} className="h-8 px-3 rounded-md bg-card border border-border hover:bg-accent text-caption" aria-label="New chat">New</button>
-            <button onClick={() => setOpen(false)} className="h-8 w-8 rounded-md bg-card border border-border grid place-items-center" aria-label="Close">✕</button>
-          </div>
-        </div>
           {statusNote && (
             <div className="px-3 md:px-4 py-1 text-tiny text-muted-foreground bg-muted border-t border-border">
               {statusNote}
@@ -507,7 +613,12 @@ import { useRouter } from 'next/router';
               </div>
               <div className="mt-3 flex items-center justify-center gap-2">
                 <button onClick={newChat} className="text-caption rounded-full px-3 py-1 bg-card border border-border hover:bg-accent">New chat</button>
-                <button onClick={toggleVoice} disabled={!voiceSupported} className="text-caption rounded-full px-3 py-1 border border-border bg-card hover:bg-accent disabled:opacity-50" title={voiceSupported ? (listening ? 'Stop voice' : 'Speak') : 'Voice not supported'}>
+                <button
+                  onClick={toggleVoice}
+                  disabled={!voiceSupported || voiceDenied}
+                  className="text-caption rounded-full px-3 py-1 border border-border bg-card hover:bg-accent disabled:opacity-50"
+                  title={voiceSupported ? (voiceDenied ? 'Mic access denied' : listening ? 'Stop voice' : 'Speak') : 'Voice not supported'}
+                >
                   🎙 {listening ? 'Stop' : 'Speak'}
                 </button>
               </div>
@@ -527,7 +638,7 @@ import { useRouter } from 'next/router';
                 {m.role === 'user' ? 'You' : 'GramorX AI'}
               </div>
               <div className="prose prose-sm dark:prose-invert max-w-none">
-                {renderBlocks(m.content)}
+                {renderMarkdown(m.content)}
               </div>
             </div>
           ))}
@@ -542,9 +653,9 @@ import { useRouter } from 'next/router';
           <div className="flex items-end gap-2">
             <button
               onClick={toggleVoice}
-              disabled={!voiceSupported}
+              disabled={!voiceSupported || voiceDenied}
               className={`h-10 w-10 rounded-full border border-border ${listening ? 'bg-primary text-primary-foreground' : 'bg-card hover:bg-accent'} disabled:opacity-50`}
-              title={voiceSupported ? (listening ? 'Stop voice' : 'Speak') : 'Voice not supported'}
+              title={voiceSupported ? (voiceDenied ? 'Mic access denied' : listening ? 'Stop voice' : 'Speak') : 'Voice not supported'}
               aria-label="Voice input"
             >
               🎙
@@ -571,16 +682,8 @@ import { useRouter } from 'next/router';
           </div>
         </div>
       </aside>
-
-      {/* Global split-screen helper classes (kept minimal) */}
-      <style jsx global>{`
-        html.gx-ai-open #__next { padding-right: var(--gx-ai-right); box-sizing: border-box; }
-        @media (max-width: 767px) {
-          html.gx-ai-open-bottom #__next { padding-bottom: var(--gx-ai-bottom); box-sizing: border-box; }
-        }
-      `}</style>
     </Fragment>
   );
- }
+}
 
 export default SidebarAI;

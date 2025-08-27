@@ -193,15 +193,11 @@ body { @apply font-sans text-lightText bg-lightBg overflow-x-hidden relative; }
   @apply bg-vibrantPurple/10 text-lightText dark:text-white;
 }
 
-:root { --gx-ai-offset: 0px; }
+/* AI sidebar split view */
+:root { --gx-ai-right: 0px; --gx-ai-bottom: 0px; }
 
-/* Split view: push content left by the sidebar width */
-body.gx-ai-split {
-  padding-right: var(--gx-ai-offset);
-  transition: padding-right 300ms ease;
-}
-
-/* Don’t split on mobile */
+/* Push content when AI sidebar is open */
+html.gx-ai-open #__next { padding-right: var(--gx-ai-right); box-sizing: border-box; }
 @media (max-width: 767px) {
-  body.gx-ai-split { padding-right: 0; }
+  html.gx-ai-open-bottom #__next { padding-bottom: var(--gx-ai-bottom); box-sizing: border-box; }
 }

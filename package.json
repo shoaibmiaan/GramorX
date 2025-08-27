@@ -11,7 +11,7 @@
     "lint": "next lint",
     "pin:hash": "ts-node tools/hash-pin.ts",
     "diagnose": "powershell -ExecutionPolicy Bypass -File .\\\\tools\\\\report-build-issues.ps1",
-    "test": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\",\"verbatimModuleSyntax\":false}' node -r ts-node/register lib/routeAccess.test.ts"
+    "test": "NEXT_PUBLIC_SUPABASE_URL=http://localhost NEXT_PUBLIC_SUPABASE_ANON_KEY=anon TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\",\"verbatimModuleSyntax\":false}' node -r ts-node/register lib/routeAccess.test.ts && NEXT_PUBLIC_SUPABASE_URL=http://localhost NEXT_PUBLIC_SUPABASE_ANON_KEY=anon TS_NODE_COMPILER_OPTIONS='{\"module\":\"esnext\",\"verbatimModuleSyntax\":false,\"jsx\":\"react-jsx\"}' node --loader ts-node/esm components/ai/SidebarAI.test.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
@@ -30,10 +30,12 @@
     "openai": "^5.12.2",
     "react": "18.3.1",
     "react-dom": "18.3.1",
+    "react-markdown": "^9.0.0",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
     "twilio": "^5.8.0",
-    "zod": "^3.25.76"
+    "zod": "^3.25.76",
+    "remark-gfm": "^3.0.1"
   },
   "devDependencies": {
     "@types/node": "^20.19.10",
