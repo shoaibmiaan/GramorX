@@ -65,7 +65,7 @@ export default function LoginWithPhone() {
 
       {stage === 'request' ? (
         <form onSubmit={requestOtp} className="space-y-6 mt-2">
-          <Input label="Phone number" type="tel" placeholder="+923001234567" value={phone} onChange={(e)=>setPhone(e.target.value)} required />
+          <Input label="Phone number" type="tel" placeholder="+923001234567" value={phone} onChange={(e)=>setPhone(e.target.value)} autoComplete="tel" required />
           <Button type="submit" variant="primary" className="w-full rounded-ds-xl" disabled={loading}>
             {loading ? 'Sending…' : 'Send code'}
           </Button>
