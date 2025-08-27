@@ -18,6 +18,32 @@ const LEVELS: Array<'Beginner'|'Elementary'|'Pre-Intermediate'|'Intermediate'|'U
 const TIME = ['1h/day','2h/day','Flexible'];
 const PREFS = ['Listening','Reading','Writing','Speaking'];
 
+function getWeekRange(isoWeek: string) {
+  const [yearStr, weekStr] = isoWeek.split('-W');
+  const year = parseInt(yearStr, 10);
+  const week = parseInt(weekStr, 10);
+  if (!year || !week) return null;
+  const simple = new Date(Date.UTC(year, 0, 1 + (week - 1) * 7));
+  const dayOfWeek = simple.getUTCDay();
+  const start = new Date(simple);
+  if (dayOfWeek <= 4) start.setUTCDate(simple.getUTCDate() - dayOfWeek + 1);
+  else start.setUTCDate(simple.getUTCDate() + 8 - dayOfWeek);
+  const end = new Date(start);
+  end.setUTCDate(start.getUTCDate() + 6);
+  return { start, end };
+}
+
+function dateToWeek(dateStr: string) {
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return '';
+  const target = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const dayNr = target.getUTCDay() || 7;
+  target.setUTCDate(target.getUTCDate() + 4 - dayNr);
+  const yearStart = new Date(Date.UTC(target.getUTCFullYear(), 0, 1));
+  const weekNo = Math.ceil((((target.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+  return `${target.getUTCFullYear()}-W${String(weekNo).padStart(2, '0')}`;
+}
+
 export default function ProfileSetup() {
   const router = useRouter();
   const { t, setLocale } = useLocale();
@@ -32,6 +58,9 @@ export default function ProfileSetup() {
   const [level, setLevel] = useState<typeof LEVELS[number] | ''>('');
   const [goal, setGoal] = useState<number>(7.0);
   const [examDate, setExamDate] = useState('');
+  const [travelWeek, setTravelWeek] = useState('');
+  const [festivalWeek, setFestivalWeek] = useState('');
+  const [examWeek, setExamWeek] = useState('');
   const [prefs, setPrefs] = useState<string[]>([]);
   const [time, setTime] = useState<string>('');
   const [lang, setLang] = useState('en');
@@ -46,7 +75,7 @@ export default function ProfileSetup() {
         const url = window.location.href;
         if (url.includes('code=') || url.includes('access_token=')) {
           const { error } = await supabase.auth.exchangeCodeForSession(url);
-          if (!error) router.replace('/profile-setup');
+          if (!error) router.replace('/profile/setup');
         }
       }
       const { data: { session } } = await supabase.auth.getSession();
@@ -77,6 +106,19 @@ export default function ProfileSetup() {
           const rec = data.ai_recommendation ?? {};
           if (rec.suggestedGoal) setAi(rec as any);
         } catch {}
+      }
+
+      const { data: plans } = await supabase
+        .from('travel_plans')
+        .select('start_date,type')
+        .eq('user_id', session.user.id);
+      if (plans) {
+        plans.forEach(p => {
+          const w = dateToWeek(p.start_date);
+          if (p.type === 'travel') setTravelWeek(w);
+          else if (p.type === 'festival') setFestivalWeek(w);
+          else if (p.type === 'exam') setExamWeek(w);
+        });
       }
       setLoading(false);
     })();
@@ -130,9 +172,30 @@ export default function ProfileSetup() {
       ? await supabase.from('user_profiles').update(payload).eq('user_id', userId)
       : await supabase.from('user_profiles').insert(payload);
 
-    setSaving(false);
+    if (error) { setSaving(false); setError(error.message); return; }
 
-    if (error) { setError(error.message); return; }
+    await supabase.from('travel_plans').delete().eq('user_id', userId);
+    const plans: any[] = [];
+    const addPlan = (w: string, type: 'travel'|'festival'|'exam') => {
+      const r = getWeekRange(w);
+      if (r) {
+        plans.push({
+          user_id: userId,
+          type,
+          start_date: r.start.toISOString().slice(0,10),
+          end_date: r.end.toISOString().slice(0,10)
+        });
+      }
+    };
+    if (travelWeek) addPlan(travelWeek, 'travel');
+    if (festivalWeek) addPlan(festivalWeek, 'festival');
+    if (examWeek) addPlan(examWeek, 'exam');
+    if (plans.length) {
+      const { error: planErr } = await supabase.from('travel_plans').insert(plans);
+      if (planErr) { setSaving(false); setError(planErr.message); return; }
+    }
+
+    setSaving(false);
     setNotice(finalize ? 'Profile saved — welcome aboard!' : 'Draft saved.');
     if (finalize) router.push('/dashboard');
   };
@@ -213,6 +276,30 @@ export default function ProfileSetup() {
                     label="Exam date"
                     value={examDate}
                     onChange={e => setExamDate(e.target.value)}
+                    className="md:col-span-2"
+                  />
+
+                  <Input
+                    type="week"
+                    label="Travel week"
+                    value={travelWeek}
+                    onChange={e => setTravelWeek(e.target.value)}
+                    className="md:col-span-2"
+                  />
+
+                  <Input
+                    type="week"
+                    label="Festival week"
+                    value={festivalWeek}
+                    onChange={e => setFestivalWeek(e.target.value)}
+                    className="md:col-span-2"
+                  />
+
+                  <Input
+                    type="week"
+                    label="Exam week"
+                    value={examWeek}
+                    onChange={e => setExamWeek(e.target.value)}
                     className="md:col-span-2"
                   />
 

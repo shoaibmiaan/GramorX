@@ -232,7 +232,7 @@ export default function BlogIndex() {
               <div className="font-semibold mb-1">Account</div>
               <div className="flex flex-wrap gap-2">
                 <NavLink href="/pricing" label="Pricing" />
-                <NavLink href="/profile-setup" label="Profile" />
+                <NavLink href="/profile/setup" label="Profile" />
                 <NavLink href="/support" label="Support" />
               </div>
             </Card>

@@ -136,7 +136,7 @@ export default function FAQPage() {
               <div className="font-semibold mb-1">Account</div>
               <div className="flex flex-wrap gap-2">
                 <Link className="underline" href="/pricing">Pricing</Link>
-                <Link className="underline" href="/profile-setup">Profile</Link>
+                <Link className="underline" href="/profile/setup">Profile</Link>
                 <Link className="underline" href="/support">Support</Link>
               </div>
             </Card>
