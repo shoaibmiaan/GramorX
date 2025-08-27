@@ -16,10 +16,10 @@ Got it. I’ve converted your checklist into tables with three columns: **Item**
 | ----------------------------------------------------- | ------------------- | ------- |
 | \[x] User registration & login (email, social, phone) |                     |         |
 | \[x] Profile setup (goal band, country, level)        |                     |         |
-| \[ ] Role-based access (student, teacher, admin)      |                     |         |
-| \[ ] Daily streak & study calendar                    |                     |         |
-| \[ ] Saved tests, bookmarked content                  |                     |         |
-| \[ ] Language preference settings                     |                     |         |
+| \[x] Role-based access (student, teacher, admin)      |                     |         |
+| \[x] Daily streak & study calendar                    |                     |         |
+| \[x] Saved tests, bookmarked content                  |                     |         |
+| \[x] Language preference settings                     |                     |         |
 
 ---
 

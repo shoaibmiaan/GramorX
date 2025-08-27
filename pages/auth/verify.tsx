@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import AuthLayout from '@/components/layouts/AuthLayout';
 import { Alert } from '@/components/design-system/Alert';
 import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser';
+import { redirectByRole } from '@/lib/routeAccess';
 
 export default function VerifyPage() {
   const router = useRouter();
@@ -27,11 +28,13 @@ export default function VerifyPage() {
 
     // Use full URL (Supabase parses code & other params internally)
     (async () => {
-      const { error } = await supabase.auth.exchangeCodeForSession(window.location.href);
+      const { data, error } = await supabase.auth.exchangeCodeForSession(
+        window.location.href,
+      );
       if (error) {
         setError(error.message);
       } else {
-        router.replace('/profile/setup');
+        redirectByRole(data.session?.user ?? null);
       }
     })();
   }, [hasCode, router]);

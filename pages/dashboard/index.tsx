@@ -21,6 +21,7 @@ import GoalRoadmap from '@/components/feature/GoalRoadmap';
 import GapToGoal from '@/components/visa/GapToGoal';
 import MotivationCoach from '@/components/coach/MotivationCoach';
 import type { Profile, AIPlan } from '@/types/profile';
+import { SavedItems } from '@/components/dashboard/SavedItems';
 
 export default function Dashboard() {
   const router = useRouter();
@@ -147,6 +148,9 @@ export default function Dashboard() {
 
           <div className="flex items-center gap-4">
             <StreakIndicator value={streak} />
+            <Badge size="sm" variant="secondary">
+              {(profile?.preferred_language ?? 'en').toUpperCase()}
+            </Badge>
             <Badge size="sm">🛡 {shields}</Badge>
             <Button onClick={claimShield} variant="secondary" className="rounded-ds-xl">
               Claim Shield
@@ -270,6 +274,11 @@ export default function Dashboard() {
               <p className="text-body">Add preferences in your profile to see analytics.</p>
             )}
           </Card>
+        </div>
+
+        {/* Saved items */}
+        <div className="mt-10">
+          <SavedItems />
         </div>
 
         {/* Upgrade */}
