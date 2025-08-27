@@ -12,12 +12,14 @@ import { StreakIndicator } from '@/components/design-system/StreakIndicator';
 
 import { supabaseBrowser } from '@/lib/supabaseBrowser';
 import { ReadingStatsCard } from '@/components/reading/ReadingStatsCard';
+import QuickDrillButton from '@/components/quick/QuickDrillButton';
 
 import { useStreak } from '@/hooks/useStreak';
 import { getDayKeyInTZ } from '@/lib/streak';
 import StudyCalendar from '@/components/feature/StudyCalendar';
 import GoalRoadmap from '@/components/feature/GoalRoadmap';
 import GapToGoal from '@/components/visa/GapToGoal';
+import MotivationCoach from '@/components/coach/MotivationCoach';
 
 type AIPlan = {
   suggestedGoal?: number;
@@ -51,6 +53,7 @@ export default function Dashboard() {
     lastDayKey,
     loading: streakLoading,
     completeToday,
+    nextRestart,
   } = useStreak();
 
   const handleShare = () => {
@@ -103,7 +106,6 @@ export default function Dashboard() {
         }
 
         if (!data || data.draft) {
-          // Your setup page path is /profile/setup in this codebase.
           router.replace('/profile/setup');
           return;
         }
@@ -176,6 +178,12 @@ export default function Dashboard() {
           </div>
         </div>
 
+        {nextRestart && (
+          <Alert variant="info" className="mt-6">
+            Streak will restart on {nextRestart}.
+          </Alert>
+        )}
+
         {/* Top summary cards */}
         <div className="mt-10 grid gap-6 md:grid-cols-3">
           <Card className="p-6 rounded-ds-2xl">
@@ -232,6 +240,7 @@ export default function Dashboard() {
             <h2 className="font-slab text-h2">Quick Actions</h2>
             <p className="text-grayish mt-1">Jump back in with one click.</p>
             <div className="mt-6 flex flex-wrap gap-3">
+              <QuickDrillButton />
               <Button as="a" href="/learning" variant="primary" className="rounded-ds-xl">
                 Start Today’s Lesson
               </Button>
@@ -289,6 +298,11 @@ export default function Dashboard() {
               </Button>
             </div>
           </Card>
+        </div>
+
+        {/* Motivation coach */}
+        <div className="mt-10">
+          <MotivationCoach />
         </div>
 
         {/* Coach notes */}

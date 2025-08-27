@@ -31,7 +31,7 @@ export default function VerifyPage() {
       if (error) {
         setError(error.message);
       } else {
-        router.replace('/profile-setup');
+        router.replace('/profile/setup');
       }
     })();
   }, [hasCode, router]);
