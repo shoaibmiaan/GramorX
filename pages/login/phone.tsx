@@ -10,7 +10,7 @@ import { redirectByRole } from '@/lib/routeAccess';
 
 export default function LoginWithPhone() {
   const [phone, setPhone] = useState('');
-  const [code, setCode] = useState('');
+  ￼const [code, setCode] = useState('');
   const [stage, setStage] = useState<'request' | 'verify'>('request');
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
