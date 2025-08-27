@@ -53,8 +53,23 @@ export default function LoginWithPassword() {
     <AuthLayout title="Sign in with Email" subtitle="Use your email & password." right={RightPanel}>
       {err && <Alert variant="error" title="Error" className="mb-4">{err}</Alert>}
       <form onSubmit={onSubmit} className="space-y-6 mt-2">
-        <Input label="Email" type="email" placeholder="you@example.com" value={email} onChange={(e)=>setEmail(e.target.value)} autoComplete="email" required />
-        <PasswordInput label="Password" placeholder="Your password" value={pw} onChange={(e)=>setPw(e.target.value)} autoComplete="current-password" required />
+        <Input
+          label="Email"
+          type="email"
+          placeholder="you@example.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          autoComplete="email"
+          required
+        />
+        <PasswordInput
+          label="Password"
+          placeholder="Your password"
+          value={pw}
+          onChange={(e) => setPw(e.target.value)}
+          autoComplete="current-password"
+          required
+        />
         <Button type="submit" variant="primary" className="w-full rounded-ds-xl" disabled={loading}>
           {loading ? 'Signing in…' : 'Continue'}
         </Button>

@@ -87,16 +87,16 @@ export default function SignupWithPassword() {
           placeholder="you@example.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          required
           autoComplete="email"
+          required
         />
         <PasswordInput
           label="Password"
           placeholder="Create a password"
           value={pw}
           onChange={(e) => setPw(e.target.value)}
-          required
           autoComplete="new-password"
+          required
           hint="At least 8 characters, including letters and numbers"
         />
         <Button
