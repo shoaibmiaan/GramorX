@@ -81,11 +81,21 @@ function useLocalHistory(persist: boolean) {
   return { items, setItems, clear };
 }
 
- function useProvider() {
-  // Keep simple; default 'auto'. Can expose UI later if needed.
-  const [p] = useState<Provider>('auto');
-  return { provider: p };
- }
+function useProvider() {
+  const key = 'gx-ai:sidebar-provider';
+  const [p, setP] = useState<Provider>(() => {
+    if (!isBrowser) return 'auto';
+    const saved = localStorage.getItem(key);
+    return saved === 'gemini' || saved === 'groq' || saved === 'openai' ? (saved as Provider) : 'auto';
+  });
+  useEffect(() => {
+    if (!isBrowser) return;
+    try {
+      localStorage.setItem(key, p);
+    } catch {}
+  }, [p]);
+  return { provider: p, setProvider: setP };
+}
 
  function useIsMobile() {
   const [m, setM] = useState<boolean>(() => (isBrowser ? window.innerWidth < 768 : true));
@@ -211,7 +221,7 @@ export function renderMarkdown(raw: string) {
 
   // Chat state
   const { items, setItems, clear } = useLocalHistory(persist);
-  const { provider } = useProvider();
+  const { provider, setProvider } = useProvider();
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<ConnState>('idle');
@@ -556,6 +566,17 @@ export function renderMarkdown(raw: string) {
                 />
                 Remember
               </label>
+              <select
+                value={provider}
+                onChange={(e) => setProvider(e.target.value as Provider)}
+                className="h-8 rounded-md bg-card border border-border text-caption"
+                aria-label="AI provider"
+              >
+                <option value="auto">Auto</option>
+                <option value="openai">OpenAI</option>
+                <option value="groq">Groq</option>
+                <option value="gemini">Gemini</option>
+              </select>
               <button onClick={clearHistory} className="h-8 px-3 rounded-md bg-card border border-border hover:bg-accent text-caption" aria-label="Clear history">Clear</button>
               <button onClick={newChat} className="h-8 px-3 rounded-md bg-card border border-border hover:bg-accent text-caption" aria-label="New chat">New</button>
               <button onClick={() => setOpen(false)} className="h-8 w-8 rounded-md bg-card border border-border grid place-items-center" aria-label="Close">✕</button>
