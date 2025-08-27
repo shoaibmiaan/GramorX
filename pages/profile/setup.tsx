@@ -20,7 +20,7 @@ const PREFS = ['Listening','Reading','Writing','Speaking'];
 
 export default function ProfileSetup() {
   const router = useRouter();
-  const { t, setLocale } = useLocale();
+  const { t, setLocale, setExplanationLocale } = useLocale();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -35,6 +35,7 @@ export default function ProfileSetup() {
   const [prefs, setPrefs] = useState<string[]>([]);
   const [time, setTime] = useState<string>('');
   const [lang, setLang] = useState('en');
+  const [explanationLang, setExplanationLang] = useState('en');
   const [avatarUrl, setAvatarUrl] = useState<string | undefined>();
   const [ai, setAi] = useState<{suggestedGoal:number; etaWeeks:number; sequence:string[]} | null>(null);
 
@@ -46,7 +47,7 @@ export default function ProfileSetup() {
         const url = window.location.href;
         if (url.includes('code=') || url.includes('access_token=')) {
           const { error } = await supabase.auth.exchangeCodeForSession(url);
-          if (!error) router.replace('/profile-setup');
+          if (!error) router.replace('/profile/setup');
         }
       }
       const { data: { session } } = await supabase.auth.getSession();
@@ -71,7 +72,12 @@ export default function ProfileSetup() {
         setExamDate(data.exam_date ?? '');
         setPrefs((data.study_prefs as string[]) ?? []);
         setTime(data.time_commitment ?? '');
-        setLang(data.preferred_language ?? 'en');
+        const pl = data.preferred_language ?? 'en';
+        setLang(pl);
+        setLocale(pl);
+        const el = data.explanation_language ?? 'en';
+        setExplanationLang(el);
+        setExplanationLocale(el);
         setAvatarUrl(data.avatar_url ?? undefined);
         try {
           const rec = data.ai_recommendation ?? {};
@@ -115,6 +121,7 @@ export default function ProfileSetup() {
       study_prefs: prefs,
       time_commitment: time || null,
       preferred_language: lang || 'en',
+      explanation_language: explanationLang || 'en',
       avatar_url: avatarUrl || null,
       ai_recommendation: ai ? {
         suggestedGoal: ai.suggestedGoal,
@@ -222,6 +229,20 @@ export default function ProfileSetup() {
                     onChange={e => {
                       setLang(e.target.value);
                       setLocale(e.target.value);
+                    }}
+                  >
+                    <option value="en">English</option>
+                    <option value="ur">Urdu</option>
+                    <option value="ar">Arabic</option>
+                    <option value="hi">Hindi</option>
+                  </Select>
+
+                  <Select
+                    label={t('profileSetup.explanationLanguage')}
+                    value={explanationLang}
+                    onChange={e => {
+                      setExplanationLang(e.target.value);
+                      setExplanationLocale(e.target.value);
                     }}
                   >
                     <option value="en">English</option>

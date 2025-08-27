@@ -5,6 +5,8 @@ import type { GetServerSideProps, NextPage } from 'next';
 import { useRouter } from 'next/router';
 import dynamic from 'next/dynamic';
 import { createClient } from '@supabase/supabase-js';
+import { useLocale } from '@/lib/locale';
+import { translateExplanation } from '@/lib/explanations';
 
 import { Container } from '@/components/design-system/Container';
 import { Card } from '@/components/design-system/Card';
@@ -143,6 +145,7 @@ const ReviewPage: NextPage<Props> = ({ passage, questions, notFound, error }) =>
   const [answers, setAnswers] = useState<Record<string, any> | null>(null);
   const [explanations, setExplanations] = useState<Record<string, string>>({});
   const [loadErr, setLoadErr] = useState<string | null>(null);
+  const { explanationLocale } = useLocale();
 
   // Load answers:
   // 1) If attemptId: fetch attempt from Supabase with user token
@@ -260,7 +263,8 @@ const ReviewPage: NextPage<Props> = ({ passage, questions, notFound, error }) =>
       });
       const json = await res.json();
       if (json?.explanation) {
-        setExplanations((prev) => ({ ...prev, [q.id]: json.explanation }));
+        const text = await translateExplanation(json.explanation, explanationLocale);
+        setExplanations((prev) => ({ ...prev, [q.id]: text }));
       }
     } catch {
       setExplanations((prev) => ({ ...prev, [q.id]: 'Could not load explanation right now.' }));

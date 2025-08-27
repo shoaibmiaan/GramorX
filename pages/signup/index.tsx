@@ -10,7 +10,7 @@ export default function SignupOptions() {
     await supabase.auth.signInWithOAuth({
       provider,
       options: {
-        redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/profile-setup` : undefined,
+        redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/profile/setup` : undefined,
       },
     });
   }
