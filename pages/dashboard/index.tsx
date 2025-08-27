@@ -20,28 +20,7 @@ import StudyCalendar from '@/components/feature/StudyCalendar';
 import GoalRoadmap from '@/components/feature/GoalRoadmap';
 import GapToGoal from '@/components/visa/GapToGoal';
 import MotivationCoach from '@/components/coach/MotivationCoach';
-
-type AIPlan = {
-  suggestedGoal?: number;
-  etaWeeks?: number;
-  sequence?: string[];
-  notes?: string[];
-};
-
-type Profile = {
-  user_id: string;
-  full_name: string;
-  country: string | null;
-  english_level: string | null;
-  goal_band: number | null;
-  study_prefs: string[] | null;
-  time_commitment: string | null;
-  preferred_language: string | null;
-  avatar_url: string | null;
-  exam_date?: string | null;
-  ai_recommendation: AIPlan | null;
-  draft: boolean;
-};
+import type { Profile, AIPlan } from '@/types/profile';
 
 export default function Dashboard() {
   const router = useRouter();

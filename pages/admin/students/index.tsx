@@ -4,14 +4,7 @@ import Head from 'next/head';
 import { AdminGuard } from '@/components/auth/AdminGuard';
 import { supabaseBrowser } from '@/lib/supabaseBrowser';
 import { Container } from '@/components/design-system/Container';
-
-type Profile = {
-  id: string;
-  full_name: string | null;
-  email: string | null;
-  created_at?: string | null;
-  role?: string | null;
-};
+import type { Profile } from '@/types/profile';
 
 export default function Students() {
   const [q, setQ] = useState('');

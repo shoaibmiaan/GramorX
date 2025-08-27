@@ -9,32 +9,13 @@ import { Button } from '@/components/design-system/Button';
 import { Badge } from '@/components/design-system/Badge';
 import { Alert } from '@/components/design-system/Alert';
 import { StreakIndicator } from '@/components/design-system/StreakIndicator';
+import type { Profile, AIPlan } from '@/types/profile';
 
 const supabase = createClient(
   env.NEXT_PUBLIC_SUPABASE_URL,
   env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 );
 
-type CoachAI = {
-  suggestedGoal?: number;
-  etaWeeks?: number;
-  sequence?: string[];
-  notes?: string[];
-};
-
-type Profile = {
-  user_id: string;
-  full_name: string;
-  country: string | null;
-  english_level: string | null;
-  goal_band: number | null;
-  study_prefs: string[] | null;
-  time_commitment: string | null;
-  preferred_language: string | null;
-  avatar_url: string | null;
-  ai_recommendation: CoachAI | null;
-  draft: boolean;
-};
 
 export default function Dashboard() {
   const router = useRouter();
@@ -85,7 +66,7 @@ export default function Dashboard() {
     );
   }
 
-  const ai: CoachAI = profile?.ai_recommendation ?? {};
+  const ai: AIPlan = profile?.ai_recommendation ?? {};
   const prefs = profile?.study_prefs ?? [];
   const notes = Array.isArray(ai.notes) ? ai.notes : [];
 
