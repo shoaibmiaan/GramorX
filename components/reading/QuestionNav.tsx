@@ -9,7 +9,7 @@ type TypeFilter = 'all' | 'tfng' | 'ynng' | 'mcq' | 'gap' | 'match';
 
 export const QuestionNav: React.FC<{
   questions: QuestionLite[];
-  answers: Record<string, any>;
+  answers: Record<string, { type: string; value: any }>;
   flags: Record<string, boolean>;
   statusFilter: StatusFilter;
   onStatusFilter: (f: StatusFilter) => void;
@@ -26,8 +26,8 @@ export const QuestionNav: React.FC<{
   const counts = {
     total: questions.length,
     flagged: questions.filter(q => !!flags[q.id]).length,
-    unanswered: questions.filter(q => answers[q.id] == null || answers[q.id] === '').length,
-    answered: questions.filter(q => answers[q.id] != null && answers[q.id] !== '').length,
+    unanswered: questions.filter(q => answers[q.id]?.value == null || answers[q.id]?.value === '').length,
+    answered: questions.filter(q => answers[q.id]?.value != null && answers[q.id]?.value !== '').length,
   };
 
   const types: TypeFilter[] = ['tfng','ynng','mcq','gap','match'];
@@ -39,7 +39,7 @@ export const QuestionNav: React.FC<{
       if (typeFilter !== 'all' && q.type !== typeFilter) return false;
       // status filter
       if (statusFilter === 'flagged' && !flags[q.id]) return false;
-      if (statusFilter === 'unanswered' && !(answers[q.id] == null || answers[q.id] === '')) return false;
+      if (statusFilter === 'unanswered' && !(answers[q.id]?.value == null || answers[q.id]?.value === '')) return false;
       return true;
     })
     .sort((a, b) => a.qNo - b.qNo);
@@ -85,7 +85,7 @@ export const QuestionNav: React.FC<{
       <div className="mt-3 grid grid-cols-6 sm:grid-cols-8 lg:grid-cols-4 gap-2">
         {visible.map(q => {
           const flagged = !!flags[q.id];
-          const answered = !(answers[q.id] == null || answers[q.id] === '');
+          const answered = !(answers[q.id]?.value == null || answers[q.id]?.value === '');
           const cls = answered
             ? 'bg-success/15 text-success border-success/30'
             : flagged
@@ -111,7 +111,7 @@ export const QuestionNav: React.FC<{
           variant="secondary"
           className="rounded-ds"
           onClick={() => {
-            const first = questions.find(q => answers[q.id] == null || answers[q.id] === '');
+            const first = questions.find(q => answers[q.id]?.value == null || answers[q.id]?.value === '');
             if (first) onJump(first.id);
           }}
         >
