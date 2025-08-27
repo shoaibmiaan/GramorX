@@ -28,7 +28,8 @@ html, body, #__next { height: 100%; }
   --color-darker:          7   7  16;  /* #070710 */
   --color-lightBg:       240 242 245;  /* #f0f2f5 */
   --color-lightText:      26  26  46;  /* #1a1a2e */
-  --color-grayish:       138 138 156;  /* #8a8a9c */
+  /* darker gray for accessible body text on light backgrounds */
+  --color-grayish:       106 106 134;  /* #6a6a86 */
 
   --color-lightCard:     255 255 255;  /* #ffffff */
   --color-lightBorder:   224 224 224;  /* #e0e0e0 */

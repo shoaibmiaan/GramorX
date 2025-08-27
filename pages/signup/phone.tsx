@@ -52,7 +52,7 @@ export default function SignupWithPhone() {
         <p className="text-body text-grayish dark:text-gray-300 max-w-md">Create your account with a one-time SMS code.</p>
       </div>
       <div className="pt-8 text-small text-grayish dark:text-gray-400">
-        Prefer email? <Link href="/signup/password" className="text-primary hover:underline">Use Email & Password</Link>
+        Prefer email? <Link href="/signup/password" className="text-primaryDark hover:underline">Use Email & Password</Link>
       </div>
     </div>
   );

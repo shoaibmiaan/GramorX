@@ -124,11 +124,11 @@ export default function LoginOptions() {
       <div className="pt-8">
         <div className="text-small text-grayish dark:text-gray-400">
           By continuing, you agree to our{' '}
-          <Link href="/legal/terms" className="text-primary hover:underline">
+          <Link href="/legal/terms" className="text-primaryDark hover:underline">
             Terms
           </Link>{' '}
           and{' '}
-          <Link href="/legal/privacy" className="text-primary hover:underline">
+          <Link href="/legal/privacy" className="text-primaryDark hover:underline">
             Privacy Policy
           </Link>
           .
@@ -226,7 +226,7 @@ export default function LoginOptions() {
           <div className="mt-6 flex items-center justify-between text-small text-grayish dark:text-gray-400">
             <div>
               New here?{' '}
-              <Link href={`/signup${selectedRole ? `?role=${selectedRole}` : ''}`} className="text-primary hover:underline">
+              <Link href={`/signup${selectedRole ? `?role=${selectedRole}` : ''}`} className="text-primaryDark hover:underline">
                 Create an account
               </Link>
             </div>
