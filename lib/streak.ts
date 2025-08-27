@@ -1,8 +1,5 @@
-    // lib/streak.ts
-
 /**
- * Get the browser's IANA time zone (e.g., "Asia/Karachi", "America/New_York").
- * Falls back to "UTC" if not available.
+ * Timezone + display helpers
  */
 export const detectBrowserTimeZone = (): string => {
   try {
@@ -12,17 +9,8 @@ export const detectBrowserTimeZone = (): string => {
   }
 };
 
-/**
- * Human-friendly label for a streak number.
- * Example: 0 -> "Start your streak", 7 -> "Day 7"
- */
-export const formatStreakLabel = (n: number): string =>
-  n > 0 ? `Day ${n}` : 'Start your streak';
+export const formatStreakLabel = (n: number): string => (n > 0 ? `Day ${n}` : 'Start your streak');
 
-/**
- * (Optional compat) Build a YYYY-MM-DD day key for a given Date in a given IANA TZ.
- * Prefer server-side day boundaries; this helper is kept for legacy callers.
- */
 export const getDayKeyInTZ = (
   date: Date = new Date(),
   tz: string = detectBrowserTimeZone()
@@ -35,14 +23,23 @@ export const getDayKeyInTZ = (
   }).format(date);
 };
 
-/** Data returned by the streak API */
+/**
+ * API types
+ */
 export type StreakData = {
   current_streak: number;
   last_activity_date: string | null;
   shields: number;
+  next_restart_date: string | null;
 };
 
-/** Fetch current streak for the logged-in user */
+const normalize = (json: any): StreakData => ({
+  current_streak: json?.current_streak ?? 0,
+  last_activity_date: json?.last_activity_date ?? null,
+  shields: json?.shields ?? 0,
+  next_restart_date: json?.next_restart_date ?? null,
+});
+
 const handle = async (res: Response, fallbackMsg: string): Promise<StreakData> => {
   let json: any = null;
   try {
@@ -50,54 +47,42 @@ const handle = async (res: Response, fallbackMsg: string): Promise<StreakData> =
   } catch {
     // ignore
   }
-  if (!res.ok) {
-    throw new Error(json?.error || fallbackMsg);
-  }
-  return {
-    current_streak: json?.current_streak ?? 0,
-    last_activity_date: json?.last_activity_date ?? null,
-    shields: json?.shields ?? 0,
-  };
+  if (!res.ok) throw new Error(json?.error || fallbackMsg);
+  return normalize(json);
 };
 
-/** Fetch current streak for the logged-in user */
+/**
+ * API calls
+ */
 export async function fetchStreak(): Promise<StreakData> {
-  try {
-    const res = await fetch('/api/streak');
-    return await handle(res, 'Failed to fetch streak');
-  } catch (e) {
-    console.error(e);
-    throw e;
-  }
+  const res = await fetch('/api/streak');
+  return handle(res, 'Failed to fetch streak');
 }
 
-/** Mark today's activity and return the updated streak */
 export async function incrementStreak(options: { useShield?: boolean } = {}): Promise<StreakData> {
-  try {
-    const body = options.useShield ? { action: 'use' } : {};
-    const res = await fetch('/api/streak', {
-      method: 'POST',
-      headers: Object.keys(body).length ? { 'Content-Type': 'application/json' } : undefined,
-      body: Object.keys(body).length ? JSON.stringify(body) : undefined,
-    });
-    return await handle(res, 'Failed to update streak');
-  } catch (e) {
-    console.error(e);
-    throw e;
-  }
+  const body = options.useShield ? { action: 'use' } : undefined;
+  const res = await fetch('/api/streak', {
+    method: 'POST',
+    headers: body ? { 'Content-Type': 'application/json' } : undefined,
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  return handle(res, 'Failed to update streak');
 }
 
-/** Claim a new streak shield */
 export async function claimShield(): Promise<StreakData> {
-  try {
-    const res = await fetch('/api/streak', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'claim' }),
-    });
-    return await handle(res, 'Failed to claim shield');
-  } catch (e) {
-    console.error(e);
-    throw e;
-  }
+  const res = await fetch('/api/streak', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'claim' }),
+  });
+  return handle(res, 'Failed to claim shield');
+}
+
+export async function scheduleRecovery(date: string): Promise<StreakData> {
+  const res = await fetch('/api/streak/recovery', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ date }),
+  });
+  return handle(res, 'Failed to schedule recovery');
 }

@@ -38,7 +38,7 @@ export default function SignupWithPhone() {
         access_token: data.session.access_token,
         refresh_token: data.session.refresh_token,
       });
-      window.location.assign('/profile-setup');
+      window.location.assign('/profile/setup');
     }
   }
 

@@ -12,11 +12,14 @@ import { StreakIndicator } from '@/components/design-system/StreakIndicator';
 
 import { supabaseBrowser } from '@/lib/supabaseBrowser';
 import { ReadingStatsCard } from '@/components/reading/ReadingStatsCard';
+import QuickDrillButton from '@/components/quick/QuickDrillButton';
 
 import { useStreak } from '@/hooks/useStreak';
 import { getDayKeyInTZ } from '@/lib/streak';
 import StudyCalendar from '@/components/feature/StudyCalendar';
 import GoalRoadmap from '@/components/feature/GoalRoadmap';
+import GapToGoal from '@/components/visa/GapToGoal';
+import MotivationCoach from '@/components/coach/MotivationCoach';
 
 type AIPlan = {
   suggestedGoal?: number;
@@ -50,6 +53,7 @@ export default function Dashboard() {
     lastDayKey,
     loading: streakLoading,
     completeToday,
+    nextRestart,
     shields,
     claimShield,
     useShield,
@@ -105,7 +109,6 @@ export default function Dashboard() {
         }
 
         if (!data || data.draft) {
-          // Your setup page path is /profile/setup in this codebase.
           router.replace('/profile/setup');
           return;
         }
@@ -164,6 +167,7 @@ export default function Dashboard() {
 
           <div className="flex items-center gap-4">
             <StreakIndicator value={streak} />
+            <Badge size="sm">🛡 {shields}</Badge>
             <Button onClick={claimShield} variant="secondary" className="rounded-ds-xl">
               Claim Shield
             </Button>
@@ -185,6 +189,12 @@ export default function Dashboard() {
             ) : null}
           </div>
         </div>
+
+        {nextRestart && (
+          <Alert variant="info" className="mt-6">
+            Streak will restart on {nextRestart}.
+          </Alert>
+        )}
 
         {/* Top summary cards */}
         <div className="mt-10 grid gap-6 md:grid-cols-3">
@@ -221,6 +231,11 @@ export default function Dashboard() {
           </Card>
         </div>
 
+        {/* Visa gap summary */}
+        <div className="mt-10">
+          <GapToGoal />
+        </div>
+
         {/* Study calendar */}
         <div className="mt-10">
           <StudyCalendar />
@@ -237,6 +252,7 @@ export default function Dashboard() {
             <h2 className="font-slab text-h2">Quick Actions</h2>
             <p className="text-grayish mt-1">Jump back in with one click.</p>
             <div className="mt-6 flex flex-wrap gap-3">
+              <QuickDrillButton />
               <Button as="a" href="/learning" variant="primary" className="rounded-ds-xl">
                 Start Today’s Lesson
               </Button>
@@ -266,12 +282,7 @@ export default function Dashboard() {
               <ul className="list-disc pl-6 text-body">
                 {(ai.sequence ?? []).map((s, i, arr) => (
                   <li key={s}>
-                    {s}{' '}
-                    {i === 0
-                      ? '- prioritize'
-                      : i === arr.length - 1
-                      ? '- strong'
-                      : ''}
+                    {s} {i === 0 ? '- prioritize' : i === arr.length - 1 ? '- strong' : ''}
                   </li>
                 ))}
               </ul>
@@ -294,6 +305,11 @@ export default function Dashboard() {
               </Button>
             </div>
           </Card>
+        </div>
+
+        {/* Motivation coach */}
+        <div className="mt-10">
+          <MotivationCoach />
         </div>
 
         {/* Coach notes */}
