@@ -12,6 +12,7 @@ import { StreakIndicator } from '@/components/design-system/StreakIndicator';
 
 import { supabaseBrowser } from '@/lib/supabaseBrowser';
 import { ReadingStatsCard } from '@/components/reading/ReadingStatsCard';
+import QuickDrillButton from '@/components/quick/QuickDrillButton';
 
 import { useStreak } from '@/hooks/useStreak';
 import { getDayKeyInTZ } from '@/lib/streak';
@@ -226,6 +227,7 @@ export default function Dashboard() {
             <h2 className="font-slab text-h2">Quick Actions</h2>
             <p className="text-grayish mt-1">Jump back in with one click.</p>
             <div className="mt-6 flex flex-wrap gap-3">
+              <QuickDrillButton />
               <Button as="a" href="/learning" variant="primary" className="rounded-ds-xl">
                 Start Today’s Lesson
               </Button>
