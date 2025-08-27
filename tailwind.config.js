@@ -34,6 +34,10 @@ module.exports = {
         lightBorder:   'rgb(var(--color-lightBorder) / <alpha-value>)',
         border:        'rgb(var(--color-border) / <alpha-value>)',
         mutedText:     'rgb(var(--color-mutedText) / <alpha-value>)',
+        card: {
+          DEFAULT: 'rgb(var(--color-lightCard) / <alpha-value>)',
+          foreground: 'rgb(var(--color-lightText) / <alpha-value>)',
+        },
       },
 
       borderRadius: {
