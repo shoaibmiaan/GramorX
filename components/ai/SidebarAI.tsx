@@ -27,12 +27,15 @@ import('rehype-highlight')
   })
   .catch(() => {});
 import { useRouter } from 'next/router';
+import { SidebarHeader } from './SidebarHeader';
+import { MessageList } from './MessageList';
+import { Composer } from './Composer';
 
 // ---- Types
-type Msg = { id: string; role: 'user' | 'assistant'; content: string };
-type WireMsg = { role: 'system' | 'user' | 'assistant'; content: string };
-type Provider = 'auto' | 'gemini' | 'groq' | 'openai';
-type ConnState = 'idle' | 'connecting' | 'streaming' | 'stalled' | 'error' | 'offline';
+export type Msg = { id: string; role: 'user' | 'assistant'; content: string };
+export type WireMsg = { role: 'system' | 'user' | 'assistant'; content: string };
+export type Provider = 'auto' | 'gemini' | 'groq' | 'openai';
+export type ConnState = 'idle' | 'connecting' | 'streaming' | 'stalled' | 'error' | 'offline';
 
 // ---- Local flags
 const isBrowser = typeof window !== 'undefined';
@@ -509,13 +512,6 @@ export function SidebarAI() {
     el.style.height = `${next}px`;
   }, [input]);
 
-  // UI bits
-  const statusDot =
-    status === 'streaming' || status === 'connecting' ? 'bg-primary'
-    : status === 'stalled' ? 'bg-accent'
-    : status === 'offline' || status === 'error' ? 'bg-destructive'
-    : 'bg-muted-foreground';
-
   // Transition per form factor
   const sheetTrans = isMobile ? (open ? 'translate-y-0' : 'translate-y-full') : (open ? 'translate-x-0' : 'translate-x-full');
 
@@ -556,134 +552,47 @@ export function SidebarAI() {
           />
         )}
 
-        {/* Header */}
-        <div className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border">
-          <div className="flex items-center justify-between px-3 md:px-4 h-14">
-            <div className="flex items-center gap-2 min-w-0">
-              <span className="font-semibold truncate">GramorX AI</span>
-              <span className={`inline-block h-2 w-2 rounded-full ${statusDot}`} aria-label={`status: ${status}`} />
-            </div>
-            <div className="flex items-center gap-2">
-              <select
-                value={provider}
-                onChange={(e) => setProvider(e.target.value as Provider)}
-                className="h-8 rounded-md bg-card border border-border px-2 text-caption"
-                aria-label="AI provider"
-              >
-                <option value="auto">auto</option>
-                <option value="gemini">gemini</option>
-                <option value="groq">groq</option>
-                <option value="openai">openai</option>
-              </select>
+        <SidebarHeader
+          provider={provider}
+          setProvider={setProvider}
+          persist={persist}
+          setPersist={setPersist}
+          clearHistory={clearHistory}
+          newChat={newChat}
+          onClose={() => setOpen(false)}
+          status={status}
+          statusNote={statusNote}
+        />
 
-              <label className="flex items-center gap-1 text-caption">
-                <input
-                  type="checkbox"
-                  className="h-3 w-3"
-                  checked={persist}
-                  onChange={(e) => setPersist(e.target.checked)}
-                />
-                Remember
-              </label>
+        <MessageList
+          items={items}
+          loading={loading}
+          streamingId={streamingId}
+          renderMarkdown={renderMarkdown}
+          scrollRef={scrollRef}
+          isMobile={isMobile}
+          newChat={newChat}
+          toggleVoice={toggleVoice}
+          voiceSupported={voiceSupported}
+          voiceDenied={voiceDenied}
+          listening={listening}
+        />
 
-              <button onClick={clearHistory} className="h-8 px-3 rounded-md bg-card border border-border hover:bg-accent text-caption" aria-label="Clear history">Clear</button>
-              <button onClick={newChat} className="h-8 px-3 rounded-md bg-card border border-border hover:bg-accent text-caption" aria-label="New chat">New</button>
-              <button onClick={() => setOpen(false)} className="h-8 w-8 rounded-md bg-card border border-border grid place-items-center" aria-label="Close">✕</button>
-            </div>
-          </div>
-          {statusNote && (
-            <div className="px-3 md:px-4 py-1 text-tiny text-muted-foreground bg-muted border-t border-border">
-              {statusNote}
-            </div>
-          )}
-        </div>
-
-        {/* Messages */}
-        <div
-          ref={scrollRef}
-          className={`${isMobile ? 'h-[calc(100svh-8.5rem)]' : 'h-[calc(100vh-8.5rem)]'} overflow-y-auto px-3 md:px-4 py-3 space-y-3`}
-        >
-          {items.length === 0 && (
-            <div className="text-center">
-              <div className="inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-gradient-to-br from-primary/15 to-accent/15 border border-border mb-3">
-                <span className="text-h4">✨</span>
-              </div>
-              <div className="text-small">
-                Hi, I’m your coach — hired for you by your Partner GramorX. Speak or type to begin.
-              </div>
-              <div className="mt-3 flex items-center justify-center gap-2">
-                <button onClick={newChat} className="text-caption rounded-full px-3 py-1 bg-card border border-border hover:bg-accent">New chat</button>
-                <button
-                  onClick={toggleVoice}
-                  disabled={!voiceSupported || voiceDenied}
-                  className="text-caption rounded-full px-3 py-1 border border-border bg-card hover:bg-accent disabled:opacity-50"
-                  title={voiceSupported ? (voiceDenied ? 'Mic access denied' : listening ? 'Stop voice' : 'Speak') : 'Voice not supported'}
-                >
-                  🎙 {listening ? 'Stop' : 'Speak'}
-                </button>
-              </div>
-              <div className="mt-2 text-tiny text-muted-foreground/80">Tip: Alt+A toggles anywhere.</div>
-            </div>
-          )}
-
-          {items.map((m) => (
-            <div
-              key={m.id}
-              className={`rounded-2xl px-3 py-2 text-small leading-relaxed border ${
-                m.role === 'user' ? 'bg-accent text-accent-foreground border-accent' : 'bg-card text-card-foreground border-border'
-              }`}
-              aria-live={m.id === streamingId ? 'polite' : undefined}
-            >
-              <div className="text-micro uppercase tracking-wider text-muted-foreground mb-1">
-                {m.role === 'user' ? 'You' : 'GramorX AI'}
-              </div>
-              <div className="prose prose-sm dark:prose-invert max-w-none">
-                {renderMarkdown(m.content)}
-              </div>
-            </div>
-          ))}
-
-          {loading && (
-            <div className="text-caption text-muted-foreground animate-pulse">Thinking…</div>
-          )}
-        </div>
-
-        {/* Composer */}
-        <div className="sticky bottom-0 border-t border-border p-2 md:p-3 bg-background">
-          <div className="flex items-end gap-2">
-            <button
-              onClick={toggleVoice}
-              disabled={!voiceSupported || voiceDenied}
-              className={`h-10 w-10 rounded-full border border-border ${listening ? 'bg-primary text-primary-foreground' : 'bg-card hover:bg-accent'} disabled:opacity-50`}
-              title={voiceSupported ? (voiceDenied ? 'Mic access denied' : listening ? 'Stop voice' : 'Speak') : 'Voice not supported'}
-              aria-label="Voice input"
-            >
-              🎙
-            </button>
-            <textarea
-              ref={textareaRef}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
-              }}
-              rows={1}
-              placeholder="Type or tap 🎙 to speak… (Enter to send, Shift+Enter = new line)"
-              className="w-full resize-none rounded-2xl border border-border bg-background px-3 py-2 text-small outline-none focus:ring-2 focus:ring-primary/40"
-              style={{ maxHeight: 148 }}
-            />
-            <button
-              onClick={() => send()}
-              disabled={loading || !input.trim() || !!streamingId}
-              className="rounded-2xl h-10 min-w-[88px] px-4 md:px-3 text-small font-semibold bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-50"
-            >
-              Send
-            </button>
-          </div>
-        </div>
+        <Composer
+          toggleVoice={toggleVoice}
+          voiceSupported={voiceSupported}
+          voiceDenied={voiceDenied}
+          listening={listening}
+          textareaRef={textareaRef}
+          input={input}
+          setInput={setInput}
+          send={send}
+          loading={loading}
+          streamingId={streamingId}
+        />
       </aside>
     </Fragment>
   );
 }
-
+export { SidebarHeader, MessageList, Composer };
 export default SidebarAI;
