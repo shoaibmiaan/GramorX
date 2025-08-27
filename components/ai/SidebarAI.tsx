@@ -27,6 +27,7 @@ import('rehype-highlight')
   })
   .catch(() => {});
 import { useRouter } from 'next/router';
+import { Button, Select, Textarea } from '@/components/design-system';
 
 // ---- Types
 type Msg = { id: string; role: 'user' | 'assistant'; content: string };
@@ -246,6 +247,13 @@ export function SidebarAI() {
   const stallTimerRef = useRef<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const resizingRef = useRef(false);
+
+  // Link DS textarea DOM node
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      textareaRef.current = document.getElementById('gx-ai-input') as HTMLTextAreaElement | null;
+    }
+  }, []);
 
   // System prompt: NO bullets; prefer short sentences. Special rule for "who are you?".
   const system = useMemo<WireMsg>(
@@ -564,17 +572,18 @@ export function SidebarAI() {
               <span className={`inline-block h-2 w-2 rounded-full ${statusDot}`} aria-label={`status: ${status}`} />
             </div>
             <div className="flex items-center gap-2">
-              <select
+              <Select
                 value={provider}
                 onChange={(e) => setProvider(e.target.value as Provider)}
-                className="h-8 rounded-md bg-card border border-border px-2 text-caption"
+                options={[
+                  { value: 'auto', label: 'auto' },
+                  { value: 'gemini', label: 'gemini' },
+                  { value: 'groq', label: 'groq' },
+                  { value: 'openai', label: 'openai' },
+                ]}
                 aria-label="AI provider"
-              >
-                <option value="auto">auto</option>
-                <option value="gemini">gemini</option>
-                <option value="groq">groq</option>
-                <option value="openai">openai</option>
-              </select>
+                className="w-[100px]"
+              />
 
               <label className="flex items-center gap-1 text-caption">
                 <input
@@ -586,9 +595,31 @@ export function SidebarAI() {
                 Remember
               </label>
 
-              <button onClick={clearHistory} className="h-8 px-3 rounded-md bg-card border border-border hover:bg-accent text-caption" aria-label="Clear history">Clear</button>
-              <button onClick={newChat} className="h-8 px-3 rounded-md bg-card border border-border hover:bg-accent text-caption" aria-label="New chat">New</button>
-              <button onClick={() => setOpen(false)} className="h-8 w-8 rounded-md bg-card border border-border grid place-items-center" aria-label="Close">✕</button>
+              <Button
+                onClick={clearHistory}
+                variant="secondary"
+                size="sm"
+                aria-label="Clear history"
+              >
+                Clear
+              </Button>
+              <Button
+                onClick={newChat}
+                variant="secondary"
+                size="sm"
+                aria-label="New chat"
+              >
+                New
+              </Button>
+              <Button
+                onClick={() => setOpen(false)}
+                variant="secondary"
+                size="sm"
+                className="h-8 w-8 p-0"
+                aria-label="Close"
+              >
+                ✕
+              </Button>
             </div>
           </div>
           {statusNote && (
@@ -651,17 +682,19 @@ export function SidebarAI() {
         {/* Composer */}
         <div className="sticky bottom-0 border-t border-border p-2 md:p-3 bg-background">
           <div className="flex items-end gap-2">
-            <button
+            <Button
               onClick={toggleVoice}
               disabled={!voiceSupported || voiceDenied}
-              className={`h-10 w-10 rounded-full border border-border ${listening ? 'bg-primary text-primary-foreground' : 'bg-card hover:bg-accent'} disabled:opacity-50`}
+              variant={listening ? 'primary' : 'secondary'}
+              size="sm"
+              className="h-10 w-10 p-0 rounded-full"
               title={voiceSupported ? (voiceDenied ? 'Mic access denied' : listening ? 'Stop voice' : 'Speak') : 'Voice not supported'}
               aria-label="Voice input"
             >
               🎙
-            </button>
-            <textarea
-              ref={textareaRef}
+            </Button>
+            <Textarea
+              id="gx-ai-input"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => {
@@ -669,16 +702,17 @@ export function SidebarAI() {
               }}
               rows={1}
               placeholder="Type or tap 🎙 to speak… (Enter to send, Shift+Enter = new line)"
-              className="w-full resize-none rounded-2xl border border-border bg-background px-3 py-2 text-small outline-none focus:ring-2 focus:ring-primary/40"
-              style={{ maxHeight: 148 }}
+              className="flex-1"
+              style={{ minHeight: 0, maxHeight: 148, padding: '0.5rem' }}
             />
-            <button
+            <Button
               onClick={() => send()}
               disabled={loading || !input.trim() || !!streamingId}
-              className="rounded-2xl h-10 min-w-[88px] px-4 md:px-3 text-small font-semibold bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-50"
+              size="sm"
+              className="rounded-2xl min-w-[88px]"
             >
               Send
-            </button>
+            </Button>
           </div>
         </div>
       </aside>
