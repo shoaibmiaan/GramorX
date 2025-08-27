@@ -69,6 +69,21 @@ export default function ProfileSetup() {
   const [avatarUrl, setAvatarUrl] = useState<string | undefined>();
   const [ai, setAi] = useState<{suggestedGoal:number; etaWeeks:number; sequence:string[]} | null>(null);
 
+  type FieldErrors = {
+    goal?: string;
+    examDate?: string;
+    travelWeek?: string;
+    festivalWeek?: string;
+    examWeek?: string;
+    avatarUrl?: string;
+  };
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const clearFieldError = (field: keyof FieldErrors) =>
+    setFieldErrors(prev => {
+      const { [field]: _, ...rest } = prev;
+      return rest;
+    });
+
   // Fetch active session & profile (draft-safe)
   useEffect(() => {
     (async () => {
@@ -153,12 +168,53 @@ export default function ProfileSetup() {
     setPrefs(prev => prev.includes(p) ? prev.filter(x => x !== p) : [...prev, p]);
   };
 
-  const canSubmit = fullName && level && time && country;
+  const canSubmit = fullName && level && time && country && Object.keys(fieldErrors).length === 0;
 
   const saveProfile = async (finalize=false) => {
     if (!userId) return;
     setSaving(true);
     setError(null); setNotice(null);
+
+    const errs: FieldErrors = {};
+    if (goal < 4 || goal > 9 || Math.round(goal * 2) !== goal * 2) {
+      errs.goal = 'Goal must be between 4.0 and 9.0 in 0.5 increments';
+    }
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (examDate) {
+      if (!dateRegex.test(examDate)) errs.examDate = 'Invalid date format';
+      else {
+        const d = new Date(examDate);
+        if (isNaN(d.getTime()) || d < today) errs.examDate = 'Exam date cannot be in the past';
+      }
+    }
+    const weekRegex = /^\d{4}-W\d{2}$/;
+    const checkWeek = (value: string, key: keyof FieldErrors) => {
+      if (value) {
+        if (!weekRegex.test(value)) errs[key] = 'Invalid week format';
+        else {
+          const range = getWeekRange(value);
+          if (!range || range.start < today) errs[key] = 'Week cannot be in the past';
+        }
+      }
+    };
+    checkWeek(travelWeek, 'travelWeek');
+    checkWeek(festivalWeek, 'festivalWeek');
+    checkWeek(examWeek, 'examWeek');
+    if (avatarUrl) {
+      try {
+        new URL(avatarUrl);
+      } catch {
+        errs.avatarUrl = 'Invalid URL';
+      }
+    }
+    if (Object.keys(errs).length) {
+      setFieldErrors(errs);
+      setSaving(false);
+      return;
+    }
+    setFieldErrors({});
 
     const payload = {
       user_id: userId,
@@ -287,46 +343,55 @@ export default function ProfileSetup() {
                         <input
                           type="range" min={4} max={9} step={0.5}
                           value={goal}
-                          onChange={e=>setGoal(parseFloat(e.target.value))}
+                          onChange={e=>{ setGoal(parseFloat(e.target.value)); clearFieldError('goal'); }}
                           className="w-full accent-primary"
                         />
                         <span className="text-body font-semibold">{goal.toFixed(1)}</span>
                       </div>
                     </label>
+                    {fieldErrors.goal && <Alert variant="error" className="mt-2">{fieldErrors.goal}</Alert>}
                   </div>
 
-                  <Input
-                    type="date"
-                    label="Exam date"
-                    value={examDate}
-                    onChange={e => setExamDate(e.target.value)}
-                    className="md:col-span-2"
-                  />
+                  <div className="md:col-span-2">
+                    <Input
+                      type="date"
+                      label="Exam date"
+                      value={examDate}
+                      onChange={e => { setExamDate(e.target.value); clearFieldError('examDate'); }}
+                    />
+                    {fieldErrors.examDate && <Alert variant="error" className="mt-2">{fieldErrors.examDate}</Alert>}
+                  </div>
 
                   {/* Travel/festival/exam ISO week inputs */}
-                  <Input
-                    type="week"
-                    label="Travel week"
-                    value={travelWeek}
-                    onChange={e => setTravelWeek(e.target.value)}
-                    className="md:col-span-2"
-                  />
+                  <div className="md:col-span-2">
+                    <Input
+                      type="week"
+                      label="Travel week"
+                      value={travelWeek}
+                      onChange={e => { setTravelWeek(e.target.value); clearFieldError('travelWeek'); }}
+                    />
+                    {fieldErrors.travelWeek && <Alert variant="error" className="mt-2">{fieldErrors.travelWeek}</Alert>}
+                  </div>
 
-                  <Input
-                    type="week"
-                    label="Festival week"
-                    value={festivalWeek}
-                    onChange={e => setFestivalWeek(e.target.value)}
-                    className="md:col-span-2"
-                  />
+                  <div className="md:col-span-2">
+                    <Input
+                      type="week"
+                      label="Festival week"
+                      value={festivalWeek}
+                      onChange={e => { setFestivalWeek(e.target.value); clearFieldError('festivalWeek'); }}
+                    />
+                    {fieldErrors.festivalWeek && <Alert variant="error" className="mt-2">{fieldErrors.festivalWeek}</Alert>}
+                  </div>
 
-                  <Input
-                    type="week"
-                    label="Exam week"
-                    value={examWeek}
-                    onChange={e => setExamWeek(e.target.value)}
-                    className="md:col-span-2"
-                  />
+                  <div className="md:col-span-2">
+                    <Input
+                      type="week"
+                      label="Exam week"
+                      value={examWeek}
+                      onChange={e => { setExamWeek(e.target.value); clearFieldError('examWeek'); }}
+                    />
+                    {fieldErrors.examWeek && <Alert variant="error" className="mt-2">{fieldErrors.examWeek}</Alert>}
+                  </div>
 
                   <Select
                     label={t('profileSetup.preferredLanguage')}
@@ -355,8 +420,10 @@ export default function ProfileSetup() {
                     <option value="ar">Arabic</option>
                     <option value="hi">Hindi</option>
                   </Select>
-
-                  <Input label="Avatar URL" placeholder="/path/to/avatar.png" value={avatarUrl ?? ''} onChange={e=>setAvatarUrl(e.target.value || undefined)} />
+                  <div>
+                    <Input label="Avatar URL" placeholder="/path/to/avatar.png" value={avatarUrl ?? ''} onChange={e=>{ setAvatarUrl(e.target.value || undefined); clearFieldError('avatarUrl'); }} />
+                    {fieldErrors.avatarUrl && <Alert variant="error" className="mt-2">{fieldErrors.avatarUrl}</Alert>}
+                  </div>
                 </div>
 
                 <div className="mt-6 flex flex-wrap gap-3">
