@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import AuthLayout from '@/components/layouts/AuthLayout';
@@ -11,13 +11,22 @@ import { redirectByRole } from '@/lib/routeAccess';
 export default function LoginWithEmail() {
   const [email, setEmail] = useState('');
   const [pw, setPw] = useState('');
+  const emailRef = useRef<HTMLInputElement>(null);
+  const pwRef = useRef<HTMLInputElement>(null);
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setErr(null);
-    if (!email || !pw) return setErr('Email and password are required.');
+    if (!email) {
+      emailRef.current?.focus();
+      return setErr('Email and password are required.');
+    }
+    if (!pw) {
+      pwRef.current?.focus();
+      return setErr('Email and password are required.');
+    }
     setLoading(true);
     const { error, data } = await supabase.auth.signInWithPassword({ email, password: pw });
     setLoading(false);
@@ -56,8 +65,24 @@ export default function LoginWithEmail() {
     <AuthLayout title="Sign in with Email" subtitle="Use your email & password." right={RightPanel}>
       {err && <Alert variant="error" title="Error" className="mb-4">{err}</Alert>}
       <form onSubmit={onSubmit} className="space-y-6 mt-2">
-        <Input label="Email" type="email" placeholder="you@example.com" value={email} onChange={(e)=>setEmail(e.target.value)} required />
-        <Input label="Password" type="password" placeholder="Your password" value={pw} onChange={(e)=>setPw(e.target.value)} required />
+        <Input
+          ref={emailRef}
+          label="Email"
+          type="email"
+          placeholder="you@example.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+        <Input
+          ref={pwRef}
+          label="Password"
+          type="password"
+          placeholder="Your password"
+          value={pw}
+          onChange={(e) => setPw(e.target.value)}
+          required
+        />
         <Button type="submit" variant="primary" className="w-full rounded-ds-xl" disabled={loading}>
           {loading ? 'Signing in…' : 'Continue'}
         </Button>

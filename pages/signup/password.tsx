@@ -1,5 +1,5 @@
 // pages/signup/password.tsx
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import AuthLayout from '@/components/layouts/AuthLayout';
@@ -11,6 +11,8 @@ import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser';
 export default function SignupWithPassword() {
   const [email, setEmail] = useState('');
   const [pw, setPw] = useState('');
+  const emailRef = useRef<HTMLInputElement>(null);
+  const pwRef = useRef<HTMLInputElement>(null);
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -18,7 +20,13 @@ export default function SignupWithPassword() {
     e.preventDefault();
     setErr(null);
 
-    if (!email || !pw) {
+    if (!email) {
+      emailRef.current?.focus();
+      setErr('Please fill in all fields.');
+      return;
+    }
+    if (!pw) {
+      pwRef.current?.focus();
       setErr('Please fill in all fields.');
       return;
     }
@@ -81,6 +89,7 @@ export default function SignupWithPassword() {
 
       <form onSubmit={onSubmit} className="space-y-6 mt-2">
         <Input
+          ref={emailRef}
           label="Email"
           type="email"
           placeholder="you@example.com"
@@ -90,6 +99,7 @@ export default function SignupWithPassword() {
           autoComplete="email"
         />
         <Input
+          ref={pwRef}
           label="Password"
           type="password"
           placeholder="Create a password"
