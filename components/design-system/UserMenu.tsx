@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { supabaseBrowser } from '@/lib/supabaseBrowser';
 import { useLocale } from '@/lib/locale';
+import { useToast } from './Toast';
 
 type MenuItem = {
   label: string;
@@ -36,6 +37,7 @@ export const UserMenu: React.FC<{
   const [open, setOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [localAvatar, setLocalAvatar] = useState<string | null>(avatarUrl ?? null);
+  const { error: toastError } = useToast();
 
   const btnRef = useRef<HTMLButtonElement | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
@@ -118,11 +120,11 @@ export const UserMenu: React.FC<{
     const file = e.target.files?.[0];
     if (!file) return;
     if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
-      alert('Please select a JPG, PNG, or WEBP image.');
+      toastError('Please select a JPG, PNG, or WEBP image.');
       return;
     }
     if (file.size > 3 * 1024 * 1024) {
-      alert('Image too large. Max 3 MB.');
+      toastError('Image too large. Max 3 MB.');
       return;
     }
 
@@ -146,11 +148,17 @@ export const UserMenu: React.FC<{
       const { error: updErr } = await supabaseBrowser.auth.updateUser({ data: { avatar_url: publicUrl } });
       if (updErr) throw updErr;
 
+      const { error: profErr } = await supabaseBrowser
+        .from('user_profiles')
+        .update({ avatar_url: publicUrl })
+        .eq('user_id', userId);
+      if (profErr) throw profErr;
+
       setLocalAvatar(publicUrl);
       onAvatarChange?.(publicUrl);
     } catch (err: any) {
       console.error(err);
-      alert(err?.message || 'Could not upload image. Please try again.');
+      toastError(err?.message || 'Could not upload image. Please try again.');
     } finally {
       setUploading(false);
       // keep menu open to show immediate change
