@@ -8,6 +8,7 @@ import { NavLink } from '@/components/design-system/NavLink';
 import { supabaseBrowser } from '@/lib/supabaseBrowser';
 import { UserMenu } from '@/components/design-system/UserMenu';
 import { NotificationBell } from '@/components/design-system/NotificationBell';
+import type { AuthChangeEvent, Session } from '@supabase/supabase-js';
 
 type ModuleLink = { label: string; href: string; desc?: string };
 
@@ -137,19 +138,21 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
     };
     sync();
 
-    const { data: sub } = supabaseBrowser.auth.onAuthStateChange(async (_e, session) => {
-      const s = session?.user ?? null;
-      const userMeta = (s?.user_metadata ?? {}) as Record<string, unknown>;
-      setUser({
-        id: s?.id ?? null,
-        email: s?.email ?? null,
-        name: typeof userMeta['full_name'] === 'string' ? (userMeta['full_name'] as string) : null,
-        avatarUrl: typeof userMeta['avatar_url'] === 'string' ? (userMeta['avatar_url'] as string) : null,
-      });
-      const r = await computeRole(s?.id ?? null, s?.app_metadata, userMeta);
-      setRole(r);
-      if (!s) setStreakState(0); // reset on sign-out
-    });
+    const { data: sub } = supabaseBrowser.auth.onAuthStateChange(
+      async (_e: AuthChangeEvent, session: Session | null) => {
+        const s = session?.user ?? null;
+        const userMeta = (s?.user_metadata ?? {}) as Record<string, unknown>;
+        setUser({
+          id: s?.id ?? null,
+          email: s?.email ?? null,
+          name: typeof userMeta['full_name'] === 'string' ? (userMeta['full_name'] as string) : null,
+          avatarUrl: typeof userMeta['avatar_url'] === 'string' ? (userMeta['avatar_url'] as string) : null,
+        });
+        const r = await computeRole(s?.id ?? null, s?.app_metadata, userMeta);
+        setRole(r);
+        if (!s) setStreakState(0); // reset on sign-out
+      }
+    );
 
     return () => { cancelled = true; sub?.subscription?.unsubscribe(); };
   }, []);
