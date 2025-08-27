@@ -6,8 +6,8 @@
 // - "Who are you?" → fixed answer: "I am your coach hired for you by your Partner GramorX".
 // - Autofocus textarea when opening the sidebar.
 // - Split-screen that doesn't distort the rest of the page: we pad #__next instead of body.
-// - On refresh: sidebar closed and chat cleared (no persistence). Reopen → new chat.
-// - Click outside the sidebar closes it, but the chat remains in memory until refresh.
+// - On refresh: sidebar closed and chat cleared (no persistence) unless "Remember" is enabled.
+// - Click outside the sidebar closes it, but the chat remains in memory until refresh (or clear).
 
 import React, {
   useCallback,
@@ -19,7 +19,6 @@ import React, {
 } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-// Attempt to use rehype-highlight for code fences if available.
 /* eslint-disable @typescript-eslint/no-var-requires */
 let rehypeHighlight: any;
 try {
@@ -84,18 +83,18 @@ function useLocalHistory(persist: boolean) {
 }
 
 function useProvider() {
-  // Allow runtime selection and persist in localStorage
+  // Persist provider selection in localStorage
+  const key = 'gx-ai:sidebar-provider';
   const [p, setP] = useState<Provider>(() => {
     if (!isBrowser) return 'auto';
-    try {
-      return (localStorage.getItem('gx-provider') as Provider) || 'auto';
-    } catch {
-      return 'auto';
-    }
+    const saved = localStorage.getItem(key);
+    return saved === 'gemini' || saved === 'groq' || saved === 'openai' ? (saved as Provider) : 'auto';
   });
   useEffect(() => {
     if (!isBrowser) return;
-    try { localStorage.setItem('gx-provider', p); } catch {}
+    try {
+      localStorage.setItem(key, p);
+    } catch {}
   }, [p]);
   return { provider: p, setProvider: setP };
 }
@@ -213,7 +212,7 @@ export function SidebarAI() {
     return () => window.removeEventListener('resize', on);
   }, []);
 
-  // Persistence toggle
+  // Persistence toggle (chat history)
   const [persist, setPersist] = useState<boolean>(() =>
     isBrowser ? localStorage.getItem('gx-ai:sidebar-persist') === '1' : false
   );
@@ -225,7 +224,7 @@ export function SidebarAI() {
   // Chat state (with clear for history)
   const { items, setItems, clear } = useLocalHistory(persist);
 
-  // Provider state (selectable)
+  // Provider state (selectable, persisted)
   const { provider, setProvider } = useProvider();
 
   const [input, setInput] = useState('');
