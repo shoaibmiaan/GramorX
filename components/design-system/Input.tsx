@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useId } from 'react';
 
 export type InputProps = React.InputHTMLAttributes<HTMLInputElement> & {
   label?: string;
@@ -15,8 +15,12 @@ export const Input: React.FC<InputProps> = ({
   iconLeft,
   iconRight,
   className = '',
+  id,
   ...props
 }) => {
+  const generatedId = useId();
+  const inputId = id || generatedId;
+  const describedBy = error ? `${inputId}-error` : hint ? `${inputId}-hint` : undefined;
   const base = [
     'w-full rounded-ds border bg-white text-lightText placeholder-gray-500',
     'focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary',
@@ -32,15 +36,17 @@ export const Input: React.FC<InputProps> = ({
       <div className={`relative flex items-center ${error ? 'text-sunsetOrange' : ''}`}>
         {iconLeft && <span className="absolute left-3 text-gray-500 dark:text-white/50">{iconLeft}</span>}
         <input
+          id={inputId}
           className={`${base} ${invalid} ${iconLeft ? 'pl-10' : 'pl-4'} ${iconRight ? 'pr-10' : 'pr-4'} py-3`}
+          aria-describedby={describedBy}
           {...props}
         />
         {iconRight && <span className="absolute right-3 text-gray-500 dark:text-white/50">{iconRight}</span>}
       </div>
       {error ? (
-        <span className="mt-1 block text-small text-sunsetOrange">{error}</span>
+        <span id={`${inputId}-error`} className="mt-1 block text-small text-sunsetOrange">{error}</span>
       ) : hint ? (
-        <span className="mt-1 block text-small text-gray-600 dark:text-grayish">{hint}</span>
+        <span id={`${inputId}-hint`} className="mt-1 block text-small text-gray-600 dark:text-grayish">{hint}</span>
       ) : null}
     </label>
   );
