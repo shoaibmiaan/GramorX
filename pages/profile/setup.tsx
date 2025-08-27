@@ -9,11 +9,7 @@ import { Badge } from '@/components/design-system/Badge';
 import { Alert } from '@/components/design-system/Alert';
 import { Select } from '@/components/design-system/Select';
 import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser';
-
-const COUNTRIES = ['Pakistan','India','Bangladesh','United Arab Emirates','Saudi Arabia','United Kingdom','United States','Canada','Australia','New Zealand'];
-const LEVELS: Array<'Beginner'|'Elementary'|'Pre-Intermediate'|'Intermediate'|'Upper-Intermediate'|'Advanced'> = ['Beginner','Elementary','Pre-Intermediate','Intermediate','Upper-Intermediate','Advanced'];
-const TIME = ['1h/day','2h/day','Flexible'];
-const PREFS = ['Listening','Reading','Writing','Speaking'];
+import { COUNTRIES, LEVELS, TIME, PREFS } from '@/lib/profile-options';
 
 /** ---- ISO week helpers for travel/festival/exam windows ---- */
 function getWeekRange(isoWeek: string) {
@@ -62,8 +58,8 @@ export default function ProfileSetup() {
   const [festivalWeek, setFestivalWeek] = useState('');
   const [examWeek, setExamWeek] = useState('');
 
-  const [prefs, setPrefs] = useState<string[]>([]);
-  const [time, setTime] = useState<string>('');
+  const [prefs, setPrefs] = useState<typeof PREFS[number][]>([]);
+  const [time, setTime] = useState<typeof TIME[number] | ''>('');
   const [lang, setLang] = useState('en');
   const [explanationLang, setExplanationLang] = useState('en');
   const [avatarUrl, setAvatarUrl] = useState<string | undefined>();
@@ -142,14 +138,14 @@ export default function ProfileSetup() {
     if (!level) return null;
     const base = { 'Beginner': 5.5, 'Elementary': 6.0, 'Pre-Intermediate': 6.5, 'Intermediate': 7.0, 'Upper-Intermediate': 7.5, 'Advanced': 8.0 } as const;
     const suggestedGoal = base[level];
-    const focus = prefs.length ? prefs : ['Listening','Reading','Writing','Speaking'];
+    const focus = prefs.length ? prefs : [...PREFS];
     const etaWeeks = Math.max(4, Math.round((suggestedGoal - 5) * 6)); // rough ETA
     return { suggestedGoal, etaWeeks, sequence: focus };
   }, [level, prefs]);
 
   useEffect(() => { setAi(localAISuggest); }, [localAISuggest]);
 
-  const togglePref = (p: string) => {
+  const togglePref = (p: typeof PREFS[number]) => {
     setPrefs(prev => prev.includes(p) ? prev.filter(x => x !== p) : [...prev, p]);
   };
 

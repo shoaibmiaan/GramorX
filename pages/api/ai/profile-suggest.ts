@@ -1,44 +1,46 @@
 import { env } from "@/lib/env";
 // pages/api/ai/profile-suggest.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { LEVELS, PREFS, TIME } from '@/lib/profile-options';
+
+type EnglishLevel = typeof LEVELS[number];
+type StudyPref = typeof PREFS[number];
+type TimeCommitment = typeof TIME[number];
 
 type Payload = {
-  english_level:
-    | 'Beginner'
-    | 'Elementary'
-    | 'Pre-Intermediate'
-    | 'Intermediate'
-    | 'Upper-Intermediate'
-    | 'Advanced';
-  study_prefs?: string[];
-  time_commitment?: '1h/day' | '2h/day' | 'Flexible';
+  english_level: EnglishLevel;
+  study_prefs?: StudyPref[];
+  time_commitment?: TimeCommitment;
   current_band?: number; // if known from diagnostics
 };
 
+export const levelGoalMap: Record<EnglishLevel, number> = {
+  Beginner: 5.5,
+  Elementary: 6.0,
+  'Pre-Intermediate': 6.5,
+  Intermediate: 7.0,
+  'Upper-Intermediate': 7.5,
+  Advanced: 8.0,
+};
+
+export const timeMultiplierMap: Record<TimeCommitment, number> = {
+  '1h/day': 6,
+  '2h/day': 4,
+  Flexible: 5,
+};
+
 const localHeuristic = (p: Payload) => {
-  const baseMap: Record<Payload['english_level'], number> = {
-    Beginner: 5.5,
-    Elementary: 6.0,
-    'Pre-Intermediate': 6.5,
-    Intermediate: 7.0,
-    'Upper-Intermediate': 7.5,
-    Advanced: 8.0,
-  };
   const suggestedGoal = Math.max(
     4,
-    Math.min(9, baseMap[p.english_level] + (p.time_commitment === '2h/day' ? 0.5 : 0))
+    Math.min(9, levelGoalMap[p.english_level] + (p.time_commitment === '2h/day' ? 0.5 : 0))
   );
 
-  const prefs = p.study_prefs?.length
-    ? p.study_prefs
-    : ['Listening', 'Reading', 'Writing', 'Speaking'];
+  const prefs = p.study_prefs?.length ? p.study_prefs : [...PREFS];
 
-  const etaWeeks =
-    p.time_commitment === '2h/day'
-      ? Math.max(4, Math.round((suggestedGoal - 5) * 4))
-      : p.time_commitment === '1h/day'
-      ? Math.max(6, Math.round((suggestedGoal - 5) * 6))
-      : Math.max(5, Math.round((suggestedGoal - 5) * 5));
+  const etaWeeks = Math.max(
+    4,
+    Math.round((suggestedGoal - 5) * timeMultiplierMap[p.time_commitment ?? 'Flexible'])
+  );
 
   const notes = [
     `Focus order: ${prefs.join(' → ')}`,
