@@ -78,7 +78,7 @@ function useLocalHistory(persist: boolean) {
     if (isBrowser) try { localStorage.removeItem(key); } catch {}
   }, []);
 
-  return { items, setItems, clear };
+  return { items, setItems, ...(persist ? { clear } : {}) };
 }
 
  function useProvider() {
@@ -407,7 +407,7 @@ export function renderMarkdown(raw: string) {
   }, [setItems]);
 
   const clearHistory = useCallback(() => {
-    clear();
+    clear?.();
     setInput('');
     setStatusNote('');
     setStreamingId(null);
@@ -556,7 +556,15 @@ export function renderMarkdown(raw: string) {
                 />
                 Remember
               </label>
-              <button onClick={clearHistory} className="h-8 px-3 rounded-md bg-card border border-border hover:bg-accent text-caption" aria-label="Clear history">Clear</button>
+              {clear && (
+                <button
+                  onClick={clearHistory}
+                  className="h-8 px-3 rounded-md bg-card border border-border hover:bg-accent text-caption"
+                  aria-label="Clear history"
+                >
+                  Clear
+                </button>
+              )}
               <button onClick={newChat} className="h-8 px-3 rounded-md bg-card border border-border hover:bg-accent text-caption" aria-label="New chat">New</button>
               <button onClick={() => setOpen(false)} className="h-8 w-8 rounded-md bg-card border border-border grid place-items-center" aria-label="Close">✕</button>
             </div>
