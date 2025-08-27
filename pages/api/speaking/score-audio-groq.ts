@@ -2,6 +2,7 @@ import { env } from "@/lib/env";
 // pages/api/speaking/score-audio-groq.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
 import Groq from 'groq-sdk';
+import type { GroqTranscription } from '@/types/groq';
 import { z } from 'zod';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -60,7 +61,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     fs.writeFileSync(tmpFile, buf);
 
     // Transcribe (Groq Whisper)
-    const transcription = await (groq as any).audio.transcriptions.create({
+    const transcription: GroqTranscription = await groq.audio.transcriptions.create({
       file: fs.createReadStream(tmpFile),
       model: 'whisper-large-v3',
       // language: 'en',
@@ -69,7 +70,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
     const transcript: string =
-      transcription?.text || transcription?.segments?.map((s: any) => s.text).join(' ').trim() || '';
+      transcription.text || transcription.segments?.map((s) => s.text).join(' ').trim() || '';
 
     // Score (Llama 3.3 70B)
     const systemPrompt = `

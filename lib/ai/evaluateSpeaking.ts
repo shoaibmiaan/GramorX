@@ -1,6 +1,7 @@
 import { env } from "@/lib/env";
 // /lib/ai/evaluateSpeaking.ts
 import Groq from 'groq-sdk';
+import type { GroqTranscription } from '@/types/groq';
 
 export type Feedback = {
   band?: number;
@@ -87,15 +88,14 @@ export async function transcribeWithGroq(audioBytes: Buffer, filename = 'audio.w
   const groq = new Groq({ apiKey });
   // The Groq SDK expects a File (Web API). In Node 18+, File exists globally.
   const file = new File([audioBytes], filename, { type: 'audio/webm' });
-  const r = await groq.audio.transcriptions.create({
+  const r: GroqTranscription = await groq.audio.transcriptions.create({
     file,
     model: 'whisper-large-v3',
     response_format: 'verbose_json',
     temperature: 0.0
   });
-  // @ts-ignore types: r.text exists in verbose_json
-  const text: string | undefined = (r as any)?.text || (r as any)?.segments?.map((s: any) => s.text).join(' ');
-  return text?.trim() || null;
+  const text = r.text ?? r.segments?.map((s) => s.text).join(' ');
+  return text ? text.trim() : null;
 }
 
 // ---------- Fallback (never blocks UI) ----------
