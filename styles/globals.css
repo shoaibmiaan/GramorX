@@ -194,6 +194,14 @@ body { @apply font-sans text-lightText bg-lightBg overflow-x-hidden relative; }
   @apply bg-vibrantPurple/10 text-lightText dark:text-white;
 }
 
+/* Code block surface for AI messages */
+.ai-code-block{
+  @apply bg-lightCard border border-lightBorder text-lightText/80;
+}
+.dark .ai-code-block{
+  @apply bg-purpleVibe/10 border-vibrantPurple/20 text-white/80;
+}
+
 /* AI sidebar split view */
 :root { --gx-ai-right: 0px; --gx-ai-bottom: 0px; }
 

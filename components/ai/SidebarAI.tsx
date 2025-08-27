@@ -27,6 +27,8 @@ import('rehype-highlight')
   })
   .catch(() => {});
 import { useRouter } from 'next/router';
+import colors from '@/design-system/tokens/colors.js';
+import scale from '@/design-system/tokens/scale.js';
 
 // ---- Types
 type Msg = { id: string; role: 'user' | 'assistant'; content: string };
@@ -180,7 +182,10 @@ export function renderMarkdown(raw: string) {
             return <code className={className}>{children}</code>;
           }
           return (
-            <pre className="whitespace-pre-wrap rounded-xl bg-card text-muted-foreground border border-border p-3 text-caption overflow-x-auto">
+            <pre
+              style={{ borderRadius: scale.radius.xl }}
+              className="ai-code-block whitespace-pre-wrap p-3 text-caption overflow-x-auto"
+            >
               <code className={className}>{children}</code>
             </pre>
           );
@@ -510,11 +515,14 @@ export function SidebarAI() {
   }, [input]);
 
   // UI bits
-  const statusDot =
-    status === 'streaming' || status === 'connecting' ? 'bg-primary'
-    : status === 'stalled' ? 'bg-accent'
-    : status === 'offline' || status === 'error' ? 'bg-destructive'
-    : 'bg-muted-foreground';
+  const statusColors: Record<ConnState, string> = {
+    idle: colors.grayish,
+    connecting: colors.primary,
+    streaming: colors.primary,
+    stalled: colors.accent,
+    offline: colors.sunsetRed,
+    error: colors.sunsetRed,
+  };
 
   // Transition per form factor
   const sheetTrans = isMobile ? (open ? 'translate-y-0' : 'translate-y-full') : (open ? 'translate-x-0' : 'translate-x-full');
@@ -525,7 +533,7 @@ export function SidebarAI() {
       {!open && (
         <button
           onClick={() => setOpen(true)}
-          className="fixed bottom-5 right-5 z-[60] rounded-full shadow-lg px-4 py-3 text-small font-semibold bg-primary text-primary-foreground hover:opacity-90 active:scale-95"
+          className="fixed bottom-5 right-5 z-[60] rounded-full shadow-lg px-4 py-3 text-small font-semibold bg-primary text-white hover:opacity-90 active:scale-95"
           title="Open AI (Alt+A)"
         >
           ✨ AI
@@ -535,7 +543,7 @@ export function SidebarAI() {
       {/* Darkened overlay behind the sidebar */}
       {open && (
         <div
-          className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm"
+          className="fixed inset-0 z-[60] bg-dark/40 backdrop-blur-sm"
           onClick={() => setOpen(false)}
           aria-hidden
         />
@@ -543,31 +551,35 @@ export function SidebarAI() {
 
       {/* Sidebar (split-screen) */}
       <aside
-        className={`fixed z-[61] bg-background border-border shadow-xl transition-transform duration-300 ${isMobile ? 'left-0 right-0 bottom-0 border-t' : 'top-0 right-0 border-l'} ${sheetTrans} ${isMobile ? '' : 'h-screen'}`}
+        className={`fixed z-[61] shadow-xl transition-transform duration-300 ${isMobile ? 'left-0 right-0 bottom-0 border-t' : 'top-0 right-0 border-l'} ${sheetTrans} ${isMobile ? '' : 'h-screen'} bg-lightCard dark:bg-dark text-lightText dark:text-white border-lightBorder dark:border-vibrantPurple/20`}
         style={isMobile ? { height: mHeight } : { width }}
         aria-label="AI sidebar"
       >
         {/* Resizer (hidden on mobile) */}
         {!isMobile && (
           <div
-            className="absolute left-0 top-0 h-full w-1 cursor-col-resize bg-border"
+            className="absolute left-0 top-0 h-full w-1 cursor-col-resize bg-lightBorder dark:bg-vibrantPurple/20"
             onMouseDown={(e) => { e.preventDefault(); resizingRef.current = true; document.body.style.userSelect = 'none'; document.body.style.cursor = 'col-resize'; }}
             title="Drag to resize"
           />
         )}
 
         {/* Header */}
-        <div className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border">
+        <div className="sticky top-0 z-10 bg-lightCard/95 dark:bg-dark/95 backdrop-blur border-b border-lightBorder dark:border-vibrantPurple/20">
           <div className="flex items-center justify-between px-3 md:px-4 h-14">
             <div className="flex items-center gap-2 min-w-0">
               <span className="font-semibold truncate">GramorX AI</span>
-              <span className={`inline-block h-2 w-2 rounded-full ${statusDot}`} aria-label={`status: ${status}`} />
+              <span
+                className="inline-block h-2 w-2 rounded-full"
+                style={{ backgroundColor: statusColors[status] }}
+                aria-label={`status: ${status}`}
+              />
             </div>
             <div className="flex items-center gap-2">
               <select
                 value={provider}
                 onChange={(e) => setProvider(e.target.value as Provider)}
-                className="h-8 rounded-md bg-card border border-border px-2 text-caption"
+                className="h-8 rounded-md bg-lightCard dark:bg-purpleVibe/10 border border-lightBorder dark:border-vibrantPurple/20 px-2 text-caption text-lightText dark:text-white"
                 aria-label="AI provider"
               >
                 <option value="auto">auto</option>
@@ -586,13 +598,13 @@ export function SidebarAI() {
                 Remember
               </label>
 
-              <button onClick={clearHistory} className="h-8 px-3 rounded-md bg-card border border-border hover:bg-accent text-caption" aria-label="Clear history">Clear</button>
-              <button onClick={newChat} className="h-8 px-3 rounded-md bg-card border border-border hover:bg-accent text-caption" aria-label="New chat">New</button>
-              <button onClick={() => setOpen(false)} className="h-8 w-8 rounded-md bg-card border border-border grid place-items-center" aria-label="Close">✕</button>
+              <button onClick={clearHistory} className="h-8 px-3 rounded-md bg-lightCard dark:bg-purpleVibe/10 border border-lightBorder dark:border-vibrantPurple/20 hover:bg-accent text-caption text-lightText dark:text-white" aria-label="Clear history">Clear</button>
+              <button onClick={newChat} className="h-8 px-3 rounded-md bg-lightCard dark:bg-purpleVibe/10 border border-lightBorder dark:border-vibrantPurple/20 hover:bg-accent text-caption text-lightText dark:text-white" aria-label="New chat">New</button>
+              <button onClick={() => setOpen(false)} className="h-8 w-8 rounded-md bg-lightCard dark:bg-purpleVibe/10 border border-lightBorder dark:border-vibrantPurple/20 grid place-items-center text-lightText dark:text-white" aria-label="Close">✕</button>
             </div>
           </div>
           {statusNote && (
-            <div className="px-3 md:px-4 py-1 text-tiny text-muted-foreground bg-muted border-t border-border">
+            <div className="px-3 md:px-4 py-1 text-tiny bg-lightBg dark:bg-dark border-t border-lightBorder dark:border-vibrantPurple/20 text-lightText/70 dark:text-white/70">
               {statusNote}
             </div>
           )}
@@ -605,24 +617,24 @@ export function SidebarAI() {
         >
           {items.length === 0 && (
             <div className="text-center">
-              <div className="inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-gradient-to-br from-primary/15 to-accent/15 border border-border mb-3">
+              <div className="inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-gradient-to-br from-primary/15 to-accent/15 border border-lightBorder dark:border-vibrantPurple/20 mb-3">
                 <span className="text-h4">✨</span>
               </div>
               <div className="text-small">
                 Hi, I’m your coach — hired for you by your Partner GramorX. Speak or type to begin.
               </div>
               <div className="mt-3 flex items-center justify-center gap-2">
-                <button onClick={newChat} className="text-caption rounded-full px-3 py-1 bg-card border border-border hover:bg-accent">New chat</button>
+                <button onClick={newChat} className="text-caption rounded-full px-3 py-1 bg-lightCard dark:bg-purpleVibe/10 border border-lightBorder dark:border-vibrantPurple/20 hover:bg-accent text-lightText dark:text-white">New chat</button>
                 <button
                   onClick={toggleVoice}
                   disabled={!voiceSupported || voiceDenied}
-                  className="text-caption rounded-full px-3 py-1 border border-border bg-card hover:bg-accent disabled:opacity-50"
+                  className="text-caption rounded-full px-3 py-1 border border-lightBorder dark:border-vibrantPurple/20 bg-lightCard dark:bg-purpleVibe/10 hover:bg-accent disabled:opacity-50 text-lightText dark:text-white"
                   title={voiceSupported ? (voiceDenied ? 'Mic access denied' : listening ? 'Stop voice' : 'Speak') : 'Voice not supported'}
                 >
                   🎙 {listening ? 'Stop' : 'Speak'}
                 </button>
               </div>
-              <div className="mt-2 text-tiny text-muted-foreground/80">Tip: Alt+A toggles anywhere.</div>
+              <div className="mt-2 text-tiny text-lightText/60 dark:text-white/60">Tip: Alt+A toggles anywhere.</div>
             </div>
           )}
 
@@ -630,11 +642,13 @@ export function SidebarAI() {
             <div
               key={m.id}
               className={`rounded-2xl px-3 py-2 text-small leading-relaxed border ${
-                m.role === 'user' ? 'bg-accent text-accent-foreground border-accent' : 'bg-card text-card-foreground border-border'
+                m.role === 'user'
+                  ? 'bg-accent text-white border-accent'
+                  : 'bg-lightCard dark:bg-purpleVibe/10 text-lightText dark:text-white border-lightBorder dark:border-vibrantPurple/20'
               }`}
               aria-live={m.id === streamingId ? 'polite' : undefined}
             >
-              <div className="text-micro uppercase tracking-wider text-muted-foreground mb-1">
+              <div className="text-micro uppercase tracking-wider mb-1 text-lightText/70 dark:text-white/70">
                 {m.role === 'user' ? 'You' : 'GramorX AI'}
               </div>
               <div className="prose prose-sm dark:prose-invert max-w-none">
@@ -644,17 +658,17 @@ export function SidebarAI() {
           ))}
 
           {loading && (
-            <div className="text-caption text-muted-foreground animate-pulse">Thinking…</div>
+            <div className="text-caption text-lightText/70 dark:text-white/70 animate-pulse">Thinking…</div>
           )}
         </div>
 
         {/* Composer */}
-        <div className="sticky bottom-0 border-t border-border p-2 md:p-3 bg-background">
+        <div className="sticky bottom-0 border-t border-lightBorder dark:border-vibrantPurple/20 p-2 md:p-3 bg-lightCard dark:bg-dark">
           <div className="flex items-end gap-2">
             <button
               onClick={toggleVoice}
               disabled={!voiceSupported || voiceDenied}
-              className={`h-10 w-10 rounded-full border border-border ${listening ? 'bg-primary text-primary-foreground' : 'bg-card hover:bg-accent'} disabled:opacity-50`}
+              className={`h-10 w-10 rounded-full border border-lightBorder dark:border-vibrantPurple/20 ${listening ? 'bg-primary text-white' : 'bg-lightCard dark:bg-purpleVibe/10 hover:bg-accent text-lightText dark:text-white'} disabled:opacity-50`}
               title={voiceSupported ? (voiceDenied ? 'Mic access denied' : listening ? 'Stop voice' : 'Speak') : 'Voice not supported'}
               aria-label="Voice input"
             >
@@ -669,13 +683,13 @@ export function SidebarAI() {
               }}
               rows={1}
               placeholder="Type or tap 🎙 to speak… (Enter to send, Shift+Enter = new line)"
-              className="w-full resize-none rounded-2xl border border-border bg-background px-3 py-2 text-small outline-none focus:ring-2 focus:ring-primary/40"
+              className="w-full resize-none rounded-2xl border border-lightBorder dark:border-vibrantPurple/20 bg-lightBg dark:bg-dark px-3 py-2 text-small outline-none focus:ring-2 focus:ring-primary/40 text-lightText dark:text-white"
               style={{ maxHeight: 148 }}
             />
             <button
               onClick={() => send()}
               disabled={loading || !input.trim() || !!streamingId}
-              className="rounded-2xl h-10 min-w-[88px] px-4 md:px-3 text-small font-semibold bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-50"
+              className="rounded-2xl h-10 min-w-[88px] px-4 md:px-3 text-small font-semibold bg-primary text-white hover:opacity-90 disabled:opacity-50"
             >
               Send
             </button>
