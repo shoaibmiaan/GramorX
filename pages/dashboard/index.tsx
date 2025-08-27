@@ -48,12 +48,16 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<Profile | null>(null);
 
+  // Hook now exposes: nextRestart + shields + claimShield + useShield
   const {
     current: streak,
     lastDayKey,
     loading: streakLoading,
     completeToday,
     nextRestart,
+    shields,
+    claimShield,
+    useShield,
   } = useStreak();
 
   const handleShare = () => {
@@ -164,6 +168,15 @@ export default function Dashboard() {
 
           <div className="flex items-center gap-4">
             <StreakIndicator value={streak} />
+            <Badge size="sm">🛡 {shields}</Badge>
+            <Button onClick={claimShield} variant="secondary" className="rounded-ds-xl">
+              Claim Shield
+            </Button>
+            {shields > 0 && (
+              <Button onClick={useShield} variant="secondary" className="rounded-ds-xl">
+                Use Shield
+              </Button>
+            )}
             {streak >= 7 && <Badge variant="success" size="sm">🔥 {streak}-day streak!</Badge>}
 
             {profile?.avatar_url ? (
@@ -270,12 +283,7 @@ export default function Dashboard() {
               <ul className="list-disc pl-6 text-body">
                 {(ai.sequence ?? []).map((s, i, arr) => (
                   <li key={s}>
-                    {s}{' '}
-                    {i === 0
-                      ? '- prioritize'
-                      : i === arr.length - 1
-                      ? '- strong'
-                      : ''}
+                    {s} {i === 0 ? '- prioritize' : i === arr.length - 1 ? '- strong' : ''}
                   </li>
                 ))}
               </ul>

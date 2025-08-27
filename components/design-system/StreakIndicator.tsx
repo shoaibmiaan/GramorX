@@ -21,7 +21,7 @@ const safeGetLocalDayKey = (d?: Date) => {
 };
 
 export const StreakIndicator: React.FC<Props> = ({ className = '', value }) => {
-  const { current, lastDayKey, completeToday, loading } = useStreak();
+  const { current, lastDayKey, completeToday, loading, shields } = useStreak();
 
   const [justCelebrated, setJustCelebrated] = useState(false);
   const todayKey = useMemo(() => safeGetLocalDayKey(), []);
@@ -58,11 +58,13 @@ export const StreakIndicator: React.FC<Props> = ({ className = '', value }) => {
         justCelebrated ? 'shadow-[0_0_0_6px_rgba(0,187,249,0.25)] transition-shadow' : '',
         className,
       ].join(' ')}
-      aria-label={`Current streak ${streakValue} days`}
+      aria-label={`Current streak ${streakValue} days, ${shields} shields left`}
       title={`Streak: ${streakValue}`}
     >
       <i className="fas fa-fire" aria-hidden="true" />
       <span className="font-semibold tabular-nums">{Math.max(streakValue, 0)}</span>
+      <i className="fas fa-shield-alt ml-3" aria-hidden="true" />
+      <span className="font-semibold tabular-nums">{shields}</span>
     </div>
   );
 };
