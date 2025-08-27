@@ -17,6 +17,15 @@ import React, {
   useState,
   Fragment,
 } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+// Attempt to use rehype-highlight for code fences if available.
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+let rehypeHighlight: any;
+try {
+  // Optional dependency; falls back gracefully if missing.
+  rehypeHighlight = require('rehype-highlight');
+} catch {}
 import { useRouter } from 'next/router';
 
 // ---- Types
@@ -101,30 +110,39 @@ import { useRouter } from 'next/router';
   }
  }
 
- // --- Minimal md-ish renderer (and strip bullet prefixes)
- function renderBlocks(raw: string) {
-  const parts = raw.split(/```/g);
-  return parts.map((chunk, i) => {
-    const isCode = i % 2 === 1;
-    if (isCode) {
-      return (
-        <pre
-          key={`pre-${i}`}
-          className="whitespace-pre-wrap rounded-xl bg-card text-muted-foreground border border-border p-3 text-caption overflow-x-auto"
-        >
-          {chunk}
-        </pre>
-      );
-    }
-    // Strip leading list markers: *, -, or 1.
-    const clean = chunk.replace(/^\s*([*\-]|\d+\.)\s+/gm, '');
-    return (
-      <p key={`p-${i}`} className="whitespace-pre-wrap leading-relaxed">
-        {clean}
-      </p>
-    );
-  });
- }
+// --- Markdown renderer with bullet stripping and code fencing
+export function renderMarkdown(raw: string) {
+  return (
+    <ReactMarkdown
+      remarkPlugins={[remarkGfm]}
+      rehypePlugins={rehypeHighlight ? [rehypeHighlight] : []}
+      skipHtml
+      components={{
+        // Strip bullets by rendering lists as plain paragraphs
+        ul: ({ children }) => <>{children}</>,
+        ol: ({ children }) => <>{children}</>,
+        li: ({ children }) => (
+          <p className="whitespace-pre-wrap leading-relaxed">{children}</p>
+        ),
+        p: ({ children }) => (
+          <p className="whitespace-pre-wrap leading-relaxed">{children}</p>
+        ),
+        code({ inline, className, children }) {
+          if (inline) {
+            return <code className={className}>{children}</code>;
+          }
+          return (
+            <pre className="whitespace-pre-wrap rounded-xl bg-card text-muted-foreground border border-border p-3 text-caption overflow-x-auto">
+              <code className={className}>{children}</code>
+            </pre>
+          );
+        },
+      }}
+    >
+      {raw}
+    </ReactMarkdown>
+  );
+}
 
  export function SidebarAI() {
   const router = useRouter();
@@ -506,7 +524,7 @@ import { useRouter } from 'next/router';
                 {m.role === 'user' ? 'You' : 'GramorX AI'}
               </div>
               <div className="prose prose-sm dark:prose-invert max-w-none">
-                {renderBlocks(m.content)}
+                {renderMarkdown(m.content)}
               </div>
             </div>
           ))}
