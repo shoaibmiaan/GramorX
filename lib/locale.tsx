@@ -3,12 +3,16 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 interface LocaleContextValue {
   locale: string;
   setLocale: (lng: string) => void;
+  explanationLocale: string;
+  setExplanationLocale: (lng: string) => void;
   t: (key: string) => string;
 }
 
 const LocaleContext = createContext<LocaleContextValue>({
   locale: 'en',
   setLocale: () => {},
+  explanationLocale: 'en',
+  setExplanationLocale: () => {},
   t: (key: string) => key,
 });
 
@@ -24,6 +28,7 @@ async function loadMessages(locale: string) {
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [locale, setLocale] = useState('en');
+  const [explanationLocale, setExplanationLocale] = useState('en');
   const [messages, setMessages] = useState<Record<string, any>>({});
 
   useEffect(() => {
@@ -35,7 +40,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   return (
-    <LocaleContext.Provider value={{ locale, setLocale, t }}>
+    <LocaleContext.Provider value={{ locale, setLocale, explanationLocale, setExplanationLocale, t }}>
       {children}
     </LocaleContext.Provider>
   );

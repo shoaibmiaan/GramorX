@@ -6,6 +6,7 @@
     "completeProfile": "Complete your profile",
     "description": "We’ll tune your study plan with AI and personalize your dashboard.",
     "preferredLanguage": "Preferred UI language",
+    "explanationLanguage": "Explanation language",
     "saveDraft": "Save draft",
     "finishContinue": "Finish & continue"
   },

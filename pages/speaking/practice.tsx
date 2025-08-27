@@ -4,6 +4,8 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { Container } from '@/components/design-system/Container';
 import Recorder, { RecorderHandle } from '@/components/speaking/Recorder';
+import { AccentPicker, Accent } from '@/components/speaking/AccentPicker';
+import AccentMirror from '@/components/speaking/AccentMirror';
 
 // ---------- Modes & Focus ----------
 type Mode = 'part1' | 'part2' | 'part3';
@@ -230,6 +232,7 @@ export default function SpeakingPracticePage() {
   }, [bank]);
 
   const recRef = useRef<RecorderHandle | null>(null);
+  const [accent, setAccent] = useState<Accent>('US');
 
   const [ttsOn, setTtsOn] = useState(true);
   const [stage, setStage] = useState<Stage>('idle');
@@ -596,6 +599,15 @@ export default function SpeakingPracticePage() {
               </ul>
             </div>
           </div>
+        </div>
+
+        {/* Accent Mirror personalized drills */}
+        <div className="mt-12">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold">Accent Mirror</h2>
+            <AccentPicker value={accent} onChange={setAccent} />
+          </div>
+          <AccentMirror accent={accent} />
         </div>
       </Container>
     </>

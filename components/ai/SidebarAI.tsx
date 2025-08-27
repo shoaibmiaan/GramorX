@@ -6,8 +6,8 @@
 // - "Who are you?" → fixed answer: "I am your coach hired for you by your Partner GramorX".
 // - Autofocus textarea when opening the sidebar.
 // - Split-screen that doesn't distort the rest of the page: we pad #__next instead of body.
-// - On refresh: sidebar closed and chat cleared (no persistence). Reopen → new chat.
-// - Click outside the sidebar closes it, but the chat remains in memory until refresh.
+// - On refresh: sidebar closed and chat cleared (no persistence) unless "Remember" is enabled.
+// - Click outside the sidebar closes it, but the chat remains in memory until refresh (or clear).
 
 import React, {
   useCallback,
@@ -19,23 +19,24 @@ import React, {
 } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-// Attempt to use rehype-highlight for code fences if available.
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+/* eslint-disable @typescript-eslint/no-var-requires */
 let rehypeHighlight: any;
 try {
   // Optional dependency; falls back gracefully if missing.
+  // @ts-expect-error TODO: add types for rehype-highlight
   rehypeHighlight = require('rehype-highlight');
 } catch {}
+/* eslint-enable @typescript-eslint/no-var-requires */
 import { useRouter } from 'next/router';
 
 // ---- Types
- type Msg = { id: string; role: 'user' | 'assistant'; content: string };
- type WireMsg = { role: 'system' | 'user' | 'assistant'; content: string };
- type Provider = 'auto' | 'gemini' | 'groq' | 'openai';
- type ConnState = 'idle' | 'connecting' | 'streaming' | 'stalled' | 'error' | 'offline';
+type Msg = { id: string; role: 'user' | 'assistant'; content: string };
+type WireMsg = { role: 'system' | 'user' | 'assistant'; content: string };
+type Provider = 'auto' | 'gemini' | 'groq' | 'openai';
+type ConnState = 'idle' | 'connecting' | 'streaming' | 'stalled' | 'error' | 'offline';
 
 // ---- Local flags
- const isBrowser = typeof window !== 'undefined';
+const isBrowser = typeof window !== 'undefined';
 
 // ---- Helpers
 function useLocalHistory(persist: boolean) {
@@ -82,6 +83,7 @@ function useLocalHistory(persist: boolean) {
 }
 
 function useProvider() {
+  // Persist provider selection in localStorage
   const key = 'gx-ai:sidebar-provider';
   const [p, setP] = useState<Provider>(() => {
     if (!isBrowser) return 'auto';
@@ -97,7 +99,7 @@ function useProvider() {
   return { provider: p, setProvider: setP };
 }
 
- function useIsMobile() {
+function useIsMobile() {
   const [m, setM] = useState<boolean>(() => (isBrowser ? window.innerWidth < 768 : true));
   useEffect(() => {
     if (!isBrowser) return;
@@ -106,9 +108,9 @@ function useProvider() {
     return () => window.removeEventListener('resize', on);
   }, []);
   return m;
- }
+}
 
- function friendlyAdvice(err: string, isOffline: boolean) {
+function friendlyAdvice(err: string, isOffline: boolean) {
   if (isOffline) return 'You are offline — check your internet.';
   const s = (err || '').toLowerCase();
   if (s.includes('timeout')) return 'The link is slow or down — try again in a moment.';
@@ -118,10 +120,10 @@ function useProvider() {
     return 'Service API key missing/invalid — contact admin.';
   if (s.includes('404')) return 'API route not found — ensure /pages/api/ai/* exists and restart dev.';
   return 'System issue — try again or switch provider.';
- }
+}
 
- // --- Streaming helper (SSE -> chunks)
- async function* streamChat(messages: WireMsg[], provider: Provider) {
+// --- Streaming helper (SSE -> chunks)
+async function* streamChat(messages: WireMsg[], provider: Provider) {
   const qs = provider === 'auto' ? '' : `?p=${provider}`;
   const body = { messages: messages.map((m) => ({ role: m.role, content: m.content })) };
   const res = await fetch(`/api/ai/chat${qs}`, {
@@ -155,7 +157,7 @@ function useProvider() {
       }
     }
   }
- }
+}
 
 // --- Markdown renderer with bullet stripping and code fencing
 export function renderMarkdown(raw: string) {
@@ -191,7 +193,7 @@ export function renderMarkdown(raw: string) {
   );
 }
 
- export function SidebarAI() {
+export function SidebarAI() {
   const router = useRouter();
   const isMobile = useIsMobile();
 
@@ -199,7 +201,7 @@ export function renderMarkdown(raw: string) {
   const [open, setOpen] = useState<boolean>(false);
 
   // Width (desktop only)
-  const [width, setWidth] = useState<number>(420);
+  the const [width, setWidth] = useState<number>(420);
 
   // Mobile dock height (split-screen). Defaults to ~46% of viewport height.
   const [mHeight, setMHeight] = useState<number>(() => (isBrowser ? Math.round(window.innerHeight * 0.46) : 420));
@@ -210,7 +212,7 @@ export function renderMarkdown(raw: string) {
     return () => window.removeEventListener('resize', on);
   }, []);
 
-  // Persistence toggle
+  // Persistence toggle (chat history)
   const [persist, setPersist] = useState<boolean>(() =>
     isBrowser ? localStorage.getItem('gx-ai:sidebar-persist') === '1' : false
   );
@@ -219,14 +221,18 @@ export function renderMarkdown(raw: string) {
     localStorage.setItem('gx-ai:sidebar-persist', persist ? '1' : '0');
   }, [persist]);
 
-  // Chat state
+  // Chat state (with clear for history)
   const { items, setItems, clear } = useLocalHistory(persist);
+
+  // Provider state (selectable, persisted)
   const { provider, setProvider } = useProvider();
+
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<ConnState>('idle');
   const [statusNote, setStatusNote] = useState<string>('');
   const [streamingId, setStreamingId] = useState<string | null>(null);
+
   // Voice state
   const [listening, setListening] = useState(false);
   const recRef = useRef<any>(null);
@@ -557,6 +563,18 @@ export function renderMarkdown(raw: string) {
               <span className={`inline-block h-2 w-2 rounded-full ${statusDot}`} aria-label={`status: ${status}`} />
             </div>
             <div className="flex items-center gap-2">
+              <select
+                value={provider}
+                onChange={(e) => setProvider(e.target.value as Provider)}
+                className="h-8 rounded-md bg-card border border-border px-2 text-caption"
+                aria-label="AI provider"
+              >
+                <option value="auto">auto</option>
+                <option value="gemini">gemini</option>
+                <option value="groq">groq</option>
+                <option value="openai">openai</option>
+              </select>
+
               <label className="flex items-center gap-1 text-caption">
                 <input
                   type="checkbox"
@@ -566,17 +584,7 @@ export function renderMarkdown(raw: string) {
                 />
                 Remember
               </label>
-              <select
-                value={provider}
-                onChange={(e) => setProvider(e.target.value as Provider)}
-                className="h-8 rounded-md bg-card border border-border text-caption"
-                aria-label="AI provider"
-              >
-                <option value="auto">Auto</option>
-                <option value="openai">OpenAI</option>
-                <option value="groq">Groq</option>
-                <option value="gemini">Gemini</option>
-              </select>
+
               <button onClick={clearHistory} className="h-8 px-3 rounded-md bg-card border border-border hover:bg-accent text-caption" aria-label="Clear history">Clear</button>
               <button onClick={newChat} className="h-8 px-3 rounded-md bg-card border border-border hover:bg-accent text-caption" aria-label="New chat">New</button>
               <button onClick={() => setOpen(false)} className="h-8 w-8 rounded-md bg-card border border-border grid place-items-center" aria-label="Close">✕</button>
@@ -675,6 +683,6 @@ export function renderMarkdown(raw: string) {
       </aside>
     </Fragment>
   );
- }
+}
 
 export default SidebarAI;

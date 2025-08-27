@@ -39,6 +39,7 @@ export const getDayKeyInTZ = (
 export type StreakData = {
   current_streak: number;
   last_activity_date: string | null;
+  next_restart_date?: string | null;
 };
 
 /** Fetch current streak for the logged-in user */
@@ -55,6 +56,7 @@ const handle = async (res: Response, fallbackMsg: string): Promise<StreakData> =
   return {
     current_streak: json?.current_streak ?? 0,
     last_activity_date: json?.last_activity_date ?? null,
+    next_restart_date: json?.next_restart_date ?? null,
   };
 };
 
@@ -74,6 +76,21 @@ export async function incrementStreak(): Promise<StreakData> {
   try {
     const res = await fetch('/api/streak', { method: 'POST' });
     return await handle(res, 'Failed to update streak');
+  } catch (e) {
+    console.error(e);
+    throw e;
+  }
+}
+
+/** Schedule a streak recovery and return the planned restart */
+export async function scheduleRecovery(date: string): Promise<StreakData> {
+  try {
+    const res = await fetch('/api/streak/recovery', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ date }),
+    });
+    return await handle(res, 'Failed to schedule recovery');
   } catch (e) {
     console.error(e);
     throw e;
