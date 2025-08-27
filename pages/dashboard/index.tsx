@@ -48,6 +48,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<Profile | null>(null);
 
+  // Hook now exposes: nextRestart + shields + claimShield + useShield
   const {
     current: streak,
     lastDayKey,
