@@ -4,6 +4,7 @@ import { useLocale } from '@/lib/locale';
 import { Container } from '@/components/design-system/Container';
 import { Card } from '@/components/design-system/Card';
 import { Input } from '@/components/design-system/Input';
+import { AvatarUploader } from '@/components/design-system/AvatarUploader';
 import { Button } from '@/components/design-system/Button';
 import { Badge } from '@/components/design-system/Badge';
 import { Alert } from '@/components/design-system/Alert';
@@ -198,13 +199,6 @@ export default function ProfileSetup() {
     checkWeek(travelWeek, 'travelWeek');
     checkWeek(festivalWeek, 'festivalWeek');
     checkWeek(examWeek, 'examWeek');
-    if (avatarUrl) {
-      try {
-        new URL(avatarUrl);
-      } catch {
-        errs.avatarUrl = 'Invalid URL';
-      }
-    }
     if (Object.keys(errs).length) {
       setFieldErrors(errs);
       setSaving(false);
@@ -416,10 +410,15 @@ export default function ProfileSetup() {
                     <option value="ar">Arabic</option>
                     <option value="hi">Hindi</option>
                   </Select>
-                  <div>
-                    <Input label="Avatar URL" placeholder="/path/to/avatar.png" value={avatarUrl ?? ''} onChange={e=>{ setAvatarUrl(e.target.value || undefined); clearFieldError('avatarUrl'); }} />
-                    {fieldErrors.avatarUrl && <Alert variant="error" className="mt-2">{fieldErrors.avatarUrl}</Alert>}
-                  </div>
+                  <AvatarUploader
+                    userId={userId}
+                    initialUrl={avatarUrl}
+                    onUploaded={async (url) => {
+                      setAvatarUrl(url);
+                      clearFieldError('avatarUrl');
+                      await supabase.auth.updateUser({ data: { avatar_url: url } });
+                    }}
+                  />
                 </div>
 
                 <div className="mt-6 flex flex-wrap gap-3">
@@ -459,6 +458,13 @@ export default function ProfileSetup() {
               <Card className="card-surface p-5 rounded-ds-2xl">
                 <h3 className="font-slab text-h3 mb-2">Profile preview</h3>
                 <div className="text-body">
+                  {avatarUrl && (
+                    <img
+                      src={avatarUrl}
+                      alt="Avatar preview"
+                      className="mb-3 h-20 w-20 rounded-full object-cover ring-2 ring-primary/40"
+                    />
+                  )}
                   <div className="font-semibold">{fullName || 'Your name'}</div>
                   <div className="opacity-80">{country || 'Country'} • {level || 'Level'} • {time || 'Time'}</div>
                   <div className="mt-2 flex flex-wrap gap-2">

@@ -1,4 +1,5 @@
 // pages/api/ai/chat.ts
+import { env } from '@/lib/env';
 export const config = { runtime: 'edge' };
 
 // ---------- Types ----------
@@ -17,25 +18,25 @@ const errEvent = (t: string) =>
 const DEFAULTS = {
   // Prefer latest Gemini names, but try your .env first if provided.
   geminiCandidates: [
-    ...(process.env.GEMINI_MODEL ? [process.env.GEMINI_MODEL] : []),
+    ...(env.GEMINI_MODEL ? [env.GEMINI_MODEL] : []),
     'gemini-1.5-flash-latest',
     'gemini-1.5-pro-latest',
   ],
   // Groq: try your .env model, then stable fallbacks.
   groqCandidates: [
-    ...(process.env.GROQ_MODEL ? [process.env.GROQ_MODEL] : []),
+    ...(env.GROQ_MODEL ? [env.GROQ_MODEL] : []),
     'llama-3.3-70b-versatile',
     'llama-3.1-8b-instant',
   ],
-  openaiModel: process.env.OPENAI_MODEL || 'gpt-4o-mini',
+  openaiModel: env.OPENAI_MODEL || 'gpt-4o-mini',
 };
 
 function chooseProvider(url: URL): Provider {
-  const p = (url.searchParams.get('p') || process.env.GX_AI_PROVIDER || '').toLowerCase() as Provider;
+  const p = (url.searchParams.get('p') || env.GX_AI_PROVIDER || '').toLowerCase() as Provider;
   if (p) return p;
-  if (process.env.GEMINI_API_KEY) return 'gemini';
-  if (process.env.GROQ_API_KEY) return 'groq';
-  if (process.env.OPENAI_API_KEY) return 'openai';
+  if (env.GEMINI_API_KEY) return 'gemini';
+  if (env.GROQ_API_KEY) return 'groq';
+  if (env.OPENAI_API_KEY) return 'openai';
   throw new Error('No AI provider configured. Set GEMINI_API_KEY or GROQ_API_KEY (or OPENAI_API_KEY).');
 }
 
@@ -188,10 +189,12 @@ export default async function handler(req: Request) {
 
     let stream: ReadableStream<Uint8Array>;
     if (provider === 'groq') {
-      const key = process.env.GROQ_API_KEY!;
+      const key = env.GROQ_API_KEY;
+      if (!key) throw new Error('GROQ_API_KEY is required for Groq provider');
       stream = await streamGroqWithFallback(key, messages);
     } else if (provider === 'openai') {
-      const key = process.env.OPENAI_API_KEY!;
+      const key = env.OPENAI_API_KEY;
+      if (!key) throw new Error('OPENAI_API_KEY is required for OpenAI provider');
       stream = await streamOpenAICompat(
         'https://api.openai.com/v1/chat/completions',
         key,
@@ -199,7 +202,8 @@ export default async function handler(req: Request) {
         messages,
       );
     } else {
-      const key = process.env.GEMINI_API_KEY!;
+      const key = env.GEMINI_API_KEY;
+      if (!key) throw new Error('GEMINI_API_KEY is required for Gemini provider');
       stream = await streamGeminiNonStreaming(key, messages);
     }
 
