@@ -564,17 +564,19 @@ export function SidebarAI() {
               <span className={`inline-block h-2 w-2 rounded-full ${statusDot}`} aria-label={`status: ${status}`} />
             </div>
             <div className="flex items-center gap-2">
-              <select
-                value={provider}
-                onChange={(e) => setProvider(e.target.value as Provider)}
-                className="h-8 rounded-md bg-card border border-border px-2 text-caption"
-                aria-label="AI provider"
-              >
-                <option value="auto">auto</option>
-                <option value="gemini">gemini</option>
-                <option value="groq">groq</option>
-                <option value="openai">openai</option>
-              </select>
+              <div className="flex gap-1" role="tablist" aria-label="AI provider">
+                {(['auto', 'gemini', 'groq', 'openai'] as Provider[]).map((p) => (
+                  <button
+                    key={p}
+                    onClick={() => setProvider(p)}
+                    className={`ai-tab ${provider === p ? 'is-active' : ''}`}
+                    role="tab"
+                    aria-selected={provider === p}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
 
               <label className="flex items-center gap-1 text-caption">
                 <input
@@ -588,7 +590,7 @@ export function SidebarAI() {
 
               <button onClick={clearHistory} className="h-8 px-3 rounded-md bg-card border border-border hover:bg-accent text-caption" aria-label="Clear history">Clear</button>
               <button onClick={newChat} className="h-8 px-3 rounded-md bg-card border border-border hover:bg-accent text-caption" aria-label="New chat">New</button>
-              <button onClick={() => setOpen(false)} className="h-8 w-8 rounded-md bg-card border border-border grid place-items-center" aria-label="Close">✕</button>
+              <button onClick={() => setOpen(false)} className="ai-icon-btn" aria-label="Close">✕</button>
             </div>
           </div>
           {statusNote && (
@@ -654,7 +656,7 @@ export function SidebarAI() {
             <button
               onClick={toggleVoice}
               disabled={!voiceSupported || voiceDenied}
-              className={`h-10 w-10 rounded-full border border-border ${listening ? 'bg-primary text-primary-foreground' : 'bg-card hover:bg-accent'} disabled:opacity-50`}
+              className={`ai-icon-btn h-10 w-10 rounded-full ${listening ? 'bg-primary text-primary-foreground' : ''}`}
               title={voiceSupported ? (voiceDenied ? 'Mic access denied' : listening ? 'Stop voice' : 'Speak') : 'Voice not supported'}
               aria-label="Voice input"
             >
