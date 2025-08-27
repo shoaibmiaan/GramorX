@@ -47,7 +47,7 @@ export default function LoginWithEmail() {
         </ul>
       </div>
       <div className="pt-8 text-small text-grayish dark:text-gray-400">
-        New here? <Link href="/signup" className="text-primary hover:underline">Create an account</Link>
+        New here? <Link href="/signup" className="text-primaryDark hover:underline">Create an account</Link>
       </div>
     </div>
   );

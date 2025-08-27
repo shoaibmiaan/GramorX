@@ -43,7 +43,7 @@ export default function LoginWithPassword() {
         </p>
       </div>
       <div className="pt-8 text-small text-grayish dark:text-gray-400">
-        Need an account? <Link href="/signup" className="text-primary hover:underline">Sign up</Link>
+        Need an account? <Link href="/signup" className="text-primaryDark hover:underline">Sign up</Link>
       </div>
     </div>
   );

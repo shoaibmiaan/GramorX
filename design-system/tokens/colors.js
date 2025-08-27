@@ -14,7 +14,8 @@ module.exports = {
   darker: '#070710',
   lightBg: '#f0f2f5',
   lightText: '#1a1a2e',
-  grayish: '#8a8a9c',
+  // Darkened for improved contrast on light backgrounds
+  grayish: '#6a6a86',
 
   // Added (for desired_design alignment)
   vibrantPurple: '#9d4edd', // alias for utilities (same hue as purpleVibe)
