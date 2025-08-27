@@ -4,7 +4,7 @@ import { useStreak } from '@/hooks/useStreak';
 import { getDayKeyInTZ } from '@/lib/streak';
 
 export const StudyCalendar: React.FC = () => {
-  const { current, lastDayKey, loading } = useStreak();
+  const { current, lastDayKey, loading, nextRestart } = useStreak();
 
   const days = useMemo(() => {
     const arr: { key: string; date: Date; completed: boolean }[] = [];
@@ -47,6 +47,11 @@ export const StudyCalendar: React.FC = () => {
           </div>
         ))}
       </div>
+      {nextRestart && (
+        <div className="mt-4 text-center text-sm text-muted-foreground">
+          Restart scheduled on {nextRestart}
+        </div>
+      )}
     </Card>
   );
 };
