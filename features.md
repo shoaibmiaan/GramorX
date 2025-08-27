@@ -39,12 +39,12 @@ Got it. I’ve converted your checklist into tables with three columns: **Item**
 
 | Item                                                                     | Development summary | Updated |
 | ------------------------------------------------------------------------ | ------------------- | ------- |
-| \[ ] Full-length IELTS mock tests (timed)                                |                     |         |
-| \[ ] Section-wise practice tests (Listening, Reading, Writing, Speaking) |                     |         |
-| \[ ] Band score simulation                                               |                     |         |
-| \[ ] Real-time test timer & tab-switch detection                         |                     |         |
-| \[ ] Auto-save test state                                                |                     |         |
-| \[ ] Performance analytics per mock                                      |                     |         |
+| \[x] Full-length IELTS mock tests (timed)                                | Basic four-section mock with timer & persistence | 2025-08-27 |
+| \[x] Section-wise practice tests (Listening, Reading, Writing, Speaking) | Individual timed practice pages for each section | 2025-08-27 |
+| \[x] Band score simulation                                               | Scores derived from correct answers              | 2025-08-27 |
+| \[x] Real-time test timer & tab-switch detection                         | Countdown with visibility change tracking        | 2025-08-27 |
+| \[x] Auto-save test state                                                | Answers & time stored in localStorage            | 2025-08-27 |
+| \[x] Performance analytics per mock                                      | Band, time and tab switches saved per attempt    | 2025-08-27 |
 
 ---
 
