@@ -50,6 +50,9 @@ export default function Dashboard() {
     lastDayKey,
     loading: streakLoading,
     completeToday,
+    shields,
+    claimShield,
+    useShield,
   } = useStreak();
 
   const handleShare = () => {
@@ -161,6 +164,14 @@ export default function Dashboard() {
 
           <div className="flex items-center gap-4">
             <StreakIndicator value={streak} />
+            <Button onClick={claimShield} variant="secondary" className="rounded-ds-xl">
+              Claim Shield
+            </Button>
+            {shields > 0 && (
+              <Button onClick={useShield} variant="secondary" className="rounded-ds-xl">
+                Use Shield
+              </Button>
+            )}
             {streak >= 7 && <Badge variant="success" size="sm">🔥 {streak}-day streak!</Badge>}
 
             {profile?.avatar_url ? (

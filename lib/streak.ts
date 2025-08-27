@@ -39,6 +39,7 @@ export const getDayKeyInTZ = (
 export type StreakData = {
   current_streak: number;
   last_activity_date: string | null;
+  shields: number;
 };
 
 /** Fetch current streak for the logged-in user */
@@ -55,6 +56,7 @@ const handle = async (res: Response, fallbackMsg: string): Promise<StreakData> =
   return {
     current_streak: json?.current_streak ?? 0,
     last_activity_date: json?.last_activity_date ?? null,
+    shields: json?.shields ?? 0,
   };
 };
 
@@ -70,10 +72,30 @@ export async function fetchStreak(): Promise<StreakData> {
 }
 
 /** Mark today's activity and return the updated streak */
-export async function incrementStreak(): Promise<StreakData> {
+export async function incrementStreak(options: { useShield?: boolean } = {}): Promise<StreakData> {
   try {
-    const res = await fetch('/api/streak', { method: 'POST' });
+    const body = options.useShield ? { action: 'use' } : {};
+    const res = await fetch('/api/streak', {
+      method: 'POST',
+      headers: Object.keys(body).length ? { 'Content-Type': 'application/json' } : undefined,
+      body: Object.keys(body).length ? JSON.stringify(body) : undefined,
+    });
     return await handle(res, 'Failed to update streak');
+  } catch (e) {
+    console.error(e);
+    throw e;
+  }
+}
+
+/** Claim a new streak shield */
+export async function claimShield(): Promise<StreakData> {
+  try {
+    const res = await fetch('/api/streak', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'claim' }),
+    });
+    return await handle(res, 'Failed to claim shield');
   } catch (e) {
     console.error(e);
     throw e;
