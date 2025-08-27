@@ -2,16 +2,13 @@ import React, { useEffect, useState } from 'react';
 
 import { Card } from '@/components/design-system/Card';
 import { supabaseBrowser } from '@/lib/supabaseBrowser';
+import type { Profile } from '@/types/profile';
 
 interface VisaTarget {
   user_id: string;
   institution: string;
   target_band: number;
   deadline: string | null;
-}
-
-interface Profile {
-  goal_band: number | null;
 }
 
 export const GapToGoal: React.FC = () => {

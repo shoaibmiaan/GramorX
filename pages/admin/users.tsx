@@ -6,12 +6,7 @@ import { Card } from '@/components/design-system/Card';
 import { Button } from '@/components/design-system/Button';
 import { Badge } from '@/components/design-system/Badge';
 import { Input } from '@/components/design-system/Input';
-
-type Profile = {
-  id: string;
-  full_name?: string | null;
-  role: 'student' | 'teacher' | 'admin';
-};
+import type { Profile } from '@/types/profile';
 
 const ROLES: Profile['role'][] = ['student','teacher','admin'];
 
