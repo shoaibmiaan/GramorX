@@ -20,14 +20,7 @@ const nextConfig = {
     CARD_GATEWAY_API_KEY: process.env.CARD_GATEWAY_API_KEY ?? 'demo_key',
     CARD_GATEWAY_SECRET: process.env.CARD_GATEWAY_SECRET ?? 'demo_secret',
   },
-};
-
-export default withPWA({
-  dest: 'public',
-  register: true,
-  skipWaiting: true,
-  swSrc: 'public/sw.js',
-  workboxOptions: {
+  pwa: {
     additionalManifestEntries: [
       { url: '/brand/logo.png', revision: null },
       { url: '/locales/en/common.json', revision: null },
@@ -35,4 +28,11 @@ export default withPWA({
       { url: '/premium.css', revision: null },
     ],
   },
+};
+
+export default withPWA({
+  dest: 'public',
+  register: true,
+  skipWaiting: true,
+  swSrc: 'public/sw.js',
 })(nextConfig);
