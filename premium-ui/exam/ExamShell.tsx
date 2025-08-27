@@ -6,9 +6,51 @@ type Props = {
   children?: React.ReactNode;
   attemptId?: string;
   title?: string;
+  /** total number of exam parts */
+  totalParts?: number;
+  /** currently active part (1-indexed) */
+  currentPart?: number;
+  /** initial countdown time in seconds */
+  seconds?: number;
+  /** callback when timer reaches 0 */
+  onTimeUp?: () => void;
 };
 
-export function ExamShell({ children, attemptId, title = 'Exam Room' }: Props) {
+export function ExamShell({
+  children,
+  attemptId,
+  title = 'Exam Room',
+  totalParts = 0,
+  currentPart = 1,
+  seconds,
+  onTimeUp,
+}: Props) {
+  const [timeLeft, setTimeLeft] = React.useState(seconds ?? 0);
+
+  React.useEffect(() => {
+    if (typeof seconds === 'number') setTimeLeft(seconds);
+  }, [seconds]);
+
+  React.useEffect(() => {
+    if (typeof seconds !== 'number') return;
+    const id = setInterval(() => {
+      setTimeLeft((t) => {
+        if (t <= 1) {
+          clearInterval(id);
+          onTimeUp?.();
+          return 0;
+        }
+        return t - 1;
+      });
+    }, 1000);
+    return () => clearInterval(id);
+  }, [seconds, onTimeUp]);
+
+  const mins = Math.floor(timeLeft / 60)
+    .toString()
+    .padStart(2, '0');
+  const secs = (timeLeft % 60).toString().padStart(2, '0');
+
   return (
     <PremiumThemeProvider>
       <header className="pr sticky top-0 z-40 backdrop-blur bg-[color-mix(in oklab,var(--pr-bg),transparent 40%)] border-b border-[var(--pr-border)]">
@@ -21,8 +63,9 @@ export function ExamShell({ children, attemptId, title = 'Exam Room' }: Props) {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            {/* Placeholder timer pill */}
-            <div className="px-3 py-1.5 rounded-xl border border-[var(--pr-border)] bg-[var(--pr-card)] font-mono text-sm">⏱ 59:59</div>
+            <div className="px-3 py-1.5 rounded-xl border border-[var(--pr-border)] bg-[var(--pr-card)] font-mono text-sm">
+              ⏱ {mins}:{secs}
+            </div>
             <ThemeSwitcherPremium />
           </div>
         </div>
@@ -30,18 +73,23 @@ export function ExamShell({ children, attemptId, title = 'Exam Room' }: Props) {
 
       <main className="pr container mx-auto px-4 py-6">
         <div className="grid gap-4 md:grid-cols-[260px_1fr]">
-          {/* Palette placeholder */}
           <aside className="hidden md:block p-3 rounded-2xl border border-[var(--pr-border)] bg-[var(--pr-card)]">
             <div className="text-sm opacity-70 mb-2">Questions</div>
             <div className="grid grid-cols-6 gap-2">
-              {Array.from({ length: 20 }).map((_, i) => (
-                <button
-                  key={i}
-                  className="aspect-square rounded-lg border border-[var(--pr-border)] text-sm hover:translate-y-[-1px] transition"
-                >
-                  {i + 1}
-                </button>
-              ))}
+              {Array.from({ length: totalParts }).map((_, i) => {
+                const part = i + 1;
+                const active = part === currentPart;
+                return (
+                  <button
+                    key={part}
+                    className={`aspect-square rounded-lg border border-[var(--pr-border)] text-sm hover:translate-y-[-1px] transition ${
+                      active ? 'bg-[var(--pr-primary)] text-[var(--pr-on-primary)]' : ''
+                    }`}
+                  >
+                    {part}
+                  </button>
+                );
+              })}
             </div>
           </aside>
 
@@ -53,3 +101,5 @@ export function ExamShell({ children, attemptId, title = 'Exam Room' }: Props) {
     </PremiumThemeProvider>
   );
 }
+
+export default ExamShell;
