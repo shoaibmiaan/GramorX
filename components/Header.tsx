@@ -7,6 +7,7 @@ import { Container } from '@/components/design-system/Container';
 import { NavLink } from '@/components/design-system/NavLink';
 import { supabaseBrowser } from '@/lib/supabaseBrowser';
 import { UserMenu } from '@/components/design-system/UserMenu';
+import { NotificationBell } from '@/components/design-system/NotificationBell';
 
 type ModuleLink = { label: string; href: string; desc?: string };
 
@@ -319,12 +320,14 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
 
               {/* 🔥 Fire streak + icon-only theme */}
               <li><FireStreak value={streakState} /></li>
+              <li><NotificationBell /></li>
               <li><IconOnlyThemeToggle /></li>
             </ul>
           </nav>
 
           {/* Mobile controls */}
           <div className="flex items-center gap-2 md:hidden">
+            <NotificationBell />
             <IconOnlyThemeToggle />
             <button
               aria-label="Toggle menu"
