@@ -55,7 +55,7 @@ export default function Dashboard() {
 
       if (error) console.error(error);
       if (!data || data.draft) {
-        router.replace('/profile-setup');
+        router.replace('/profile/setup');
         return;
       }
 
@@ -162,7 +162,7 @@ export default function Dashboard() {
               <Alert variant="info" className="mt-3">Add more details in <b>Profile</b> to refine your AI plan.</Alert>
             )}
             <div className="mt-4">
-              <Button as="a" href="/profile-setup" variant="secondary" className="rounded-ds-xl">Edit Profile</Button>
+              <Button as="a" href="/profile/setup" variant="secondary" className="rounded-ds-xl">Edit Profile</Button>
             </div>
           </Card>
         </div>
