@@ -29,7 +29,7 @@ try {
   run('node -r ts-node/register lib/listening/score.test.ts', commonOptions);
 
   // Mock tests workflow
-  run('node -r ts-node/register pages/mock-tests.test.ts', commonOptions);
+  run('node -r ts-node/register __tests__/mock-tests.test.ts', commonOptions);
 
   // Component-specific test
   run('node --loader ts-node/esm components/ai/SidebarAI.test.ts', {
