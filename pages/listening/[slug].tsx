@@ -13,6 +13,7 @@ import { Timer } from '@/components/design-system/Timer';
 import { scoreAll } from '@/lib/listening/score';
 import { rawToBand } from '@/lib/listening/band';
 import { BookmarkButton } from '@/components/BookmarkButton';
+import NoiseLadderPlayer from '@/components/listening/NoiseLadderPlayer';
 
 type MCQ = {
   id: string;
@@ -79,6 +80,37 @@ export default function ListeningTestPage() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [ready, setReady] = useState(false);
   const gapMsRef = useRef<number>(850); // 700–1000ms gap feels natural
+
+  const noiseLayers = useMemo(
+    () => [
+      { label: 'Off', src: null },
+      { label: 'Café', src: '/audio/noise/cafe.mp3', volume: 0.2 },
+      { label: 'Street', src: '/audio/noise/street.mp3', volume: 0.3 },
+    ],
+    []
+  );
+  const [noiseLevel, setNoiseLevel] = useState(0);
+
+  useEffect(() => {
+    if (!userId) return;
+    supabase
+      .from('user_noise_progress')
+      .select('noise_level')
+      .eq('user_id', userId)
+      .single()
+      .then(({ data }) => {
+        if (data?.noise_level != null) {
+          setNoiseLevel(data.noise_level);
+        }
+      });
+  }, [userId]);
+
+  const updateNoiseLevel = async (lvl: number) => {
+    setNoiseLevel(lvl);
+    if (userId) {
+      await supabase.from('user_noise_progress').upsert({ user_id: userId, noise_level: lvl });
+    }
+  };
 
   // --- Load auth user (robust and race-free) ---
   useEffect(() => {
@@ -351,6 +383,12 @@ export default function ListeningTestPage() {
     })();
   };
 
+  const secCount = test?.sections.length ?? 0;
+  const currentSection = useMemo(() => (test ? test.sections[currentIdx] ?? null : null), [test, currentIdx]);
+  const sliceSecs = currentSection
+    ? Math.max(0, Math.round((currentSection.endMs - currentSection.startMs) / 1000))
+    : 0;
+
   // --- Loading skeleton ---
   if (!test) {
     return (
@@ -363,12 +401,6 @@ export default function ListeningTestPage() {
       </section>
     );
   }
-
-  const secCount = test.sections.length;
-  const currentSection = useMemo(() => test.sections[currentIdx] ?? null, [test, currentIdx]);
-  const sliceSecs = currentSection
-    ? Math.max(0, Math.round((currentSection.endMs - currentSection.startMs) / 1000))
-    : 0;
 
   return (
     <>
@@ -457,6 +489,12 @@ export default function ListeningTestPage() {
                     Save progress
                   </Button>
                 )}
+                <NoiseLadderPlayer
+                  audioRef={audioRef}
+                  layers={noiseLayers}
+                  level={noiseLevel}
+                  onLevelChange={updateNoiseLevel}
+                />
               </div>
             </div>
             <div className="mt-4 text-small opacity-80">

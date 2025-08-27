@@ -7,6 +7,7 @@ import { Container } from '@/components/design-system/Container';
 import { Card } from '@/components/design-system/Card';
 import { Badge } from '@/components/design-system/Badge';
 import { Button } from '@/components/design-system/Button';
+import ChallengeScore from '@/components/review/ChallengeScore';
 
 /** ─────────────────────────────
  * Minimal in-file Transcript with TTS (no external hooks)
@@ -225,6 +226,8 @@ export default function SpeakingReview({ attempt: initial }: Props) {
                 {errMsg}
               </div>
             )}
+
+            <ChallengeScore attemptId={attempt.id} type="speaking" />
 
             {/* Criteria badges grid */}
             <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2">

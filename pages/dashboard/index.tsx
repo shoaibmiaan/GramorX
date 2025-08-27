@@ -12,11 +12,13 @@ import { StreakIndicator } from '@/components/design-system/StreakIndicator';
 
 import { supabaseBrowser } from '@/lib/supabaseBrowser';
 import { ReadingStatsCard } from '@/components/reading/ReadingStatsCard';
+import QuickDrillButton from '@/components/quick/QuickDrillButton';
 
 import { useStreak } from '@/hooks/useStreak';
 import { getDayKeyInTZ } from '@/lib/streak';
 import StudyCalendar from '@/components/feature/StudyCalendar';
 import GoalRoadmap from '@/components/feature/GoalRoadmap';
+import MotivationCoach from '@/components/coach/MotivationCoach';
 
 type AIPlan = {
   suggestedGoal?: number;
@@ -45,12 +47,13 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<Profile | null>(null);
 
-  const {
-    current: streak,
-    lastDayKey,
-    loading: streakLoading,
-    completeToday,
-  } = useStreak();
+    const {
+      current: streak,
+      lastDayKey,
+      loading: streakLoading,
+      completeToday,
+      nextRestart,
+    } = useStreak();
 
   const handleShare = () => {
     const text = `I'm studying for IELTS on GramorX with a ${streak}-day streak!`;
@@ -159,24 +162,30 @@ export default function Dashboard() {
             <p className="text-grayish">Let’s hit your target band with a personalized plan.</p>
           </div>
 
-          <div className="flex items-center gap-4">
-            <StreakIndicator value={streak} />
-            {streak >= 7 && <Badge variant="success" size="sm">🔥 {streak}-day streak!</Badge>}
+        <div className="flex items-center gap-4">
+          <StreakIndicator value={streak} />
+          {streak >= 7 && <Badge variant="success" size="sm">🔥 {streak}-day streak!</Badge>}
 
-            {profile?.avatar_url ? (
-              <Image
-                src={profile.avatar_url}
-                alt="Avatar"
-                width={56}
-                height={56}
-                className="rounded-full ring-2 ring-primary/40"
-              />
-            ) : null}
-          </div>
+          {profile?.avatar_url ? (
+            <Image
+              src={profile.avatar_url}
+              alt="Avatar"
+              width={56}
+              height={56}
+              className="rounded-full ring-2 ring-primary/40"
+            />
+          ) : null}
         </div>
+      </div>
 
-        {/* Top summary cards */}
-        <div className="mt-10 grid gap-6 md:grid-cols-3">
+      {nextRestart && (
+        <Alert variant="info" className="mt-6">
+          Streak will restart on {nextRestart}.
+        </Alert>
+      )}
+
+      {/* Top summary cards */}
+      <div className="mt-10 grid gap-6 md:grid-cols-3">
           <Card className="p-6 rounded-ds-2xl">
             <div className="text-small opacity-70 mb-1">Goal Band</div>
             <div className="text-h1 font-semibold">
@@ -226,6 +235,7 @@ export default function Dashboard() {
             <h2 className="font-slab text-h2">Quick Actions</h2>
             <p className="text-grayish mt-1">Jump back in with one click.</p>
             <div className="mt-6 flex flex-wrap gap-3">
+              <QuickDrillButton />
               <Button as="a" href="/learning" variant="primary" className="rounded-ds-xl">
                 Start Today’s Lesson
               </Button>
@@ -283,6 +293,11 @@ export default function Dashboard() {
               </Button>
             </div>
           </Card>
+        </div>
+
+        {/* Motivation coach */}
+        <div className="mt-10">
+          <MotivationCoach />
         </div>
 
         {/* Coach notes */}

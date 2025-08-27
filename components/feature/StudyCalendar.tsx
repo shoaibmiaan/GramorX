@@ -5,19 +5,23 @@ import { getDayKeyInTZ } from '@/lib/streak';
 import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser';
 import { getHoliday } from '@/data/holidays';
 
+type TravelEvent = { start: Date; end: Date; type: string };
+
 export const StudyCalendar: React.FC = () => {
-  const { current, lastDayKey, loading } = useStreak();
-  const [events, setEvents] = useState<{ start: Date; end: Date; type: string }[]>([]);
+  // Merge: keep nextRestart from main + events from codex branch
+  const { current, lastDayKey, loading, nextRestart } = useStreak();
+  const [events, setEvents] = useState<TravelEvent[]>([]);
 
   useEffect(() => {
     (async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
-      const { data } = await supabase
+      if (!session?.user) return;
+      const { data, error } = await supabase
         .from('travel_plans')
         .select('start_date,end_date,type')
         .eq('user_id', session.user.id);
-      if (data) {
+
+      if (!error && data) {
         setEvents(
           data.map((p: any) => ({
             start: new Date(p.start_date),
@@ -36,27 +40,31 @@ export const StudyCalendar: React.FC = () => {
       const d = new Date();
       d.setDate(today.getDate() - i);
       const key = getDayKeyInTZ(d);
+
+      // complete = within current streak window
       let completed = false;
       if (lastDayKey) {
-        const last = new Date(lastDayKey);
+        const last = new Date(lastDayKey as any);
         const diff = Math.floor((last.getTime() - d.getTime()) / (1000 * 60 * 60 * 24));
-        if (diff >= 0 && diff < current) completed = true;
+        if (diff >= 0 && diff < (current || 0)) completed = true;
       }
+
+      // holiday or travel/festival/exam events
       let event: string | undefined;
       const holiday = getHoliday(d);
-      if (holiday) event = holiday.name;
-      else {
+      if (holiday) {
+        event = holiday.name;
+      } else {
         const ev = events.find(e => d >= e.start && d <= e.end);
         if (ev) event = ev.type;
       }
+
       arr.push({ key, date: d, completed, event });
     }
     return arr;
   }, [current, lastDayKey, events]);
 
-  if (loading) {
-    return null;
-  }
+  if (loading) return null;
 
   return (
     <Card className="p-6 rounded-ds-2xl">
@@ -78,6 +86,12 @@ export const StudyCalendar: React.FC = () => {
           </div>
         ))}
       </div>
+
+      {nextRestart && (
+        <div className="mt-4 text-center text-sm text-muted-foreground">
+          Restart scheduled on {nextRestart}
+        </div>
+      )}
     </Card>
   );
 };

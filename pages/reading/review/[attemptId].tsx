@@ -5,6 +5,8 @@ import { Card } from '@/components/design-system/Card';
 import { Badge } from '@/components/design-system/Badge';
 import { Button } from '@/components/design-system/Button';
 import { Alert } from '@/components/design-system/Alert';
+import { useLocale } from '@/lib/locale';
+import { translateExplanation } from '@/lib/explanations';
 
 type ReviewItem = {
   id: string; qNo: number; type: string; prompt: string;
@@ -23,6 +25,7 @@ export default function ReadingReviewPage() {
   const [data, setData] = useState<ReviewPayload | null>(null);
   const [err, setErr] = useState<string | undefined>();
   const [explainBusy, setExplainBusy] = useState<string | null>(null);
+  const { explanationLocale } = useLocale();
 
   useEffect(() => {
     if (!attemptId) return;
@@ -47,9 +50,10 @@ export default function ReadingReviewPage() {
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json?.error || 'Could not fetch explanation');
+      const text = await translateExplanation(json.text, explanationLocale);
       setData(prev => !prev ? prev : ({
         ...prev,
-        items: prev.items.map(i => i.id === qid ? { ...i, explanation: json.text } : i)
+        items: prev.items.map(i => i.id === qid ? { ...i, explanation: text } : i)
       }));
     } catch (e:any) {
       setErr(e?.message || 'Explain failed');

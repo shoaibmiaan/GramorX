@@ -10,14 +10,12 @@ import { Alert } from '@/components/design-system/Alert';
 import { Select } from '@/components/design-system/Select';
 import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser';
 
-// Using the shared browser client ensures auth state is persisted
-// and reused across pages.
-
 const COUNTRIES = ['Pakistan','India','Bangladesh','United Arab Emirates','Saudi Arabia','United Kingdom','United States','Canada','Australia','New Zealand'];
 const LEVELS: Array<'Beginner'|'Elementary'|'Pre-Intermediate'|'Intermediate'|'Upper-Intermediate'|'Advanced'> = ['Beginner','Elementary','Pre-Intermediate','Intermediate','Upper-Intermediate','Advanced'];
 const TIME = ['1h/day','2h/day','Flexible'];
 const PREFS = ['Listening','Reading','Writing','Speaking'];
 
+/** ---- ISO week helpers for travel/festival/exam windows ---- */
 function getWeekRange(isoWeek: string) {
   const [yearStr, weekStr] = isoWeek.split('-W');
   const year = parseInt(yearStr, 10);
@@ -32,7 +30,6 @@ function getWeekRange(isoWeek: string) {
   end.setUTCDate(start.getUTCDate() + 6);
   return { start, end };
 }
-
 function dateToWeek(dateStr: string) {
   const date = new Date(dateStr);
   if (isNaN(date.getTime())) return '';
@@ -46,7 +43,8 @@ function dateToWeek(dateStr: string) {
 
 export default function ProfileSetup() {
   const router = useRouter();
-  const { t, setLocale } = useLocale();
+  const { t, setLocale, setExplanationLocale } = useLocale();
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -58,16 +56,20 @@ export default function ProfileSetup() {
   const [level, setLevel] = useState<typeof LEVELS[number] | ''>('');
   const [goal, setGoal] = useState<number>(7.0);
   const [examDate, setExamDate] = useState('');
+
+  // added from codex branch
   const [travelWeek, setTravelWeek] = useState('');
   const [festivalWeek, setFestivalWeek] = useState('');
   const [examWeek, setExamWeek] = useState('');
+
   const [prefs, setPrefs] = useState<string[]>([]);
   const [time, setTime] = useState<string>('');
   const [lang, setLang] = useState('en');
+  const [explanationLang, setExplanationLang] = useState('en');
   const [avatarUrl, setAvatarUrl] = useState<string | undefined>();
   const [ai, setAi] = useState<{suggestedGoal:number; etaWeeks:number; sequence:string[]} | null>(null);
 
-  // Fetch active session & profile (draft‑safe)
+  // Fetch active session & profile (draft-safe)
   useEffect(() => {
     (async () => {
       setLoading(true);
@@ -100,7 +102,15 @@ export default function ProfileSetup() {
         setExamDate(data.exam_date ?? '');
         setPrefs((data.study_prefs as string[]) ?? []);
         setTime(data.time_commitment ?? '');
-        setLang(data.preferred_language ?? 'en');
+
+        const pl = data.preferred_language ?? 'en';
+        setLang(pl);
+        setLocale(pl);
+
+        const el = data.explanation_language ?? 'en';
+        setExplanationLang(el);
+        setExplanationLocale(el);
+
         setAvatarUrl(data.avatar_url ?? undefined);
         try {
           const rec = data.ai_recommendation ?? {};
@@ -108,23 +118,26 @@ export default function ProfileSetup() {
         } catch {}
       }
 
+      // pull travel plans → prefill ISO weeks
       const { data: plans } = await supabase
         .from('travel_plans')
         .select('start_date,type')
         .eq('user_id', session.user.id);
+
       if (plans) {
         plans.forEach(p => {
-          const w = dateToWeek(p.start_date);
+          const w = dateToWeek(p.start_date as any);
           if (p.type === 'travel') setTravelWeek(w);
           else if (p.type === 'festival') setFestivalWeek(w);
           else if (p.type === 'exam') setExamWeek(w);
         });
       }
+
       setLoading(false);
     })();
-  }, [router]);
+  }, [router, setLocale, setExplanationLocale]);
 
-  // Lightweight on‑device AI heuristic (fallback).
+  // Lightweight on-device AI heuristic (fallback).
   const localAISuggest = useMemo(() => {
     if (!level) return null;
     const base = { 'Beginner': 5.5, 'Elementary': 6.0, 'Pre-Intermediate': 6.5, 'Intermediate': 7.0, 'Upper-Intermediate': 7.5, 'Advanced': 8.0 } as const;
@@ -157,6 +170,7 @@ export default function ProfileSetup() {
       study_prefs: prefs,
       time_commitment: time || null,
       preferred_language: lang || 'en',
+      explanation_language: explanationLang || 'en',
       avatar_url: avatarUrl || null,
       ai_recommendation: ai ? {
         suggestedGoal: ai.suggestedGoal,
@@ -166,15 +180,19 @@ export default function ProfileSetup() {
       draft: !finalize
     };
 
+    // upsert profile
     const { data: existing } = await supabase.from('user_profiles').select('user_id').eq('user_id', userId).maybeSingle();
-
-    const { error } = existing
+    const { error: upsertErr } = existing
       ? await supabase.from('user_profiles').update(payload).eq('user_id', userId)
       : await supabase.from('user_profiles').insert(payload);
 
-    if (error) { setSaving(false); setError(error.message); return; }
+    if (upsertErr) {
+      setSaving(false);
+      setError(upsertErr.message);
+      return;
+    }
 
-    await supabase.from('travel_plans').delete().eq('user_id', userId);
+    // sync travel_plans (replace all for this user)
     const plans: any[] = [];
     const addPlan = (w: string, type: 'travel'|'festival'|'exam') => {
       const r = getWeekRange(w);
@@ -187,12 +205,18 @@ export default function ProfileSetup() {
         });
       }
     };
+    await supabase.from('travel_plans').delete().eq('user_id', userId);
     if (travelWeek) addPlan(travelWeek, 'travel');
     if (festivalWeek) addPlan(festivalWeek, 'festival');
     if (examWeek) addPlan(examWeek, 'exam');
+
     if (plans.length) {
       const { error: planErr } = await supabase.from('travel_plans').insert(plans);
-      if (planErr) { setSaving(false); setError(planErr.message); return; }
+      if (planErr) {
+        setSaving(false);
+        setError(planErr.message);
+        return;
+      }
     }
 
     setSaving(false);
@@ -220,7 +244,7 @@ export default function ProfileSetup() {
                     {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
                   </Select>
 
-                  <Select label="English level" value={level} onChange={e=>setLevel(e.target.value as any)} hint="Self‑assessed for now">
+                  <Select label="English level" value={level} onChange={e=>setLevel(e.target.value as any)} hint="Self-assessed for now">
                     <option value="" disabled>Select level</option>
                     {LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
                   </Select>
@@ -279,6 +303,7 @@ export default function ProfileSetup() {
                     className="md:col-span-2"
                   />
 
+                  {/* Travel/festival/exam ISO week inputs */}
                   <Input
                     type="week"
                     label="Travel week"
@@ -317,6 +342,20 @@ export default function ProfileSetup() {
                     <option value="hi">Hindi</option>
                   </Select>
 
+                  <Select
+                    label={t('profileSetup.explanationLanguage')}
+                    value={explanationLang}
+                    onChange={e => {
+                      setExplanationLang(e.target.value);
+                      setExplanationLocale(e.target.value);
+                    }}
+                  >
+                    <option value="en">English</option>
+                    <option value="ur">Urdu</option>
+                    <option value="ar">Arabic</option>
+                    <option value="hi">Hindi</option>
+                  </Select>
+
                   <Input label="Avatar URL" placeholder="/path/to/avatar.png" value={avatarUrl ?? ''} onChange={e=>setAvatarUrl(e.target.value || undefined)} />
                 </div>
 
@@ -346,7 +385,7 @@ export default function ProfileSetup() {
                       </div>
                     </div>
                     <Alert variant="info" className="mt-3">
-                      This is a local suggestion. Connect server‑side AI to refine it.
+                      This is a local suggestion. Connect server-side AI to refine it.
                     </Alert>
                   </div>
                 ) : (
