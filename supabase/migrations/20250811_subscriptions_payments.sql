@@ -30,6 +30,8 @@ create table if not exists public.payments (
   user_id uuid not null references auth.users(id) on delete cascade,
   subscription_id uuid references public.subscriptions(id) on delete cascade,
   stripe_payment_intent_id text,
+  provider text,
+  provider_payment_id text,
   amount integer,
   currency text,
   status text,

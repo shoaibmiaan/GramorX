@@ -38,6 +38,11 @@ try {
     jsx: 'react-jsx',
   });
 
+  // Payment providers
+  run('node -r ts-node/register __tests__/payments/jazzcash.test.ts', commonOptions);
+  run('node -r ts-node/register __tests__/payments/easypaisa.test.ts', commonOptions);
+  run('node -r ts-node/register __tests__/payments/card.test.ts', commonOptions);
+
   console.log('All tests passed.');
 } catch {
   process.exit(1);
