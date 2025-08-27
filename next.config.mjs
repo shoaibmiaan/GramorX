@@ -1,3 +1,5 @@
+import withPWA from 'next-pwa';
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -11,4 +13,17 @@ const nextConfig = {
   },
 };
 
-export default nextConfig;
+export default withPWA({
+  dest: 'public',
+  register: true,
+  skipWaiting: true,
+  swSrc: 'public/sw.js',
+  workboxOptions: {
+    additionalManifestEntries: [
+      { url: '/brand/logo.png', revision: null },
+      { url: '/locales/en/common.json', revision: null },
+      { url: '/locales/ur/common.json', revision: null },
+      { url: '/premium.css', revision: null },
+    ],
+  },
+})(nextConfig);
