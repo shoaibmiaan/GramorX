@@ -19,13 +19,25 @@ function run(cmd: string, compilerOptions: Record<string, unknown>) {
 const commonOptions = { module: 'commonjs', verbatimModuleSyntax: false };
 
 try {
+  // Auth workflow
   run('node -r ts-node/register lib/routeAccess.test.ts', commonOptions);
+
+  // Profile options utility
   run('node -r ts-node/register lib/profile-options.test.ts', commonOptions);
+
+  // Learning workflow
+  run('node -r ts-node/register lib/listening/score.test.ts', commonOptions);
+
+  // Mock tests workflow
+  run('node -r ts-node/register pages/mock-tests.test.ts', commonOptions);
+
+  // Component-specific test
   run('node --loader ts-node/esm components/ai/SidebarAI.test.ts', {
     module: 'esnext',
     verbatimModuleSyntax: false,
     jsx: 'react-jsx',
   });
+
   console.log('All tests passed.');
 } catch {
   process.exit(1);
