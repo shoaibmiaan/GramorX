@@ -97,6 +97,7 @@ export default function SignupWithPassword() {
           onChange={(e) => setPw(e.target.value)}
           required
           autoComplete="new-password"
+          hint="At least 8 characters, including letters and numbers"
         />
         <Button
           type="submit"

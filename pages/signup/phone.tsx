@@ -63,7 +63,15 @@ export default function SignupWithPhone() {
 
       {stage === 'request' ? (
         <form onSubmit={requestOtp} className="space-y-6 mt-2">
-          <Input label="Phone number" type="tel" placeholder="+923001234567" value={phone} onChange={(e)=>setPhone(e.target.value)} required />
+          <Input
+            label="Phone number"
+            type="tel"
+            placeholder="+923001234567"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            required
+            hint="Use E.164 format, e.g. +923001234567"
+          />
           <Button type="submit" variant="primary" className="w-full rounded-ds-xl" disabled={loading}>
             {loading ? 'Sending…' : 'Send code'}
           </Button>

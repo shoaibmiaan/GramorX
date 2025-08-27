@@ -10,7 +10,7 @@ import { redirectByRole } from '@/lib/routeAccess';
 
 export default function LoginWithPhone() {
   const [phone, setPhone] = useState('');
-  const [code, setCode] = useState('');
+  ￼const [code, setCode] = useState('');
   const [stage, setStage] = useState<'request' | 'verify'>('request');
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -54,7 +54,7 @@ export default function LoginWithPhone() {
         <p className="text-body text-grayish dark:text-gray-300 max-w-md">Use a one-time SMS code to sign in.</p>
       </div>
       <div className="pt-8 text-small text-grayish dark:text-gray-400">
-        Prefer email? <Link href="/login/email" className="text-primaryDark hover:underline">Use email & password</Link>
+        Prefer email? <Link href="/login/email" className="text-primary hover:underline">Use email & password</Link>
       </div>
     </div>
   );
@@ -65,7 +65,15 @@ export default function LoginWithPhone() {
 
       {stage === 'request' ? (
         <form onSubmit={requestOtp} className="space-y-6 mt-2">
-          <Input label="Phone number" type="tel" placeholder="+923001234567" value={phone} onChange={(e)=>setPhone(e.target.value)} autoComplete="tel" required />
+          <Input
+            label="Phone number"
+            type="tel"
+            placeholder="+923001234567"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            required
+            hint="Use E.164 format, e.g. +923001234567"
+          />
           <Button type="submit" variant="primary" className="w-full rounded-ds-xl" disabled={loading}>
             {loading ? 'Sending…' : 'Send code'}
           </Button>
