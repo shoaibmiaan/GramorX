@@ -3,8 +3,10 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import formidable, { File } from 'formidable';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { fileTypeFromBuffer } from 'file-type';
 import { createClient } from '@supabase/supabase-js';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { env } from '@/lib/env';
 
 export const config = { api: { bodyParser: false, sizeLimit: '30mb' } };
 
@@ -18,8 +20,8 @@ function parseForm(req: NextApiRequest) {
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-  const ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+  const URL = env.NEXT_PUBLIC_SUPABASE_URL;
+  const ANON = env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   const supabase = createClient(URL, ANON, {
     global: { headers: { Cookie: req.headers.cookie || '' } },
@@ -36,12 +38,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!file || !file.filepath) return res.status(400).json({ error: 'Missing file' });
 
     const buf = await fs.readFile(file.filepath);
-    const contentType =
-      (file.mimetype as string | undefined) ||
-      mimeFromName(file.originalFilename || '') ||
-      'audio/webm';
+    const detected = await fileTypeFromBuffer(buf);
+    if (!detected) {
+      return res.status(400).json({ error: 'Could not determine file type' });
+    }
 
-    const ext = guessExt(contentType, file.originalFilename || '');
+    const allowedMimes = new Set([
+      'audio/mpeg',
+      'audio/wav',
+      'audio/ogg',
+      'audio/mp4',
+      'audio/webm',
+    ]);
+
+    if (!allowedMimes.has(detected.mime)) {
+      return res.status(400).json({ error: 'Unsupported file type' });
+    }
+
+    const contentType = detected.mime;
+    const ext = detected.ext === 'mp4' ? 'm4a' : detected.ext;
     const key = path.posix.join('uploads', user.id, `${Date.now()}.${ext}`);
     const bucket = 'speaking-audio'; // keep aligned with other APIs
 
@@ -73,20 +88,3 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 }
 
-function mimeFromName(name: string) {
-  const ext = name.split('.').pop()?.toLowerCase();
-  if (ext === 'mp3') return 'audio/mpeg';
-  if (ext === 'wav') return 'audio/wav';
-  if (ext === 'm4a') return 'audio/mp4';
-  if (ext === 'ogg') return 'audio/ogg';
-  if (ext === 'webm') return 'audio/webm';
-  return null;
-}
-
-function guessExt(mime: string, name: string) {
-  if (/mpeg/.test(mime) || /\.mp3$/i.test(name)) return 'mp3';
-  if (/wav/.test(mime) || /\.wav$/i.test(name)) return 'wav';
-  if (/ogg/.test(mime) || /\.ogg$/i.test(name)) return 'ogg';
-  if (/mp4/.test(mime) || /\.m4a$/i.test(name)) return 'm4a';
-  return 'webm';
-}

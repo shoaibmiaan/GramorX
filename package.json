@@ -11,7 +11,7 @@
     "lint": "next lint",
     "pin:hash": "ts-node tools/hash-pin.ts",
     "diagnose": "powershell -ExecutionPolicy Bypass -File .\\\\tools\\\\report-build-issues.ps1",
-    "test": "NEXT_PUBLIC_SUPABASE_URL=http://localhost NEXT_PUBLIC_SUPABASE_ANON_KEY=anon TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\",\"verbatimModuleSyntax\":false}' node -r ts-node/register lib/routeAccess.test.ts && NEXT_PUBLIC_SUPABASE_URL=http://localhost NEXT_PUBLIC_SUPABASE_ANON_KEY=anon TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\",\"verbatimModuleSyntax\":false}' node -r ts-node/register lib/profile-options.test.ts && NEXT_PUBLIC_SUPABASE_URL=http://localhost NEXT_PUBLIC_SUPABASE_ANON_KEY=anon TS_NODE_COMPILER_OPTIONS='{\"module\":\"esnext\",\"verbatimModuleSyntax\":false,\"jsx\":\"react-jsx\"}' node --loader ts-node/esm components/ai/SidebarAI.test.ts"
+    "test": "ts-node tools/run-tests.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
@@ -22,6 +22,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "formidable": "^3.5.4",
+    "file-type": "^18.7.0",
     "groq-sdk": "^0.30.0",
     "stripe": "^14.0.0",
     "multiparty": "^4.2.3",

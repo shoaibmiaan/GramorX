@@ -1,14 +1,11 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import Twilio from "twilio";
 import { createClient } from "@supabase/supabase-js";
+import { env } from "@/lib/env";
 
-const {
-  TWILIO_AUTH_TOKEN,
-  NEXT_PUBLIC_SUPABASE_URL,
-  SUPABASE_SERVICE_ROLE_KEY,
-} = process.env;
+const { TWILIO_AUTH_TOKEN, NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY } = env;
 
-const supa = createClient(NEXT_PUBLIC_SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
+const supa = createClient(NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
 export const config = { api: { bodyParser: true } };
 
@@ -19,8 +16,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   const signature = req.headers["x-twilio-signature"] as string | undefined;
-  const url = `${process.env.NEXT_PUBLIC_SITE_URL || "https://example.com"}/api/whatsapp/webhook`;
-  const valid = Twilio.validateRequest(TWILIO_AUTH_TOKEN!, signature || "", url, req.body);
+  const url = `${env.NEXT_PUBLIC_SITE_URL || "https://example.com"}/api/whatsapp/webhook`;
+  const valid = Twilio.validateRequest(TWILIO_AUTH_TOKEN, signature || "", url, req.body);
   if (!valid) return res.status(403).end("Invalid Twilio signature");
 
   const body = req.body as Record<string, string>;

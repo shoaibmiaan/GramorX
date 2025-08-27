@@ -1,14 +1,15 @@
 // pages/api/premium/verify-pin.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { scryptSync, timingSafeEqual } from 'crypto';
+import { env } from '@/lib/env';
 
 // ----------- env -----------
-const HASH_HEX = (process.env.PREMIUM_PIN_HASH || '').trim();
-const SALT_HEX = (process.env.PREMIUM_PIN_SALT || '').trim();
-const MASTER   = (process.env.PREMIUM_MASTER_PIN || '').trim();
-const RATE     = Number(process.env.PREMIUM_PIN_RATE || 10);          // attempts
-const WINDOW_S = Number(process.env.PREMIUM_PIN_WINDOW_SEC || 60);    // seconds
-const ONE_DAY  = 60 * 60 * 24;
+const HASH_HEX = (env.PREMIUM_PIN_HASH || '').trim();
+const SALT_HEX = (env.PREMIUM_PIN_SALT || '').trim();
+const MASTER = (env.PREMIUM_MASTER_PIN || '').trim();
+const RATE = Number(env.PREMIUM_PIN_RATE || 10); // attempts
+const WINDOW_S = Number(env.PREMIUM_PIN_WINDOW_SEC || 60); // seconds
+const ONE_DAY = 60 * 60 * 24;
 
 // ----------- naive in‑memory rate limiter (per dev instance) -----------
 type Bucket = { resetAt: number; count: number };
@@ -45,7 +46,7 @@ function verifyWithHash(pin: string) {
 }
 
 function okCookie() {
-  const isProd = process.env.NODE_ENV === 'production';
+  const isProd = env.NODE_ENV === 'production';
   return [
     'pr_pin_ok=1',
     'Path=/',
