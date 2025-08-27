@@ -35,5 +35,5 @@ export function useCountdown(totalSeconds: number, autoStart = false) {
     setRunning(false);
   };
 
-  return { seconds, running, start, stop, reset };
+  return { seconds, running, start, stop, reset, set: setSeconds };
 }
