@@ -81,11 +81,20 @@ function useLocalHistory(persist: boolean) {
   return { items, setItems, clear };
 }
 
- function useProvider() {
-  // Keep simple; default 'auto'. Can expose UI later if needed.
-  const [p] = useState<Provider>('auto');
-  return { provider: p };
- }
+function useProvider() {
+  const [p, setP] = useState<Provider>(() => {
+    if (!isBrowser) return 'auto';
+    const saved = localStorage.getItem('gx-ai:provider') as Provider | null;
+    return saved && ['auto', 'gemini', 'groq', 'openai'].includes(saved) ? saved : 'auto';
+  });
+  useEffect(() => {
+    if (!isBrowser) return;
+    try {
+      localStorage.setItem('gx-ai:provider', p);
+    } catch {}
+  }, [p]);
+  return { provider: p, setProvider: setP };
+}
 
  function useIsMobile() {
   const [m, setM] = useState<boolean>(() => (isBrowser ? window.innerWidth < 768 : true));
@@ -211,7 +220,7 @@ export function renderMarkdown(raw: string) {
 
   // Chat state
   const { items, setItems, clear } = useLocalHistory(persist);
-  const { provider } = useProvider();
+  const { provider, setProvider } = useProvider();
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<ConnState>('idle');
@@ -547,6 +556,17 @@ export function renderMarkdown(raw: string) {
               <span className={`inline-block h-2 w-2 rounded-full ${statusDot}`} aria-label={`status: ${status}`} />
             </div>
             <div className="flex items-center gap-2">
+              <select
+                value={provider}
+                onChange={(e) => setProvider(e.target.value as Provider)}
+                className="h-8 px-2 rounded-md bg-card border border-border text-caption"
+                aria-label="AI provider"
+              >
+                <option value="auto">Auto</option>
+                <option value="gemini">Gemini</option>
+                <option value="groq">Groq</option>
+                <option value="openai">OpenAI</option>
+              </select>
               <label className="flex items-center gap-1 text-caption">
                 <input
                   type="checkbox"
