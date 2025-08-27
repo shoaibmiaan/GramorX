@@ -275,24 +275,22 @@ export function renderMarkdown(raw: string) {
   useEffect(() => {
     if (!isBrowser) return;
     const root = document.documentElement;
-    const app = document.getElementById('__next');
-    if (!app) return;
     if (open) {
       if (isMobile) {
         root.classList.add('gx-ai-open-bottom');
         root.classList.remove('gx-ai-open');
-        app.style.paddingBottom = `${mHeight}px`;
-        app.style.paddingRight = '';
+        root.style.setProperty('--gx-ai-bottom', `${mHeight}px`);
+        root.style.setProperty('--gx-ai-right', '0px');
       } else {
         root.classList.add('gx-ai-open');
         root.classList.remove('gx-ai-open-bottom');
-        app.style.paddingRight = `${width}px`;
-        app.style.paddingBottom = '';
+        root.style.setProperty('--gx-ai-right', `${width}px`);
+        root.style.setProperty('--gx-ai-bottom', '0px');
       }
     } else {
       root.classList.remove('gx-ai-open', 'gx-ai-open-bottom');
-      app.style.paddingRight = '';
-      app.style.paddingBottom = '';
+      root.style.setProperty('--gx-ai-right', '0px');
+      root.style.setProperty('--gx-ai-bottom', '0px');
     }
   }, [open, width, mHeight, isMobile]);
 
@@ -654,14 +652,6 @@ export function renderMarkdown(raw: string) {
           </div>
         </div>
       </aside>
-
-      {/* Global split-screen helper classes (kept minimal) */}
-      <style jsx global>{`
-        html.gx-ai-open #__next { padding-right: var(--gx-ai-right); box-sizing: border-box; }
-        @media (max-width: 767px) {
-          html.gx-ai-open-bottom #__next { padding-bottom: var(--gx-ai-bottom); box-sizing: border-box; }
-        }
-      `}</style>
     </Fragment>
   );
  }
