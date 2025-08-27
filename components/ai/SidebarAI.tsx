@@ -1,13 +1,15 @@
 // components/ai/SidebarAI.tsx
 // Mobile-first, DS-aligned, split-screen sidebar. Minimal UI; no external icon deps.
-// Desktop: docks on the right and pushes the page left (without wrecking layout). Mobile: docks at the bottom and pushes content up.
+// Desktop: docks on the right and pushes the page left (pads #__next). Mobile: docks at the bottom and pushes content up.
 // Requirements implemented:
 // - No bullet spam: we nudge the model and strip leading '*'/'-'/digits from lines in rendering.
-// - "Who are you?" → fixed answer: "I am your coach hired for you by your Partner GramorX".
+// - "Who are you?" → fixed answer: "I am your coach hired for you by your Partner GramorX" (exact string).
 // - Autofocus textarea when opening the sidebar.
 // - Split-screen that doesn't distort the rest of the page: we pad #__next instead of body.
 // - On refresh: sidebar closed and chat cleared (no persistence) unless "Remember" is enabled.
 // - Click outside the sidebar closes it, but the chat remains in memory until refresh (or clear).
+// - Provider selector persisted (auto/gemini/groq/openai).
+// - SSE streaming with basic stalled/offline/error states.
 
 import React, {
   useCallback,
@@ -26,7 +28,9 @@ import('rehype-highlight')
     rehypeHighlight = mod.default;
   })
   .catch(() => {});
+
 import { useRouter } from 'next/router';
+import { Button, Select, Textarea } from '@/components/design-system';
 
 // ---- Types
 type Msg = { id: string; role: 'user' | 'assistant'; content: string };
@@ -38,6 +42,11 @@ type ConnState = 'idle' | 'connecting' | 'streaming' | 'stalled' | 'error' | 'of
 const isBrowser = typeof window !== 'undefined';
 
 // ---- Helpers
+function uid() {
+  // tiny uid for keys
+  return Math.random().toString(36).slice(2, 10);
+}
+
 function useLocalHistory(persist: boolean) {
   const key = 'gx-ai:sidebar-thread';
   const [items, setItems] = useState<Msg[]>(() => {
@@ -130,6 +139,10 @@ async function* streamChat(messages: WireMsg[], provider: Provider) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(text || `HTTP ${res.status}`);
+  }
   if (!res.body) throw new Error(`No stream body (status ${res.status})`);
   const reader = res.body.getReader();
   const decoder = new TextDecoder();
@@ -160,6 +173,12 @@ async function* streamChat(messages: WireMsg[], provider: Provider) {
 
 // --- Markdown renderer with bullet stripping and code fencing
 export function renderMarkdown(raw: string) {
+  // Strip obvious bullet leaders from each line (defensive)
+  const cleaned = raw
+    .split('\n')
+    .map((line) => line.replace(/^\s*([*\-]|\d+\.)\s+/g, ''))
+    .join('\n');
+
   return (
     <ReactMarkdown
       remarkPlugins={[remarkGfm]}
@@ -187,7 +206,7 @@ export function renderMarkdown(raw: string) {
         },
       }}
     >
-      {raw}
+      {cleaned}
     </ReactMarkdown>
   );
 }
@@ -211,6 +230,30 @@ export function SidebarAI() {
     return () => window.removeEventListener('resize', on);
   }, []);
 
+  // Padding the page root instead of body
+  useEffect(() => {
+    if (!isBrowser) return;
+    const root = document.getElementById('__next');
+    if (!root) return;
+    if (!open) {
+      root.style.paddingRight = '';
+      root.style.paddingBottom = '';
+      return;
+    }
+    if (isMobile) {
+      root.style.paddingBottom = `${mHeight}px`;
+      root.style.paddingRight = '';
+    } else {
+      root.style.paddingRight = `${width}px`;
+      root.style.paddingBottom = '';
+    }
+    return () => {
+      if (!root) return;
+      root.style.paddingRight = '';
+      root.style.paddingBottom = '';
+    };
+  }, [open, width, mHeight, isMobile]);
+
   // Persistence toggle (chat history)
   const [persist, setPersist] = useState<boolean>(() =>
     isBrowser ? localStorage.getItem('gx-ai:sidebar-persist') === '1' : false
@@ -227,463 +270,372 @@ export function SidebarAI() {
   const { provider, setProvider } = useProvider();
 
   const [input, setInput] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [status, setStatus] = useState<ConnState>('idle');
-  const [statusNote, setStatusNote] = useState<string>('');
-  const [streamingId, setStreamingId] = useState<string | null>(null);
+  const [conn, setConn] = useState<ConnState>('idle');
+  const [err, setErr] = useState<string>('');
 
-  // Voice state
-  const [listening, setListening] = useState(false);
-  const recRef = useRef<any>(null);
-  const voiceSupported =
-    typeof window !== 'undefined' &&
-    (((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition));
-  const [voiceDenied, setVoiceDenied] = useState(false);
+  const inputRef = useRef<HTMLTextAreaElement | null>(null);
+  const outerRef = useRef<HTMLDivElement | null>(null);
+  const dragRef = useRef<boolean>(false);
+  const dragStartRef = useRef<number>(0);
+  const origSizeRef = useRef<number>(0);
+  const stalledTimerRef = useRef<any>(null);
 
-  // Refs
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const lastChunkRef = useRef<number>(0);
-  const stallTimerRef = useRef<number | null>(null);
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const resizingRef = useRef(false);
+  // Autofocus when opening
+  useEffect(() => {
+    if (open) {
+      setTimeout(() => inputRef.current?.focus(), 0);
+    }
+  }, [open]);
 
-  // System prompt: NO bullets; prefer short sentences. Special rule for "who are you?".
-  const system = useMemo<WireMsg>(
-    () => ({
-      role: 'system',
-      content: [
-        "You are GramorX's sidebar AI coach.",
-        'Write in short, clear sentences. Avoid bullet lists unless the user explicitly asks for bullets.',
-        'If asked "who are you" (or similar), answer exactly: I am your coach hired for you by your Partner GramorX.',
-        'If IELTS context, offer 1–3 next steps, but as sentences, not bullets.',
+  // Close on route change (but keep chat state unless cleared)
+  useEffect(() => {
+    const onRoute = () => setOpen(false);
+    router.events.on('routeChangeStart', onRoute);
+    return () => {
+      router.events.off('routeChangeStart', onRoute);
+    };
+  }, [router.events]);
+
+  // Offline/online
+  const [offline, setOffline] = useState<boolean>(isBrowser ? !navigator.onLine : false);
+  useEffect(() => {
+    if (!isBrowser) return;
+    const on = () => setOffline(!navigator.onLine);
+    window.addEventListener('online', on);
+    window.addEventListener('offline', on);
+    return () => {
+      window.removeEventListener('online', on);
+      window.removeEventListener('offline', on);
+    };
+  }, []);
+
+  // Outside click to close (overlay handles this as well)
+  useEffect(() => {
+    if (!open) return;
+    function onClick(e: MouseEvent) {
+      if (!outerRef.current) return;
+      if (outerRef.current.contains(e.target as Node)) return;
+      setOpen(false);
+    }
+    document.addEventListener('mousedown', onClick);
+    return () => document.removeEventListener('mousedown', onClick);
+  }, [open]);
+
+  // Drag to resize
+  useEffect(() => {
+    if (!isBrowser) return;
+    function move(e: MouseEvent | TouchEvent) {
+      if (!dragRef.current) return;
+      if (isMobile) {
+        const clientY = 'touches' in e ? e.touches[0].clientY : (e as MouseEvent).clientY;
+        const viewportH = window.innerHeight;
+        // Height is from bottom; if drag handle moves, we invert.
+        const newH = Math.min(Math.max(viewportH - clientY, 240), Math.round(viewportH * 0.9));
+        setMHeight(newH);
+      } else {
+        const clientX = 'touches' in e ? e.touches[0].clientX : (e as MouseEvent).clientX;
+        const viewportW = window.innerWidth;
+        const newW = Math.min(Math.max(viewportW - clientX, 320), Math.round(viewportW * 0.6));
+        setWidth(newW);
+      }
+    }
+    function up() {
+      dragRef.current = false;
+      document.body.style.userSelect = '';
+      document.body.style.cursor = '';
+    }
+    window.addEventListener('mousemove', move as any);
+    window.addEventListener('mouseup', up);
+    window.addEventListener('touchmove', move as any, { passive: false });
+    window.addEventListener('touchend', up);
+    return () => {
+      window.removeEventListener('mousemove', move as any);
+      window.removeEventListener('mouseup', up);
+      window.removeEventListener('touchmove', move as any as any);
+      window.removeEventListener('touchend', up);
+    };
+  }, [isMobile]);
+
+  const startDrag = (e: React.MouseEvent | React.TouchEvent) => {
+    dragRef.current = true;
+    dragStartRef.current = 'touches' in e ? e.touches[0].clientX : (e as any).clientX;
+    origSizeRef.current = isMobile ? mHeight : width;
+    document.body.style.userSelect = 'none';
+    document.body.style.cursor = isMobile ? 'ns-resize' : 'ew-resize';
+  };
+
+  // Build system prompt (nudge: bullet-free, concise)
+  const systemPrompt = useMemo(
+    () =>
+      [
+        'You are a concise, helpful assistant.',
+        'Write in tight paragraphs. Avoid lists unless explicitly requested.',
+        'Do not start lines with bullets, hyphens, or numbers unless the user asked for a list.',
+        'Keep tone supportive but direct.',
       ].join(' '),
-    }),
     []
   );
 
-  // Toggle via keyboard
-  const toggle = useCallback(() => setOpen((v) => !v), []);
-  (toggle as any)._close = () => setOpen(false);
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.altKey && e.key.toLowerCase() === 'a') {
-        e.preventDefault();
-        toggle();
-      }
-      if (e.key === 'Escape') (toggle as any)._close?.();
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
-        e.preventDefault();
-        textareaRef.current?.focus();
-      }
-    };
-    if (isBrowser) {
-      window.addEventListener('keydown', onKey);
-      return () => window.removeEventListener('keydown', onKey);
-    }
-  }, [toggle]);
+  // Intercept "who are you?"
+  const isWhoAreYou = (s: string) => s.trim().toLowerCase().replace(/[?.!]+$/, '') === 'who are you';
 
-  // Open if ?sidebar=1 is present (fresh chat)
-  useEffect(() => {
-    if (!router?.query) return;
-    if ((router.query.sidebar as string) === '1') setOpen(true);
-  }, [router.query]);
-
-  // Apply split-screen offsets to #__next (not body) to avoid layout breaks
-  useEffect(() => {
-    if (!isBrowser) return;
-    const root = document.documentElement;
-    if (open) {
-      if (isMobile) {
-        root.classList.add('gx-ai-open-bottom');
-        root.classList.remove('gx-ai-open');
-        root.style.setProperty('--gx-ai-bottom', `${mHeight}px`);
-        root.style.setProperty('--gx-ai-right', '0px');
-      } else {
-        root.classList.add('gx-ai-open');
-        root.classList.remove('gx-ai-open-bottom');
-        root.style.setProperty('--gx-ai-right', `${width}px`);
-        root.style.setProperty('--gx-ai-bottom', '0px');
-      }
-    } else {
-      root.classList.remove('gx-ai-open', 'gx-ai-open-bottom');
-      root.style.setProperty('--gx-ai-right', '0px');
-      root.style.setProperty('--gx-ai-bottom', '0px');
-    }
-  }, [open, width, mHeight, isMobile]);
-
-  // Autofocus on open
-  useEffect(() => {
-    if (open) setTimeout(() => textareaRef.current?.focus(), 50);
-  }, [open]);
-
-  // Online/offline
-  useEffect(() => {
-    if (!isBrowser) return;
-    const goOff = () => { setStatus('offline'); setStatusNote('You are offline — check your internet.'); };
-    const goOn = () => { setStatus('idle'); setStatusNote(''); };
-    window.addEventListener('offline', goOff);
-    window.addEventListener('online', goOn);
-    return () => { window.removeEventListener('offline', goOff); window.removeEventListener('online', goOn); };
-  }, []);
-
-  // Auto-scroll on new messages
-  useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
-  }, [items, loading, streamingId]);
-
-  // Stall watchdog
-  const startWatchdog = () => {
-    if (!isBrowser) return;
-    if (stallTimerRef.current) window.clearInterval(stallTimerRef.current);
-    lastChunkRef.current = Date.now();
-    setStatus('connecting');
-    setStatusNote('Waiting for response…');
-    stallTimerRef.current = window.setInterval(() => {
-      const diff = Date.now() - lastChunkRef.current;
-      if (status === 'streaming' && diff > 15000) { setStatus('stalled'); setStatusNote('No tokens for a while — network or provider is slow.'); }
-      else if (status === 'connecting' && diff > 12000) { setStatus('stalled'); setStatusNote('Connection slow/blocked — try again or switch provider.'); }
-    }, 3000) as unknown as number;
-  };
-  const stopWatchdog = () => {
-    if (isBrowser && stallTimerRef.current) {
-      window.clearInterval(stallTimerRef.current);
-      stallTimerRef.current = null;
-    }
-  };
-
-  // Hard-coded response for "who are you" intents
-  const whoRegex = /\b(who\s*are\s*you|who\s*r\s*u|introduce\s*yourself|your\s+name|who\s+is\s+this|what\s+are\s+you)\b/i;
-
-  // Send
+  // Send message (with SSE streaming)
   const send = useCallback(
-    async (prompt?: string) => {
-      if (!isBrowser) return;
-      if (!navigator.onLine) { setStatus('offline'); setStatusNote('You are offline — check your internet.'); return; }
-      const content = (prompt ?? input).trim();
-      if (!content) return;
+    async (raw: string) => {
+      const content = raw.trim();
+      if (!content || conn === 'streaming' || offline) return;
 
-      // fresh send prep
-      setInput('');
-      setLoading(true);
+      // Local optimistic add
+      const newUser: Msg = { id: uid(), role: 'user', content };
+      setItems((prev) => [...prev, newUser]);
 
-      // Add user msg
-      const uId = (crypto as any).randomUUID ? crypto.randomUUID() : String(Date.now());
-      setItems((prev) => [...prev, { id: uId, role: 'user', content }]);
-
-      // Special-case: who are you?
-      if (whoRegex.test(content)) {
-        const aId = (crypto as any).randomUUID ? crypto.randomUUID() : String(Date.now() + 1);
-        setItems((prev) => [...prev, { id: aId, role: 'assistant', content: 'I am your coach hired for you by your Partner GramorX.' }]);
-        setLoading(false);
-        setStatus('idle');
-        setStatusNote('');
-        setTimeout(() => textareaRef.current?.focus(), 0);
+      // Fixed answer path
+      if (isWhoAreYou(content)) {
+        const fixed: Msg = {
+          id: uid(),
+          role: 'assistant',
+          content: 'I am your coach hired for you by your Partner GramorX',
+        };
+        setItems((prev) => [...prev, fixed]);
+        setInput('');
         return;
       }
 
-      startWatchdog();
+      setConn('connecting');
+      setErr('');
 
-      // Create streaming assistant shell
-      const aId = (crypto as any).randomUUID ? crypto.randomUUID() : String(Date.now() + 1);
-      setStreamingId(aId);
-      setItems((prev) => [...prev, { id: aId, role: 'assistant', content: '' }]);
+      // Prepare wire messages
+      const wire: WireMsg[] = [
+        { role: 'system', content: systemPrompt },
+        ...items.map((m) => ({ role: m.role, content: m.content })),
+        { role: 'user', content },
+      ];
+
+      // Stall watchdog
+      if (stalledTimerRef.current) clearTimeout(stalledTimerRef.current);
+      stalledTimerRef.current = setTimeout(() => {
+        setConn((c) => (c === 'streaming' || c === 'connecting' ? 'stalled' : c));
+      }, 12000);
 
       try {
-        const history = [...items, { id: uId, role: 'user', content }].slice(-12);
-        const wire: WireMsg[] = [system, ...history.map((m) => ({ role: m.role, content: m.content }))];
+        const assistantId = uid();
         let acc = '';
+        setItems((prev) => [...prev, { id: assistantId, role: 'assistant', content: '' }]);
+
+        setConn('streaming');
         for await (const chunk of streamChat(wire, provider)) {
-          if (status !== 'streaming') { setStatus('streaming'); setStatusNote('Receiving…'); }
-          lastChunkRef.current = Date.now();
           acc += chunk;
-          setItems((prev) => prev.map((m) => (m.id === aId ? { ...m, content: acc } : m)));
+          setItems((prev) =>
+            prev.map((m) => (m.id === assistantId ? { ...m, content: acc } : m))
+          );
+          if (conn !== 'streaming') setConn('streaming');
         }
-        setStatus('idle'); setStatusNote('');
+        setConn('idle');
       } catch (e: any) {
-        setStatus('error');
-        const advice = friendlyAdvice(e?.message || 'failed', !navigator.onLine);
-        setStatusNote(advice);
-        setItems((prev) => prev.map((m) => (m.id === aId ? { ...m, content: `❌ ${e?.message || 'failed'}` } : m)));
+        setConn(offline ? 'offline' : 'error');
+        setErr(String(e?.message || e));
       } finally {
-        stopWatchdog();
-        setStreamingId(null);
-        setLoading(false);
-        setTimeout(() => textareaRef.current?.focus(), 0);
+        if (stalledTimerRef.current) {
+          clearTimeout(stalledTimerRef.current);
+          stalledTimerRef.current = null;
+        }
       }
+
+      setInput('');
     },
-    [input, items, setItems, system, provider, status]
+    [conn, offline, items, provider, setItems, systemPrompt]
   );
 
-  // New chat button handler
-  const newChat = useCallback(() => {
-    setItems([]);
-    setInput('');
-    setStatusNote('');
-    setStreamingId(null);
-    setTimeout(() => textareaRef.current?.focus(), 0);
-  }, [setItems]);
-
-  const clearHistory = useCallback(() => {
-    clear();
-    setInput('');
-    setStatusNote('');
-    setStreamingId(null);
-    setTimeout(() => textareaRef.current?.focus(), 0);
-  }, [clear]);
-
-  // Voice recognition (browser only)
-  const startVoice = useCallback(() => {
-    if (!voiceSupported) { setStatusNote('Voice input is not supported.'); setTimeout(() => setStatusNote(''), 1500); return; }
-    if (listening || voiceDenied) return;
-    const SR: any = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    const rec = new SR();
-    rec.lang = 'en-US'; rec.interimResults = true; rec.maxAlternatives = 1;
-    let errored = false;
-    rec.onstart = () => { setListening(true); setStatusNote('Listening…'); };
-    let finalText = '';
-    rec.onresult = (e: any) => {
-      let draft = '';
-      for (let i = e.resultIndex; i < e.results.length; i++) {
-        const res = e.results[i];
-        if (res.isFinal) finalText += res[0].transcript; else draft += res[0].transcript;
-      }
-      const next = (finalText + ' ' + draft).trim();
-      setInput(next);
-    };
-    rec.onerror = (e: any) => {
-      errored = true;
-      setListening(false);
-      setStatus('error');
-      if (e?.error === 'not-allowed') {
-        setStatusNote('Microphone access denied. Enable it in your browser settings.');
-        setVoiceDenied(true);
-        setTimeout(() => { setStatus('idle'); setStatusNote(''); }, 4000);
-      } else {
-        setStatusNote('Mic error.');
-        setTimeout(() => { setStatus('idle'); setStatusNote(''); }, 1500);
-      }
-    };
-    rec.onend = () => {
-      setListening(false);
-      if (!errored) setStatusNote('');
-      textareaRef.current?.focus();
-    };
-    recRef.current = rec; rec.start();
-  }, [voiceSupported, listening, voiceDenied]);
-
-  const stopVoice = useCallback(() => { try { recRef.current?.stop(); } catch {} setListening(false); }, []);
-  const toggleVoice = useCallback(() => { listening ? stopVoice() : startVoice(); }, [listening, startVoice, stopVoice]);
-
-  useEffect(() => () => { try { recRef.current?.stop(); } catch {} }, []);
-
-  // Resizer (desktop only)
-  useEffect(() => {
-    if (!isBrowser) return;
-    const onMove = (e: MouseEvent) => {
-      if (!resizingRef.current) return;
-      const vw = window.innerWidth;
-      const newW = Math.min(Math.max(vw - e.clientX, 340), 720);
-      setWidth(newW);
-    };
-    const onUp = () => {
-      if (!resizingRef.current) return;
-      resizingRef.current = false;
-      document.body.style.userSelect = '';
-      document.body.style.cursor = '';
-    };
-    window.addEventListener('mousemove', onMove);
-    window.addEventListener('mouseup', onUp);
-    return () => {
-      window.removeEventListener('mousemove', onMove);
-      window.removeEventListener('mouseup', onUp);
-    };
-  }, []);
-
-  // Auto-grow textarea up to 6 lines
-  useEffect(() => {
-    const el = textareaRef.current; if (!el) return;
-    el.style.height = 'auto';
-    const max = 6; // lines
-    const lineHeight = 20; // approx
-    const next = Math.min(el.scrollHeight, max * lineHeight + 16);
-    el.style.height = `${next}px`;
-  }, [input]);
+  const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      send(input);
+    }
+  };
 
   // UI bits
-  const statusDot =
-    status === 'streaming' || status === 'connecting' ? 'bg-primary'
-    : status === 'stalled' ? 'bg-accent'
-    : status === 'offline' || status === 'error' ? 'bg-destructive'
-    : 'bg-muted-foreground';
+  const header = (
+    <div className="flex items-center justify-between px-3 py-2 border-b border-border">
+      <div className="flex items-center gap-2">
+        <span className="font-medium">Coach</span>
+        <span className="text-muted-foreground text-caption">Sidebar</span>
+      </div>
+      <div className="flex items-center gap-2">
+        <label className="flex items-center gap-1 text-caption text-muted-foreground select-none">
+          <input
+            type="checkbox"
+            checked={persist}
+            onChange={(e) => setPersist(e.target.checked)}
+          />
+          Remember
+        </label>
+        <Select
+          value={provider}
+          onChange={(v: Provider) => setProvider(v)}
+          options={[
+            { value: 'auto', label: 'Auto' },
+            { value: 'gemini', label: 'Gemini' },
+            { value: 'groq', label: 'Groq' },
+            { value: 'openai', label: 'OpenAI' },
+          ]}
+          className="w-[120px]"
+        />
+        <Button
+          variant="ghost"
+          onClick={() => setOpen(false)}
+          aria-label="Close"
+          title="Close"
+        >
+          ✕
+        </Button>
+      </div>
+    </div>
+  );
 
-  // Transition per form factor
-  const sheetTrans = isMobile ? (open ? 'translate-y-0' : 'translate-y-full') : (open ? 'translate-x-0' : 'translate-x-full');
+  const footer = (
+    <div className="border-t border-border p-3">
+      <div className="flex gap-2 items-start">
+        <Textarea
+          ref={inputRef}
+          value={input}
+          onChange={(e: any) => setInput(e.target.value)}
+          onKeyDown={onKeyDown}
+          placeholder="Ask anything…"
+          className="min-h-[44px] max-h-[160px] flex-1"
+          disabled={conn === 'streaming' || offline}
+        />
+        <Button
+          onClick={() => send(input)}
+          disabled={!input.trim() || conn === 'streaming' || offline}
+        >
+          Send
+        </Button>
+      </div>
+      <div className="flex items-center justify-between mt-2 text-caption text-muted-foreground">
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" onClick={clear} title="Clear chat (resets memory)">
+            Clear
+          </Button>
+          <Button
+            variant="ghost"
+            onClick={() => setOpen(false)}
+            title="Hide (chat stays until refresh/clear)"
+          >
+            Hide
+          </Button>
+        </div>
+        <div>
+          {conn === 'streaming' && <span>Generating…</span>}
+          {conn === 'connecting' && <span>Connecting…</span>}
+          {conn === 'stalled' && <span>Stalled — still trying…</span>}
+          {conn === 'offline' && <span>Offline</span>}
+          {conn === 'error' && (
+            <span className="text-red-500">
+              {friendlyAdvice(err, offline)}
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
+  const chat = (
+    <div className="flex-1 overflow-y-auto px-3 py-2 space-y-3">
+      {items.length === 0 ? (
+        <div className="text-muted-foreground text-caption">
+          No messages yet. Ask a question to start.
+        </div>
+      ) : (
+        items.map((m) => (
+          <div
+            key={m.id}
+            className={
+              m.role === 'user'
+                ? 'ml-auto max-w-[85%] rounded-xl bg-primary text-primary-foreground px-3 py-2'
+                : 'mr-auto max-w-[85%] rounded-xl bg-card border border-border text-foreground px-3 py-2'
+            }
+          >
+            {m.role === 'assistant' ? renderMarkdown(m.content) : <p className="whitespace-pre-wrap">{m.content}</p>}
+          </div>
+        ))
+      )}
+    </div>
+  );
+
+  // Launcher button
+  const launcher = (
+    <Button
+      onClick={() => setOpen(true)}
+      className="fixed bottom-4 right-4 z-40 shadow-lg"
+      aria-haspopup="dialog"
+      aria-expanded={open}
+      title="Open Coach"
+    >
+      Open Coach
+    </Button>
+  );
+
+  // Panel (desktop right / mobile bottom)
+  const panel = (
+    <div
+      ref={outerRef}
+      className="fixed z-40 bg-background border-border border shadow-xl flex flex-col"
+      style={
+        isMobile
+          ? {
+              left: 0,
+              right: 0,
+              bottom: 0,
+              height: mHeight,
+              borderTopLeftRadius: 14,
+              borderTopRightRadius: 14,
+            }
+          : {
+              top: 0,
+              right: 0,
+              width,
+              height: '100vh',
+            }
+      }
+      role="dialog"
+      aria-modal="true"
+      aria-label="AI Coach Sidebar"
+    >
+      {header}
+      {/* Drag handle */}
+      <div
+        onMouseDown={startDrag as any}
+        onTouchStart={startDrag as any}
+        className={
+          isMobile
+            ? 'h-3 w-full cursor-ns-resize flex items-center justify-center'
+            : 'w-3 h-full cursor-ew-resize absolute left-[-3px] top-0'
+        }
+        title="Drag to resize"
+      >
+        {isMobile && (
+          <div className="w-12 h-1 rounded-full bg-border" />
+        )}
+      </div>
+      {chat}
+      {footer}
+    </div>
+  );
+
+  // Overlay to close on outside click
+  const overlay = (
+    <div
+      className="fixed inset-0 bg-black/20 z-30"
+      onClick={() => setOpen(false)}
+      aria-hidden="true"
+    />
+  );
 
   return (
     <Fragment>
-      {/* Launcher */}
-      {!open && (
-        <button
-          onClick={() => setOpen(true)}
-          className="fixed bottom-5 right-5 z-[60] rounded-full shadow-lg px-4 py-3 text-small font-semibold bg-primary text-primary-foreground hover:opacity-90 active:scale-95"
-          title="Open AI (Alt+A)"
-        >
-          ✨ AI
-        </button>
-      )}
-
-      {/* Darkened overlay behind the sidebar */}
-      {open && (
-        <div
-          className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm"
-          onClick={() => setOpen(false)}
-          aria-hidden
-        />
-      )}
-
-      {/* Sidebar (split-screen) */}
-      <aside
-        className={`fixed z-[61] bg-background border-border shadow-xl transition-transform duration-300 ${isMobile ? 'left-0 right-0 bottom-0 border-t' : 'top-0 right-0 border-l'} ${sheetTrans} ${isMobile ? '' : 'h-screen'}`}
-        style={isMobile ? { height: mHeight } : { width }}
-        aria-label="AI sidebar"
-      >
-        {/* Resizer (hidden on mobile) */}
-        {!isMobile && (
-          <div
-            className="absolute left-0 top-0 h-full w-1 cursor-col-resize bg-border"
-            onMouseDown={(e) => { e.preventDefault(); resizingRef.current = true; document.body.style.userSelect = 'none'; document.body.style.cursor = 'col-resize'; }}
-            title="Drag to resize"
-          />
-        )}
-
-        {/* Header */}
-        <div className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border">
-          <div className="flex items-center justify-between px-3 md:px-4 h-14">
-            <div className="flex items-center gap-2 min-w-0">
-              <span className="font-semibold truncate">GramorX AI</span>
-              <span className={`inline-block h-2 w-2 rounded-full ${statusDot}`} aria-label={`status: ${status}`} />
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="flex gap-1" role="tablist" aria-label="AI provider">
-                {(['auto', 'gemini', 'groq', 'openai'] as Provider[]).map((p) => (
-                  <button
-                    key={p}
-                    onClick={() => setProvider(p)}
-                    className={`ai-tab ${provider === p ? 'is-active' : ''}`}
-                    role="tab"
-                    aria-selected={provider === p}
-                  >
-                    {p}
-                  </button>
-                ))}
-              </div>
-
-              <label className="flex items-center gap-1 text-caption">
-                <input
-                  type="checkbox"
-                  className="h-3 w-3"
-                  checked={persist}
-                  onChange={(e) => setPersist(e.target.checked)}
-                />
-                Remember
-              </label>
-
-              <button onClick={clearHistory} className="h-8 px-3 rounded-md bg-card border border-border hover:bg-accent text-caption" aria-label="Clear history">Clear</button>
-              <button onClick={newChat} className="h-8 px-3 rounded-md bg-card border border-border hover:bg-accent text-caption" aria-label="New chat">New</button>
-              <button onClick={() => setOpen(false)} className="ai-icon-btn" aria-label="Close">✕</button>
-            </div>
-          </div>
-          {statusNote && (
-            <div className="px-3 md:px-4 py-1 text-tiny text-muted-foreground bg-muted border-t border-border">
-              {statusNote}
-            </div>
-          )}
-        </div>
-
-        {/* Messages */}
-        <div
-          ref={scrollRef}
-          className={`${isMobile ? 'h-[calc(100svh-8.5rem)]' : 'h-[calc(100vh-8.5rem)]'} overflow-y-auto px-3 md:px-4 py-3 space-y-3`}
-        >
-          {items.length === 0 && (
-            <div className="text-center">
-              <div className="inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-gradient-to-br from-primary/15 to-accent/15 border border-border mb-3">
-                <span className="text-h4">✨</span>
-              </div>
-              <div className="text-small">
-                Hi, I’m your coach — hired for you by your Partner GramorX. Speak or type to begin.
-              </div>
-              <div className="mt-3 flex items-center justify-center gap-2">
-                <button onClick={newChat} className="text-caption rounded-full px-3 py-1 bg-card border border-border hover:bg-accent">New chat</button>
-                <button
-                  onClick={toggleVoice}
-                  disabled={!voiceSupported || voiceDenied}
-                  className="text-caption rounded-full px-3 py-1 border border-border bg-card hover:bg-accent disabled:opacity-50"
-                  title={voiceSupported ? (voiceDenied ? 'Mic access denied' : listening ? 'Stop voice' : 'Speak') : 'Voice not supported'}
-                >
-                  🎙 {listening ? 'Stop' : 'Speak'}
-                </button>
-              </div>
-              <div className="mt-2 text-tiny text-muted-foreground/80">Tip: Alt+A toggles anywhere.</div>
-            </div>
-          )}
-
-          {items.map((m) => (
-            <div
-              key={m.id}
-              className={`rounded-2xl px-3 py-2 text-small leading-relaxed border ${
-                m.role === 'user' ? 'bg-accent text-accent-foreground border-accent' : 'bg-card text-card-foreground border-border'
-              }`}
-              aria-live={m.id === streamingId ? 'polite' : undefined}
-            >
-              <div className="text-micro uppercase tracking-wider text-muted-foreground mb-1">
-                {m.role === 'user' ? 'You' : 'GramorX AI'}
-              </div>
-              <div className="prose prose-sm dark:prose-invert max-w-none">
-                {renderMarkdown(m.content)}
-              </div>
-            </div>
-          ))}
-
-          {loading && (
-            <div className="text-caption text-muted-foreground animate-pulse">Thinking…</div>
-          )}
-        </div>
-
-        {/* Composer */}
-        <div className="sticky bottom-0 border-t border-border p-2 md:p-3 bg-background">
-          <div className="flex items-end gap-2">
-            <button
-              onClick={toggleVoice}
-              disabled={!voiceSupported || voiceDenied}
-              className={`ai-icon-btn ${listening ? 'bg-primary text-primary-foreground' : ''}`}
-              title={voiceSupported ? (voiceDenied ? 'Mic access denied' : listening ? 'Stop voice' : 'Speak') : 'Voice not supported'}
-              aria-label="Voice input"
-            >
-              🎙
-            </button>
-            <textarea
-              ref={textareaRef}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
-              }}
-              rows={1}
-              placeholder="Type or tap 🎙 to speak… (Enter to send, Shift+Enter = new line)"
-              className="w-full resize-none rounded-2xl border border-border bg-background px-3 py-2 text-small outline-none focus:ring-2 focus:ring-primary/40"
-              style={{ maxHeight: 148 }}
-            />
-            <button
-              onClick={() => send()}
-              disabled={loading || !input.trim() || !!streamingId}
-              className="rounded-2xl h-10 min-w-[88px] px-4 md:px-3 text-small font-semibold bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-50"
-            >
-              Send
-            </button>
-          </div>
-        </div>
-      </aside>
+      {!open && launcher}
+      {open && overlay}
+      {open && panel}
     </Fragment>
   );
 }

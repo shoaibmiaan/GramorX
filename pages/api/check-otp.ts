@@ -1,10 +1,11 @@
 // /api/check-otp.js (server)
 import Twilio from "twilio";
 import { createClient } from "@supabase/supabase-js";
+import { env } from "@/lib/env";
 
-const client = Twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
-const SERVICE_SID = process.env.TWILIO_VERIFY_SERVICE_SID;
-const supa = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY); // server only
+const client = Twilio(env.TWILIO_ACCOUNT_SID, env.TWILIO_AUTH_TOKEN);
+const SERVICE_SID = env.TWILIO_VERIFY_SERVICE_SID;
+const supa = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_KEY); // server only
 
 export default async function checkOtp(req, res) {
   const { phone, code } = req.body;
