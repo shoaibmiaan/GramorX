@@ -3,6 +3,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import AuthLayout from '@/components/layouts/AuthLayout';
 import { Input } from '@/components/design-system/Input';
+import { PasswordInput } from '@/components/design-system/PasswordInput';
 import { Button } from '@/components/design-system/Button';
 import { Alert } from '@/components/design-system/Alert';
 import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser';
@@ -57,7 +58,7 @@ export default function LoginWithEmail() {
       {err && <Alert variant="error" title="Error" className="mb-4">{err}</Alert>}
       <form onSubmit={onSubmit} className="space-y-6 mt-2">
         <Input label="Email" type="email" placeholder="you@example.com" value={email} onChange={(e)=>setEmail(e.target.value)} required />
-        <Input label="Password" type="password" placeholder="Your password" value={pw} onChange={(e)=>setPw(e.target.value)} required />
+        <PasswordInput label="Password" placeholder="Your password" value={pw} onChange={(e)=>setPw(e.target.value)} required />
         <Button type="submit" variant="primary" className="w-full rounded-ds-xl" disabled={loading}>
           {loading ? 'Signing in…' : 'Continue'}
         </Button>
