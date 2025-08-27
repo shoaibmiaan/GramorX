@@ -17,6 +17,7 @@ import { useStreak } from '@/hooks/useStreak';
 import { getDayKeyInTZ } from '@/lib/streak';
 import StudyCalendar from '@/components/feature/StudyCalendar';
 import GoalRoadmap from '@/components/feature/GoalRoadmap';
+import GapToGoal from '@/components/visa/GapToGoal';
 
 type AIPlan = {
   suggestedGoal?: number;
@@ -208,6 +209,11 @@ export default function Dashboard() {
               ))}
             </div>
           </Card>
+        </div>
+
+        {/* Visa gap summary */}
+        <div className="mt-10">
+          <GapToGoal />
         </div>
 
         {/* Study calendar */}
