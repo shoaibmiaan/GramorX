@@ -221,6 +221,7 @@ export function renderMarkdown(raw: string) {
   const [listening, setListening] = useState(false);
   const recRef = useRef<any>(null);
   const voiceSupported = typeof window !== 'undefined' && ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition);
+  const [voiceDenied, setVoiceDenied] = useState(false);
 
   // Refs
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -418,10 +419,11 @@ export function renderMarkdown(raw: string) {
   // Voice recognition (browser only)
   const startVoice = useCallback(() => {
     if (!voiceSupported) { setStatusNote('Voice input is not supported.'); setTimeout(() => setStatusNote(''), 1500); return; }
-    if (listening) return;
+    if (listening || voiceDenied) return;
     const SR: any = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     const rec = new SR();
     rec.lang = 'en-US'; rec.interimResults = true; rec.maxAlternatives = 1;
+    let errored = false;
     rec.onstart = () => { setListening(true); setStatusNote('Listening…'); };
     let finalText = '';
     rec.onresult = (e: any) => {
@@ -433,10 +435,26 @@ export function renderMarkdown(raw: string) {
       const next = (finalText + ' ' + draft).trim();
       setInput(next);
     };
-    rec.onerror = () => { setListening(false); setStatus('error'); setStatusNote('Mic error.'); };
-    rec.onend = () => { setListening(false); setStatusNote(''); textareaRef.current?.focus(); };
+    rec.onerror = (e: any) => {
+      errored = true;
+      setListening(false);
+      setStatus('error');
+      if (e?.error === 'not-allowed') {
+        setStatusNote('Microphone access denied. Enable it in your browser settings.');
+        setVoiceDenied(true);
+        setTimeout(() => { setStatus('idle'); setStatusNote(''); }, 4000);
+      } else {
+        setStatusNote('Mic error.');
+        setTimeout(() => { setStatus('idle'); setStatusNote(''); }, 1500);
+      }
+    };
+    rec.onend = () => {
+      setListening(false);
+      if (!errored) setStatusNote('');
+      textareaRef.current?.focus();
+    };
     recRef.current = rec; rec.start();
-  }, [voiceSupported, listening]);
+  }, [voiceSupported, listening, voiceDenied]);
 
   const stopVoice = useCallback(() => { try { recRef.current?.stop(); } catch {} setListening(false); }, []);
   const toggleVoice = useCallback(() => { listening ? stopVoice() : startVoice(); }, [listening, startVoice, stopVoice]);
@@ -567,7 +585,12 @@ export function renderMarkdown(raw: string) {
               </div>
               <div className="mt-3 flex items-center justify-center gap-2">
                 <button onClick={newChat} className="text-caption rounded-full px-3 py-1 bg-card border border-border hover:bg-accent">New chat</button>
-                <button onClick={toggleVoice} disabled={!voiceSupported} className="text-caption rounded-full px-3 py-1 border border-border bg-card hover:bg-accent disabled:opacity-50" title={voiceSupported ? (listening ? 'Stop voice' : 'Speak') : 'Voice not supported'}>
+                <button
+                  onClick={toggleVoice}
+                  disabled={!voiceSupported || voiceDenied}
+                  className="text-caption rounded-full px-3 py-1 border border-border bg-card hover:bg-accent disabled:opacity-50"
+                  title={voiceSupported ? (voiceDenied ? 'Mic access denied' : listening ? 'Stop voice' : 'Speak') : 'Voice not supported'}
+                >
                   🎙 {listening ? 'Stop' : 'Speak'}
                 </button>
               </div>
@@ -602,9 +625,9 @@ export function renderMarkdown(raw: string) {
           <div className="flex items-end gap-2">
             <button
               onClick={toggleVoice}
-              disabled={!voiceSupported}
+              disabled={!voiceSupported || voiceDenied}
               className={`h-10 w-10 rounded-full border border-border ${listening ? 'bg-primary text-primary-foreground' : 'bg-card hover:bg-accent'} disabled:opacity-50`}
-              title={voiceSupported ? (listening ? 'Stop voice' : 'Speak') : 'Voice not supported'}
+              title={voiceSupported ? (voiceDenied ? 'Mic access denied' : listening ? 'Stop voice' : 'Speak') : 'Voice not supported'}
               aria-label="Voice input"
             >
               🎙
