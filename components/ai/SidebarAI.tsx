@@ -656,7 +656,7 @@ export function SidebarAI() {
             <button
               onClick={toggleVoice}
               disabled={!voiceSupported || voiceDenied}
-              className={`ai-icon-btn h-10 w-10 rounded-full ${listening ? 'bg-primary text-primary-foreground' : ''}`}
+              className={`ai-icon-btn ${listening ? 'bg-primary text-primary-foreground' : ''}`}
               title={voiceSupported ? (voiceDenied ? 'Mic access denied' : listening ? 'Stop voice' : 'Speak') : 'Voice not supported'}
               aria-label="Voice input"
             >
