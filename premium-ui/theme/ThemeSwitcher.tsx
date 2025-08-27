@@ -27,3 +27,6 @@ export function ThemeSwitcherPremium() {
     </div>
   );
 }
+
+// Allow importing as `ThemeSwitcher` for convenience
+export { ThemeSwitcherPremium as ThemeSwitcher };
