@@ -19,14 +19,13 @@ import React, {
 } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-/* eslint-disable @typescript-eslint/no-var-requires */
-let rehypeHighlight: any;
-try {
-  // Optional dependency; falls back gracefully if missing.
-  // @ts-expect-error TODO: add types for rehype-highlight
-  rehypeHighlight = require('rehype-highlight');
-} catch {}
-/* eslint-enable @typescript-eslint/no-var-requires */
+let rehypeHighlight: (typeof import('rehype-highlight'))['default'] | undefined;
+
+import('rehype-highlight')
+  .then((mod) => {
+    rehypeHighlight = mod.default;
+  })
+  .catch(() => {});
 import { useRouter } from 'next/router';
 
 // ---- Types
