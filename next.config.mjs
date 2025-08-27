@@ -4,12 +4,11 @@ import withPWA from 'next-pwa';
 const nextConfig = {
   reactStrictMode: true,
 
-  // TEMP: unblock build on Vercel while we fix code
   eslint: {
-    ignoreDuringBuilds: true,
+    ignoreDuringBuilds: false,
   },
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
   env: {
     JAZZCASH_MERCHANT_ID: process.env.JAZZCASH_MERCHANT_ID ?? 'demo_merchant',
