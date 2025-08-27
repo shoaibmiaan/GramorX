@@ -54,7 +54,7 @@ export default function LoginWithPhone() {
         <p className="text-body text-grayish dark:text-gray-300 max-w-md">Use a one-time SMS code to sign in.</p>
       </div>
       <div className="pt-8 text-small text-grayish dark:text-gray-400">
-        Prefer email? <Link href="/login/email" className="text-primary hover:underline">Use email & password</Link>
+        Prefer email? <Link href="/login/email" className="text-primaryDark hover:underline">Use email & password</Link>
       </div>
     </div>
   );

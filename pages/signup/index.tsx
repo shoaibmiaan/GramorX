@@ -32,7 +32,7 @@ export default function SignupOptions() {
         </ul>
       </div>
       <div className="pt-8 text-small text-grayish dark:text-gray-400">
-        Already have an account? <Link href="/login" className="text-primary hover:underline">Log in</Link>
+        Already have an account? <Link href="/login" className="text-primaryDark hover:underline">Log in</Link>
       </div>
     </div>
   );
