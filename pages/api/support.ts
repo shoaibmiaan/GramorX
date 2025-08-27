@@ -1,6 +1,7 @@
 // pages/api/support.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { createClient } from '@supabase/supabase-js';
+import { env } from '@/lib/env';
 
 /** ========= Types ========= */
 type SupportCategory = 'account' | 'billing' | 'modules' | 'ai' | 'technical' | 'other';
@@ -86,8 +87,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   }
 
   // Validate env for server-only Supabase client
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const url = env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceRoleKey = env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !serviceRoleKey) {
     return res.status(500).json({
       ok: false,

@@ -2,10 +2,11 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { requireRole } from '@/lib/requireRole';
+import { env } from '@/lib/env';
 
 const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL ||
-  process.env.SITE_URL ||
+  env.NEXT_PUBLIC_SITE_URL ||
+  env.SITE_URL ||
   'http://localhost:3000';
 
 type Action =

@@ -3,9 +3,10 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { z } from 'zod';
 import { createClient } from '@supabase/supabase-js';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { env } from '@/lib/env';
 
-const URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const URL = env.NEXT_PUBLIC_SUPABASE_URL;
+const ANON = env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 const SectionSchema = z.enum(['part1', 'part2', 'part3']);
 const ScoreSchema = z.object({

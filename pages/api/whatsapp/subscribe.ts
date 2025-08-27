@@ -26,10 +26,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (error) return res.status(500).json({ error: error.message });
 
   try {
-    const client = Twilio(process.env.TWILIO_ACCOUNT_SID!, process.env.TWILIO_AUTH_TOKEN!);
+    const client = Twilio(env.TWILIO_ACCOUNT_SID, env.TWILIO_AUTH_TOKEN);
     await client.messages.create({
       to: `whatsapp:${phone}`,
-      from: `whatsapp:${process.env.TWILIO_WHATSAPP_FROM}`,
+      from: `whatsapp:${env.TWILIO_WHATSAPP_FROM}`,
       body: "Thanks for subscribing to GramorX WhatsApp updates! Reply STOP to unsubscribe.",
     });
   } catch (e) {

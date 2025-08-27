@@ -1,7 +1,8 @@
 // /api/send-otp.js (server)
 import Twilio from "twilio";
-const client = Twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
-const SERVICE_SID = process.env.TWILIO_VERIFY_SERVICE_SID; // starts with VA...
+import { env } from "@/lib/env";
+const client = Twilio(env.TWILIO_ACCOUNT_SID, env.TWILIO_AUTH_TOKEN);
+const SERVICE_SID = env.TWILIO_VERIFY_SERVICE_SID; // starts with VA...
 
 export default async function sendOtp(req, res) {
   const { phone } = req.body; // expect E.164: +9233....

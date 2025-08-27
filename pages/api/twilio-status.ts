@@ -2,15 +2,16 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import Twilio from "twilio";
 import { createClient } from "@supabase/supabase-js";
+import { env } from "@/lib/env";
 
-const { TWILIO_AUTH_TOKEN, SUPABASE_URL, SUPABASE_SERVICE_KEY } = process.env;
-const supa = createClient(SUPABASE_URL!, SUPABASE_SERVICE_KEY!);
+const { TWILIO_AUTH_TOKEN, SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
+const supa = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") return res.status(405).end();
   const signature = req.headers["x-twilio-signature"] as string | undefined;
-  const url = `${process.env.NEXT_PUBLIC_SITE_URL || "https://yourdomain.com"}/api/twilio-status`;
-  const valid = Twilio.validateRequest(TWILIO_AUTH_TOKEN!, signature || "", url, req.body);
+  const url = `${env.NEXT_PUBLIC_SITE_URL || "https://yourdomain.com"}/api/twilio-status`;
+  const valid = Twilio.validateRequest(TWILIO_AUTH_TOKEN, signature || "", url, req.body);
 
   if (!valid) return res.status(403).end("Invalid Twilio signature");
 

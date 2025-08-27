@@ -1,15 +1,16 @@
 // pages/api/dev/grant-role.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { env } from '@/lib/env';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (process.env.NODE_ENV === 'production') {
+  if (env.NODE_ENV === 'production') {
     return res.status(403).json({ error: 'Disabled in production' });
   }
   if (req.method !== 'POST') return res.status(405).end();
 
   const authz = req.headers.authorization?.replace('Bearer ', '');
-  if (!authz || authz !== process.env.LOCAL_ADMIN_TOKEN) {
+  if (!authz || authz !== env.LOCAL_ADMIN_TOKEN) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
