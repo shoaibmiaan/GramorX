@@ -1,6 +1,7 @@
 // pages/api/blog/modqueue.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { createClient } from '@supabase/supabase-js';
+import { env } from '@/lib/env';
 
 export interface ModQueueItem {
   id: string;
@@ -30,12 +31,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     return bad(res, 405, 'Method Not Allowed');
   }
   // Simple admin gate
-  if (!process.env.ADMIN_API_TOKEN || req.headers['x-admin-token'] !== process.env.ADMIN_API_TOKEN) {
+  if (!env.ADMIN_API_TOKEN || req.headers['x-admin-token'] !== env.ADMIN_API_TOKEN) {
     return bad(res, 403, 'Forbidden');
   }
 
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const url = env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !serviceKey) return bad(res, 500, 'Server misconfigured.');
 
   const supa = createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });

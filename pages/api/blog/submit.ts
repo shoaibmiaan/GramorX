@@ -1,6 +1,7 @@
 // pages/api/blog/submit.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { createClient } from '@supabase/supabase-js';
+import { env } from '@/lib/env';
 
 export interface BlogSubmitRequest {
   slug: string;               // draft slug to submit
@@ -28,8 +29,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     return bad(res, 405, 'Method Not Allowed');
   }
 
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const url = env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !serviceKey) return bad(res, 500, 'Server misconfigured.');
 
   const parsed = validate(req.body as unknown);
