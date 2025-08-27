@@ -185,13 +185,13 @@ body { @apply font-sans text-lightText bg-lightBg overflow-x-hidden relative; }
 
 /* AI sidebar helpers (theme aware, token-only) */
 .ai-icon-btn{
-  @apply h-9 w-9 grid place-items-center rounded-lg hover:bg-vibrantPurple/10 text-lightText dark:text-white;
+  @apply h-8 w-8 grid place-items-center rounded-md border border-border bg-card text-muted-foreground hover:bg-accent hover:text-foreground disabled:opacity-50;
 }
 .ai-tab{
-  @apply px-3 py-1.5 rounded-full text-lightText/80 dark:text-white/80 hover:text-lightText dark:hover:text-white;
+  @apply h-8 px-3 rounded-md border border-border bg-card text-caption text-muted-foreground hover:bg-accent hover:text-foreground;
 }
 .ai-tab.is-active{
-  @apply bg-vibrantPurple/10 text-lightText dark:text-white;
+  @apply bg-primary text-primary-foreground;
 }
 
 /* AI sidebar split view */
