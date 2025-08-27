@@ -22,7 +22,14 @@ type Question = MCQ | TFNG | YNNG | GAP | MATCH;
 type Section = { orderNo: number; title?: string; instructions?: string; questions: Question[] };
 type ReadingTest = { slug: string; title: string; passage: string; sections: Section[]; durationMinutes: number };
 
-const CLIENT_ONLY = dynamic(() => Promise.resolve(({ children }: any) => <>{children}</>), { ssr: false });
+const CLIENT_ONLY = dynamic(() => Promise.resolve(({ children }: React.PropsWithChildren) => <>{children}</>), { ssr: false });
+
+type AnswerValue =
+  | { type: 'mcq'; value: string }
+  | { type: 'tfng'; value: 'True' | 'False' | 'Not Given' }
+  | { type: 'ynng'; value: 'Yes' | 'No' | 'Not Given' }
+  | { type: 'gap'; value: string }
+  | { type: 'match'; value: Record<string, string> };
 
 type StatusFilter = 'all' | 'flagged' | 'unanswered';
 type TypeFilter = 'all' | 'tfng' | 'ynng' | 'mcq' | 'gap' | 'match';
@@ -32,7 +39,7 @@ export default function ReadingRunnerPage() {
   const { slug } = router.query as { slug?: string };
   const [test, setTest] = useState<ReadingTest | null>(null);
   const [err, setErr] = useState<string|undefined>();
-  const [answers, setAnswers] = useState<Record<string, any>>({});
+  const [answers, setAnswers] = useState<Record<string, AnswerValue>>({});
   const [flags, setFlags] = useState<Record<string, boolean>>({});
   const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -129,7 +136,9 @@ export default function ReadingRunnerPage() {
   const answeredCount = useMemo(() => Object.keys(answers).length, [answers]);
   const progressPct = totalQuestions ? Math.round((answeredCount / totalQuestions) * 100) : 0;
 
-  function onAnswer(qid: string, value: any) { setAnswers(prev => ({ ...prev, [qid]: value })); }
+  function onAnswer(qid: string, type: Question['type'], value: AnswerValue['value']) {
+    setAnswers(prev => ({ ...prev, [qid]: { type, value } }));
+  }
   function toggleFlag(qid: string) { setFlags(prev => ({ ...prev, [qid]: !prev[qid] })); }
 
   // keyboard shortcuts (kept)
@@ -143,7 +152,7 @@ export default function ReadingRunnerPage() {
       if (!current) return;
 
       const type = current.type;
-      const set = (val:any) => onAnswer(current.id, val);
+      const set = (val: AnswerValue['value']) => onAnswer(current.id, type, val);
 
       if (e.key.toLowerCase() === 'f') { e.preventDefault(); toggleFlag(current.id); scrollToQuestion(current.id); return; }
       if (e.key === 'Enter') { e.preventDefault(); const nxt = nextUnanswered(flatQuestions, answers, current.id); if (nxt) scrollToQuestion(nxt.id); return; }
@@ -175,14 +184,14 @@ export default function ReadingRunnerPage() {
     const el = document.querySelector<HTMLElement>(`[data-qid="${qid}"]`);
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
-  function firstUnansweredOrLast(Qs: Question[], ans: Record<string,any>) {
-    const u = Qs.find(q => ans[q.id] == null || ans[q.id] === '');
+  function firstUnansweredOrLast(Qs: Question[], ans: Record<string, AnswerValue>) {
+    const u = Qs.find(q => ans[q.id]?.value == null || ans[q.id]?.value === '');
     return u || Qs[Qs.length - 1];
   }
-  function nextUnanswered(Qs: Question[], ans: Record<string,any>, afterId: string) {
+  function nextUnanswered(Qs: Question[], ans: Record<string, AnswerValue>, afterId: string) {
     const idx = Qs.findIndex(q => q.id === afterId);
-    for (let i = idx + 1; i < Qs.length; i++) if (ans[Qs[i].id] == null || ans[Qs[i].id] === '') return Qs[i];
-    for (let i = 0; i <= idx; i++) if (ans[Qs[i].id] == null || ans[Qs[i].id] === '') return Qs[i];
+    for (let i = idx + 1; i < Qs.length; i++) if (ans[Qs[i].id]?.value == null || ans[Qs[i].id]?.value === '') return Qs[i];
+    for (let i = 0; i <= idx; i++) if (ans[Qs[i].id]?.value == null || ans[Qs[i].id]?.value === '') return Qs[i];
     return null;
   }
 
@@ -192,7 +201,7 @@ export default function ReadingRunnerPage() {
     flatQuestions.forEach(q => {
       if (!map[q.type]) map[q.type] = { answered: 0, total: 0 };
       map[q.type].total += 1;
-      if (!(answers[q.id] == null || answers[q.id] === '')) map[q.type].answered += 1;
+      if (!(answers[q.id]?.value == null || answers[q.id]?.value === '')) map[q.type].answered += 1;
     });
     return map;
   }, [flatQuestions, answers]);
@@ -261,10 +270,10 @@ export default function ReadingRunnerPage() {
                           <QuestionBlock
                             key={q.id}
                             q={q as any}
-                            value={answers[q.id]}
+                            value={answers[q.id]?.value}
                             flagged={!!flags[q.id]}
                             onFlag={() => toggleFlag(q.id)}
-                            onChange={(val) => setAnswers(prev => ({ ...prev, [q.id]: val }))}
+                            onChange={(val) => onAnswer(q.id, q.type, val)}
                           />
                         ))}
                       </div>
@@ -299,13 +308,13 @@ async function submit(this: void, auto = false) {
   // NOTE: function body is defined inside component above (kept to preserve diff clarity)
 }
 
-function firstUnansweredOrLast(Qs: Question[], ans: Record<string,any>) {
-  const u = Qs.find(q => ans[q.id] == null || ans[q.id] === '');
+function firstUnansweredOrLast(Qs: Question[], ans: Record<string, AnswerValue>) {
+  const u = Qs.find(q => ans[q.id]?.value == null || ans[q.id]?.value === '');
   return u || Qs[Qs.length - 1];
 }
-function nextUnanswered(Qs: Question[], ans: Record<string,any>, afterId: string) {
+function nextUnanswered(Qs: Question[], ans: Record<string, AnswerValue>, afterId: string) {
   const idx = Qs.findIndex(q => q.id === afterId);
-  for (let i = idx + 1; i < Qs.length; i++) if (ans[Qs[i].id] == null || ans[Qs[i].id] === '') return Qs[i];
-  for (let i = 0; i <= idx; i++) if (ans[Qs[i].id] == null || ans[Qs[i].id] === '') return Qs[i];
+  for (let i = idx + 1; i < Qs.length; i++) if (ans[Qs[i].id]?.value == null || ans[Qs[i].id]?.value === '') return Qs[i];
+  for (let i = 0; i <= idx; i++) if (ans[Qs[i].id]?.value == null || ans[Qs[i].id]?.value === '') return Qs[i];
   return null;
 }
