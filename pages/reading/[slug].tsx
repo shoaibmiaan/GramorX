@@ -171,6 +171,31 @@ export default function ReadingRunnerPage() {
     return () => window.removeEventListener('keydown', onKey);
   }, [test, answers, flatQuestions]);
 
+  const submit = async (auto = false) => {
+    if (!slug) return;
+    setSubmitting(true);
+    try {
+      const res = await fetch('/api/reading/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slug, answers }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json?.error || 'Submit failed');
+      preventRouteBlockRef.current = true;
+      dirtyRef.current = false;
+      try {
+        window.localStorage.removeItem(`reading:${slug}:answers`);
+        window.localStorage.removeItem(`reading:${slug}:flags`);
+      } catch {}
+      if (json?.attemptId) router.push(`/reading/review/${json.attemptId}`);
+    } catch (e: any) {
+      if (!auto) alert(e?.message || 'Submit failed');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   function scrollToQuestion(qid: string) {
     const el = document.querySelector<HTMLElement>(`[data-qid="${qid}"]`);
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -293,19 +318,4 @@ export default function ReadingRunnerPage() {
       </section>
     </>
   );
-}
-
-async function submit(this: void, auto = false) {
-  // NOTE: function body is defined inside component above (kept to preserve diff clarity)
-}
-
-function firstUnansweredOrLast(Qs: Question[], ans: Record<string,any>) {
-  const u = Qs.find(q => ans[q.id] == null || ans[q.id] === '');
-  return u || Qs[Qs.length - 1];
-}
-function nextUnanswered(Qs: Question[], ans: Record<string,any>, afterId: string) {
-  const idx = Qs.findIndex(q => q.id === afterId);
-  for (let i = idx + 1; i < Qs.length; i++) if (ans[Qs[i].id] == null || ans[Qs[i].id] === '') return Qs[i];
-  for (let i = 0; i <= idx; i++) if (ans[Qs[i].id] == null || ans[Qs[i].id] === '') return Qs[i];
-  return null;
 }
