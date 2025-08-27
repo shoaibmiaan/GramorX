@@ -1,7 +1,7 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
-import { useRouter } from 'next/router';
+import Image from 'next/image';
 import { Container } from '@/components/design-system/Container';
 import { Card } from '@/components/design-system/Card';
 import { Button } from '@/components/design-system/Button';
@@ -40,7 +40,6 @@ const CATEGORIES = ['All', 'Listening', 'Reading', 'Writing', 'Speaking', 'Study
 type CategoryFilter = typeof CATEGORIES[number];
 
 export default function BlogIndex() {
-  const router = useRouter();
   const [q, setQ] = useState('');
   const [cat, setCat] = useState<CategoryFilter>('All');
   const [sort, setSort] = useState<Sort>('newest');
@@ -148,7 +147,6 @@ export default function BlogIndex() {
               </label>
             </div>
 
-            {/* Tag cloud */}
             {!!tagCloud.length && (
               <div className="mt-4 flex flex-wrap gap-2">
                 {tagCloud.map(t => (
@@ -171,7 +169,16 @@ export default function BlogIndex() {
             {items.map(p => (
               <Card key={p.id} className="p-5 rounded-ds-2xl hover:translate-y-[-2px] transition">
                 <div className="aspect-video rounded-ds bg-gradient-to-br from-primary/15 to-accent/15 mb-4 overflow-hidden">
-                  {p.hero ? <img src={p.hero} alt="" className="w-full h-full object-cover" /> : null}
+                  {p.hero ? (
+                    <Image
+                      src={p.hero}
+                      alt=""
+                      fill
+                      unoptimized
+                      className="w-full h-full object-cover"
+                      sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                    />
+                  ) : null}
                 </div>
                 <Link href={`/blog/${p.slug}`} className="text-left block">
                   <h3 className="font-semibold text-h4 leading-snug">{p.title}</h3>
@@ -232,7 +239,7 @@ export default function BlogIndex() {
               <div className="font-semibold mb-1">Account</div>
               <div className="flex flex-wrap gap-2">
                 <NavLink href="/pricing" label="Pricing" />
-                      <NavLink href="/profile/setup" label="Profile" />
+                <NavLink href="/profile/setup" label="Profile" />
                 <NavLink href="/support" label="Support" />
               </div>
             </Card>
