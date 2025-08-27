@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import AuthLayout from '@/components/layouts/AuthLayout';
 import { Input } from '@/components/design-system/Input';
+import { PasswordInput } from '@/components/design-system/PasswordInput';
 import { Button } from '@/components/design-system/Button';
 import { Alert } from '@/components/design-system/Alert';
 import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser';
@@ -89,9 +90,8 @@ export default function SignupWithPassword() {
           required
           autoComplete="email"
         />
-        <Input
+        <PasswordInput
           label="Password"
-          type="password"
           placeholder="Create a password"
           value={pw}
           onChange={(e) => setPw(e.target.value)}
