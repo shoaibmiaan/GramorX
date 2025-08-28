@@ -21,16 +21,10 @@ import {
   type AppRole,
 } from '@/lib/routeAccess';
 
-// Premium theme wrapper (kept for /premium paths)
 import { PremiumThemeProvider } from '@/premium-ui/theme/PremiumThemeProvider';
-
-// Impersonation banner
 import { ImpersonationBanner } from '@/components/admin/ImpersonationBanner';
-
-// Global Sidebar AI
 import { SidebarAI } from '@/components/ai/SidebarAI';
 
-// Fonts
 import { Poppins, Roboto_Slab } from 'next/font/google';
 const poppins = Poppins({
   subsets: ['latin'],
@@ -45,7 +39,6 @@ const slab = Roboto_Slab({
   variable: '--font-display',
 });
 
-// Minimal loading shell for route guards
 function GuardSkeleton() {
   return (
     <div className="min-h-[100dvh] grid place-items-center">
@@ -59,10 +52,8 @@ function InnerApp({ Component, pageProps }: AppProps) {
   const router = useRouter();
   const pathname = router.pathname;
 
-  // Premium area handling
   const isPremium = pathname.startsWith('/premium');
 
-  // Auth pages (login/signup/register) – no header/footer
   const isAuthPage = useMemo(
     () =>
       /^\/(login|signup|register)(\/|$)/.test(pathname) ||
@@ -70,23 +61,19 @@ function InnerApp({ Component, pageProps }: AppProps) {
     [pathname]
   );
 
-  // “No chrome” pages like exam/focus
   const isNoChromeRoute = useMemo(() => {
     return /\/exam(\/|$)|\/exam-room(\/|$)|\/focus-mode(\/|$)/.test(pathname);
   }, [pathname]);
 
-  // Show Layout (header/footer) only if not premium, not auth page, not other no-chrome pages
   const showLayout = !isPremium && !isAuthPage && !isNoChromeRoute;
 
-  // --- Idle timeout ---
   useEffect(() => {
     const cleanup = initIdleTimeout(env.NEXT_PUBLIC_IDLE_TIMEOUT_MINUTES);
     return cleanup;
   }, []);
 
-  // --- Route guards (role-aware) ---
+  // ⬇️ removed: const [role, setRole] = useState<AppRole | null>(null);
   const [isChecking, setIsChecking] = useState(true);
-  const [role, setRole] = useState<AppRole | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -112,10 +99,10 @@ function InnerApp({ Component, pageProps }: AppProps) {
         }
 
         const user = currentSession?.user ?? null;
-        const r = getUserRole(user);
+        const r: AppRole | null = getUserRole(user);
         if (!active) return;
 
-        setRole(r);
+        // ⬇️ removed: setRole(r);
 
         if (user) {
           const { data: profile } = await supabaseBrowser
@@ -127,13 +114,11 @@ function InnerApp({ Component, pageProps }: AppProps) {
           setLocale(lang);
         }
 
-        // If guest-only and user is logged in → send to dashboard
         if (guestOnlyR && user) {
           router.replace('/dashboard');
           return;
         }
 
-        // If protected and user lacks role → login if unauthenticated, else 403
         if (!canAccess(pathname, r)) {
           const need = requiredRolesFor(pathname);
           if (!r) {
@@ -157,7 +142,6 @@ function InnerApp({ Component, pageProps }: AppProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
 
-  // Periodically verify session expiration for long-lived pages
   useEffect(() => {
     const interval = setInterval(async () => {
       const {
@@ -173,14 +157,13 @@ function InnerApp({ Component, pageProps }: AppProps) {
           router.replace('/login');
         }
       }
-    }, 5 * 60 * 1000); // every 5 minutes
+    }, 5 * 60 * 1000);
 
     return () => clearInterval(interval);
   }, [router]);
 
   if (isChecking) return <GuardSkeleton />;
 
-  // Compose page body (premium wrapper on /premium)
   const pageBody = isPremium ? (
     <PremiumThemeProvider>
       <Component {...pageProps} />
@@ -190,10 +173,9 @@ function InnerApp({ Component, pageProps }: AppProps) {
   );
 
   return (
-    // Default to dark; class-based theming for DS tokens
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
       <Head>
-        {/* Non-blocking Font Awesome (kept for compatibility while migrating to icon components) */}
+        {/* (Optional) Replace these with a package import to avoid the Next lint warning */}
         <link
           rel="preload"
           as="style"
@@ -215,11 +197,9 @@ function InnerApp({ Component, pageProps }: AppProps) {
           />
         </noscript>
 
-        {/* Premium stylesheet only for /premium */}
         {isPremium ? <link rel="stylesheet" href="/premium.css" /> : null}
       </Head>
 
-      {/* Apply fonts to the whole app; DS uses var(--font-sans)/var(--font-display) */}
       <div className={`${poppins.variable} ${slab.variable} ${poppins.className} min-h-[100dvh]`}>
         <ToastProvider>
           {showLayout ? (
@@ -233,8 +213,6 @@ function InnerApp({ Component, pageProps }: AppProps) {
               {pageBody}
             </>
           )}
-
-          {/* Global AI Sidebar */}
           <SidebarAI />
         </ToastProvider>
       </div>
