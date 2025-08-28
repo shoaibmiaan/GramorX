@@ -38,4 +38,7 @@ export async function middleware(req: NextRequest) {
   return NextResponse.next();
 }
 
-export const config = { matcher: ['/premium/:path*'] };
+export const config = {
+  matcher: ['/premium/:path*'],
+  runtime: 'nodejs',
+};
