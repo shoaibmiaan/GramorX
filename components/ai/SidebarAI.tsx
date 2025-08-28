@@ -19,7 +19,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
 import MessageList from './MessageList';
-import type { Msg } from './MessageList'; // <-- type-only import (fixes verbatimModuleSyntax error)
+import type { Msg } from './MessageList'; // type-only import (verbatimModuleSyntax-safe)
 
 // Optional syntax highlight plugin (typed as any to avoid unified type friction)
 let rehypeHighlight: any;
@@ -30,6 +30,14 @@ import('rehype-highlight')
   .catch(() => {
     /* ignore if unavailable */
   });
+
+// Augment Window to declare speech recognition properties
+declare global {
+  interface Window {
+    SpeechRecognition?: any;
+    webkitSpeechRecognition?: any;
+  }
+}
 
 type ChatRole = 'user' | 'assistant' | 'system';
 
@@ -63,18 +71,15 @@ export function SidebarAI(): JSX.Element {
 
   const [items, setItems] = useState<Msg[]>([]);
   const [listening, setListening] = useState<boolean>(false);
-  const [voiceDenied, setVoiceDenied] = useState<boolean>(false);
+  const [voiceDenied, _setVoiceDenied] = useState<boolean>(false); // underscore setter to silence unused warning
 
   const panelRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const voiceSupported = useMemo<boolean>(() => {
-    // Basic feature detection (you can wire real speech later)
-    return (
-      typeof window !== 'undefined' &&
-      !!(window.SpeechRecognition || (window as any).webkitSpeechRecognition)
-    );
+    if (typeof window === 'undefined') return false;
+    return !!(window.SpeechRecognition || window.webkitSpeechRecognition);
   }, []);
 
   // Autofocus when opening
@@ -168,17 +173,14 @@ export function SidebarAI(): JSX.Element {
     try {
       // Fixed persona answer
       if (/^\s*who\s+are\s+you\??\s*$/i.test(text)) {
-        appendMessage(
-          'assistant',
-          'I am your coach hired for you by your Partner GramorX.'
-        );
+        appendMessage('assistant', 'I am your coach hired for you by your Partner GramorX.');
         return;
       }
 
       // TODO(AI-wire): Call your chat API. For now, minimal helpful echo.
       appendMessage(
         'assistant',
-        `Got it. I’ll help you with IELTS. Ask me to make a study plan, generate a mock test, or review an answer.`
+        `Got it. I’ll help you with IELTS. Ask me to make a study plan, generate a mock test, or review an answer.`,
       );
     } finally {
       setLoading(false);
