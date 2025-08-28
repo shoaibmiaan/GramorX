@@ -36,7 +36,7 @@ export function WhatsAppOptIn() {
       <h2 className="font-slab text-h2 mb-4">WhatsApp updates</h2>
       {status === "success" ? (
         <p className="text-sm text-gray-600 dark:text-grayish">
-          You're subscribed to WhatsApp reminders.
+          You&apos;re subscribed to WhatsApp reminders.
         </p>
       ) : (
         <form onSubmit={onSubmit} className="grid gap-4 sm:flex sm:items-end">
