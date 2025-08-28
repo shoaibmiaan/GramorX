@@ -1,12 +1,15 @@
 // components/auth/RoleGuard.tsx
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
+
+// value import
 import { getCurrentRole } from "@/lib/roles";
-import type { Role } from "@/lib/roles";
+// type-only import (note: AppRole is your role union)
+import type { AppRole } from "@/lib/roles";
 
-type Props = { allow: Role | Role[]; children: React.ReactNode };
+type Props = { allow: AppRole | AppRole[]; children: React.ReactNode };
 
-const asSet = (a: Role | Role[]) => new Set(Array.isArray(a) ? a : [a]);
+const asSet = (a: AppRole | AppRole[]) => new Set(Array.isArray(a) ? a : [a]);
 
 const RoleGuard: React.FC<Props> = ({ allow, children }) => {
   const router = useRouter();
@@ -15,12 +18,14 @@ const RoleGuard: React.FC<Props> = ({ allow, children }) => {
   useEffect(() => {
     const run = async () => {
       try {
-        const r = await getCurrentRole();
+        const r = await getCurrentRole(); // AppRole | null
         const allowed = asSet(allow);
-        if (allowed.has(r)) setOk(true);
-        else {
+
+        if (r && allowed.has(r)) {
+          setOk(true);
+        } else {
           setOk(false);
-          router.replace("/login");
+          router.replace("/login"); // or /403
         }
       } catch {
         setOk(false);
@@ -35,4 +40,4 @@ const RoleGuard: React.FC<Props> = ({ allow, children }) => {
 };
 
 export default RoleGuard;
-export { RoleGuard }; // ✅ add named export alias
+export { RoleGuard };
