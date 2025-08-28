@@ -3,7 +3,7 @@ import React, { createContext, useContext, useMemo, useState } from 'react';
 
 /** Minimal public types so other files can import without errors. */
 export type Provider = 'grok' | 'gemini' | 'openai' | 'none';
-export type ConnState = 'idle' | 'connecting' | 'online' | 'error';
+export type ConnState = 'idle' | 'connecting' | 'online' | 'streaming' | 'stalled' | 'error';
 
 type SidebarState = {
   open: boolean;
