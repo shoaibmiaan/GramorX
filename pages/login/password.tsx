@@ -22,7 +22,18 @@ export default function LoginWithPassword() {
     setLoading(true);
     const { error, data } = await supabase.auth.signInWithPassword({ email, password: pw });
     setLoading(false);
-    if (error) return setErr(error.message);
+    if (error) {
+      const msg = error.message?.toLowerCase() ?? '';
+      if (
+        error.code === 'invalid_grant' &&
+        (msg.includes('weak_password') || (msg.includes('password') && msg.includes('undefined')))
+      ) {
+        setErr('Use your Google/Facebook/Apple account to sign in');
+      } else {
+        setErr(error.message);
+      }
+      return;
+    }
     if (data.session) {
       await supabase.auth.setSession({
         access_token: data.session.access_token,
