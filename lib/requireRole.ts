@@ -36,9 +36,13 @@ export async function requireRole(
   if (error || !data?.user) throw new Error('unauthorized');
   const user = data.user;
 
+  interface RoleMetadata {
+    role?: AppRole;
+  }
+
   let role =
-    ((user.app_metadata as any)?.role as AppRole | undefined) ??
-    ((user.user_metadata as any)?.role as AppRole | undefined) ??
+    (user.app_metadata as RoleMetadata).role ??
+    (user.user_metadata as RoleMetadata).role ??
     null;
 
   if (!role) {

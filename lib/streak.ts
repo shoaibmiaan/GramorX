@@ -33,7 +33,7 @@ export type StreakData = {
   next_restart_date: string | null;
 };
 
-const normalize = (json: any): StreakData => ({
+const normalize = (json: Partial<StreakData> | null | undefined): StreakData => ({
   current_streak: json?.current_streak ?? 0,
   last_activity_date: json?.last_activity_date ?? null,
   shields: json?.shields ?? 0,
@@ -41,14 +41,17 @@ const normalize = (json: any): StreakData => ({
 });
 
 const handle = async (res: Response, fallbackMsg: string): Promise<StreakData> => {
-  let json: any = null;
+  let json: unknown = null;
   try {
     json = await res.json();
   } catch {
     // ignore
   }
-  if (!res.ok) throw new Error(json?.error || fallbackMsg);
-  return normalize(json);
+  if (!res.ok) {
+    const msg = (json as { error?: string })?.error;
+    throw new Error(msg || fallbackMsg);
+  }
+  return normalize(json as Partial<StreakData> | null | undefined);
 };
 
 /**

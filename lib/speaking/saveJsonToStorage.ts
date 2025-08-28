@@ -5,7 +5,7 @@ type SaveOptions = {
   attemptId: string;
   ctx: 'p1' | 'p2' | 'p3' | 'chat';
   filename: string; // e.g. "q1.feedback.json"
-  data: any;
+  data: unknown;
 };
 
 /**
