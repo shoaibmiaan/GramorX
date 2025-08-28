@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { ThemeSwitcher } from '@/premium-ui/theme/ThemeSwitcher';
+import { ThemeSwitcherPremium } from '@/premium-ui/theme/ThemeSwitcher';
 import { PrCard } from '@/premium-ui/components/PrCard';
 import { PrButton } from '@/premium-ui/components/PrButton';
 
@@ -9,7 +9,7 @@ return (
 <main className="pr-p-6 pr-space-y-6">
 <div className="pr-flex pr-items-center pr-justify-between">
 <h1 className="pr-text-2xl pr-font-semibold">Premium Exam Room</h1>
-<ThemeSwitcher />
+      <ThemeSwitcherPremium />
 </div>
 
 
