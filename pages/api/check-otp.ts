@@ -1,4 +1,6 @@
 // /api/check-otp.js (server)
+import type { NextApiRequest, NextApiResponse } from "next";
+import { z } from "zod";
 import Twilio from "twilio";
 import { createClient } from "@supabase/supabase-js";
 import { env } from "@/lib/env";
@@ -7,13 +9,38 @@ const client = Twilio(env.TWILIO_ACCOUNT_SID, env.TWILIO_AUTH_TOKEN);
 const SERVICE_SID = env.TWILIO_VERIFY_SERVICE_SID;
 const supa = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_KEY); // server only
 
-export default async function checkOtp(req, res) {
-  const { phone, code } = req.body;
+const BodySchema = z.object({
+  phone: z.string(),
+  code: z.string(),
+});
+
+export type CheckOtpResponse =
+  | { ok: true; message: string }
+  | { ok: false; error: string };
+
+export default async function checkOtp(
+  req: NextApiRequest,
+  res: NextApiResponse<CheckOtpResponse>
+) {
+  if (req.method !== "POST") {
+    res.setHeader("Allow", "POST");
+    return res.status(405).json({ ok: false, error: "Method Not Allowed" });
+  }
+
+  const result = BodySchema.safeParse(req.body);
+  if (!result.success) {
+    return res
+      .status(400)
+      .json({ ok: false, error: "Invalid request body" });
+  }
+
+  const { phone, code } = result.data;
   try {
-    const check = await client.verify.services(SERVICE_SID)
+    const check = await client.verify
+      .services(SERVICE_SID)
       .verificationChecks.create({ to: phone, code });
     if (check.status !== "approved") {
-      return res.status(400).json({ ok: false, message: "Invalid code" });
+      return res.status(400).json({ ok: false, error: "Invalid code" });
     }
 
     // ----- SUCCESS: now link / create user in Supabase -----
@@ -21,11 +48,14 @@ export default async function checkOtp(req, res) {
     // Option B: create/confirm a Supabase auth user so Supabase Auth can be used — see next section.
 
     // Example: upsert into a 'profiles' table (you choose column names)
-    await supa.from("profiles").upsert({ phone, phone_verified: true, updated_at: new Date() });
+    await supa
+      .from("profiles")
+      .upsert({ phone, phone_verified: true, updated_at: new Date() });
 
     return res.json({ ok: true, message: "Phone verified" });
   } catch (err) {
     console.error("Verify check error", err);
-    return res.status(500).json({ ok: false, error: err.message });
+    const message = err instanceof Error ? err.message : "Unknown error";
+    return res.status(500).json({ ok: false, error: message });
   }
 }
