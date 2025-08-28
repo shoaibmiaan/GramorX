@@ -7,6 +7,7 @@ import dynamic from 'next/dynamic';
 import { createClient } from '@supabase/supabase-js';
 import { useLocale } from '@/lib/locale';
 import { translateExplanation } from '@/lib/explanations';
+import { type AnswerValue } from '@/components/reading/useReadingAnswers';
 
 import { Container } from '@/components/design-system/Container';
 import { Card } from '@/components/design-system/Card';
@@ -23,7 +24,7 @@ type ReviewQuestion = {
   prompt: string;
   options?: string[]; // mcq
   pairs?: { left: string; right: string[] }[]; // matching
-  answers: any; // canonical correct answer(s) from DB
+  answers: AnswerValue | AnswerValue[]; // canonical correct answer(s) from DB
   points: number;
 };
 
@@ -142,7 +143,9 @@ const ReviewPage: NextPage<Props> = ({ passage, questions, notFound, error }) =>
   const attemptId = (router.query.attemptId as string) || null;
   const slug = (router.query.slug as string) || passage?.slug || '';
 
-  const [answers, setAnswers] = useState<Record<string, any> | null>(null);
+  const [answers, setAnswers] = useState<Record<string, AnswerValue> | null>(
+    null,
+  );
   const [explanations, setExplanations] = useState<Record<string, string>>({});
   const [loadErr, setLoadErr] = useState<string | null>(null);
   const { explanationLocale } = useLocale();
@@ -239,7 +242,7 @@ const ReviewPage: NextPage<Props> = ({ passage, questions, notFound, error }) =>
       const pts = q.points ?? 1;
       total += pts;
       byType[q.kind].total += pts;
-      if (isCorrect(q, (answers as any)[q.id])) {
+      if (isCorrect(q, answers[q.id])) {
         correct += pts;
         byType[q.kind].correct += pts;
       }
@@ -252,7 +255,7 @@ const ReviewPage: NextPage<Props> = ({ passage, questions, notFound, error }) =>
       const payload = {
         passage: passage?.contentHtml ?? '',
         question: { kind: q.kind, prompt: q.prompt, id: q.id },
-        userAnswer: answers ? (answers as any)[q.id] : null,
+        userAnswer: answers ? answers[q.id] : null,
         correctAnswer:
           Array.isArray(q.answers) && q.kind !== 'matching' ? q.answers[0] : q.answers,
       };
@@ -335,7 +338,7 @@ const ReviewPage: NextPage<Props> = ({ passage, questions, notFound, error }) =>
 
         <div className="grid gap-6">
           {questions.map((q, idx) => {
-            const user = answers ? (answers as any)[q.id] : undefined;
+            const user = answers ? answers[q.id] : undefined;
             const ok = answers ? isCorrect(q, user) : false;
 
             const answerBlock = (

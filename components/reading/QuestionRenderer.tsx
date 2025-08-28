@@ -2,7 +2,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Input } from '@/components/design-system/Input';
 import { Button } from '@/components/design-system/Button';
-import { useReadingAnswers } from '@/components/reading/useReadingAnswers';
+import {
+  useReadingAnswers,
+  type AnswerValue,
+} from '@/components/reading/useReadingAnswers';
 
 export type TFNGQuestion = {
   kind: 'tfng';
@@ -42,7 +45,7 @@ type Props = {
   /** passage slug for namespacing the draft store */
   slug: string;
   /** optional: external change handler if you ever need it */
-  onChange?: (id: string, value: any) => void;
+  onChange?: (id: string, value: AnswerValue) => void;
 };
 
 /**
@@ -59,14 +62,17 @@ export const QuestionRenderer: React.FC<Props> = ({
   slug,
   onChange,
 }) => {
-  const store: any = useReadingAnswers(slug); // tolerate different hook shapes
+  const store = useReadingAnswers(slug) as ReturnType<typeof useReadingAnswers> &
+    Record<string, unknown>; // tolerate different hook shapes
   const initialFromStore =
     (store?.answer && store.answer(question.id)) ??
     (store?.get && store.get(question.id)) ??
     (store?.answers && store.answers[question.id]) ??
     undefined;
 
-  const [value, setValue] = useState<any>(initialFromStore);
+  const [value, setValue] = useState<AnswerValue | undefined>(
+    initialFromStore as AnswerValue | undefined,
+  );
 
   useEffect(() => {
     // hydrate if store changes (e.g., restoring a draft)
@@ -74,19 +80,22 @@ export const QuestionRenderer: React.FC<Props> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [question.id]);
 
-  const commit = (v: any) => {
+  const commit = (v: AnswerValue) => {
     setValue(v);
     // best-effort to call whatever API the hook exposes
     if (store?.setAnswer) store.setAnswer(question.id, v);
     else if (store?.set) store.set(question.id, v);
     else if (store?.update) store.update(question.id, v);
     else if (store?.setAnswers)
-      store.setAnswers((prev: any) => ({ ...(prev ?? {}), [question.id]: v }));
+      store.setAnswers((prev: Record<string, AnswerValue>) => ({
+        ...(prev ?? {}),
+        [question.id]: v,
+      }));
     onChange?.(question.id, v);
     // lightweight local fallback so user never loses a selection
     try {
-      const all = (store?.allAnswers?.() as any) || {};
-      const merged = { ...all, [question.id]: v };
+      const all = (store?.allAnswers?.() as Record<string, AnswerValue>) || {};
+      const merged: Record<string, AnswerValue> = { ...all, [question.id]: v };
       localStorage.setItem(`readingAnswers:${slug}`, JSON.stringify(merged));
     } catch {}
   };
@@ -164,14 +173,14 @@ export const QuestionRenderer: React.FC<Props> = ({
 
   const RenderMatching: React.FC<{
     q: MatchingQuestion;
-    value: any;
-    commit: (v: any) => void;
+    value: AnswerValue | undefined;
+    commit: (v: AnswerValue) => void;
   }> = ({ q, value, commit }) => {
     const pairsLength = q.pairs.length;
     const current: string[] = useMemo(() => {
       if (Array.isArray(value)) return value as string[];
       if (value == null) return Array(pairsLength).fill('');
-      return value;
+      return Array(pairsLength).fill('');
     }, [value, pairsLength]);
 
     const setAt = (idx: number, v: string) => {

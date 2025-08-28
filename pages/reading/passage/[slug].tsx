@@ -10,6 +10,7 @@ import { Button } from '@/components/design-system/Button';
 import { Badge } from '@/components/design-system/Badge';
 import { Input } from '@/components/design-system/Input';
 import { supabaseBrowser } from '@/lib/supabaseBrowser';
+import { type AnswerValue } from '@/components/reading/useReadingAnswers';
 
 type QKind = 'tfng' | 'mcq' | 'matching' | 'short';
 
@@ -19,7 +20,7 @@ type Question = {
   kind: QKind;
   prompt: string;
   options: any;   // jsonb
-  answers: any;   // jsonb
+  answers: AnswerValue | AnswerValue[];   // jsonb
   points: number | null;
 };
 
@@ -66,7 +67,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async (ctx) => {
 };
 
 export default function ReadingRunner({ slug, title, difficulty, words, content, questions }: Props) {
-  const [answers, setAnswers] = useState<Record<string, any>>({});
+  const [answers, setAnswers] = useState<Record<string, AnswerValue>>({});
   const [sec, setSec] = useState(60 * 30); // 30 minutes
 
   // -------- Draft (restore on mount, save on demand) --------
@@ -104,7 +105,7 @@ export default function ReadingRunner({ slug, title, difficulty, words, content,
   const maxPts = useMemo(() => questions.reduce((s, q) => s + (q.points ?? 1), 0), [questions]);
 
   // -------- Answer setter --------
-  const put = (q: Question, value: any) => {
+  const put = (q: Question, value: AnswerValue) => {
     setAnswers((a) => ({ ...a, [q.id]: value })); // store by id (API also accepts order_no)
   };
 
@@ -215,7 +216,7 @@ export default function ReadingRunner({ slug, title, difficulty, words, content,
                   placeholder="Enter comma-separated matches e.g. A,B,C,D"
                   value={
                     Array.isArray(answers[q.id])
-                      ? (answers[q.id] as any[]).join(',')
+                      ? (answers[q.id] as string[]).join(',')
                       : (answers[q.id] ?? '')
                   }
                   onChange={(e) => put(q, e.target.value.split(',').map((s) => s.trim()))}
