@@ -11,7 +11,7 @@
     "lint": "next lint",
     "pin:hash": "ts-node tools/hash-pin.ts",
     "diagnose": "powershell -ExecutionPolicy Bypass -File .\\\\tools\\\\report-build-issues.ps1",
-    "test": "ts-node tools/run-tests.ts"
+    "test": "tsx tools/run-tests.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
@@ -21,24 +21,24 @@
     "bcryptjs": "^3.0.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "formidable": "^3.5.4",
     "file-type": "18.7.0",
+    "formidable": "^3.5.4",
     "groq-sdk": "^0.30.0",
-    "stripe": "^14.0.0",
     "multiparty": "^4.2.3",
     "next": "14.2.31",
-    "next-themes": "^0.3.0",
     "next-pwa": "5.6.0",
+    "next-themes": "^0.3.0",
     "openai": "^5.12.2",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-markdown": "9.1.0",
     "rehype-highlight": "6.0.0",
+    "remark-gfm": "3.0.1",
+    "stripe": "^14.0.0",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
     "twilio": "^5.8.0",
-    "zod": "^3.25.76",
-    "remark-gfm": "3.0.1"
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@types/node": "^20.19.10",
@@ -52,6 +52,7 @@
     "postcss": "^8.4.41",
     "tailwindcss": "^3.4.10",
     "ts-node": "^10.9.2",
+    "tsx": "^4.20.5",
     "typescript": "5.6.2"
   }
 }
