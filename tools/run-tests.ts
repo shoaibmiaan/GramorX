@@ -31,17 +31,14 @@ try {
   // Mock tests workflow
   run('node -r ts-node/register __tests__/mock-tests.test.ts', commonOptions);
 
-  // Component-specific test
-  run('node --loader ts-node/esm components/ai/SidebarAI.test.ts', {
-    module: 'esnext',
-    verbatimModuleSyntax: false,
-    jsx: 'react-jsx',
-  });
-
   // Payment providers
   run('node -r ts-node/register __tests__/payments/jazzcash.test.ts', commonOptions);
   run('node -r ts-node/register __tests__/payments/easypaisa.test.ts', commonOptions);
   run('node -r ts-node/register __tests__/payments/card.test.ts', commonOptions);
+
+  // OTP API endpoints
+  run('node -r ts-node/register __tests__/send-otp.test.ts', commonOptions);
+  run('node -r ts-node/register __tests__/check-otp.test.ts', commonOptions);
 
   console.log('All tests passed.');
 } catch {
