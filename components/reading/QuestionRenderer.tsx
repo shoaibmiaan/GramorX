@@ -162,14 +162,17 @@ export const QuestionRenderer: React.FC<Props> = ({
     );
   }
 
-  function renderMatching(q: MatchingQuestion) {
-    // value shape = string[] aligned by index of q.pairs
+  const RenderMatching: React.FC<{
+    q: MatchingQuestion;
+    value: any;
+    commit: (v: any) => void;
+  }> = ({ q, value, commit }) => {
+    const pairsLength = q.pairs.length;
     const current: string[] = useMemo(() => {
       if (Array.isArray(value)) return value as string[];
-      if (value == null) return Array(q.pairs.length).fill('');
+      if (value == null) return Array(pairsLength).fill('');
       return value;
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [value, q.pairs.length]);
+    }, [value, pairsLength]);
 
     const setAt = (idx: number, v: string) => {
       const arr = [...current];
@@ -216,7 +219,7 @@ export const QuestionRenderer: React.FC<Props> = ({
         })}
       </div>
     );
-  }
+  };
 
   function renderShort(q: ShortQuestion) {
     return (
@@ -247,7 +250,9 @@ export const QuestionRenderer: React.FC<Props> = ({
 
       {question.kind === 'tfng' && renderTFNG(question)}
       {question.kind === 'mcq' && renderMCQ(question)}
-      {question.kind === 'matching' && renderMatching(question)}
+      {question.kind === 'matching' && (
+        <RenderMatching q={question as MatchingQuestion} value={value} commit={commit} />
+      )}
       {question.kind === 'short' && renderShort(question)}
     </div>
   );
