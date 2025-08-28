@@ -22,4 +22,8 @@ export interface Profile {
   exam_date?: string | null;
   ai_recommendation?: AIPlan | null;
   draft?: boolean;
+  phone?: string | null;
+  notification_channels?: string[] | null;
+  quiet_hours_start?: string | null;
+  quiet_hours_end?: string | null;
 }
