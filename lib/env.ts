@@ -38,6 +38,7 @@ const envSchema = z.object({
   LOCAL_ADMIN_TOKEN: z.string().optional(),
   ADMIN_API_TOKEN: z.string().optional(),
   SITE_URL: z.string().url().optional(),
+  PORT: z.coerce.number().optional(),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
 });
 
@@ -77,6 +78,7 @@ const raw = {
   LOCAL_ADMIN_TOKEN: process.env.LOCAL_ADMIN_TOKEN,
   ADMIN_API_TOKEN: process.env.ADMIN_API_TOKEN,
   SITE_URL: process.env.SITE_URL,
+  PORT: process.env.PORT,
   NODE_ENV: process.env.NODE_ENV as any,
 };
 
