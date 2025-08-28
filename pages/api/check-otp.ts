@@ -2,12 +2,12 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { z } from "zod";
 import Twilio from "twilio";
-import { createClient } from "@supabase/supabase-js";
 import { env } from "@/lib/env";
+import { createSupabaseServerClient } from "@/lib/supabaseServer";
 
 const client = Twilio(env.TWILIO_ACCOUNT_SID, env.TWILIO_AUTH_TOKEN);
 const SERVICE_SID = env.TWILIO_VERIFY_SERVICE_SID;
-const supa = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_KEY); // server only
+const supa = createSupabaseServerClient({ serviceRole: true }); // server only
 
 const BodySchema = z.object({
   phone: z.string(),

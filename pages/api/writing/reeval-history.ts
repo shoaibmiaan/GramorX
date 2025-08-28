@@ -1,15 +1,11 @@
-import { env } from "@/lib/env";
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { createClient } from '@supabase/supabase-js';
+import { createSupabaseServerClient } from '@/lib/supabaseServer';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const attemptId = String(req.query.attemptId || '');
   if (!attemptId) return res.status(400).json({ error: 'attemptId required' });
 
-  const supabase = createClient(
-    env.NEXT_PUBLIC_SUPABASE_URL,
-    env.SUPABASE_SERVICE_ROLE_KEY ?? env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  );
+  const supabase = createSupabaseServerClient({ serviceRole: true });
 
   const { data, error } = await supabase
     .from('writing_reevals')

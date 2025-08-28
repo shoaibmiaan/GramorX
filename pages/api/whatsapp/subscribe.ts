@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { createClient } from "@supabase/supabase-js";
 import Twilio from "twilio";
 import { env } from "@/lib/env";
+import { createSupabaseServerClient } from "@/lib/supabaseServer";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") {
@@ -12,9 +12,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const { phone } = req.body as { phone?: string };
   if (!phone) return res.status(400).json({ error: "Phone required" });
 
-  const supabase = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.NEXT_PUBLIC_SUPABASE_ANON_KEY, {
-    global: { headers: { Cookie: req.headers.cookie || "" } },
-  });
+  const supabase = createSupabaseServerClient({ req });
   const {
     data: { user },
   } = await supabase.auth.getUser();

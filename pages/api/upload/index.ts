@@ -4,9 +4,8 @@ import formidable, { File } from 'formidable';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileTypeFromBuffer } from 'file-type';
-import { createClient } from '@supabase/supabase-js';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
-import { env } from '@/lib/env';
+import { createSupabaseServerClient } from '@/lib/supabaseServer';
 
 export const config = { api: { bodyParser: false, sizeLimit: '30mb' } };
 
@@ -20,13 +19,7 @@ function parseForm(req: NextApiRequest) {
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const URL = env.NEXT_PUBLIC_SUPABASE_URL;
-  const ANON = env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-  const supabase = createClient(URL, ANON, {
-    global: { headers: { Cookie: req.headers.cookie || '' } },
-    auth: { persistSession: false },
-  });
+  const supabase = createSupabaseServerClient({ req });
 
   try {
     // Auth required

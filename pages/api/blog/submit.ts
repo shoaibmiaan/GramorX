@@ -1,7 +1,7 @@
 // pages/api/blog/submit.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { createClient } from '@supabase/supabase-js';
 import { env } from '@/lib/env';
+import { createSupabaseServerClient } from '@/lib/supabaseServer';
 
 export interface BlogSubmitRequest {
   slug: string;               // draft slug to submit
@@ -29,14 +29,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     return bad(res, 405, 'Method Not Allowed');
   }
 
-  const url = env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !serviceKey) return bad(res, 500, 'Server misconfigured.');
+  if (!serviceKey) return bad(res, 500, 'Server misconfigured.');
 
   const parsed = validate(req.body as unknown);
   if (!parsed.ok) return bad(res, 400, 'Validation failed', parsed.errors);
 
-  const supa = createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
+  const supa = createSupabaseServerClient({ serviceRole: true });
 
   // Move draft -> submitted (only if currently 'draft' or 'rejected')
   const { error } = await supa

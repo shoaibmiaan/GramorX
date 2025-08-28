@@ -1,9 +1,9 @@
 import { env } from "@/lib/env";
 // pages/api/speaking/score.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { createClient } from '@supabase/supabase-js';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import OpenAI from 'openai';
+import { createSupabaseServerClient } from '@/lib/supabaseServer';
 
 type Breakdown = { fluency: number; lexical: number; grammar: number; pronunciation: number };
 
@@ -19,11 +19,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const { attemptId } = req.body as { attemptId: string };
   if (!attemptId) return res.status(400).json({ error: 'Missing attemptId' });
 
-  const url = env.NEXT_PUBLIC_SUPABASE_URL;
-  const anon = env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  const supabase = createClient(url, anon, {
-    global: { headers: { Cookie: req.headers.cookie || '' } },
-  });
+  const supabase = createSupabaseServerClient({ req });
 
   // Auth check
   const { data: { user } } = await supabase.auth.getUser();
