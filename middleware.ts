@@ -2,6 +2,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs';
+import { getUserPlan } from '@/lib/entitlements';
 
 export async function middleware(req: NextRequest) {
   const { pathname, search } = req.nextUrl;
@@ -23,14 +24,9 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  const { data: sub } = await supabase
-    .from('subscriptions')
-    .select('id')
-    .eq('user_id', user.id)
-    .eq('status', 'active')
-    .maybeSingle();
+  const plan = await getUserPlan(supabase, user.id);
 
-  if (!sub) {
+  if (plan !== 'premium') {
     const url = req.nextUrl.clone();
     url.pathname = '/pricing';
     url.search = `?next=${encodeURIComponent(pathname + (search || ''))}`;
