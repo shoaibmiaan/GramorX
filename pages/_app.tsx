@@ -211,20 +211,18 @@ function InnerApp({ Component, pageProps }: AppProps) {
 
       <div className={`${poppins.variable} ${slab.variable} ${poppins.className} min-h-[100dvh]`}>
         <ToastProvider>
-          <NotificationsProvider>
-            {showLayout ? (
-              <Layout>
-                <ImpersonationBanner />
-                {pageBody}
-              </Layout>
-            ) : (
-              <>
-                <ImpersonationBanner />
-                {pageBody}
-              </>
-            )}
-            <SidebarAI />
-          </NotificationsProvider>
+          {showLayout ? (
+            <Layout>
+              <ImpersonationBanner />
+              {pageBody}
+            </Layout>
+          ) : (
+            <>
+              <ImpersonationBanner />
+              {pageBody}
+            </>
+          )}
+          <SidebarAI />
         </ToastProvider>
       </div>
     </ThemeProvider>
@@ -234,7 +232,9 @@ function InnerApp({ Component, pageProps }: AppProps) {
 export default function App(props: AppProps) {
   return (
     <LanguageProvider>
-      <InnerApp {...props} />
+      <NotificationsProvider>
+        <InnerApp {...props} />
+      </NotificationsProvider>
     </LanguageProvider>
   );
 }
