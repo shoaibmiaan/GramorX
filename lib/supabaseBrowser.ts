@@ -29,6 +29,16 @@ export const supabaseBrowser =
     ? window.__supa ?? (window.__supa = getClient())
     : getClient();
 
+export async function authHeaders(
+  headers: Record<string, string> = {}
+): Promise<Record<string, string>> {
+  const {
+    data: { session },
+  } = await supabaseBrowser.auth.getSession();
+  const token = session?.access_token;
+  return token ? { ...headers, Authorization: `Bearer ${token}` } : { ...headers };
+}
+
 // OPTIONAL: expose for console debugging in dev
 if (typeof window !== 'undefined' && process.env.NODE_ENV !== 'production') {
   window.supa = supabaseBrowser;
