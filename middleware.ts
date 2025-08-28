@@ -13,10 +13,14 @@ export async function middleware(req: NextRequest) {
   const supabase = createMiddlewareClient({ req, res });
 
   const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) {
+  if (!session) {
     const url = req.nextUrl.clone();
     url.pathname = '/login';
     url.search = `?next=${encodeURIComponent(pathname + (search || ''))}`;
@@ -26,7 +30,7 @@ export async function middleware(req: NextRequest) {
   const { data: sub } = await supabase
     .from('subscriptions')
     .select('id')
-    .eq('user_id', user.id)
+    .eq('user_id', user!.id)
     .eq('status', 'active')
     .maybeSingle();
 
