@@ -2,19 +2,19 @@
 import express, { Request, Response, NextFunction } from "express";
 import Twilio from "twilio";
 import { z } from "zod";
-import { createClient } from "@supabase/supabase-js";
+import { env } from "./lib/env";
+import { supabaseService } from "./lib/supabaseService";
 
 const app = express();
 app.use(express.urlencoded({ extended: false }));
 
 // ENV: set these
-const { TWILIO_AUTH_TOKEN, SUPABASE_URL, SUPABASE_SERVICE_KEY } = process.env;
-if (!TWILIO_AUTH_TOKEN || !SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
-  console.error("Missing required env vars");
-  process.exit(1);
+const { TWILIO_AUTH_TOKEN } = env;
+if (!TWILIO_AUTH_TOKEN) {
+  throw new Error("Missing required env vars: TWILIO_AUTH_TOKEN");
 }
 
-const supa = createClient(SUPABASE_URL!, SUPABASE_SERVICE_KEY!);
+const supa = supabaseService;
 
 // Schema and types for Twilio webhook payload
 const twilioPayloadSchema = z.object({
@@ -34,7 +34,7 @@ function validateTwilio(req: Request, res: Response, next: NextFunction): void {
   const url = `${req.protocol}://${req.get("host")}${req.originalUrl}`;
   const params = req.body;
   const valid = Twilio.validateRequest(
-    TWILIO_AUTH_TOKEN!,
+    TWILIO_AUTH_TOKEN,
     signature,
     url,
     params
@@ -92,5 +92,5 @@ app.post(
   }
 );
 
-const port = process.env.PORT || 4000;
+const port = env.PORT ?? 4000;
 app.listen(port, () => console.log(`Twilio webhook listening on :${port}`));
