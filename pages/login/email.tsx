@@ -11,7 +11,7 @@ import { redirectByRole } from '@/lib/routeAccess';
 export default function LoginWithEmail() {
   const [email, setEmail] = useState('');
   const [pw, setPw] = useState('');
-  const [err, setErr] = useState<string | null>(null);
+  const [err, setErr] = useState<React.ReactNode>(null);
   const [loading, setLoading] = useState(false);
 
   async function onSubmit(e: React.FormEvent) {
@@ -21,7 +21,20 @@ export default function LoginWithEmail() {
     setLoading(true);
     const { error, data } = await supabase.auth.signInWithPassword({ email, password: pw });
     setLoading(false);
-    if (error) return setErr(error.message);
+    if (error) {
+      if (error.code === 'user_not_found') {
+        return setErr(
+          <span>
+            Account not found. Try{' '}
+            <Link href="/signup" className="underline text-primaryDark">
+              signing up
+            </Link>
+            .
+          </span>
+        );
+      }
+      return setErr(error.message);
+    }
     if (data.session) {
       await supabase.auth.setSession({
         access_token: data.session.access_token,
