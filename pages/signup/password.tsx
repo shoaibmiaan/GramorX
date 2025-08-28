@@ -33,6 +33,12 @@ export default function SignupWithPassword() {
       return;
     }
 
+    const pwRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+    if (!pwRegex.test(pw)) {
+      setErr('Use a stronger password');
+      return;
+    }
+
     try {
       setLoading(true);
       const { error } = await supabase.auth.signUp({
