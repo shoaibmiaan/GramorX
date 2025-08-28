@@ -6,6 +6,8 @@ The application relies on the following environment variables. Provide these val
 | --- | --- |
 | `NEXT_PUBLIC_SUPABASE_URL` | URL of the Supabase instance. |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public anon key for Supabase. |
+| `SUPABASE_URL` | Server-side URL of the Supabase instance. |
+| `SUPABASE_SERVICE_KEY` | Supabase service key for server-side tasks. |
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key for server-side tasks. |
 | `NEXT_PUBLIC_BASE_URL` | Base URL for building absolute links. |
 | `ADMIN_EMAILS` | Comma separated list of admin emails. |
@@ -17,6 +19,10 @@ The application relies on the following environment variables. Provide these val
 | `PREMIUM_MASTER_PIN` | Master PIN for premium feature access. |
 | `SPEAKING_DAILY_LIMIT` | Daily limit for speaking attempts. |
 | `SPEAKING_BUCKET` | Storage bucket name for speaking uploads. |
+| `TWILIO_ACCOUNT_SID` | Twilio account SID for messaging. |
+| `TWILIO_AUTH_TOKEN` | Twilio authentication token. |
+| `TWILIO_VERIFY_SERVICE_SID` | Twilio Verify service SID. |
+| `TWILIO_WHATSAPP_FROM` | Phone number used for WhatsApp messages. |
 | `NEXT_PUBLIC_DEBUG` | Enables debug features when set. |
 
 These variables are validated at runtime in [`lib/env.ts`](../lib/env.ts).
