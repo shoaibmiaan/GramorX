@@ -70,7 +70,16 @@ export default function LoginWithEmail() {
 
   return (
     <AuthLayout title="Sign in with Email" subtitle="Use your email & password." right={RightPanel}>
-      {err && <Alert variant="error" title="Error" className="mb-4">{err}</Alert>}
+      {err && (
+        <div className="mb-4 space-y-4">
+          <Alert variant="error" title="Error">
+            {err}
+          </Alert>
+          <Button asChild variant="secondary" className="w-full rounded-ds-xl">
+            <Link href="/forgot-password">Forgot password?</Link>
+          </Button>
+        </div>
+      )}
       <form onSubmit={onSubmit} className="space-y-6 mt-2">
         <Input label="Email" type="email" placeholder="you@example.com" value={email} onChange={(e)=>setEmail(e.target.value)} autoComplete="email" required />
         <Input label="Password" type="password" placeholder="Your password" value={pw} onChange={(e)=>setPw(e.target.value)} autoComplete="current-password" required />
