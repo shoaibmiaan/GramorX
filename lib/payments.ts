@@ -1,4 +1,3 @@
-'use server';
 import Stripe from 'stripe';
 import { env } from '@/lib/env';
 
