@@ -12,7 +12,7 @@ export default function LoginWithPhone() {
   const [phone, setPhone] = useState('');
   const [code, setCode] = useState('');
   const [stage, setStage] = useState<'request' | 'verify'>('request');
-  const [err, setErr] = useState<string | null>(null);
+  const [err, setErr] = useState<React.ReactNode | null>(null);
   const [loading, setLoading] = useState(false);
 
   async function requestOtp(e: React.FormEvent) {
@@ -22,7 +22,21 @@ export default function LoginWithPhone() {
     setLoading(true);
     const { error } = await supabase.auth.signInWithOtp({ phone, options: { shouldCreateUser: false } });
     setLoading(false);
-    if (error) return setErr(error.message);
+    if (error) {
+      if (error.code === 'user_not_found') {
+        setErr(
+          <>
+            No account found for this phone.{' '}
+            <Link href="/signup/phone" className="underline text-primary">
+              Sign up?
+            </Link>
+          </>
+        );
+      } else {
+        setErr(error.message);
+      }
+      return;
+    }
     setStage('verify');
   }
 
