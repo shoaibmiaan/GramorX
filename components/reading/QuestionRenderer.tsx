@@ -67,7 +67,7 @@ export const QuestionRenderer: React.FC<Props> = ({
   const initialFromStore =
     (store?.answer && store.answer(question.id)) ??
     (store?.get && store.get(question.id)) ??
-    (store?.answers && store.answers[question.id]) ??
+    (store?.answers && (store.answers as Record<string, AnswerValue>)[question.id]) ??
     undefined;
 
   const [value, setValue] = useState<AnswerValue | undefined>(
@@ -83,25 +83,31 @@ export const QuestionRenderer: React.FC<Props> = ({
   const commit = (v: AnswerValue) => {
     setValue(v);
     // best-effort to call whatever API the hook exposes
-    if (store?.setAnswer) store.setAnswer(question.id, v);
-    else if (store?.set) store.set(question.id, v);
-    else if (store?.update) store.update(question.id, v);
-    else if (store?.setAnswers)
+    if (typeof store?.setAnswer === 'function') store.setAnswer(question.id, v);
+    else if (typeof store?.set === 'function') store.set(question.id, v);
+    else if (typeof store?.update === 'function') store.update(question.id, v);
+    else if (typeof store?.setAnswers === 'function') {
       store.setAnswers((prev: Record<string, AnswerValue>) => ({
         ...(prev ?? {}),
         [question.id]: v,
       }));
+    }
     onChange?.(question.id, v);
     // lightweight local fallback so user never loses a selection
     try {
-      const all = (store?.allAnswers?.() as Record<string, AnswerValue>) || {};
+      const all = (typeof store?.allAnswers === 'function'
+        ? (store.allAnswers() as Record<string, AnswerValue>)
+        : {}) || {};
       const merged: Record<string, AnswerValue> = { ...all, [question.id]: v };
       localStorage.setItem(`readingAnswers:${slug}`, JSON.stringify(merged));
-    } catch {}
+    } catch {
+      // ignore
+    }
   };
 
   // ---------- Renderers ----------
-  function renderTFNG(q: TFNGQuestion) {
+  function renderTFNG(_q: TFNGQuestion) {
+    // ^ rename param to _q to satisfy unused-args lint
     const choices = ['True', 'False', 'Not Given'] as const;
     const active = value ?? null;
 
@@ -201,10 +207,7 @@ export const QuestionRenderer: React.FC<Props> = ({
               key={idx}
               className="grid items-center gap-2 sm:grid-cols-[1fr_minmax(180px,_240px)]"
             >
-              <label
-                htmlFor={selectId}
-                className="text-small opacity-80"
-              >
+              <label htmlFor={selectId} className="text-small opacity-80">
                 {p.left}
               </label>
               <select
@@ -230,7 +233,8 @@ export const QuestionRenderer: React.FC<Props> = ({
     );
   };
 
-  function renderShort(q: ShortQuestion) {
+  function renderShort(_q: ShortQuestion) {
+    // ^ rename param to _q to satisfy unused-args lint
     return (
       <div className="max-w-md">
         <Input
@@ -251,9 +255,7 @@ export const QuestionRenderer: React.FC<Props> = ({
   return (
     <div>
       {index != null && (
-        <div className="text-small text-grayish mb-1">
-          Question {index}
-        </div>
+        <div className="text-small text-grayish mb-1">Question {index}</div>
       )}
       <div className="tight-block mb-4">{question.prompt}</div>
 
