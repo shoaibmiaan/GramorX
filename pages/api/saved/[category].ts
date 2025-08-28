@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import { env } from '@/lib/env';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  const { category } = req.query as { category: string };
   const url = env.NEXT_PUBLIC_SUPABASE_URL;
   const anon = env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   const supabase = createClient(url, anon, {
@@ -18,8 +19,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const { resource_id, type } = req.query as { resource_id?: string; type?: string };
     let query = supabase
       .from('user_bookmarks')
-      .select('resource_id, type, created_at')
-      .eq('user_id', user.id);
+      .select('resource_id, type, category, created_at')
+      .eq('user_id', user.id)
+      .eq('category', category);
     if (resource_id) query = query.eq('resource_id', resource_id);
     if (type) query = query.eq('type', type);
     const { data, error } = await query;
@@ -29,27 +31,29 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   if (req.method === 'POST') {
     const { resource_id, type } = req.body as { resource_id?: string; type?: string };
-    if (!resource_id || !type) {
-      return res.status(400).json({ error: 'Missing resource_id or type' });
+    if (!resource_id) {
+      return res.status(400).json({ error: 'Missing resource_id' });
     }
     const { error } = await supabase
       .from('user_bookmarks')
-      .upsert({ user_id: user.id, resource_id, type });
+      .upsert({ user_id: user.id, resource_id, type: type || '', category });
     if (error) return res.status(500).json({ error: error.message });
     return res.status(201).json({ success: true });
   }
 
   if (req.method === 'DELETE') {
     const { resource_id, type } = req.body as { resource_id?: string; type?: string };
-    if (!resource_id || !type) {
-      return res.status(400).json({ error: 'Missing resource_id or type' });
+    if (!resource_id) {
+      return res.status(400).json({ error: 'Missing resource_id' });
     }
-    const { error } = await supabase
+    let query = supabase
       .from('user_bookmarks')
       .delete()
       .eq('user_id', user.id)
       .eq('resource_id', resource_id)
-      .eq('type', type);
+      .eq('category', category);
+    if (type) query = query.eq('type', type);
+    const { error } = await query;
     if (error) return res.status(500).json({ error: error.message });
     return res.status(200).json({ success: true });
   }

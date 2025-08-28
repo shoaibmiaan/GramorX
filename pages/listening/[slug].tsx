@@ -12,7 +12,7 @@ import FocusGuard from '@/components/exam/FocusGuard';
 import { Timer } from '@/components/design-system/Timer';
 import { scoreAll } from '@/lib/listening/score';
 import { rawToBand } from '@/lib/listening/band';
-import { BookmarkButton } from '@/components/BookmarkButton';
+import { SaveItemButton } from '@/components/SaveItemButton';
 import NoiseLadderPlayer from '@/components/listening/NoiseLadderPlayer';
 
 type MCQ = {
@@ -414,7 +414,7 @@ export default function ListeningTestPage() {
               <p className="text-grayish">Auto-play per section • Transcript toggle • Answer highlighting</p>
             </div>
             <div className="flex items-center gap-3">
-              <BookmarkButton resourceId={slug || ''} type="listening" />
+              <SaveItemButton resourceId={slug || ''} type="listening" category="bookmark" />
               <Timer
                 initialSeconds={TOTAL_TIME_SEC}
                 onTick={(s) => setTimeLeft(Math.ceil(s))}
