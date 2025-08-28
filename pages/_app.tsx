@@ -103,6 +103,17 @@ function InnerApp({ Component, pageProps }: AppProps) {
         const r: AppRole | null = getUserRole(user);
         if (!active) return;
 
+        if (
+          user &&
+          !user.email_confirmed_at &&
+          !user.phone_confirmed_at &&
+          pathname !== '/auth/verify'
+        ) {
+          await supabaseBrowser.auth.signOut();
+          router.replace('/auth/verify');
+          return;
+        }
+
         // ⬇️ removed: setRole(r);
 
         if (user) {
