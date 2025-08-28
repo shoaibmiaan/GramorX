@@ -23,3 +23,5 @@ export const LEVELS = [
 export const TIME = ['1h/day', '2h/day', 'Flexible'] as const;
 
 export const PREFS = ['Listening', 'Reading', 'Writing', 'Speaking'] as const;
+
+export const WEAKNESSES = ['Listening', 'Reading', 'Writing', 'Speaking'] as const;
