@@ -18,7 +18,8 @@ import React, {
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
-import MessageList, { Msg } from './MessageList';
+import MessageList from './MessageList';
+import type { Msg } from './MessageList'; // <-- type-only import (fixes verbatimModuleSyntax error)
 
 // Optional syntax highlight plugin (typed as any to avoid unified type friction)
 let rehypeHighlight: any;
@@ -70,7 +71,10 @@ export function SidebarAI(): JSX.Element {
 
   const voiceSupported = useMemo<boolean>(() => {
     // Basic feature detection (you can wire real speech later)
-    return typeof window !== 'undefined' && !!(window.SpeechRecognition || (window as any).webkitSpeechRecognition);
+    return (
+      typeof window !== 'undefined' &&
+      !!(window.SpeechRecognition || (window as any).webkitSpeechRecognition)
+    );
   }, []);
 
   // Autofocus when opening
@@ -164,7 +168,10 @@ export function SidebarAI(): JSX.Element {
     try {
       // Fixed persona answer
       if (/^\s*who\s+are\s+you\??\s*$/i.test(text)) {
-        appendMessage('assistant', 'I am your coach hired for you by your Partner GramorX.');
+        appendMessage(
+          'assistant',
+          'I am your coach hired for you by your Partner GramorX.'
+        );
         return;
       }
 
@@ -192,7 +199,7 @@ export function SidebarAI(): JSX.Element {
            Current CI has duplicate vfile trees causing Plugin<->Pluggable type mismatch. */}
         {/* @ts-expect-error unified/vfile type skew in CI */}
         <ReactMarkdown
-          /* @ts-expect-error dynamic plugin typed loosely to avoid unified type skew */
+          // @ts-expect-error dynamic plugin typed loosely to avoid unified type skew
           rehypePlugins={rehypeHighlight ? [rehypeHighlight] : []}
           remarkPlugins={[remarkGfm]}
           skipHtml
