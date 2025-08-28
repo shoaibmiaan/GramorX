@@ -14,6 +14,10 @@ export default function LoginWithPassword() {
   const [pw, setPw] = useState('');
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [otp, setOtp] = useState('');
+  const [otpSent, setOtpSent] = useState(false);
+  const [factorId, setFactorId] = useState<string | null>(null);
+  const [verifying, setVerifying] = useState(false);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -28,6 +32,17 @@ export default function LoginWithPassword() {
         access_token: data.session.access_token,
         refresh_token: data.session.refresh_token,
       });
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      const factors = user?.factors ?? [];
+      if (factors.length) {
+        const f = factors[0];
+        await supabase.auth.mfa.challenge({ factorId: f.id });
+        setFactorId(f.id);
+        setOtpSent(true);
+        return;
+      }
       try {
         await fetch('/api/auth/login-event', { method: 'POST' });
       } catch (err) {
@@ -35,6 +50,24 @@ export default function LoginWithPassword() {
       }
       redirectByRole(data.session.user);
     }
+  }
+
+  async function verifyOtp(e: React.FormEvent) {
+    e.preventDefault();
+    if (!factorId) return;
+    setVerifying(true);
+    const { error } = await supabase.auth.mfa.verify({ factorId, code: otp });
+    setVerifying(false);
+    if (error) return setErr(error.message);
+    try {
+      await fetch('/api/auth/login-event', { method: 'POST' });
+    } catch (err) {
+      console.error(err);
+    }
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (user) redirectByRole(user);
   }
 
   const RightPanel = (
@@ -57,28 +90,43 @@ export default function LoginWithPassword() {
   return (
     <AuthLayout title="Sign in with Email" subtitle="Use your email & password." right={RightPanel}>
       {err && <Alert variant="error" title="Error" className="mb-4">{err}</Alert>}
-      <form onSubmit={onSubmit} className="space-y-6 mt-2">
-        <Input
-          label="Email"
-          type="email"
-          placeholder="you@example.com"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          autoComplete="email"
-          required
-        />
-        <PasswordInput
-          label="Password"
-          placeholder="Your password"
-          value={pw}
-          onChange={(e) => setPw(e.target.value)}
-          autoComplete="current-password"
-          required
-        />
-        <Button type="submit" variant="primary" className="w-full rounded-ds-xl" disabled={loading}>
-          {loading ? 'Signing in…' : 'Continue'}
-        </Button>
-      </form>
+      {!otpSent ? (
+        <form onSubmit={onSubmit} className="space-y-6 mt-2">
+          <Input
+            label="Email"
+            type="email"
+            placeholder="you@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            autoComplete="email"
+            required
+          />
+          <PasswordInput
+            label="Password"
+            placeholder="Your password"
+            value={pw}
+            onChange={(e) => setPw(e.target.value)}
+            autoComplete="current-password"
+            required
+          />
+          <Button type="submit" variant="primary" className="w-full rounded-ds-xl" disabled={loading}>
+            {loading ? 'Signing in…' : 'Continue'}
+          </Button>
+        </form>
+      ) : (
+        <form onSubmit={verifyOtp} className="space-y-6 mt-2 max-w-xs">
+          <Input
+            label="Enter OTP"
+            value={otp}
+            onChange={(e) => setOtp(e.target.value)}
+            autoComplete="one-time-code"
+            required
+          />
+          <Button type="submit" variant="primary" className="w-full rounded-ds-xl" disabled={verifying}>
+            {verifying ? 'Verifying…' : 'Verify'}
+          </Button>
+        </form>
+      )}
       <Button asChild variant="secondary" className="mt-6 rounded-ds-xl w-full">
         <Link href="/login">Back to Login Options</Link>
       </Button>
