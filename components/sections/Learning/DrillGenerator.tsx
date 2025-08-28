@@ -20,7 +20,7 @@ export const DrillGenerator: React.FC = () => {
       });
       const data = await res.json();
       setResult(data.text ?? 'No content produced.');
-    } catch (e) {
+    } catch {
       setResult('Error generating drill. Try again.');
     } finally {
       setLoading(false);
