@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>User Module</title>
+  <style>
+    :root{ --bg:#0b0c10; --card:#111319; --text:#e8eaed; --muted:#a7b0bf; --border:#232733; --acc:#3b82f6; --ok:#10b981; --warn:#f59e0b; }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif}
+    .wrap,.container{max-width:1200px;margin:0 auto;padding:20px}
+    h1,h2{margin:0 0 12px}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;margin:12px 0}
+    .chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 14px}
+    .chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border:1px solid var(--border);border-radius:999px;background:#151826;font-size:12px;color:#cfd5e3}
+    a.link{color:var(--acc);text-decoration:none;border-bottom:1px dashed var(--acc)}
+    a.link:hover{opacity:.9}
+    .badge{display:inline-block;font-size:12px;padding:2px 8px;border-radius:999px;border:1px solid var(--border)}
+    .badge.ok{background:#0f1d17;color:#a9efd4}
+    .badge.warn{background:#241c0f;color:#f5d39e}
+    ul{line-height:1.5}
+    nav{display:flex;flex-wrap:wrap;gap:10px;margin:8px 0 16px}
+    nav a{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:6px 10px;color:var(--text);text-decoration:none}
+  </style>
+</head>
+<body>
+<div class="container">
+<nav><a href="user.html">User Module</a>
+<a href="listening.html">Listening Module</a>
+<a href="reading.html">Reading Module</a>
+<a href="writing.html">Writing Module</a>
+<a href="speaking.html">Speaking Module</a>
+<a href="learning.html">Learning Module</a>
+<a href="analytics.html">Performance & Analytics</a>
+<a href="teacher-admin.html">Teacher/Admin Module</a>
+<a href="admin-dashboard.html">Admin Dashboard</a>
+<a href="ai-sidebar.html">AI Sidebar / Coach</a>
+<a href="community.html">Community & Support</a>
+<a href="monetization.html">Monetization</a>
+<a href="platform-ops.html">Platform Ops</a></nav>
+
+<section id="user-module" class="container">
+  <h2>User Module</h2>
+  <div class="chips">
+    <span class="chip">Auth & Identity</span>
+    <span class="chip">Profile & Onboarding</span>
+    <span class="chip">Study Plan</span>
+    <span class="chip">Subscriptions</span>
+    <span class="chip">Notifications</span>
+    <span class="chip">Security & Privacy</span>
+  </div>
+
+  <h3>Core</h3>
+  <ul>
+    <li><strong>Authentication</strong>: Email/Password, Phone OTP (Twilio), Google, Apple, Facebook; magic link; password reset.</li>
+    <li><strong>Roles</strong>: student / teacher / admin with route guards and feature gating.</li>
+    <li><strong>Onboarding</strong>: collect full name, country, phone, <em>goal band</em>, exam date, weaknesses, language.</li>
+    <li><strong>Profile</strong>: avatar, bio, timezone, language & theme preferences, accessibility options.</li>
+  </ul>
+
+  <h3>Learning & Personalization</h3>
+  <ul>
+    <li><strong>Study Plan</strong>: daily/weekly targets, ETA to goal, auto-adjust plan from performance.</li>
+    <li><strong>Dashboard</strong>: streaks, today’s tasks, weak-skill drills, recent attempts, AI coach tips.</li>
+    <li><strong>Progress</strong>: attempt history, band trajectory, accuracy by type, time-on-task, downloadable reports.</li>
+    <li><strong>Saved</strong>: bookmarks, flagged questions, retake queue, vocabulary & grammar lists.</li>
+  </ul>
+
+  <h3>Engagement</h3>
+  <ul>
+    <li><strong>Notifications</strong>: reminders (study sessions, test dates), email/SMS/WhatsApp, quiet hours.</li>
+    <li><strong>Calendar</strong>: study calendar with rescheduling, missed-session catchup, Google/Apple export.</li>
+    <li><strong>Referral</strong>: referral link, credits/rewards, invite tracking.</li>
+  </ul>
+
+  <h3>Billing & Access</h3>
+  <ul>
+    <li><strong>Subscriptions</strong>: plan management (Compass/Seedling/Rocket/Owl), upgrade/downgrade, invoices & receipts.</li>
+    <li><strong>Entitlements</strong>: feature gating per plan, soft nudges for locked features.</li>
+  </ul>
+
+  <h3>Security & Data</h3>
+  <ul>
+    <li><strong>Account Security</strong>: 2FA (email/OTP), active sessions/devices, login history, revoke device.</li>
+    <li><strong>Privacy & Data</strong>: profile export, delete account, communications preferences, GDPR-ready.</li>
+    <li><strong>Support</strong>: help center, contact, issue reporter with logs (consented).</li>
+  </ul>
+
+  <h3>Innovations (Market Gaps)</h3>
+  <div class="chips">
+    <span class="chip">Motivation AI</span>
+    <span class="chip">Slip Recovery</span>
+    <span class="chip">Noise Ladder</span>
+    <span class="chip">Accent Mirror</span>
+    <span class="chip">10‑Min Mode</span>
+    <span class="chip">Exam‑Day Suite</span>
+    <span class="chip">Buddy Match</span>
+    <span class="chip">Offline‑Lite</span>
+    <span class="chip">Privacy‑First</span>
+  </div>
+  <ul>
+    <li><strong>Motivation AI Coach</strong> (<a href="/coach">/coach</a>): mood/energy‑aware micro‑nudges, pep‑talks, and weekly reflections based on engagement patterns (privacy‑first; no sensitive inference stored).</li>
+    <li><strong>Slip‑Recovery Autopilot</strong> (<a href="/study-plan">/study-plan</a>): if tasks are missed, auto‑rebalances the next 7 days with lighter “restart” sessions and confidence‑builder drills.</li>
+    <li><strong>10‑Minute Mode</strong> (<a href="/quick">/quick</a>): one‑tap “I have 10 minutes” that serves a focused micro‑drill from your weakest skill with instant feedback.</li>
+    <li><strong>Noise Ladder for Listening</strong> (<a href="/labs/noise-ladder">/labs/noise-ladder</a>): progressive background noise & accents to harden real‑world comprehension.</li>
+    <li><strong>Accent Mirror for Speaking</strong> (<a href="/labs/accent-mirror">/labs/accent-mirror</a>): shadowing + alignment meter and minimal‑pairs trainer targeting your specific pronunciation gaps.</li>
+    <li><strong>Exam‑Day Rehearsal Suite</strong> (<a href="/exam-day">/exam-day</a>): device/mic check, timing rehearsal, anxiety‑control scripts, and a dry‑run checklist.</li>
+    <li><strong>Study‑Buddy Match</strong> (<a href="/study-buddy">/study-buddy</a>): timezone & goal‑band matching for 15‑minute speaking swaps with built‑in prompts and timers.</li>
+    <li><strong>“My Mistakes” Book</strong> (<a href="/my-mistakes">/my-mistakes</a>): auto‑compiled grammar/vocab errors from attempts → spaced practice with examples rewritten in your context.</li>
+    <li><strong>Challenge‑the‑Grade</strong> (<a href="/review/challenge">/review/challenge</a>): ask “why?” on AI scores; see rubric‑based justification and evidence highlights.</li>
+    <li><strong>Parent/Coach Share</strong> (<a href="/share">/share</a>): read‑only progress link with weekly summaries and upcoming plan.</li>
+    <li><strong>WhatsApp Daily Tasks</strong> (<a href="/notifications">/notifications</a>): opt‑in task pings and quick‑reply submissions via WhatsApp/SMS.</li>
+    <li><strong>Language‑of‑Explanation</strong> (<a href="/settings/language">/settings/language</a>): AI feedback/explanations in the user’s preferred language, examples localized.</li>
+    <li><strong>Offline‑Lite PWA</strong> (<a href="/offline">/offline</a>): cache practice sets, vocab, and drafts; sync when back online.</li>
+    <li><strong>Context‑Aware Calendar</strong> (<a href="/study-plan/calendar">/study-plan/calendar</a>): auto‑lighten during travel/festivals/exams; catch‑up windows later.</li>
+    <li><strong>Visa/Admissions Readiness</strong> (<a href="/readiness">/readiness</a>): track target scores per university/visa, show gap‑to‑goal and deadlines.</li>
+    <li><strong>Streak Shield</strong> (<a href="/streak">/streak</a>): limited “sick‑day” tokens to protect long streaks without breaking habit psychology.</li>
+  </ul>
+
+  <p class="muted">Deep links: 
+    <a href="/login">/login</a> · 
+    <a href="/signup">/signup</a> · 
+    <a href="/dashboard">/dashboard</a> · 
+    <a href="/profile">/profile</a> · 
+    <a href="/study-plan">/study-plan</a> · 
+    <a href="/progress">/progress</a> · 
+    <a href="/saved">/saved</a> · 
+    <a href="/notifications">/notifications</a> · 
+    <a href="/settings">/settings</a> · 
+    <a href="/settings/billing">/settings/billing</a> · 
+    <a href="/account/referrals">/account/referrals</a> · 
+    <a href="/coach">/coach</a> · 
+    <a href="/study-buddy">/study-buddy</a> · 
+    <a href="/exam-day">/exam-day</a> · 
+    <a href="/labs/noise-ladder">/labs/noise-ladder</a> · 
+    <a href="/labs/accent-mirror">/labs/accent-mirror</a> · 
+    <a href="/my-mistakes">/my-mistakes</a> · 
+    <a href="/offline">/offline</a> · 
+    <a href="/readiness">/readiness</a>
+  </p>
+</section>
+
+</div>
+</body>
+</html>
