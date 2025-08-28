@@ -10,9 +10,12 @@ export type AppRole = 'admin' | 'teacher' | 'student';
 // user has no recognized role.
 export function extractRole(user: User | null | undefined): AppRole | null {
   if (!user) return null;
+  interface RoleMetadata {
+    role?: unknown;
+  }
   const r =
-    (user.app_metadata as any)?.role ??
-    (user.user_metadata as any)?.role ??
+    (user.app_metadata as RoleMetadata).role ??
+    (user.user_metadata as RoleMetadata).role ??
     null;
   const v = r ? String(r).toLowerCase() : null;
   return v === 'admin' || v === 'teacher' || v === 'student' ? (v as AppRole) : null;
