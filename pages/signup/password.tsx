@@ -49,7 +49,11 @@ export default function SignupWithPassword() {
       setLoading(false);
 
       if (error) {
-        setErr(error.message);
+        if (error.code === 'user_exists') {
+          setErr('user_exists');
+        } else {
+          setErr(error.message);
+        }
         return;
       }
 
@@ -102,7 +106,17 @@ export default function SignupWithPassword() {
     >
       {err && (
         <Alert variant="error" title="Error" className="mb-4">
-          {err}
+          {err === 'user_exists' ? (
+            <>
+              Account already exists. Try{' '}
+              <Link href="/login" className="underline">
+                logging in
+              </Link>
+              .
+            </>
+          ) : (
+            err
+          )}
         </Alert>
       )}
 
