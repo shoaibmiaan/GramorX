@@ -7,6 +7,8 @@ import { Button } from '@/components/design-system/Button';
 import { Alert } from '@/components/design-system/Alert';
 import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser';
 import { redirectByRole } from '@/lib/routeAccess';
+import SessionDialog, { SessionInfo } from '@/components/auth/SessionDialog';
+import type { User } from '@supabase/supabase-js';
 
 export default function LoginWithPhone() {
   const [phone, setPhone] = useState('');
@@ -14,6 +16,8 @@ export default function LoginWithPhone() {
   const [stage, setStage] = useState<'request' | 'verify'>('request');
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [sessions, setSessions] = useState<SessionInfo[] | null>(null);
+  const [redirectUser, setRedirectUser] = useState<User | null>(null);
 
   async function requestOtp(e: React.FormEvent) {
     e.preventDefault();
@@ -45,8 +49,33 @@ export default function LoginWithPhone() {
       } catch (err) {
         console.error(err);
       }
-      redirectByRole(data.session.user);
+      const user = data.session.user;
+      setRedirectUser(user);
+      try {
+        const r = await fetch('/api/auth/sessions');
+        const list: SessionInfo[] = await r.json();
+        if (Array.isArray(list) && list.length > 1) {
+          setSessions(list.slice(1));
+          return;
+        }
+      } catch (err) {
+        console.error(err);
+      }
+      redirectByRole(user);
     }
+  }
+
+  function closeSessions() {
+    if (redirectUser) redirectByRole(redirectUser);
+  }
+
+  async function keepOnlyHere() {
+    if (sessions) {
+      await Promise.all(
+        sessions.map((s) => fetch(`/api/auth/sessions/${s.id}`, { method: 'DELETE' }))
+      );
+    }
+    closeSessions();
   }
 
   const RightPanel = (
@@ -95,6 +124,13 @@ export default function LoginWithPhone() {
       <Button asChild variant="secondary" className="mt-6 rounded-ds-xl w-full">
         <Link href="/login">Back to Login Options</Link>
       </Button>
+      {sessions && (
+        <SessionDialog
+          sessions={sessions}
+          onKeepOnlyHere={keepOnlyHere}
+          onClose={closeSessions}
+        />
+      )}
     </AuthLayout>
   );
 }

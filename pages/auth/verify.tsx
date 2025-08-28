@@ -5,10 +5,14 @@ import AuthLayout from '@/components/layouts/AuthLayout';
 import { Alert } from '@/components/design-system/Alert';
 import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser';
 import { redirectByRole } from '@/lib/routeAccess';
+import SessionDialog, { SessionInfo } from '@/components/auth/SessionDialog';
+import type { User } from '@supabase/supabase-js';
 
 export default function VerifyPage() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
+  const [sessions, setSessions] = useState<SessionInfo[] | null>(null);
+  const [user, setUser] = useState<User | null>(null);
 
   // Read query params safely
   const email = useMemo(
@@ -34,7 +38,24 @@ export default function VerifyPage() {
       if (error) {
         setError(error.message);
       } else {
-        redirectByRole(data.session?.user ?? null);
+        const sessionUser = data.session?.user ?? null;
+        setUser(sessionUser);
+        try {
+          await fetch('/api/auth/login-event', { method: 'POST' });
+        } catch (err) {
+          console.error(err);
+        }
+        try {
+          const r = await fetch('/api/auth/sessions');
+          const list: SessionInfo[] = await r.json();
+          if (Array.isArray(list) && list.length > 1) {
+            setSessions(list.slice(1));
+            return;
+          }
+        } catch (err) {
+          console.error(err);
+        }
+        redirectByRole(sessionUser);
       }
     })();
   }, [hasCode, router]);
@@ -47,6 +68,19 @@ export default function VerifyPage() {
       : email
       ? `We’ve emailed a confirmation link to ${email}.`
       : 'Check your inbox for a verification link.';
+
+  function closeSessions() {
+    redirectByRole(user);
+  }
+
+  async function keepOnlyHere() {
+    if (sessions) {
+      await Promise.all(
+        sessions.map((s) => fetch(`/api/auth/sessions/${s.id}`, { method: 'DELETE' }))
+      );
+    }
+    closeSessions();
+  }
 
   return (
     <AuthLayout title="Verify your account" subtitle={subtitle}>
@@ -62,6 +96,13 @@ export default function VerifyPage() {
             ? 'Open the email and click the link to continue.'
             : 'If you didn’t receive an email, check spam or try again.'}
         </p>
+      )}
+      {sessions && (
+        <SessionDialog
+          sessions={sessions}
+          onKeepOnlyHere={keepOnlyHere}
+          onClose={closeSessions}
+        />
       )}
     </AuthLayout>
   );
