@@ -1,6 +1,7 @@
 // pages/speaking/simulator/part2.tsx
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Head from 'next/head';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { Container } from '@/components/design-system/Container';
 import Recorder from '@/components/speaking/Recorder';
@@ -419,7 +420,9 @@ export default function SpeakingPart2() {
                     </button>
                   </div>
                   <div className="mt-3">
-                    <a href="/speaking/attempts" className="text-sm underline">View all attempts</a>
+                    <Link href="/speaking/attempts/" className="text-sm underline">
+                      View all attempts
+                    </Link>
                   </div>
                 </div>
               </div>
