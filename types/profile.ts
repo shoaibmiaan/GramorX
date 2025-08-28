@@ -18,6 +18,9 @@ export interface Profile {
   study_prefs?: string[] | null;
   time_commitment?: string | null;
   preferred_language?: string | null;
+  phone?: string | null;
+  weaknesses?: string[] | null;
+  timezone?: string | null;
   avatar_url?: string | null;
   exam_date?: string | null;
   ai_recommendation?: AIPlan | null;

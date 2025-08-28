@@ -10,7 +10,7 @@ import { Badge } from '@/components/design-system/Badge';
 import { Alert } from '@/components/design-system/Alert';
 import { Select } from '@/components/design-system/Select';
 import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser';
-import { COUNTRIES, LEVELS, TIME, PREFS } from '@/lib/profile-options';
+import { COUNTRIES, LEVELS, TIME, PREFS, WEAKNESSES } from '@/lib/profile-options';
 
 /** ---- ISO week helpers for travel/festival/exam windows ---- */
 function getWeekRange(isoWeek: string) {
@@ -66,6 +66,26 @@ export default function ProfileSetup() {
   const [avatarUrl, setAvatarUrl] = useState<string | undefined>();
   const [ai, setAi] = useState<{suggestedGoal:number; etaWeeks:number; sequence:string[]} | null>(null);
 
+  const [phone, setPhone] = useState('');
+  const [phoneCode, setPhoneCode] = useState('');
+  const [phoneStage, setPhoneStage] = useState<'request' | 'verify' | 'verified'>('request');
+  const [phoneErr, setPhoneErr] = useState<string | null>(null);
+  const [weaknesses, setWeaknesses] = useState<typeof WEAKNESSES[number][]>([]);
+  const [timezone, setTimezone] = useState('');
+  const timezones = useMemo(() => {
+    try {
+      return (Intl as any).supportedValuesOf ? (Intl as any).supportedValuesOf('timeZone') : [];
+    } catch {
+      return [] as string[];
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!timezone) {
+      try { setTimezone(Intl.DateTimeFormat().resolvedOptions().timeZone); } catch {}
+    }
+  }, [timezone]);
+
   type FieldErrors = {
     goal?: string;
     examDate?: string;
@@ -114,6 +134,10 @@ export default function ProfileSetup() {
         setExamDate(data.exam_date ?? '');
         setPrefs((data.study_prefs as string[]) ?? []);
         setTime(data.time_commitment ?? '');
+        setPhone(data.phone ?? '');
+        setPhoneStage(data.phone ? 'verified' : 'request');
+        setWeaknesses((data.weaknesses as string[]) ?? []);
+        setTimezone(data.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone);
 
         const pl = data.preferred_language ?? 'en';
         setLang(pl);
@@ -165,7 +189,51 @@ export default function ProfileSetup() {
     setPrefs(prev => prev.includes(p) ? prev.filter(x => x !== p) : [...prev, p]);
   };
 
-  const canSubmit = fullName && level && time && country && Object.keys(fieldErrors).length === 0;
+  const toggleWeakness = (w: typeof WEAKNESSES[number]) => {
+    setWeaknesses(prev => prev.includes(w) ? prev.filter(x => x !== w) : [...prev, w]);
+  };
+
+  const requestOtp = async () => {
+    setPhoneErr(null);
+    if (!phone) {
+      setPhoneErr('Enter phone number');
+      return;
+    }
+    try {
+      const res = await fetch('/api/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone })
+      });
+      const j = await res.json();
+      if (!j.ok) throw new Error(j.error);
+      setPhoneStage('verify');
+    } catch (e: any) {
+      setPhoneErr(e.message);
+    }
+  };
+
+  const verifyOtp = async () => {
+    setPhoneErr(null);
+    if (!phoneCode) {
+      setPhoneErr('Enter code');
+      return;
+    }
+    try {
+      const res = await fetch('/api/check-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, code: phoneCode })
+      });
+      const j = await res.json();
+      if (!j.ok) throw new Error(j.error);
+      setPhoneStage('verified');
+    } catch (e: any) {
+      setPhoneErr(e.message);
+    }
+  };
+
+  const canSubmit = fullName && level && time && country && phoneStage === 'verified' && Object.keys(fieldErrors).length === 0;
 
   const saveProfile = async (finalize=false) => {
     if (!userId) return;
@@ -214,6 +282,9 @@ export default function ProfileSetup() {
       goal_band: goal || null,
       exam_date: examDate || null,
       study_prefs: prefs,
+      phone: phone || null,
+      weaknesses,
+      timezone: timezone || null,
       time_commitment: time || null,
       preferred_language: lang || 'en',
       explanation_language: explanationLang || 'en',
@@ -301,6 +372,31 @@ export default function ProfileSetup() {
                   </Select>
 
                   <div className="md:col-span-2">
+                    <Input
+                      label="Phone number"
+                      type="tel"
+                      placeholder="+1234567890"
+                      value={phone}
+                      onChange={e=>setPhone(e.target.value)}
+                    />
+                    {phoneStage === 'request' && (
+                      <Button type="button" variant="secondary" className="mt-2 rounded-ds-xl" onClick={requestOtp}>
+                        Send code
+                      </Button>
+                    )}
+                    {phoneStage === 'verify' && (
+                      <div className="mt-2 flex gap-2">
+                        <Input label="Code" value={phoneCode} onChange={e=>setPhoneCode(e.target.value)} className="flex-1" />
+                        <Button type="button" variant="secondary" className="rounded-ds-xl" onClick={verifyOtp}>
+                          Verify
+                        </Button>
+                      </div>
+                    )}
+                    {phoneStage === 'verified' && <Badge variant="success" className="mt-2">Verified</Badge>}
+                    {phoneErr && <Alert variant="error" className="mt-2">{phoneErr}</Alert>}
+                  </div>
+
+                  <div className="md:col-span-2">
                     <label className="block">
                       <span className="mb-1.5 inline-block text-small text-gray-600 dark:text-grayish">Study preferences</span>
                       <div className="flex flex-wrap gap-2">
@@ -317,6 +413,30 @@ export default function ProfileSetup() {
                               className={`cursor-pointer transition ${prefs.includes(p) ? 'ring-2 ring-success' : 'hover:opacity-90'}`}
                             >
                               {p}
+                            </Badge>
+                          </button>
+                        ))}
+                      </div>
+                    </label>
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="block">
+                      <span className="mb-1.5 inline-block text-small text-gray-600 dark:text-grayish">Weak areas</span>
+                      <div className="flex flex-wrap gap-2">
+                        {WEAKNESSES.map(w => (
+                          <button
+                            key={w}
+                            type="button"
+                            onClick={()=>toggleWeakness(w)}
+                            aria-pressed={weaknesses.includes(w)}
+                            className="focus:outline-none"
+                          >
+                            <Badge
+                              variant={weaknesses.includes(w) ? 'warning' : 'neutral'}
+                              className={`cursor-pointer transition ${weaknesses.includes(w) ? 'ring-2 ring-warning' : 'hover:opacity-90'}`}
+                            >
+                              {w}
                             </Badge>
                           </button>
                         ))}
@@ -381,6 +501,12 @@ export default function ProfileSetup() {
                       onChange={e => { setExamWeek(e.target.value); clearFieldError('examWeek'); }}
                     />
                     {fieldErrors.examWeek && <Alert variant="error" className="mt-2">{fieldErrors.examWeek}</Alert>}
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <Select label="Timezone" value={timezone} onChange={e=>setTimezone(e.target.value)}>
+                      {timezones.map(tz => <option key={tz} value={tz}>{tz}</option>)}
+                    </Select>
                   </div>
 
                   <Select
