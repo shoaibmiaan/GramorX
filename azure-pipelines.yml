@@ -1,0 +1,24 @@
+trigger:
+- main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+- task: NodeTool@0
+  inputs:
+    versionSpec: '20.x'
+
+- script: |
+    echo "registry=https://registry.npmjs.org/" > .npmrc
+    echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> .npmrc
+    echo "always-auth=true" >> .npmrc
+  displayName: 'Create .npmrc'
+  env:
+    NPM_TOKEN: $(NPM_TOKEN)
+
+- script: npm ci
+  displayName: 'Install'
+
+- script: npm run build
+  displayName: 'Build'
