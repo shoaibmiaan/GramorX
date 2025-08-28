@@ -14,6 +14,73 @@ type Mode = 'practice' | 'exam';
 const MIN_WORDS: Record<TaskType, number> = { T1: 150, GT: 150, T2: 250 };
 const TARGET_MINUTES: Record<TaskType, number> = { T1: 20, GT: 20, T2: 40 };
 
+function useSample({
+  setTaskType,
+  setPrompt,
+  setLetterType,
+  setTone,
+  setEssay,
+  setNotes,
+  setIntro,
+  setBp1,
+  setBp2,
+  setConclusion,
+}: {
+  setTaskType: React.Dispatch<React.SetStateAction<TaskType>>;
+  setPrompt: React.Dispatch<React.SetStateAction<string>>;
+  setLetterType: React.Dispatch<
+    React.SetStateAction<'formal' | 'informal' | 'semi-formal'>
+  >;
+  setTone: React.Dispatch<
+    React.SetStateAction<'neutral' | 'polite' | 'friendly'>
+  >;
+  setEssay: React.Dispatch<React.SetStateAction<string>>;
+  setNotes: React.Dispatch<React.SetStateAction<string>>;
+  setIntro: React.Dispatch<React.SetStateAction<string>>;
+  setBp1: React.Dispatch<React.SetStateAction<string>>;
+  setBp2: React.Dispatch<React.SetStateAction<string>>;
+  setConclusion: React.Dispatch<React.SetStateAction<string>>;
+}) {
+  return useCallback(
+    (kind: TaskType) => {
+      setTaskType(kind);
+      if (kind === 'T1') {
+        setPrompt(
+          'The chart below shows the percentage of households in different income groups with access to the internet between 2005 and 2020. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.'
+        );
+      } else if (kind === 'T2') {
+        setPrompt(
+          'Some people think that schools should reward students who show the best academic results, while others believe that it is more important to reward students who show improvements. Discuss both views and give your own opinion.'
+        );
+      } else {
+        setPrompt(
+          'You recently moved to a new city and want to inform your friend about your new address and invite them to visit. Write a letter explaining your move, giving the new address, and suggesting a date to meet.'
+        );
+        setLetterType('informal');
+        setTone('friendly');
+      }
+      setEssay('');
+      setNotes('');
+      setIntro('');
+      setBp1('');
+      setBp2('');
+      setConclusion('');
+    },
+    [
+      setTaskType,
+      setPrompt,
+      setLetterType,
+      setTone,
+      setEssay,
+      setNotes,
+      setIntro,
+      setBp1,
+      setBp2,
+      setConclusion,
+    ]
+  );
+}
+
 export default function WritingHome() {
   const router = useRouter();
 
@@ -41,6 +108,19 @@ export default function WritingHome() {
 
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+
+  const loadSample = useSample({
+    setTaskType,
+    setPrompt,
+    setLetterType,
+    setTone,
+    setEssay,
+    setNotes,
+    setIntro,
+    setBp1,
+    setBp2,
+    setConclusion,
+  });
 
   // ---- Derived ----
   const wordCount = useMemo(
@@ -72,32 +152,6 @@ export default function WritingHome() {
     if (mode === 'exam' && belowMin) return true; // enforce minimum in exam mode
     return false;
   }, [prompt, essay, mode, belowMin]);
-
-  // ---- Sample loader ----
-  const useSample = useCallback((kind: TaskType) => {
-    setTaskType(kind);
-    if (kind === 'T1') {
-      setPrompt(
-        'The chart below shows the percentage of households in different income groups with access to the internet between 2005 and 2020. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.'
-      );
-    } else if (kind === 'T2') {
-      setPrompt(
-        'Some people think that schools should reward students who show the best academic results, while others believe that it is more important to reward students who show improvements. Discuss both views and give your own opinion.'
-      );
-    } else {
-      setPrompt(
-        'You recently moved to a new city and want to inform your friend about your new address and invite them to visit. Write a letter explaining your move, giving the new address, and suggesting a date to meet.'
-      );
-      setLetterType('informal');
-      setTone('friendly');
-    }
-    setEssay('');
-    setNotes('');
-    setIntro('');
-    setBp1('');
-    setBp2('');
-    setConclusion('');
-  }, []);
 
   // ---- Timer logic ----
   useEffect(() => {
@@ -420,7 +474,7 @@ export default function WritingHome() {
                 {loading ? 'Evaluating…' : 'Evaluate & Review'}
               </Button>
               <Button
-                onClick={() => useSample(taskType)}
+                onClick={() => loadSample(taskType)}
                 variant="secondary"
                 className="rounded-ds-xl"
                 disabled={loading}
