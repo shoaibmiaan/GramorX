@@ -19,6 +19,15 @@ export default function UpdatePassword() {
     setErr(null);
     if (!password) return setErr('Please enter a new password.');
     setLoading(true);
+    const { data: reused, error: rpcError } = await supabase.rpc('password_is_reused', { new_password: password });
+    if (rpcError) {
+      setLoading(false);
+      return setErr(rpcError.message);
+    }
+    if (reused) {
+      setLoading(false);
+      return setErr('Cannot reuse old password.');
+    }
     const { error } = await supabase.auth.updateUser({ password });
     setLoading(false);
     if (error) return setErr(error.message);
