@@ -21,5 +21,6 @@ export interface Profile {
   avatar_url?: string | null;
   exam_date?: string | null;
   ai_recommendation?: AIPlan | null;
+  marketing_opt_in?: boolean | null;
   draft?: boolean;
 }
