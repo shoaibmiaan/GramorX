@@ -1,0 +1,25 @@
+image: node:20
+
+variables:
+  NPM_CONFIG_REGISTRY: https://registry.npmjs.org
+
+cache:
+  key: npm-cache
+  paths:
+    - .npm/
+
+before_script:
+  - npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN}
+  - npm config set always-auth true
+
+stages: [install, build]
+
+install:
+  stage: install
+  script:
+    - npm ci
+
+build:
+  stage: build
+  script:
+    - npm run build
