@@ -13,7 +13,7 @@ export type StreakState = {
   lastDayKey: string | null;
   nextRestart: string | null;
   shields: number;
-  error?: string;
+  error: string | null;
 };
 
 export function useStreak() {
@@ -23,10 +23,11 @@ export function useStreak() {
     lastDayKey: null,
     nextRestart: null,
     shields: 0,
+    error: null,
   });
 
   const load = useCallback(async () => {
-    setState((s) => ({ ...s, loading: true, error: undefined }));
+    setState((s) => ({ ...s, loading: true, error: null }));
     try {
       const data = await fetchStreak();
       setState({
@@ -35,9 +36,11 @@ export function useStreak() {
         lastDayKey: data.last_activity_date ?? null,
         nextRestart: data.next_restart_date ?? null,
         shields: data.shields ?? 0,
+        error: null,
       });
-    } catch (e: any) {
-      setState((s) => ({ ...s, loading: false, error: e.message || 'Failed to load' }));
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : 'Failed to load';
+      setState((s) => ({ ...s, loading: false, error: message }));
     }
   }, []);
 
@@ -59,9 +62,11 @@ export function useStreak() {
         lastDayKey: data.last_activity_date ?? s.lastDayKey,
         nextRestart: data.next_restart_date ?? s.nextRestart,
         shields: data.shields ?? s.shields,
+        error: null,
       }));
-    } catch (e: any) {
-      setState((s) => ({ ...s, error: e.message || 'Failed to update' }));
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : 'Failed to update';
+      setState((s) => ({ ...s, error: message }));
       throw e;
     }
   }, [state.lastDayKey, state.shields]);
@@ -75,9 +80,11 @@ export function useStreak() {
         current: data.current_streak ?? s.current,
         lastDayKey: data.last_activity_date ?? s.lastDayKey,
         nextRestart: data.next_restart_date ?? s.nextRestart,
+        error: null,
       }));
-    } catch (e: any) {
-      setState((s) => ({ ...s, error: e.message || 'Failed to claim' }));
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : 'Failed to claim';
+      setState((s) => ({ ...s, error: message }));
       throw e;
     }
   }, []);
@@ -91,9 +98,11 @@ export function useStreak() {
         lastDayKey: data.last_activity_date ?? s.lastDayKey,
         nextRestart: data.next_restart_date ?? s.nextRestart,
         shields: data.shields ?? s.shields,
+        error: null,
       }));
-    } catch (e: any) {
-      setState((s) => ({ ...s, error: e.message || 'Failed to use' }));
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : 'Failed to use';
+      setState((s) => ({ ...s, error: message }));
       throw e;
     }
   }, []);
@@ -107,9 +116,11 @@ export function useStreak() {
         lastDayKey: data.last_activity_date ?? s.lastDayKey,
         nextRestart: data.next_restart_date ?? s.nextRestart,
         shields: data.shields ?? s.shields,
+        error: null,
       }));
-    } catch (e: any) {
-      setState((s) => ({ ...s, error: e.message || 'Failed to schedule recovery' }));
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : 'Failed to schedule recovery';
+      setState((s) => ({ ...s, error: message }));
       throw e;
     }
   }, []);
