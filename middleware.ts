@@ -5,10 +5,24 @@ import type { NextRequest } from 'next/server';
 export async function middleware(req: NextRequest) {
   const { pathname, search, origin } = req.nextUrl;
 
-  // Only protect /premium/*
+  const token = req.cookies.get('sb-access-token')?.value;
+
+  if (token) {
+    try {
+      const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64url').toString());
+      const status = payload?.user_metadata?.status;
+      if (status === 'pending_verification' && !pathname.startsWith('/signup')) {
+        const url = req.nextUrl.clone();
+        url.pathname = '/signup/phone';
+        return NextResponse.redirect(url);
+      }
+    } catch {
+      // ignore token parse issues
+    }
+  }
+
   if (!pathname.startsWith('/premium')) return NextResponse.next();
 
-  const token = req.cookies.get('sb-access-token')?.value;
   if (!token) {
     const url = req.nextUrl.clone();
     url.pathname = '/login';
@@ -47,6 +61,6 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/premium/:path*'],
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
   runtime: 'nodejs',
 };
