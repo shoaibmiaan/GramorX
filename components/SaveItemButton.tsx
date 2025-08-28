@@ -3,10 +3,11 @@ import { Button } from '@/components/design-system/Button';
 
 type Props = {
   resourceId: string;
-  type: string;
+  type?: string;
+  category: string;
 };
 
-export const BookmarkButton: React.FC<Props> = ({ resourceId, type }) => {
+export const SaveItemButton: React.FC<Props> = ({ resourceId, type = '', category }) => {
   const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -15,7 +16,8 @@ export const BookmarkButton: React.FC<Props> = ({ resourceId, type }) => {
     if (!resourceId) return;
     (async () => {
       try {
-        const res = await fetch(`/api/bookmarks?resource_id=${resourceId}&type=${type}`);
+        const url = `/api/saved/${category}?resource_id=${resourceId}${type ? `&type=${type}` : ''}`;
+        const res = await fetch(url);
         if (active && res.ok) {
           const data = await res.json();
           setSaved(Array.isArray(data) && data.length > 0);
@@ -25,22 +27,24 @@ export const BookmarkButton: React.FC<Props> = ({ resourceId, type }) => {
       }
     })();
     return () => { active = false; };
-  }, [resourceId, type]);
+  }, [resourceId, type, category]);
 
   const toggle = async () => {
     if (!resourceId) return;
+    const body: Record<string, string> = { resource_id: resourceId };
+    if (type) body.type = type;
     if (saved) {
-      await fetch('/api/bookmarks', {
+      await fetch(`/api/saved/${category}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ resource_id: resourceId, type }),
+        body: JSON.stringify(body),
       });
       setSaved(false);
     } else {
-      await fetch('/api/bookmarks', {
+      await fetch(`/api/saved/${category}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ resource_id: resourceId, type }),
+        body: JSON.stringify(body),
       });
       setSaved(true);
     }
@@ -60,4 +64,4 @@ export const BookmarkButton: React.FC<Props> = ({ resourceId, type }) => {
   );
 };
 
-export default BookmarkButton;
+export default SaveItemButton;
