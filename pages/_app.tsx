@@ -76,6 +76,7 @@ function InnerApp({ Component, pageProps }: AppProps) {
   const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
+    if (!router.isReady) return;
     let active = true;
 
     (async () => {
@@ -115,7 +116,14 @@ function InnerApp({ Component, pageProps }: AppProps) {
         }
 
         if (guestOnlyR && user) {
-          router.replace('/dashboard');
+          const nextParam = router.query.next;
+          const next =
+            typeof nextParam === 'string'
+              ? nextParam
+              : Array.isArray(nextParam)
+              ? nextParam[0]
+              : undefined;
+          router.replace(next || '/dashboard');
           return;
         }
 
@@ -140,7 +148,7 @@ function InnerApp({ Component, pageProps }: AppProps) {
       active = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname]);
+  }, [pathname, router.isReady]);
 
   useEffect(() => {
     const interval = setInterval(async () => {
