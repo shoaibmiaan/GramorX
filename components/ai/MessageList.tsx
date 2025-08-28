@@ -1,5 +1,14 @@
+// components/ai/MessageList.tsx
 import React from 'react';
-import type { Msg } from './SidebarAI';
+
+// Local, decoupled message types (no dependency on SidebarAI)
+export type ChatRole = 'user' | 'assistant' | 'system';
+
+export interface Msg {
+  id: string | number;
+  role: ChatRole;
+  content: string;
+}
 
 interface MessageListProps {
   items: Msg[];
@@ -27,11 +36,13 @@ export function MessageList({
   voiceSupported,
   voiceDenied,
   listening,
-}: MessageListProps) {
+}: MessageListProps): JSX.Element {
   return (
     <div
       ref={scrollRef}
-      className={`${isMobile ? 'h-[calc(100svh-8.5rem)]' : 'h-[calc(100vh-8.5rem)]'} overflow-y-auto px-3 md:px-4 py-3 space-y-3`}
+      className={`${
+        isMobile ? 'h-[calc(100svh-8.5rem)]' : 'h-[calc(100vh-8.5rem)]'
+      } overflow-y-auto px-3 md:px-4 py-3 space-y-3`}
     >
       {items.length === 0 && (
         <div className="text-center">
@@ -42,12 +53,25 @@ export function MessageList({
             Hi, I’m your coach — hired for you by your Partner GramorX. Speak or type to begin.
           </div>
           <div className="mt-3 flex items-center justify-center gap-2">
-            <button onClick={newChat} className="text-caption rounded-full px-3 py-1 bg-card border border-border hover:bg-accent">New chat</button>
+            <button
+              onClick={newChat}
+              className="text-caption rounded-full px-3 py-1 bg-card border border-border hover:bg-accent"
+            >
+              New chat
+            </button>
             <button
               onClick={toggleVoice}
               disabled={!voiceSupported || voiceDenied}
               className="text-caption rounded-full px-3 py-1 border border-border bg-card hover:bg-accent disabled:opacity-50"
-              title={voiceSupported ? (voiceDenied ? 'Mic access denied' : listening ? 'Stop voice' : 'Speak') : 'Voice not supported'}
+              title={
+                voiceSupported
+                  ? voiceDenied
+                    ? 'Mic access denied'
+                    : listening
+                    ? 'Stop voice'
+                    : 'Speak'
+                  : 'Voice not supported'
+              }
             >
               🎙 {listening ? 'Stop' : 'Speak'}
             </button>
@@ -69,7 +93,9 @@ export function MessageList({
           <div className="text-micro uppercase tracking-wider text-muted-foreground mb-1">
             {m.role === 'user' ? 'You' : 'GramorX AI'}
           </div>
-          <div className="prose prose-sm dark:prose-invert max-w-none">{renderMarkdown(m.content)}</div>
+          <div className="prose prose-sm dark:prose-invert max-w-none">
+            {renderMarkdown(m.content)}
+          </div>
         </div>
       ))}
 
