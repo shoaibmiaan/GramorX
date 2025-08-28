@@ -24,6 +24,7 @@ import {
 import { PremiumThemeProvider } from '@/premium-ui/theme/PremiumThemeProvider';
 import { ImpersonationBanner } from '@/components/admin/ImpersonationBanner';
 import { SidebarAI } from '@/components/ai/SidebarAI';
+import { NotificationsProvider } from '@/components/notifications/NotificationsContext';
 
 import { Poppins, Roboto_Slab } from 'next/font/google';
 const poppins = Poppins({
@@ -210,18 +211,20 @@ function InnerApp({ Component, pageProps }: AppProps) {
 
       <div className={`${poppins.variable} ${slab.variable} ${poppins.className} min-h-[100dvh]`}>
         <ToastProvider>
-          {showLayout ? (
-            <Layout>
-              <ImpersonationBanner />
-              {pageBody}
-            </Layout>
-          ) : (
-            <>
-              <ImpersonationBanner />
-              {pageBody}
-            </>
-          )}
-          <SidebarAI />
+          <NotificationsProvider>
+            {showLayout ? (
+              <Layout>
+                <ImpersonationBanner />
+                {pageBody}
+              </Layout>
+            ) : (
+              <>
+                <ImpersonationBanner />
+                {pageBody}
+              </>
+            )}
+            <SidebarAI />
+          </NotificationsProvider>
         </ToastProvider>
       </div>
     </ThemeProvider>
