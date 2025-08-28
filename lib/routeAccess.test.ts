@@ -1,4 +1,5 @@
-import assert from 'node:assert/strict';
+import test from 'node:test';
+import assert from 'node:assert';
 
 import {
   canAccess,
@@ -7,18 +8,21 @@ import {
   isGuestOnlyRoute,
 } from './routeAccess';
 
-assert.equal(canAccess('/admin', 'student'), false);
-assert.equal(canAccess('/teacher', 'student'), false);
-assert.equal(canAccess('/admin', 'admin'), true);
-assert.equal(canAccess('/teacher', 'teacher'), true);
-assert.equal(canAccess('/teacher', 'admin'), true);
-assert.equal(canAccess('/admin', 'teacher'), false);
+test('canAccess respects role gates', () => {
+  assert.strictEqual(canAccess('/admin', 'student'), false);
+  assert.strictEqual(canAccess('/teacher', 'student'), false);
+  assert.strictEqual(canAccess('/admin', 'admin'), true);
+  assert.strictEqual(canAccess('/teacher', 'teacher'), true);
+  assert.strictEqual(canAccess('/teacher', 'admin'), true);
+  assert.strictEqual(canAccess('/admin', 'teacher'), false);
+});
 
-assert.deepEqual(requiredRolesFor('/admin'), ['admin']);
-assert.deepEqual(requiredRolesFor('/teacher'), ['teacher', 'admin']);
+test('requiredRolesFor returns the correct roles', () => {
+  assert.deepStrictEqual(requiredRolesFor('/admin'), ['admin']);
+  assert.deepStrictEqual(requiredRolesFor('/teacher'), ['teacher', 'admin']);
+});
 
-// Ensure signup flow paths bypass auth guards
-assert.equal(isPublicRoute('/signup/phone'), true);
-assert.equal(isGuestOnlyRoute('/signup/phone'), true);
-
-console.log('All route access tests passed.');
+test('signup flow paths bypass auth guards', () => {
+  assert.strictEqual(isPublicRoute('/signup/phone'), true);
+  assert.strictEqual(isGuestOnlyRoute('/signup/phone'), true);
+});
