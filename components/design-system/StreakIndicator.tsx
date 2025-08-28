@@ -1,30 +1,18 @@
 // components/design-system/StreakIndicator.tsx
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useStreak } from '@/hooks/useStreak';
-import * as StreakLib from '@/lib/streak';
+import { getDayKeyInTZ } from '@/lib/streak';
 
 type Props = {
   className?: string;
   value?: number; // ✅ allow external streak value
 };
 
-// Safe helpers (work even if lib exports are misconfigured)
-const safeGetLocalDayKey = (d?: Date) => {
-  const fn = (StreakLib as any).getLocalDayKey;
-  if (typeof fn === 'function') return fn(d);
-  return new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'Asia/Karachi',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).format(d ?? new Date());
-};
-
 export const StreakIndicator: React.FC<Props> = ({ className = '', value }) => {
   const { current, lastDayKey, completeToday, loading, shields } = useStreak();
 
   const [justCelebrated, setJustCelebrated] = useState(false);
-  const todayKey = useMemo(() => safeGetLocalDayKey(), []);
+  const todayKey = useMemo(() => getDayKeyInTZ(), []);
   const autoTriedRef = useRef(false);
 
   // Decide which streak value to use (prop > hook)
