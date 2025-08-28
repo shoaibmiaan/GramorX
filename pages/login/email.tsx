@@ -7,6 +7,7 @@ import { Button } from '@/components/design-system/Button';
 import { Alert } from '@/components/design-system/Alert';
 import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser';
 import { redirectByRole } from '@/lib/routeAccess';
+import { getAuthErrorMessage } from '@/lib/authErrors';
 
 export default function LoginWithEmail() {
   const [email, setEmail] = useState('');
@@ -21,7 +22,7 @@ export default function LoginWithEmail() {
     setLoading(true);
     const { error, data } = await supabase.auth.signInWithPassword({ email, password: pw });
     setLoading(false);
-    if (error) return setErr(error.message);
+    if (error) return setErr(getAuthErrorMessage(error));
     if (data.session) {
       await supabase.auth.setSession({
         access_token: data.session.access_token,

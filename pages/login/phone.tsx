@@ -7,6 +7,7 @@ import { Button } from '@/components/design-system/Button';
 import { Alert } from '@/components/design-system/Alert';
 import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser';
 import { redirectByRole } from '@/lib/routeAccess';
+import { getAuthErrorMessage } from '@/lib/authErrors';
 
 export default function LoginWithPhone() {
   const [phone, setPhone] = useState('');
@@ -22,7 +23,7 @@ export default function LoginWithPhone() {
     setLoading(true);
     const { error } = await supabase.auth.signInWithOtp({ phone, options: { shouldCreateUser: false } });
     setLoading(false);
-    if (error) return setErr(error.message);
+    if (error) return setErr(getAuthErrorMessage(error));
     setStage('verify');
   }
 
@@ -34,7 +35,7 @@ export default function LoginWithPhone() {
     // @ts-expect-error `token` is supported for verification
     const { data, error } = await supabase.auth.signInWithOtp({ phone, token: code });
     setLoading(false);
-    if (error) return setErr(error.message);
+    if (error) return setErr(getAuthErrorMessage(error));
     if (data.session) {
       await supabase.auth.setSession({
         access_token: data.session.access_token,
