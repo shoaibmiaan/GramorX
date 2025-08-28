@@ -2,7 +2,6 @@ import { env } from "@/lib/env";
 // pages/learning/strategies/[tipSlug].tsx
 import Head from 'next/head';
 import type { GetServerSideProps } from 'next';
-import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
@@ -27,16 +26,18 @@ type StrategyTip = {
   created_at: string;
 };
 
-type DrillResult = {
-  prompt?: string;
-  instructions?: string;
-  passage?: string;
-  choices?: string[];
-  raw?: any;
-};
+  type DrillResult = {
+    prompt?: string;
+    instructions?: string;
+    passage?: string;
+    choices?: string[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    raw?: any;
+  };
 
-// Normalize various payload shapes from /api/drills/generate (same as list page)
-function normalizeDrill(payload: any): DrillResult {
+  // Normalize various payload shapes from /api/drills/generate (same as list page)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function normalizeDrill(payload: any): DrillResult {
   const src = payload?.data ?? payload ?? {};
   const prompt =
     src.prompt ||
@@ -51,9 +52,10 @@ function normalizeDrill(payload: any): DrillResult {
     (Array.isArray(src.steps) ? src.steps.join('\n') : undefined);
   const passage = src.passage || src.context || src.text;
   const choicesRaw = src.choices || src.options || src.answers;
-  const choices = Array.isArray(choicesRaw)
-    ? choicesRaw.map((c: any) => (typeof c === 'string' ? c : c?.text ?? JSON.stringify(c)))
-    : undefined;
+    const choices = Array.isArray(choicesRaw)
+      ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        choicesRaw.map((c: any) => (typeof c === 'string' ? c : c?.text ?? JSON.stringify(c)))
+      : undefined;
   return { prompt, instructions, passage, choices, raw: src };
 }
 
@@ -83,27 +85,9 @@ export default function TipDetail({
   const [drillLoading, setDrillLoading] = useState(false);
   const [drill, setDrill] = useState<DrillResult | null>(null);
 
-  // Not found
-  if (!tip) {
-    return (
-      <section className="py-24 bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90">
-        <Container>
-          <Card className="p-6">
-            <h1 className="text-h3 font-semibold mb-2">Tip not found</h1>
-            <p className="text-body text-grayish">This strategy may have been moved or removed.</p>
-            <div className="mt-4">
-              <Button as="a" href="/learning/strategies" variant="primary">
-                Back to strategies
-              </Button>
-            </div>
-          </Card>
-        </Container>
-      </section>
-    );
-  }
-
   // client auth state + existing save/vote
   useEffect(() => {
+    if (!tip) return;
     let cancel = false;
     (async () => {
       const supabase = getClient();
@@ -125,8 +109,29 @@ export default function TipDetail({
       setSaved(!!s);
       setHelpful(!!v);
     })();
-    return () => { cancel = true; };
-  }, [tip.id]);
+    return () => {
+      cancel = true;
+    };
+  }, [tip]);
+
+  // Not found
+  if (!tip) {
+    return (
+      <section className="py-24 bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90">
+        <Container>
+          <Card className="p-6">
+            <h1 className="text-h3 font-semibold mb-2">Tip not found</h1>
+            <p className="text-body text-grayish">This strategy may have been moved or removed.</p>
+            <div className="mt-4">
+              <Button as="a" href="/learning/strategies" variant="primary">
+                Back to strategies
+              </Button>
+            </div>
+          </Card>
+        </Container>
+      </section>
+    );
+  }
 
   const AreaBadge = ({ a }: { a: Area }) => (
     <Badge variant="info" size="sm" className="capitalize">{a}</Badge>
