@@ -23,7 +23,7 @@ import {
 
 import { PremiumThemeProvider } from '@/premium-ui/theme/PremiumThemeProvider';
 import { ImpersonationBanner } from '@/components/admin/ImpersonationBanner';
-import { SidebarAI } from '@/components/ai/SidebarAI';
+import SidebarAI from '@/components/ai/SidebarAI';
 
 import { Poppins, Roboto_Slab } from 'next/font/google';
 const poppins = Poppins({
