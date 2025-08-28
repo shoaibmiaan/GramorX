@@ -1,7 +1,7 @@
 // middleware.ts
+import { env } from '@/lib/env';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs';
 
 export async function middleware(req: NextRequest) {
   const { pathname, search } = req.nextUrl;
@@ -9,35 +9,56 @@ export async function middleware(req: NextRequest) {
   // Only protect /premium/*
   if (!pathname.startsWith('/premium')) return NextResponse.next();
 
-  const res = NextResponse.next();
-  const supabase = createMiddlewareClient({ req, res });
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
+  const token = req.cookies.get('sb-access-token')?.value;
+  if (!token) {
     const url = req.nextUrl.clone();
     url.pathname = '/login';
     url.search = `?next=${encodeURIComponent(pathname + (search || ''))}`;
     return NextResponse.redirect(url);
   }
 
-  const { data: sub } = await supabase
-    .from('subscriptions')
-    .select('id')
-    .eq('user_id', user.id)
-    .eq('status', 'active')
-    .maybeSingle();
+  const userResp = await fetch(`${env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/user`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      apikey: env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    },
+  });
 
-  if (!sub) {
+  if (!userResp.ok) {
+    const url = req.nextUrl.clone();
+    url.pathname = '/login';
+    url.search = `?next=${encodeURIComponent(pathname + (search || ''))}`;
+    return NextResponse.redirect(url);
+  }
+
+  const user = await userResp.json();
+
+  const subResp = await fetch(
+    `${env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/subscriptions?select=id&user_id=eq.${user.id}&status=eq.active`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        apikey: env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      },
+    },
+  );
+
+  if (!subResp.ok) {
     const url = req.nextUrl.clone();
     url.pathname = '/pricing';
     url.search = `?next=${encodeURIComponent(pathname + (search || ''))}`;
     return NextResponse.redirect(url);
   }
 
-  return res;
+  const subs = await subResp.json();
+  if (!Array.isArray(subs) || subs.length === 0) {
+    const url = req.nextUrl.clone();
+    url.pathname = '/pricing';
+    url.search = `?next=${encodeURIComponent(pathname + (search || ''))}`;
+    return NextResponse.redirect(url);
+  }
+
+  return NextResponse.next();
 }
 
 export const config = { matcher: ['/premium/:path*'] };
