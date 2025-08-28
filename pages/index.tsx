@@ -7,7 +7,11 @@ import { useLocale } from '@/lib/locale';
 // Robust dynamic import for Hero: supports default OR named export
 const Hero = dynamic(
   () =>
-    import('@/components/sections/Hero').then((mod: any) => mod.Hero ?? mod.default),
+    import('@/components/sections/Hero')
+      .then((mod) =>
+        Promise.resolve(mod as typeof import('@/components/sections/Hero'))
+      )
+      .then((mod) => mod.Hero ?? mod.default),
   { ssr: false, loading: () => <div className="min-h-[60vh]" /> }
 );
 
@@ -17,10 +21,23 @@ import * as TestimonialsMod from '@/components/sections/Testimonials';
 import * as PricingMod from '@/components/sections/Pricing';
 import * as WaitlistMod from '@/components/sections/Waitlist';
 
-const Modules = (ModulesMod as any).Modules ?? (ModulesMod as any).default;
-const Testimonials = (TestimonialsMod as any).Testimonials ?? (TestimonialsMod as any).default;
-const Pricing = (PricingMod as any).Pricing ?? (PricingMod as any).default;
-const Waitlist = (WaitlistMod as any).Waitlist ?? (WaitlistMod as any).default;
+type ModulesModule = typeof import('@/components/sections/Modules');
+type TestimonialsModule = typeof import('@/components/sections/Testimonials');
+type PricingModule = typeof import('@/components/sections/Pricing');
+type WaitlistModule = typeof import('@/components/sections/Waitlist') & {
+  Waitlist?: typeof import('@/components/sections/Waitlist').default;
+};
+
+const ModulesModTyped = ModulesMod as ModulesModule;
+const TestimonialsModTyped = TestimonialsMod as TestimonialsModule;
+const PricingModTyped = PricingMod as PricingModule;
+const WaitlistModTyped = WaitlistMod as WaitlistModule;
+
+const Modules = ModulesModTyped.Modules ?? ModulesModTyped.default;
+const Testimonials =
+  TestimonialsModTyped.Testimonials ?? TestimonialsModTyped.default;
+const Pricing = PricingModTyped.Pricing ?? PricingModTyped.default;
+const Waitlist = WaitlistModTyped.Waitlist ?? WaitlistModTyped.default;
 
 export default function HomePage() {
   const { t } = useLocale();
