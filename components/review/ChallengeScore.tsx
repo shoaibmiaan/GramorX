@@ -26,8 +26,12 @@ export const ChallengeScore: React.FC<ChallengeProps> = ({ attemptId, type }) =>
       }
       const data = await res.json();
       setResult(data);
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        setError(e.message);
+      } else {
+        setError(String(e));
+      }
       setResult(null);
     } finally {
       setLoading(false);
