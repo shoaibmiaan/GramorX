@@ -1,7 +1,8 @@
 // pages/signup/password.tsx
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/router';
 import AuthLayout from '@/components/layouts/AuthLayout';
 import { Input } from '@/components/design-system/Input';
 import { PasswordInput } from '@/components/design-system/PasswordInput';
@@ -14,6 +15,14 @@ export default function SignupWithPassword() {
   const [pw, setPw] = useState('');
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [referral, setReferral] = useState('');
+  const router = useRouter();
+
+  useEffect(() => {
+    if (typeof router.query.ref === 'string') {
+      setReferral(router.query.ref);
+    }
+  }, [router.query.ref]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -30,11 +39,11 @@ export default function SignupWithPassword() {
         email,
         password: pw,
         options: {
-          // After the user clicks the email link, they land on /auth/verify
           emailRedirectTo:
             typeof window !== 'undefined'
               ? `${window.location.origin}/auth/verify`
               : undefined,
+          data: referral ? { referral_code: referral.trim() } : undefined,
         },
       });
       setLoading(false);
@@ -44,7 +53,24 @@ export default function SignupWithPassword() {
         return;
       }
 
-      // Redirect to verify page showing "link sent to <email>"
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (referral && session) {
+        try {
+          await fetch('/api/referrals', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${session.access_token}`,
+            },
+            body: JSON.stringify({ code: referral.trim() }),
+          });
+        } catch (err) {
+          // ignore
+        }
+      }
+
       if (typeof window !== 'undefined') {
         window.location.assign(`/auth/verify?email=${encodeURIComponent(email)}`);
       }
@@ -98,6 +124,11 @@ export default function SignupWithPassword() {
           autoComplete="new-password"
           required
           hint="At least 8 characters, including letters and numbers"
+        />
+        <Input
+          label="Referral code (optional)"
+          value={referral}
+          onChange={(e) => setReferral(e.target.value)}
         />
         <Button
           type="submit"

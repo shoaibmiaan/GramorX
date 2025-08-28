@@ -1,11 +1,15 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/router';
 import AuthLayout from '@/components/layouts/AuthLayout';
 import { Button } from '@/components/design-system/Button';
 import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser';
 
 export default function SignupOptions() {
+  const router = useRouter();
+  const ref = typeof router.query.ref === 'string' ? router.query.ref : '';
+
   async function signUpOAuth(provider: 'apple' | 'google' | 'facebook') {
     await supabase.auth.signInWithOAuth({
       provider,
@@ -50,12 +54,12 @@ export default function SignupOptions() {
           <span className="inline-flex items-center gap-3"><i className="fab fa-facebook-f text-xl" aria-hidden /> Sign up with Facebook</span>
         </Button>
         <Button asChild variant="secondary" className="rounded-ds-xl w-full">
-          <Link href="/signup/password">
+          <Link href={`/signup/password${ref ? `?ref=${ref}` : ''}`}>
             <span className="inline-flex items-center gap-3"><i className="fas fa-envelope text-xl" aria-hidden /> Sign up with Email</span>
           </Link>
         </Button>
         <Button asChild variant="secondary" className="rounded-ds-xl w-full">
-          <Link href="/signup/phone">
+          <Link href={`/signup/phone${ref ? `?ref=${ref}` : ''}`}>
             <span className="inline-flex items-center gap-3"><i className="fas fa-sms text-xl" aria-hidden /> Sign up with Phone</span>
           </Link>
         </Button>
