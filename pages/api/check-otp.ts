@@ -48,9 +48,19 @@ export default async function checkOtp(
     // Option B: create/confirm a Supabase auth user so Supabase Auth can be used — see next section.
 
     // Example: upsert into a 'profiles' table (you choose column names)
-    await supa
+    const { error: supErr } = await supa
       .from("profiles")
       .upsert({ phone, phone_verified: true, updated_at: new Date() });
+
+    if (supErr) {
+      if ((supErr as any).code === "user_not_found") {
+        return res
+          .status(404)
+          .json({ ok: false, error: "No account found for that email/phone." });
+      }
+      console.error("Supabase upsert error", supErr);
+      return res.status(500).json({ ok: false, error: supErr.message });
+    }
 
     return res.json({ ok: true, message: "Phone verified" });
   } catch (err) {
