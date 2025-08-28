@@ -28,6 +28,11 @@ export default function LoginWithPassword() {
         access_token: data.session.access_token,
         refresh_token: data.session.refresh_token,
       });
+      try {
+        await fetch('/api/auth/login-event', { method: 'POST' });
+      } catch (err) {
+        console.error(err);
+      }
       redirectByRole(data.session.user);
     }
   }

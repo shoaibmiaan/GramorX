@@ -15,6 +15,11 @@ export default function AuthCallback() {
       if (error) {
         setErr(error.message);
       } else {
+        try {
+          await fetch('/api/auth/login-event', { method: 'POST' });
+        } catch (err) {
+          console.error(err);
+        }
         redirectByRole(data.session?.user ?? null);
       }
     })();
