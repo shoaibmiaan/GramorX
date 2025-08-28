@@ -1,26 +1,24 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { useToast } from '@/components/design-system/Toast';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import Link from 'next/link';
 
-type Notification = {
+export type Notification = {
   id: string;
   message: string;
   url?: string;
   read?: boolean;
 };
 
-/**
- * Notification bell with dropdown list.
- * Fetches notifications on mount and allows marking them as read.
- */
+/** Notification bell with dropdown, fetch + mark-as-read, a11y-safe. */
 export const NotificationBell: React.FC = () => {
-  const { info } = useToast();
-  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [open, setOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
+  const popoverRef = useRef<HTMLDivElement | null>(null);
 
+  // Load notifications on mount
   useEffect(() => {
-    let ignore = false;
-    const load = async () => {
+    let cancelled = false;
+    (async () => {
       try {
         const res = await fetch('/api/notifications');
         if (!res.ok) return;
@@ -30,36 +28,50 @@ export const NotificationBell: React.FC = () => {
           : Array.isArray(data?.notifications)
             ? data.notifications
             : [];
-        if (!ignore) setNotifications(list);
+        if (!cancelled) setNotifications(list);
       } catch {
-        /* ignore */
+        /* noop */
       }
-    };
-    load();
+    })();
     return () => {
-      ignore = true;
+      cancelled = true;
     };
   }, []);
 
+  // Close on outside click / Escape
   useEffect(() => {
-    const onClick = (e: MouseEvent) => {
+    if (!open) return;
+    const onDocClick = (e: MouseEvent) => {
       const t = e.target as Node;
-      if (open && dropdownRef.current && !dropdownRef.current.contains(t)) {
+      if (buttonRef.current?.contains(t)) return;
+      if (popoverRef.current?.contains(t)) return;
+      setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
         setOpen(false);
+        buttonRef.current?.focus();
       }
     };
-    document.addEventListener('mousedown', onClick);
-    return () => document.removeEventListener('mousedown', onClick);
+    document.addEventListener('mousedown', onDocClick);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onDocClick);
+      document.removeEventListener('keydown', onKey);
+    };
   }, [open]);
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  const unread = useMemo(
+    () => notifications.reduce((c, n) => c + (n.read ? 0 : 1), 0),
+    [notifications]
+  );
 
   const markAsRead = async (id: string) => {
     setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
     try {
       await fetch(`/api/notifications/${id}/read`, { method: 'POST' });
     } catch {
-      /* ignore */
+      /* noop */
     }
   };
 
@@ -68,66 +80,109 @@ export const NotificationBell: React.FC = () => {
     try {
       await fetch('/api/notifications/mark-all-read', { method: 'POST' });
     } catch {
-      /* ignore */
+      /* noop */
     }
   };
 
-  const handleBellClick = () => {
-    setOpen((v) => !v);
-    if (notifications.length === 0) info('No notifications');
-  };
-
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className="relative">
       <button
+        ref={buttonRef}
         type="button"
         aria-label="Notifications"
-        onClick={handleBellClick}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-controls="notification-menu"
+        onClick={() => setOpen((v) => !v)}
         className="relative inline-flex h-10 w-10 items-center justify-center rounded-lg hover:bg-purpleVibe/10"
       >
         <i className="fas fa-bell" aria-hidden="true" />
-        {unreadCount > 0 && (
-          <span className="absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 rounded-full bg-red-500 px-1.5 py-0.5 text-xs text-white">
-            {unreadCount}
+        {unread > 0 && (
+          <span
+            aria-live="polite"
+            className="absolute -top-1 -right-1 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-sunsetOrange px-1 text-[10px] leading-none text-white"
+          >
+            {unread}
           </span>
         )}
       </button>
-      {open && notifications.length > 0 && (
-        <div className="absolute right-0 mt-2 w-64 rounded-lg border border-purpleVibe/20 bg-lightBg dark:bg-dark shadow-lg z-50">
+
+      {open && (
+        <div
+          ref={popoverRef}
+          className="absolute right-0 mt-2 w-72 rounded-2xl border border-purpleVibe/20 bg-lightBg dark:bg-dark shadow-lg z-50"
+        >
           <div className="flex items-center justify-between border-b border-purpleVibe/20 px-3 py-2">
             <span className="text-sm font-semibold">Notifications</span>
-            {unreadCount > 0 && (
+            {unread > 0 && (
               <button onClick={markAllAsRead} className="text-xs text-purpleVibe hover:underline">
                 Mark all as read
               </button>
             )}
           </div>
-          <ul className="max-h-60 overflow-auto text-sm">
-            {notifications.map((n) => (
-              <li
-                key={n.id}
-                className={`flex items-start gap-2 px-3 py-2 ${n.read ? 'opacity-60' : ''}`}
-              >
-                <a
-                  href={n.url ?? '#'}
-                  onClick={() => markAsRead(n.id)}
-                  className="flex-1 hover:underline"
-                >
-                  {n.message}
-                </a>
-                {!n.read && (
-                  <button
-                    className="text-xs text-purpleVibe hover:underline"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      markAsRead(n.id);
-                    }}
-                  >
-                    Mark
-                  </button>
-                )}
+
+          <ul id="notification-menu" role="menu" className="max-h-72 overflow-auto text-sm">
+            {notifications.length === 0 ? (
+              <li role="menuitem" className="px-3 py-3 opacity-80">
+                No notifications
               </li>
-            ))}
+            ) : (
+              notifications.map((n) => {
+                const isInternal = n.url?.startsWith('/');
+                const row = (
+                  <div className={`flex items-start gap-2 px-3 py-2 ${n.read ? 'opacity-60' : ''}`}>
+                    <span className="flex-1">{n.message}</span>
+                    {!n.read && (
+                      <button
+                        className="text-xs text-purpleVibe hover:underline"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          markAsRead(n.id);
+                        }}
+                      >
+                        Mark
+                      </button>
+                    )}
+                  </div>
+                );
+
+                return (
+                  <li key={n.id} role="menuitem" className="hover:bg-purpleVibe/5">
+                    {n.url ? (
+                      isInternal ? (
+                        <Link
+                          href={n.url}
+                          className="block"
+                          onClick={() => {
+                            markAsRead(n.id);
+                            setOpen(false);
+                          }}
+                        >
+                          {row}
+                        </Link>
+                      ) : (
+                        <a
+                          href={n.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="block"
+                          onClick={() => {
+                            markAsRead(n.id);
+                            setOpen(false);
+                          }}
+                        >
+                          {row}
+                        </a>
+                      )
+                    ) : (
+                      <button className="block w-full text-left" onClick={() => markAsRead(n.id)}>
+                        {row}
+                      </button>
+                    )}
+                  </li>
+                );
+              })
+            )}
           </ul>
         </div>
       )}
