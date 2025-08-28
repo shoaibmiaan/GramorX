@@ -17,6 +17,7 @@ export default function LoginWithPassword() {
   const [otp, setOtp] = useState('');
   const [otpSent, setOtpSent] = useState(false);
   const [factorId, setFactorId] = useState<string | null>(null);
+  const [challengeId, setChallengeId] = useState<string | null>(null);
   const [verifying, setVerifying] = useState(false);
 
   async function onSubmit(e: React.FormEvent) {
@@ -38,8 +39,10 @@ export default function LoginWithPassword() {
       const factors = user?.factors ?? [];
       if (factors.length) {
         const f = factors[0];
-        await supabase.auth.mfa.challenge({ factorId: f.id });
+        const { data: challenge, error: cErr } = await supabase.auth.mfa.challenge({ factorId: f.id });
+        if (cErr) return setErr(cErr.message);
         setFactorId(f.id);
+        setChallengeId(challenge?.id ?? null);
         setOtpSent(true);
         return;
       }
@@ -54,9 +57,9 @@ export default function LoginWithPassword() {
 
   async function verifyOtp(e: React.FormEvent) {
     e.preventDefault();
-    if (!factorId) return;
+    if (!factorId || !challengeId) return;
     setVerifying(true);
-    const { error } = await supabase.auth.mfa.verify({ factorId, code: otp });
+    const { error } = await supabase.auth.mfa.verify({ factorId, challengeId, code: otp });
     setVerifying(false);
     if (error) return setErr(error.message);
     try {
