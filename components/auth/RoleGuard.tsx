@@ -1,45 +1,41 @@
-import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
-import { getCurrentRole, Role } from '@/lib/roles';
+// components/auth/RoleGuard.tsx
+import React, { useEffect, useState } from "react";
+import { useRouter } from "next/router";
+
+// Value import:
+import { getCurrentRole } from "@/lib/roles";
+// Type-only import:
+import type { Role } from "@/lib/roles";
+
 type Props = { allow: Role | Role[]; children: React.ReactNode };
 
 const asSet = (a: Role | Role[]) => new Set(Array.isArray(a) ? a : [a]);
 
-export function RoleGuard({ allow, children }: Props) {
+const RoleGuard: React.FC<Props> = ({ allow, children }) => {
   const router = useRouter();
-  const allowed = asSet(allow);
-  const [ok, setOk] = useState<boolean | null>(null);
+  const [ok, setOk] = useState<boolean>(false);
 
   useEffect(() => {
-    let cancelled = false;
-
-    (async () => {
-      const r = await getCurrentRole();
-
-      // Admin can access everything. Teachers can access teacher pages.
-      const pass =
-        r === 'admin' ||
-        (r && allowed.has(r as Role));
-
-      if (!cancelled) {
-        if (pass) setOk(true);
-        else {
+    const run = async () => {
+      try {
+        const r = await getCurrentRole(); // should return a Role
+        const allowed = asSet(allow);
+        if (allowed.has(r)) {
+          setOk(true);
+        } else {
           setOk(false);
-          router.replace(`/403?next=${encodeURIComponent(router.asPath)}`);
+          router.replace("/login"); // or a 403 page
         }
+      } catch {
+        setOk(false);
+        router.replace("/login");
       }
-    })();
+    };
+    run();
+  }, [allow, router]);
 
-    return () => { cancelled = true; };
-  }, [router, allowed]);
-
-  if (ok === null) {
-    return (
-      <div className="min-h-[100dvh] grid place-items-center">
-        <div className="animate-pulse h-6 w-40 rounded bg-gray-200 dark:bg-white/10" />
-      </div>
-    );
-  }
   if (!ok) return null;
   return <>{children}</>;
-}
+};
+
+export default RoleGuard;
