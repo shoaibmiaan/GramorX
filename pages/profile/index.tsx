@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import { Container } from '@/components/design-system/Container';
 import { Card } from '@/components/design-system/Card';
 import { Button } from '@/components/design-system/Button';
+import { Toggle } from '@/components/design-system/Toggle';
 import { StreakIndicator } from '@/components/design-system/StreakIndicator';
 import { SavedItems } from '@/components/dashboard/SavedItems';
 import { useStreak } from '@/hooks/useStreak';
@@ -16,6 +17,7 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [commOptIn, setCommOptIn] = useState(true);
   const fileRef = useRef<HTMLInputElement | null>(null);
   const { error: toastError, success: toastSuccess } = useToast();
   const { current: streak } = useStreak();
@@ -40,6 +42,7 @@ export default function ProfilePage() {
       }
 
       setProfile(data as Profile);
+      setCommOptIn((data as any).marketing_opt_in ?? true);
       setLoading(false);
     })();
   }, [router]);
@@ -83,6 +86,38 @@ export default function ProfilePage() {
       toastError(err?.message || 'Could not upload image. Please try again.');
     } finally {
       setUploading(false);
+    }
+  };
+
+  const requestExport = async () => {
+    try {
+      const res = await fetch('/api/account/export');
+      if (!res.ok) throw new Error('Failed');
+      const json = await res.json();
+      const blob = new Blob([JSON.stringify(json, null, 2)], {
+        type: 'application/json',
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'export.json';
+      a.click();
+      URL.revokeObjectURL(url);
+      toastSuccess('Export ready');
+    } catch (err: any) {
+      toastError(err?.message || 'Could not export data');
+    }
+  };
+
+  const requestDeletion = async () => {
+    if (!window.confirm('Delete your account? This cannot be undone.')) return;
+    try {
+      const res = await fetch('/api/account/delete', { method: 'POST' });
+      if (!res.ok) throw new Error('Failed');
+      await supabase.auth.signOut();
+      router.replace('/');
+    } catch (err: any) {
+      toastError(err?.message || 'Could not delete account');
     }
   };
 
@@ -161,6 +196,31 @@ export default function ProfilePage() {
             <Button href="/profile/setup" variant="secondary" className="mt-6">
               Edit profile
             </Button>
+          </Card>
+          <Card className="p-6 rounded-ds-2xl">
+            <h2 className="font-slab text-display mb-4">Account & Privacy</h2>
+            <Toggle
+              checked={commOptIn}
+              onChange={async (checked) => {
+                setCommOptIn(checked);
+                const { error } = await supabase
+                  .from('user_profiles')
+                  .update({ marketing_opt_in: checked })
+                  .eq('user_id', userId!);
+                if (error) toastError(error.message);
+                else toastSuccess('Preferences updated');
+              }}
+              label="Email communications"
+              hint="Receive updates and tips"
+            />
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Button variant="secondary" onClick={requestExport}>
+                Request data export
+              </Button>
+              <Button variant="secondary" onClick={requestDeletion}>
+                Delete account
+              </Button>
+            </div>
           </Card>
 
           <SavedItems />
