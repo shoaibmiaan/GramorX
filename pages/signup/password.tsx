@@ -9,10 +9,12 @@ import { PasswordInput } from '@/components/design-system/PasswordInput';
 import { Button } from '@/components/design-system/Button';
 import { Alert } from '@/components/design-system/Alert';
 import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser';
+import { isValidEmail } from '@/utils/validation';
 
 export default function SignupWithPassword() {
   const [email, setEmail] = useState('');
   const [pw, setPw] = useState('');
+  const [emailErr, setEmailErr] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [referral, setReferral] = useState('');
@@ -32,6 +34,13 @@ export default function SignupWithPassword() {
       setErr('Please fill in all fields.');
       return;
     }
+
+    if (!isValidEmail(email)) {
+      setEmailErr('Enter a valid email address.');
+      return;
+    }
+
+    setEmailErr(null);
 
     try {
       setLoading(true);
@@ -112,9 +121,14 @@ export default function SignupWithPassword() {
           type="email"
           placeholder="you@example.com"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e) => {
+            const v = e.target.value;
+            setEmail(v);
+            setEmailErr(!v || isValidEmail(v) ? null : 'Enter a valid email address.');
+          }}
           autoComplete="email"
           required
+          error={emailErr ?? undefined}
         />
         <PasswordInput
           label="Password"

@@ -7,18 +7,24 @@ import { Button } from '@/components/design-system/Button';
 import { Alert } from '@/components/design-system/Alert';
 import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser';
 import { redirectByRole } from '@/lib/routeAccess';
+import { isValidE164Phone } from '@/utils/validation';
 
 export default function LoginWithPhone() {
   const [phone, setPhone] = useState('');
   const [code, setCode] = useState('');
   const [stage, setStage] = useState<'request' | 'verify'>('request');
+  const [phoneErr, setPhoneErr] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   async function requestOtp(e: React.FormEvent) {
     e.preventDefault();
     setErr(null);
-    if (!phone) return setErr('Enter your phone number in E.164 format, e.g. +923001234567');
+    if (!isValidE164Phone(phone)) {
+      setPhoneErr('Enter your phone number in E.164 format, e.g. +923001234567');
+      return;
+    }
+    setPhoneErr(null);
     setLoading(true);
     const { error } = await supabase.auth.signInWithOtp({ phone, options: { shouldCreateUser: false } });
     setLoading(false);
@@ -75,9 +81,14 @@ export default function LoginWithPhone() {
             type="tel"
             placeholder="+923001234567"
             value={phone}
-            onChange={(e) => setPhone(e.target.value)}
+            onChange={(e) => {
+              const v = e.target.value;
+              setPhone(v);
+              setPhoneErr(!v || isValidE164Phone(v) ? null : 'Enter your phone number in E.164 format, e.g. +923001234567');
+            }}
             required
             hint="Use E.164 format, e.g. +923001234567"
+            error={phoneErr ?? undefined}
           />
           <Button type="submit" variant="primary" className="w-full rounded-ds-xl" disabled={loading}>
             {loading ? 'Sending…' : 'Send code'}

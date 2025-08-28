@@ -7,10 +7,12 @@ import { Button } from '@/components/design-system/Button';
 import { Alert } from '@/components/design-system/Alert';
 import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser';
 import { redirectByRole } from '@/lib/routeAccess';
+import { isValidEmail } from '@/utils/validation';
 
 export default function LoginWithEmail() {
   const [email, setEmail] = useState('');
   const [pw, setPw] = useState('');
+  const [emailErr, setEmailErr] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -18,6 +20,11 @@ export default function LoginWithEmail() {
     e.preventDefault();
     setErr(null);
     if (!email || !pw) return setErr('Email and password are required.');
+    if (!isValidEmail(email)) {
+      setEmailErr('Enter a valid email address.');
+      return;
+    }
+    setEmailErr(null);
     setLoading(true);
     const { error, data } = await supabase.auth.signInWithPassword({ email, password: pw });
     setLoading(false);
@@ -61,7 +68,20 @@ export default function LoginWithEmail() {
     <AuthLayout title="Sign in with Email" subtitle="Use your email & password." right={RightPanel}>
       {err && <Alert variant="error" title="Error" className="mb-4">{err}</Alert>}
       <form onSubmit={onSubmit} className="space-y-6 mt-2">
-        <Input label="Email" type="email" placeholder="you@example.com" value={email} onChange={(e)=>setEmail(e.target.value)} autoComplete="email" required />
+        <Input
+          label="Email"
+          type="email"
+          placeholder="you@example.com"
+          value={email}
+          onChange={(e) => {
+            const v = e.target.value;
+            setEmail(v);
+            setEmailErr(!v || isValidEmail(v) ? null : 'Enter a valid email address.');
+          }}
+          autoComplete="email"
+          required
+          error={emailErr ?? undefined}
+        />
         <Input label="Password" type="password" placeholder="Your password" value={pw} onChange={(e)=>setPw(e.target.value)} autoComplete="current-password" required />
         <Button type="submit" variant="primary" className="w-full rounded-ds-xl" disabled={loading}>
           {loading ? 'Signing in…' : 'Continue'}
