@@ -19,20 +19,30 @@ export default function LoginWithEmail() {
     setErr(null);
     if (!email || !pw) return setErr('Email and password are required.');
     setLoading(true);
-    const { error, data } = await supabase.auth.signInWithPassword({ email, password: pw });
-    setLoading(false);
-    if (error) return setErr(error.message);
-    if (data.session) {
-      await supabase.auth.setSession({
-        access_token: data.session.access_token,
-        refresh_token: data.session.refresh_token,
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password: pw }),
       });
-      try {
-        await fetch('/api/auth/login-event', { method: 'POST' });
-      } catch (err) {
-        console.error(err);
+      const data = await res.json();
+      setLoading(false);
+      if (!res.ok) return setErr(data.error || 'Login failed');
+      if (data.session) {
+        await supabase.auth.setSession({
+          access_token: data.session.access_token,
+          refresh_token: data.session.refresh_token,
+        });
+        try {
+          await fetch('/api/auth/login-event', { method: 'POST' });
+        } catch (err) {
+          console.error(err);
+        }
+        redirectByRole(data.session.user);
       }
-      redirectByRole(data.session.user);
+    } catch (_err) {
+      setLoading(false);
+      setErr('Login failed');
     }
   }
 
