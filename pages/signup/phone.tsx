@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/router';
 import AuthLayout from '@/components/layouts/AuthLayout';
 import { Input } from '@/components/design-system/Input';
 import { Button } from '@/components/design-system/Button';
@@ -13,13 +14,24 @@ export default function SignupWithPhone() {
   const [stage, setStage] = useState<'request' | 'verify'>('request');
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [referral, setReferral] = useState('');
+  const router = useRouter();
+
+  useEffect(() => {
+    if (typeof router.query.ref === 'string') {
+      setReferral(router.query.ref);
+    }
+  }, [router.query.ref]);
 
   async function requestOtp(e: React.FormEvent) {
     e.preventDefault();
     setErr(null);
     if (!phone) return setErr('Enter your phone number in E.164 format, e.g. +923001234567');
     setLoading(true);
-    const { error } = await supabase.auth.signInWithOtp({ phone, options: { shouldCreateUser: true } });
+    const { error } = await supabase.auth.signInWithOtp({
+      phone,
+      options: { shouldCreateUser: true, data: referral ? { referral_code: referral.trim() } : undefined },
+    });
     setLoading(false);
     if (error) return setErr(error.message);
     setStage('verify');
@@ -38,6 +50,20 @@ export default function SignupWithPhone() {
         access_token: data.session.access_token,
         refresh_token: data.session.refresh_token,
       });
+      if (referral) {
+        try {
+          await fetch('/api/referrals', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${data.session.access_token}`,
+            },
+            body: JSON.stringify({ code: referral.trim() }),
+          });
+        } catch (err) {
+          // ignore
+        }
+      }
       window.location.assign('/profile/setup');
     }
   }
@@ -71,6 +97,11 @@ export default function SignupWithPhone() {
             onChange={(e) => setPhone(e.target.value)}
             required
             hint="Use E.164 format, e.g. +923001234567"
+          />
+          <Input
+            label="Referral code (optional)"
+            value={referral}
+            onChange={(e) => setReferral(e.target.value)}
           />
           <Button type="submit" variant="primary" className="w-full rounded-ds-xl" disabled={loading}>
             {loading ? 'Sending…' : 'Send code'}
