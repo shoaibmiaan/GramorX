@@ -1,6 +1,5 @@
 import { env } from "@/lib/env";
 import React, { useEffect, useState } from 'react';
-import Link from 'next/link';
 import { createClient } from '@supabase/supabase-js';
 import { Container } from '@/components/design-system/Container';
 import { Card } from '@/components/design-system/Card';
