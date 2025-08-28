@@ -16,21 +16,29 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  const resp = await fetch(`${origin}/api/premium/status`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  try {
+    const resp = await fetch(`${origin}/api/premium/status`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
 
-  if (!resp.ok) {
+    if (!resp.ok) {
+      const url = req.nextUrl.clone();
+      url.pathname = '/login';
+      url.search = `?next=${encodeURIComponent(pathname + (search || ''))}`;
+      return NextResponse.redirect(url);
+    }
+
+    const { active } = await resp.json();
+    if (!active) {
+      const url = req.nextUrl.clone();
+      url.pathname = '/pricing';
+      url.search = `?next=${encodeURIComponent(pathname + (search || ''))}`;
+      return NextResponse.redirect(url);
+    }
+  } catch (error) {
+    console.error('Failed to verify premium status', error);
     const url = req.nextUrl.clone();
     url.pathname = '/login';
-    url.search = `?next=${encodeURIComponent(pathname + (search || ''))}`;
-    return NextResponse.redirect(url);
-  }
-
-  const { active } = await resp.json();
-  if (!active) {
-    const url = req.nextUrl.clone();
-    url.pathname = '/pricing';
     url.search = `?next=${encodeURIComponent(pathname + (search || ''))}`;
     return NextResponse.redirect(url);
   }
