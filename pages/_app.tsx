@@ -7,7 +7,7 @@ import { ThemeProvider } from 'next-themes';
 import '@/styles/globals.css';
 
 import { Layout } from '@/components/Layout';
-import { ToastProvider } from '@/components/design-system/Toast';
+import { ToastProvider, useToast } from '@/components/design-system/Toast';
 import { supabaseBrowser } from '@/lib/supabaseBrowser';
 import { env } from '@/lib/env';
 import { LanguageProvider, useLocale } from '@/lib/locale';
@@ -169,6 +169,17 @@ function InnerApp({ Component, pageProps }: AppProps) {
 
     return () => clearInterval(interval);
   }, [router]);
+
+  const { info } = useToast();
+  useEffect(() => {
+    if (!isChecking) {
+      const seen = localStorage.getItem('welcome-toast-shown');
+      if (!seen) {
+        info('Welcome to GramorX!');
+        localStorage.setItem('welcome-toast-shown', '1');
+      }
+    }
+  }, [isChecking, info]);
 
   if (isChecking) return <GuardSkeleton />;
 
