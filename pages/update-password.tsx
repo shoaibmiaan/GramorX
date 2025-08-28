@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { Container } from '@/components/design-system/Container';
@@ -11,7 +12,7 @@ import { supabase } from '@/lib/supabaseClient';
 export default function UpdatePassword() {
   const router = useRouter();
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false), [err, setErr] = useState<string|null>(null);
+  const [loading, setLoading] = useState(false), [err, setErr] = useState<React.ReactNode>(null);
   const [ok, setOk] = useState(false);
 
   const submit = async (e: React.FormEvent) => {
@@ -30,7 +31,19 @@ export default function UpdatePassword() {
     }
     const { error } = await supabase.auth.updateUser({ password });
     setLoading(false);
-    if (error) return setErr(error.message);
+    if (error) {
+      if (error.code === 'token_expired') {
+        return setErr(
+          <>
+            Link expired.{' '}
+            <Link href="/forgot-password" className="text-primary underline">
+              Request a new reset
+            </Link>
+          </>
+        );
+      }
+      return setErr(error.message);
+    }
     setOk(true);
     setTimeout(() => router.push('/login'), 800);
   };
