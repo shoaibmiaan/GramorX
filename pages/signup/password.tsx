@@ -30,12 +30,13 @@ export default function SignupWithPassword() {
     e.preventDefault();
     setErr(null);
 
-    if (!email || !pw) {
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail || !pw) {
       setErr('Please fill in all fields.');
       return;
     }
 
-    if (!isValidEmail(email)) {
+    if (!isValidEmail(trimmedEmail)) {
       setEmailErr('Enter a valid email address.');
       return;
     }
@@ -45,7 +46,7 @@ export default function SignupWithPassword() {
     try {
       setLoading(true);
       const { error } = await supabase.auth.signUp({
-        email,
+        email: trimmedEmail,
         password: pw,
         options: {
           emailRedirectTo:
@@ -81,7 +82,7 @@ export default function SignupWithPassword() {
       }
 
       if (typeof window !== 'undefined') {
-        window.location.assign(`/auth/verify?email=${encodeURIComponent(email)}`);
+        window.location.assign(`/auth/verify?email=${encodeURIComponent(trimmedEmail)}`);
       }
     } catch (e: any) {
       setLoading(false);
@@ -124,7 +125,7 @@ export default function SignupWithPassword() {
           onChange={(e) => {
             const v = e.target.value;
             setEmail(v);
-            setEmailErr(!v || isValidEmail(v) ? null : 'Enter a valid email address.');
+            setEmailErr(!v || isValidEmail(v.trim()) ? null : 'Enter a valid email address.');
           }}
           autoComplete="email"
           required

@@ -1,4 +1,4 @@
-export const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+export const emailRegex = /^[^\s@]+@[^\s@.]+(?:\.[^\s@.]+)+$/;
 export const phoneRegex = /^\+[1-9]\d{7,14}$/;
 
 export function isValidEmail(value: string): boolean {

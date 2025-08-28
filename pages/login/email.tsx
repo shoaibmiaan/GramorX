@@ -19,16 +19,28 @@ export default function LoginWithEmail() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setErr(null);
-    if (!email || !pw) return setErr('Email and password are required.');
-    if (!isValidEmail(email)) {
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail || !pw) return setErr('Email and password are required.');
+    if (!isValidEmail(trimmedEmail)) {
       setEmailErr('Enter a valid email address.');
       return;
     }
     setEmailErr(null);
     setLoading(true);
-    const { error, data } = await supabase.auth.signInWithPassword({ email, password: pw });
+    const { error, data } = await supabase.auth.signInWithPassword({ email: trimmedEmail, password: pw });
     setLoading(false);
-    if (error) return setErr(error.message);
+    if (error) {
+      const msg = error.message?.toLowerCase() ?? '';
+      if (
+        error.code === 'invalid_grant' &&
+        (msg.includes('weak_password') || (msg.includes('password') && msg.includes('undefined')))
+      ) {
+        setErr('Use your Google/Facebook/Apple account to sign in');
+      } else {
+        setErr(error.message);
+      }
+      return;
+    }
     if (data.session) {
       await supabase.auth.setSession({
         access_token: data.session.access_token,
@@ -76,7 +88,7 @@ export default function LoginWithEmail() {
           onChange={(e) => {
             const v = e.target.value;
             setEmail(v);
-            setEmailErr(!v || isValidEmail(v) ? null : 'Enter a valid email address.');
+            setEmailErr(!v || isValidEmail(v.trim()) ? null : 'Enter a valid email address.');
           }}
           autoComplete="email"
           required

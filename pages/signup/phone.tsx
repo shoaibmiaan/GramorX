@@ -28,14 +28,15 @@ export default function SignupWithPhone() {
   async function requestOtp(e: React.FormEvent) {
     e.preventDefault();
     setErr(null);
-    if (!isValidE164Phone(phone)) {
+    const trimmedPhone = phone.trim();
+    if (!isValidE164Phone(trimmedPhone)) {
       setPhoneErr('Enter your phone number in E.164 format, e.g. +923001234567');
       return;
     }
     setPhoneErr(null);
     setLoading(true);
     const { error } = await supabase.auth.signInWithOtp({
-      phone,
+      phone: trimmedPhone,
       options: { shouldCreateUser: true, data: referral ? { referral_code: referral.trim() } : undefined },
     });
     setLoading(false);
@@ -48,7 +49,8 @@ export default function SignupWithPhone() {
     setErr(null);
     if (!code) return setErr('Enter the 6-digit code.');
     setLoading(true);
-    const { data, error } = await supabase.auth.verifyOtp({ phone, token: code, type: 'sms' });
+    const trimmedPhone = phone.trim();
+    const { data, error } = await supabase.auth.verifyOtp({ phone: trimmedPhone, token: code, type: 'sms' });
     setLoading(false);
     if (error) return setErr(error.message);
     if (data.session) {
@@ -103,7 +105,7 @@ export default function SignupWithPhone() {
             onChange={(e) => {
               const v = e.target.value;
               setPhone(v);
-              setPhoneErr(!v || isValidE164Phone(v) ? null : 'Enter your phone number in E.164 format, e.g. +923001234567');
+              setPhoneErr(!v || isValidE164Phone(v.trim()) ? null : 'Enter your phone number in E.164 format, e.g. +923001234567');
             }}
             required
             hint="Use E.164 format, e.g. +923001234567"

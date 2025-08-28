@@ -16,19 +16,23 @@ export default function LoginWithPhone() {
   const [phoneErr, setPhoneErr] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [resendAttempts, setResendAttempts] = useState(0);
 
   async function requestOtp(e: React.FormEvent) {
     e.preventDefault();
     setErr(null);
-    if (!isValidE164Phone(phone)) {
+    const trimmedPhone = phone.trim();
+    if (!isValidE164Phone(trimmedPhone)) {
       setPhoneErr('Enter your phone number in E.164 format, e.g. +923001234567');
       return;
     }
     setPhoneErr(null);
     setLoading(true);
-    const { error } = await supabase.auth.signInWithOtp({ phone, options: { shouldCreateUser: false } });
+    const { error } = await supabase.auth.signInWithOtp({ phone: trimmedPhone, options: { shouldCreateUser: false } });
     setLoading(false);
     if (error) return setErr(error.message);
+    setResendAttempts(0);
     setStage('verify');
   }
 
@@ -38,7 +42,8 @@ export default function LoginWithPhone() {
     if (!code) return setErr('Enter the 6-digit code.');
     setLoading(true);
     // @ts-expect-error `token` is supported for verification
-    const { data, error } = await supabase.auth.signInWithOtp({ phone, token: code });
+    const trimmedPhone = phone.trim();
+    const { data, error } = await supabase.auth.signInWithOtp({ phone: trimmedPhone, token: code });
     setLoading(false);
     if (error) return setErr(error.message);
     if (data.session) {
@@ -53,6 +58,18 @@ export default function LoginWithPhone() {
       }
       redirectByRole(data.session.user);
     }
+  }
+
+  async function resendOtp() {
+    setErr(null);
+    setLoading(true);
+    setResending(true);
+    const trimmedPhone = phone.trim();
+    const { error } = await supabase.auth.signInWithOtp({ phone: trimmedPhone, options: { shouldCreateUser: false } });
+    setLoading(false);
+    setResending(false);
+    if (error) return setErr(error.message);
+    setResendAttempts((a) => a + 1);
   }
 
   const RightPanel = (
@@ -84,7 +101,7 @@ export default function LoginWithPhone() {
             onChange={(e) => {
               const v = e.target.value;
               setPhone(v);
-              setPhoneErr(!v || isValidE164Phone(v) ? null : 'Enter your phone number in E.164 format, e.g. +923001234567');
+              setPhoneErr(!v || isValidE164Phone(v.trim()) ? null : 'Enter your phone number in E.164 format, e.g. +923001234567');
             }}
             required
             hint="Use E.164 format, e.g. +923001234567"
@@ -98,7 +115,10 @@ export default function LoginWithPhone() {
         <form onSubmit={verifyOtp} className="space-y-6 mt-2">
           <Input label="Verification code" inputMode="numeric" placeholder="123456" value={code} onChange={(e)=>setCode(e.target.value)} required />
           <Button type="submit" variant="primary" className="w-full rounded-ds-xl" disabled={loading}>
-            {loading ? 'Verifying…' : 'Verify & Continue'}
+            {loading && !resending ? 'Verifying…' : 'Verify & Continue'}
+          </Button>
+          <Button type="button" variant="secondary" className="w-full rounded-ds-xl" onClick={resendOtp} disabled={loading}>
+            {loading && resending ? 'Resending…' : `Resend code${resendAttempts ? ` (${resendAttempts})` : ''}`}
           </Button>
         </form>
       )}
