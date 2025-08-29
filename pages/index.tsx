@@ -17,11 +17,13 @@ const Hero = dynamic(
 
 // Robust static imports for the rest (default OR named export)
 import * as ModulesMod from '@/components/sections/Modules';
+import * as TrustMod from '@/components/sections/TrustSignals';
 import * as TestimonialsMod from '@/components/sections/Testimonials';
 import * as PricingMod from '@/components/sections/Pricing';
 import * as WaitlistMod from '@/components/sections/Waitlist';
 
 type ModulesModule = typeof import('@/components/sections/Modules');
+type TrustModule = typeof import('@/components/sections/TrustSignals');
 type TestimonialsModule = typeof import('@/components/sections/Testimonials');
 type PricingModule = typeof import('@/components/sections/Pricing');
 type WaitlistModule = typeof import('@/components/sections/Waitlist') & {
@@ -29,11 +31,13 @@ type WaitlistModule = typeof import('@/components/sections/Waitlist') & {
 };
 
 const ModulesModTyped = ModulesMod as ModulesModule;
+const TrustModTyped = TrustMod as TrustModule;
 const TestimonialsModTyped = TestimonialsMod as TestimonialsModule;
 const PricingModTyped = PricingMod as PricingModule;
 const WaitlistModTyped = WaitlistMod as WaitlistModule;
 
 const Modules = ModulesModTyped.Modules ?? ModulesModTyped.default;
+const Trust = TrustModTyped.TrustSignals ?? TrustModTyped.default;
 const Testimonials =
   TestimonialsModTyped.Testimonials ?? TestimonialsModTyped.default;
 const Pricing = PricingModTyped.Pricing ?? PricingModTyped.default;
@@ -80,6 +84,13 @@ export default function HomePage() {
         className="py-24 bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90"
       >
         <Modules />
+      </section>
+
+      <section
+        id="trust"
+        className="py-24 bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90"
+      >
+        <Trust />
       </section>
 
       <section
