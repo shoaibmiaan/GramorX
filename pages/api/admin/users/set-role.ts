@@ -1,14 +1,10 @@
 // pages/api/admin/users/set-role.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { createClient } from '@supabase/supabase-js';
 import { requireRole } from '@/lib/requireRole';
 import type { Role } from '@/lib/roles';
-import { env } from '@/lib/env';
+import { createSupabaseServerClient } from '@/lib/supabaseServer';
 
-const supabaseAdmin = createClient(
-  env.NEXT_PUBLIC_SUPABASE_URL,
-  env.SUPABASE_SERVICE_ROLE_KEY // server-only
-);
+const supabaseAdmin = createSupabaseServerClient({ serviceRole: true });
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).end();

@@ -1,12 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { createClient } from '@supabase/supabase-js';
 import { requireRole } from '@/lib/requireRole';
-import { env } from '@/lib/env';
+import { createSupabaseServerClient } from '@/lib/supabaseServer';
 
-const supabase = createClient(
-  env.NEXT_PUBLIC_SUPABASE_URL,
-  env.SUPABASE_SERVICE_ROLE_KEY // needs RLS-bypass (server only)
-);
+const supabase = createSupabaseServerClient({ serviceRole: true });
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') return res.status(405).json({ ok: false, error: 'Method not allowed' });

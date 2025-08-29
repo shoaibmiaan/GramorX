@@ -1,12 +1,8 @@
 // pages/api/speaking/attempts/index.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { z } from 'zod';
-import { createClient } from '@supabase/supabase-js';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
-import { env } from '@/lib/env';
-
-const URL = env.NEXT_PUBLIC_SUPABASE_URL;
-const ANON = env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+import { createSupabaseServerClient } from '@/lib/supabaseServer';
 
 const SectionSchema = z.enum(['part1', 'part2', 'part3']);
 const ScoreSchema = z.object({
@@ -29,10 +25,7 @@ const CreateSchema = z.object({
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // Auth via Supabase cookie
-  const userClient = createClient(URL, ANON, {
-    global: { headers: { Cookie: req.headers.cookie || '' } },
-    auth: { persistSession: false },
-  });
+  const userClient = createSupabaseServerClient({ req });
   const { data: { user } } = await userClient.auth.getUser();
   if (!user) return res.status(401).json({ error: 'Unauthorized' });
 

@@ -1,6 +1,5 @@
-import { env } from "@/lib/env";
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { createClient } from '@supabase/supabase-js';
+import { createSupabaseServerClient } from '@/lib/supabaseServer';
 
 type StreakResponse = {
   current_streak: number;
@@ -10,11 +9,7 @@ type StreakResponse = {
 type ErrorResponse = { error: string };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse<StreakResponse | ErrorResponse>) {
-  const supabase = createClient(
-    env.NEXT_PUBLIC_SUPABASE_URL,
-    env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    { global: { headers: { Cookie: req.headers.cookie || '' } } }
-  );
+  const supabase = createSupabaseServerClient({ req });
 
   const { data: { user }, error: userErr } = await supabase.auth.getUser();
   if (userErr || !user) {

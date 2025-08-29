@@ -1,13 +1,9 @@
-import { env } from "@/lib/env";
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { createClient } from '@supabase/supabase-js';
+import { createSupabaseServerClient } from '@/lib/supabaseServer';
 
 type Json =
   | { ok: true; helpful: boolean }
   | { ok: false; error: string };
-
-const SUPABASE_URL = env.NEXT_PUBLIC_SUPABASE_URL;
-const SUPABASE_ANON_KEY = env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 function getAccessToken(req: NextApiRequest) {
   const h = req.headers.authorization || '';
@@ -32,10 +28,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   }: { tipId?: string; action?: 'toggle' | 'set' | 'unset'; helpful?: boolean } = req.body || {};
   if (!tipId) return res.status(400).json({ ok: false, error: 'tipId is required' });
 
-  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-    global: { headers: { Authorization: `Bearer ${token}` } },
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
+  const supabase = createSupabaseServerClient({ headers: { Authorization: `Bearer ${token}` } });
 
   const { data: userData, error: userErr } = await supabase.auth.getUser();
   if (userErr || !userData?.user?.id) {
