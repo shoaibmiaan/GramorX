@@ -138,7 +138,12 @@ export default function LoginOptions() {
   );
 
   return (
-    <AuthLayout title="Welcome back" subtitle="Choose a sign-in method." right={RightPanel}>
+    <AuthLayout
+      title="Welcome back"
+      subtitle="Choose a sign-in method."
+      right={RightPanel}
+      showRightOnMobile={false}
+    >
       {err && (
         <Alert variant="error" title="Error" className="mb-4">
           {err}

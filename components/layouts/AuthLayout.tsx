@@ -14,10 +14,14 @@ type Props = {
    */
   right?: React.ReactNode;
   rightIllustration?: React.ReactNode;
+  /**
+   * Show the right panel on mobile view. Hidden by default.
+   */
+  showRightOnMobile?: boolean;
 };
 
 const DefaultRight = () => (
-  <div className="hidden md:flex w-1/2 relative bg-primary/10 dark:bg-dark items-center justify-center">
+  <div className="relative w-full h-full flex items-center justify-center bg-primary/10 dark:bg-dark">
     <Image src="/brand/logo.png" alt="GramorX Logo" width={420} height={420} className="object-contain" />
   </div>
 );
@@ -28,10 +32,14 @@ export default function AuthLayout({
   children,
   right,
   rightIllustration,
+  showRightOnMobile = false,
 }: Props) {
   const rightContent = right ?? rightIllustration ?? <DefaultRight />;
+  const rightWrapperClass = showRightOnMobile
+    ? 'flex w-full md:w-1/2'
+    : 'hidden md:flex w-1/2';
   return (
-    <div className="min-h-[100dvh] flex bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90">
+    <div className="min-h-[100dvh] flex flex-col md:flex-row bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90">
       {/* Left: content */}
       <div className="flex flex-col justify-center w-full md:w-1/2 px-8 py-12">
         <div className="flex justify-between items-center mb-8">
@@ -47,7 +55,7 @@ export default function AuthLayout({
       </div>
 
       {/* Right: illustration */}
-      {rightContent}
+      <div className={rightWrapperClass}>{rightContent}</div>
 
       {/* Theme toggle */}
       <div className="absolute top-4 right-4">
