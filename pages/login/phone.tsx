@@ -45,9 +45,9 @@ export default function LoginWithPhone() {
     setErr(null);
     if (!code) return setErr('Enter the 6-digit code.');
 
+    const trimmedPhone = phone.trim();
     setLoading(true);
     // @ts-expect-error `token` is supported for verification
-    const trimmedPhone = phone.trim();
     const { data, error } = await supabase.auth.signInWithOtp({ phone: trimmedPhone, token: code });
     setLoading(false);
     if (error) return setErr(getAuthErrorMessage(error));
@@ -65,17 +65,20 @@ export default function LoginWithPhone() {
 
   async function resendOtp() {
     setErr(null);
-    setLoading(true);
     setResending(true);
-    const trimmedPhone = phone.trim();
-    const { error } = await supabase.auth.signInWithOtp({
-      phone: trimmedPhone,
-      options: { shouldCreateUser: false },
-    });
-    setLoading(false);
-    setResending(false);
-    if (error) return setErr(getAuthErrorMessage(error));
-    setResendAttempts((a) => a + 1);
+    setLoading(true);
+    try {
+      const trimmedPhone = phone.trim();
+      const { error } = await supabase.auth.signInWithOtp({
+        phone: trimmedPhone,
+        options: { shouldCreateUser: false },
+      });
+      if (error) return setErr(getAuthErrorMessage(error));
+      setResendAttempts((a) => a + 1);
+    } finally {
+      setLoading(false);
+      setResending(false);
+    }
   }
 
   const RightPanel = (
@@ -88,7 +91,7 @@ export default function LoginWithPhone() {
         <p className="text-body text-grayish dark:text-gray-300 max-w-md">Use a one-time SMS code to sign in.</p>
       </div>
       <div className="pt-8 text-small text-grayish dark:text-gray-400">
-        Prefer email? <Link href="/login/email" className="text-primary hover:underline">Use email & password</Link>
+        Prefer email? <Link href="/login/email" className="text-primary hover:underline">Use email &amp; password</Link>
       </div>
     </div>
   );
@@ -127,10 +130,21 @@ export default function LoginWithPhone() {
             onChange={(e)=>setCode(e.target.value)}
             required
           />
-          <Button type="submit" variant="primary" className="w-full rounded-ds-xl" disabled={loading}>
+          <Button
+            type="submit"
+            variant="primary"
+            className="w-full rounded-ds-xl"
+            disabled={loading && !resending}
+          >
             {loading && !resending ? 'Verifying…' : 'Verify & Continue'}
           </Button>
-          <Button type="button" variant="secondary" className="w-full rounded-ds-xl" onClick={resendOtp} disabled={loading}>
+          <Button
+            type="button"
+            variant="secondary"
+            className="w-full rounded-ds-xl"
+            onClick={resendOtp}
+            disabled={loading}
+          >
             {loading && resending ? 'Resending…' : `Resend code${resendAttempts ? ` (${resendAttempts})` : ''}`}
           </Button>
         </form>
