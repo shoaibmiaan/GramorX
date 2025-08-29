@@ -1,0 +1,12 @@
+{
+  "home": { "title": "欢迎来到 GramorX" },
+  "profileSetup": {
+    "completeProfile": "完成您的资料",
+    "description": "我们将使用 AI 调整您的学习计划并个性化您的仪表板。",
+    "preferredLanguage": "首选界面语言",
+    "explanationLanguage": "讲解语言",
+    "saveDraft": "保存草稿",
+    "finishContinue": "完成并继续"
+  },
+  "userMenu": { "language": "语言" }
+}

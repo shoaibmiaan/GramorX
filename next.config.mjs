@@ -1,5 +1,6 @@
 // next.config.mjs (ESM)
 import withPWAInit from 'next-pwa';
+import i18nextConfig from './next-i18next.config.mjs';
 
 const withPWA = withPWAInit({
   dest: 'public',
@@ -13,6 +14,7 @@ const BYPASS_STRICT = process.env.BYPASS_STRICT_BUILD !== '0';
 
 const nextConfig = {
   reactStrictMode: true,
+  i18n: i18nextConfig.i18n,
 
   // 1) Skip ESLint during production builds (so warnings/errors won’t block)
   eslint: {

@@ -172,7 +172,7 @@ export default function BlogIndex() {
                   {p.hero ? (
                     <Image
                       src={p.hero}
-                      alt=""
+                      alt={p.title}
                       fill
                       unoptimized
                       className="w-full h-full object-cover"

@@ -10,7 +10,8 @@ import { Layout } from '@/components/Layout';
 import { ToastProvider } from '@/components/design-system/Toast';
 import { supabaseBrowser } from '@/lib/supabaseBrowser';
 import { env } from '@/lib/env';
-import { LanguageProvider, useLocale } from '@/lib/locale';
+import { useLocale } from '@/lib/locale';
+import { appWithTranslation } from 'next-i18next';
 import { initIdleTimeout } from '@/utils/idleTimeout';
 import {
   isGuestOnlyRoute,
@@ -237,12 +238,12 @@ function InnerApp({ Component, pageProps }: AppProps) {
   );
 }
 
-export default function App(props: AppProps) {
+function App(props: AppProps) {
   return (
-    <LanguageProvider>
-      <ToastProvider>
-        <InnerApp {...props} />
-      </ToastProvider>
-    </LanguageProvider>
+    <ToastProvider>
+      <InnerApp {...props} />
+    </ToastProvider>
   );
 }
+
+export default appWithTranslation(App);
