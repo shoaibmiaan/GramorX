@@ -40,11 +40,16 @@ require.cache[require.resolve('twilio')] = { exports: TwilioMock };
 
 // Mock Supabase client
 let upsertCalled = false;
+let supaBehaviour: 'success' | 'user_not_found' | 'error' = 'success';
 const supabaseClient = {
   from: () => ({
     upsert: async () => {
       upsertCalled = true;
-      return {};
+      if (supaBehaviour === 'success') return {};
+      if (supaBehaviour === 'user_not_found') {
+        return { error: { code: 'user_not_found', message: 'User not found' } };
+      }
+      return { error: { code: 'fail', message: 'DB fail' } };
     },
   }),
 };
@@ -57,6 +62,7 @@ const checkOtp = require('../pages/api/check-otp').default;
 (async () => {
   // Success response
   behaviour = 'success';
+  supaBehaviour = 'success';
   upsertCalled = false;
   let statusCode: number | undefined;
   let jsonData: any;
@@ -78,8 +84,9 @@ const checkOtp = require('../pages/api/check-otp').default;
   assert.equal(statusCode, undefined);
   assert.equal(upsertCalled, true);
 
-  // Error handling
+  // Twilio error handling
   behaviour = 'error';
+  supaBehaviour = 'success';
   statusCode = undefined;
   jsonData = undefined;
   upsertCalled = false;
@@ -90,6 +97,37 @@ const checkOtp = require('../pages/api/check-otp').default;
   assert.equal(statusCode, 500);
   assert.deepEqual(jsonData, { ok: false, error: 'Twilio check failed' });
   assert.equal(upsertCalled, false);
+
+  // Supabase user_not_found handling
+  behaviour = 'success';
+  supaBehaviour = 'user_not_found';
+  statusCode = undefined;
+  jsonData = undefined;
+  upsertCalled = false;
+  await checkOtp(
+    { method: 'POST', body: { phone: '+1234567890', code: '1234' } },
+    res as any,
+  );
+  assert.equal(statusCode, 404);
+  assert.deepEqual(jsonData, {
+    ok: false,
+    error: 'No account found for that email/phone.',
+  });
+  assert.equal(upsertCalled, true);
+
+  // Generic Supabase error
+  behaviour = 'success';
+  supaBehaviour = 'error';
+  statusCode = undefined;
+  jsonData = undefined;
+  upsertCalled = false;
+  await checkOtp(
+    { method: 'POST', body: { phone: '+1234567890', code: '1234' } },
+    res as any,
+  );
+  assert.equal(statusCode, 500);
+  assert.deepEqual(jsonData, { ok: false, error: 'DB fail' });
+  assert.equal(upsertCalled, true);
 
   // Method rejection (non-POST)
   let threw = false;
