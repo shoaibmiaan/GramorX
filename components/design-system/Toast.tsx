@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 type Variant = 'success' | 'info' | 'warning' | 'error';
 type ToastItem = {
@@ -10,6 +10,7 @@ type ToastItem = {
 };
 
 const ToastCtx = createContext<{ push: (t: Omit<ToastItem, 'id'>) => void } | null>(null);
+let pushRef: ((t: Omit<ToastItem, 'id'>) => void) | null = null;
 
 export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [items, setItems] = useState<ToastItem[]>([]);
@@ -22,6 +23,13 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, []);
 
   const ctx = useMemo(() => ({ push }), [push]);
+
+  useEffect(() => {
+    pushRef = push;
+    return () => {
+      pushRef = null;
+    };
+  }, [push]);
 
   const variants: Record<Variant, string> = {
     success: 'bg-success/10 border-success/30 text-success',
@@ -49,6 +57,17 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       </div>
     </ToastCtx.Provider>
   );
+};
+
+export const toast = {
+  success: (message: string, opts?: { title?: string; duration?: number }) =>
+    pushRef?.({ message, variant: 'success', title: opts?.title, duration: opts?.duration }),
+  info: (message: string, opts?: { title?: string; duration?: number }) =>
+    pushRef?.({ message, variant: 'info', title: opts?.title, duration: opts?.duration }),
+  warning: (message: string, opts?: { title?: string; duration?: number }) =>
+    pushRef?.({ message, variant: 'warning', title: opts?.title, duration: opts?.duration }),
+  error: (message: string, opts?: { title?: string; duration?: number }) =>
+    pushRef?.({ message, variant: 'error', title: opts?.title, duration: opts?.duration }),
 };
 
 export function useToast() {

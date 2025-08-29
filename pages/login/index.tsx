@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/router';
 import AuthLayout from '@/components/layouts/AuthLayout';
 import { Button } from '@/components/design-system/Button';
-import { Alert } from '@/components/design-system/Alert';
+import { useAsyncAction } from '@/hooks/useAsyncAction';
 import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser';
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
@@ -16,7 +16,6 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 }
 
 export default function LoginOptions() {
-  const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState<'apple' | 'google' | 'facebook' | null>(null);
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
   const router = useRouter();
@@ -58,28 +57,27 @@ export default function LoginOptions() {
     router.replace({ pathname: router.pathname, query: { ...rest } }, undefined, { shallow: true });
   }
 
-  async function oauth(provider: 'apple' | 'google' | 'facebook') {
-    try {
-      setErr(null);
+  const { run: oauth } = useAsyncAction(
+    async (provider: 'apple' | 'google' | 'facebook') => {
       setBusy(provider);
+      try {
+        const origin = typeof window !== 'undefined' ? window.location.origin : undefined;
+        const next = `/dashboard${selectedRole ? `?role=${encodeURIComponent(selectedRole)}` : ''}`;
+        const redirectTo = origin
+          ? `${origin}/auth/callback?next=${encodeURIComponent(next)}`
+          : undefined;
 
-      const origin = typeof window !== 'undefined' ? window.location.origin : undefined;
-      const next = `/dashboard${selectedRole ? `?role=${encodeURIComponent(selectedRole)}` : ''}`;
-      const redirectTo = origin
-        ? `${origin}/auth/callback?next=${encodeURIComponent(next)}`
-        : undefined;
-
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider,
-        options: { redirectTo },
-      });
-      if (error) throw error;
-    } catch (e: unknown) {
-      const message = e instanceof Error ? e.message : 'Unable to continue.';
-      setErr(message);
-      setBusy(null);
-    }
-  }
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider,
+          options: { redirectTo },
+        });
+        if (error) throw error;
+      } finally {
+        setBusy(null);
+      }
+    },
+    { errorMessage: 'Unable to continue.' }
+  );
 
   // Right-side: soft brand panel (no Card), token gradients, light/dark compliant
   const RightPanel = (
@@ -144,12 +142,6 @@ export default function LoginOptions() {
       right={RightPanel}
       showRightOnMobile={false}
     >
-      {err && (
-        <Alert variant="error" title="Error" className="mb-4">
-          {err}
-        </Alert>
-      )}
-
       {!selectedRole ? (
         <>
           <SectionLabel>Sign in as</SectionLabel>
@@ -169,37 +161,40 @@ export default function LoginOptions() {
           <div className="grid gap-3">
             <Button
               onClick={() => oauth('apple')}
+              loading={busy === 'apple'}
               disabled={busy === 'apple'}
               variant="secondary"
               className="rounded-ds-xl w-full"
             >
               <span className="inline-flex items-center gap-3">
                 <i className="fab fa-apple text-xl" aria-hidden />
-                {busy === 'apple' ? 'Opening Apple…' : 'Continue with Apple'}
+                Continue with Apple
               </span>
             </Button>
 
             <Button
               onClick={() => oauth('google')}
+              loading={busy === 'google'}
               disabled={busy === 'google'}
               variant="secondary"
               className="rounded-ds-xl w-full"
             >
               <span className="inline-flex items-center gap-3">
                 <i className="fab fa-google text-xl" aria-hidden />
-                {busy === 'google' ? 'Opening Google…' : 'Continue with Google'}
+                Continue with Google
               </span>
             </Button>
 
             <Button
               onClick={() => oauth('facebook')}
+              loading={busy === 'facebook'}
               disabled={busy === 'facebook'}
               variant="secondary"
               className="rounded-ds-xl w-full"
             >
               <span className="inline-flex items-center gap-3">
                 <i className="fab fa-facebook-f text-xl" aria-hidden />
-                {busy === 'facebook' ? 'Opening Facebook…' : 'Continue with Facebook'}
+                Continue with Facebook
               </span>
             </Button>
 

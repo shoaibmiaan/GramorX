@@ -1,6 +1,7 @@
 // components/design-system/Button.tsx
 import * as React from 'react';
 import Link from 'next/link';
+import { Spinner } from './Spinner';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'accent' | 'ghost' | 'link';
 export type ButtonSize = 'sm' | 'md' | 'lg' | 'xl';
@@ -34,13 +35,6 @@ const variantClasses: Record<ButtonVariant, string> = {
     'bg-transparent text-electricBlue border border-electricBlue/30 hover:bg-electricBlue/10 dark:border-electricBlue/30',
   link: 'bg-transparent text-electricBlue underline underline-offset-4 hover:opacity-90',
 };
-
-const Spinner: React.FC = () => (
-  <span
-    aria-hidden
-    className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/60 border-t-white mr-2"
-  />
-);
 
 export const Button: React.FC<ButtonProps> = ({
   variant = 'primary',
@@ -76,7 +70,9 @@ export const Button: React.FC<ButtonProps> = ({
 
   const content = (
     <>
-      {loading && <Spinner />}
+      {loading && (
+        <Spinner className="mr-2 h-4 w-4 border-white/60 border-t-white" size={16} />
+      )}
       {!loading && leadingIcon ? <span className="mr-2 inline-flex">{leadingIcon}</span> : null}
       <span>{loading ? 'Please wait…' : children}</span>
       {!loading && trailingIcon ? <span className="ml-2 inline-flex">{trailingIcon}</span> : null}
