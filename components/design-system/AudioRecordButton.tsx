@@ -39,7 +39,7 @@ export const AudioRecordButton: React.FC<AudioRecordButtonProps> = ({ onStop, cl
 
   if (!supported) {
     return (
-      <button type="button" disabled className={`px-4 py-2 rounded-ds bg-gray-200 dark:bg-white/10 text-small ${className}`}>
+      <button type="button" disabled className={`px-4 py-2 rounded-ds bg-border dark:bg-border/20 text-small ${className}`}>
         Recording not supported
       </button>
     );
@@ -50,9 +50,9 @@ export const AudioRecordButton: React.FC<AudioRecordButtonProps> = ({ onStop, cl
       type="button"
       onClick={recording ? stop : start}
       disabled={disabled}
-      className={`inline-flex items-center gap-2 px-4 py-2 rounded-ds border border-gray-200 dark:border-white/10
-        ${recording ? 'bg-sunsetOrange/20 text-sunsetOrange' : 'bg-white dark:bg-dark/40 text-lightText dark:text-white'}
-        hover:bg-gray-50 dark:hover:bg-white/10 ${className}`}
+      className={`inline-flex items-center gap-2 px-4 py-2 rounded-ds border border-border dark:border-border/20
+        ${recording ? 'bg-sunsetOrange/20 text-sunsetOrange' : 'bg-card dark:bg-dark/40 text-lightText dark:text-foreground'}
+        hover:bg-border/20 dark:hover:bg-border/20 ${className}`}
       aria-pressed={recording}
       aria-label={recording ? 'Stop recording' : 'Start recording'}
     >

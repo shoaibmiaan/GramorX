@@ -146,7 +146,7 @@ export const AudioBar: React.FC<AudioBarProps> = (props) => {
 
       <div className="flex-1">
         <div
-          className="h-2 w-full rounded-ds bg-gray-200 dark:bg-white/10 overflow-hidden"
+          className="h-2 w-full rounded-ds bg-border dark:bg-border/20 overflow-hidden"
           role="slider"
           aria-valuemin={0}
           aria-valuemax={100}

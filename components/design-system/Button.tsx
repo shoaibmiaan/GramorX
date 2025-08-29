@@ -38,7 +38,7 @@ const variantClasses: Record<ButtonVariant, string> = {
 const Spinner: React.FC = () => (
   <span
     aria-hidden
-    className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/60 border-t-white mr-2"
+    className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-foreground/60 border-t-foreground mr-2"
   />
 );
 

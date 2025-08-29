@@ -87,7 +87,7 @@ export const AvatarUploader: React.FC<Props> = ({
         }}
         className={`
           border-2 border-dashed rounded-ds p-6 text-center cursor-pointer
-          ${drag ? 'border-primary bg-primary/5' : 'border-gray-300 dark:border-white/10'}
+          ${drag ? 'border-primary bg-primary/5' : 'border-border dark:border-vibrantPurple/20'}
         `}
         onClick={() => inputRef.current?.click()}
       >

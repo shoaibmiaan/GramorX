@@ -1,3 +1,4 @@
+@import './tokens.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -5,41 +6,9 @@
 /* Ensure full-height layout */
 html, body, #__next { height: 100%; }
 
-/* =========================
-   Color tokens → RGB triplets
-   (must match design-system/tokens/colors.js)
-   ========================= */
-:root{
-  --color-primary:        67 97 238;   /* #4361ee */
-  --color-primaryDark:    58 86 212;   /* #3a56d4 */
-  --color-secondary:     247 37 133;   /* #f72585 */
-  --color-accent:         76 201 240;  /* #4cc9f0 */
-  --color-success:        46 196 182;  /* #2ec4b6 */
-
-  --color-purpleVibe:    157 78 221;   /* #9d4edd */
-  --color-vibrantPurple: 157 78 221;   /* alias */
-  --color-electricBlue:    0 187 249;  /* #00bbf9 */
-  --color-neonGreen:     128 255 219;  /* #80ffdb */
-  --color-sunsetOrange:  255 107 107;  /* #ff6b6b */
-  --color-sunsetRed:     255  77  77;  /* #ff4d4d */
-  --color-goldenYellow:  255 209 102;  /* #ffd166 */
-
-  --color-dark:           15  15  27;  /* #0f0f1b */
-  --color-darker:          7   7  16;  /* #070710 */
-  --color-lightBg:       240 242 245;  /* #f0f2f5 */
-  --color-lightText:      26  26  46;  /* #1a1a2e */
-  /* darker gray for accessible body text on light backgrounds */
-  --color-grayish:       106 106 134;  /* #6a6a86 */
-
-  --color-lightCard:     255 255 255;  /* #ffffff */
-  --color-lightBorder:   224 224 224;  /* #e0e0e0 */
-  --color-border:        224 224 224;  /* #e0e0e0 */
-  --color-mutedText:     208 208 224;  /* #d0d0e0 */
-}
-
 /* Light = default; Dark via .dark on <html> (next-themes) */
 body { @apply font-sans text-lightText bg-lightBg overflow-x-hidden relative; }
-.dark body { @apply text-white bg-gradient-to-br from-darker to-dark; }
+.dark body { @apply text-foreground bg-gradient-to-br from-darker to-dark; }
 
 /* =========================
    Headings → Roboto Slab (no circular apply)
@@ -52,10 +21,10 @@ body { @apply font-sans text-lightText bg-lightBg overflow-x-hidden relative; }
    Header / Nav (GLOBAL)
    ========================= */
 .header-glass {
-  @apply text-lightText bg-white/90 backdrop-blur-md border-b border-gray-200;
+  @apply text-lightText bg-white/90 backdrop-blur-md border-b border-border;
 }
 .dark .header-glass {
-  @apply text-white bg-dark/95 border-vibrantPurple/20;
+  @apply text-foreground bg-dark/95 border-vibrantPurple/20;
 }
 
 /* Navigation pill with underline (active & hover) */
@@ -67,7 +36,7 @@ body { @apply font-sans text-lightText bg-lightBg overflow-x-hidden relative; }
 }
 .dark .nav-pill{
   /* Dark theme text */
-  @apply text-white/90 hover:text-white;
+  @apply text-foreground/90 hover:text-foreground;
 }
 
 /* underline */
@@ -81,7 +50,7 @@ body { @apply font-sans text-lightText bg-lightBg overflow-x-hidden relative; }
 
 /* active pill background (light vs dark) */
 .nav-pill.is-active{ @apply bg-vibrantPurple/10; }
-.dark .nav-pill.is-active{ @apply bg-white/5; }
+.dark .nav-pill.is-active{ @apply bg-foreground/5; }
 .nav-pill.is-active::after{ opacity:1; }
 
 /* Container utility */
@@ -117,7 +86,7 @@ body { @apply font-sans text-lightText bg-lightBg overflow-x-hidden relative; }
 .btn-primary:hover, .btn-accent:hover { background-position: 100% 50%; }
 
 /* Variants */
-.btn-primary  { @apply text-white bg-gradient-to-br from-purpleVibe to-electricBlue shadow-glow; }
+.btn-primary  { @apply text-foreground bg-gradient-to-br from-purpleVibe to-electricBlue shadow-glow; }
 .btn-primary:hover {
   background-image: linear-gradient(135deg,
     rgb(var(--color-electricBlue)),
@@ -128,7 +97,7 @@ body { @apply font-sans text-lightText bg-lightBg overflow-x-hidden relative; }
 .btn-secondary{ @apply border-2 border-primary text-primary bg-transparent; }
 .dark .btn-secondary { @apply border-neonGreen text-neonGreen; }
 
-.btn-accent   { @apply text-white bg-gradient-to-br from-sunsetOrange to-sunsetRed shadow-glow; }
+.btn-accent   { @apply text-foreground bg-gradient-to-br from-sunsetOrange to-sunsetRed shadow-glow; }
 .btn-accent:hover {
   background-image: linear-gradient(135deg,
     rgb(var(--color-sunsetRed)),
@@ -146,7 +115,7 @@ body { @apply font-sans text-lightText bg-lightBg overflow-x-hidden relative; }
    Card surfaces
    ========================= */
 .card-surface { @apply rounded-ds-2xl border bg-lightCard border-lightBorder text-lightText; }
-.dark .card-surface { @apply border-vibrantPurple/20 backdrop-blur-md bg-purpleVibe/10 text-white; }
+.dark .card-surface { @apply border-vibrantPurple/20 backdrop-blur-md bg-purpleVibe/10 text-foreground; }
 
 /* Glass card variant (used by waitlist/testimonials etc.) */
 .card-glass {
@@ -154,7 +123,7 @@ body { @apply font-sans text-lightText bg-lightBg overflow-x-hidden relative; }
   @apply bg-white/70 text-lightText border-lightBorder;
 }
 .dark .card-glass {
-  @apply bg-purpleVibe/10 text-white border-vibrantPurple/20;
+  @apply bg-purpleVibe/10 text-foreground border-vibrantPurple/20;
 }
 
 /* =========================
@@ -200,7 +169,7 @@ body { @apply font-sans text-lightText bg-lightBg overflow-x-hidden relative; }
   @apply bg-lightCard border border-lightBorder text-lightText/80;
 }
 .dark .ai-code-block{
-  @apply bg-purpleVibe/10 border-vibrantPurple/20 text-white/80;
+  @apply bg-purpleVibe/10 border-vibrantPurple/20 text-foreground/80;
 }
 
 /* AI sidebar split view */

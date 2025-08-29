@@ -62,14 +62,14 @@ export const Timer: React.FC<TimerProps> = ({
 
   const label = useMemo(() => format(seconds), [seconds]);
 
-  const intent = mode === 'countdown' && seconds <= 60 ? 'text-sunsetOrange' : 'text-lightText dark:text-white';
+  const intent = mode === 'countdown' && seconds <= 60 ? 'text-sunsetOrange' : 'text-lightText dark:text-foreground';
 
   return (
     <div
       role="timer"
       aria-live="polite"
       aria-label={ariaLabel}
-      className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-ds border border-gray-200 dark:border-white/10 ${className}`}
+      className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-ds border border-border dark:border-vibrantPurple/20 ${className}`}
     >
       <i className={`fas fa-clock ${intent}`} aria-hidden="true" />
       <span className={`tabular-nums font-semibold ${intent}`}>{label}</span>

@@ -100,7 +100,7 @@ export const NotificationBell: React.FC = () => {
         {unread > 0 && (
           <span
             aria-live="polite"
-            className="absolute -top-1 -right-1 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-sunsetOrange px-1 text-[10px] leading-none text-white"
+            className="absolute -top-1 -right-1 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-sunsetOrange px-1 text-[10px] leading-none text-foreground"
           >
             {unread}
           </span>

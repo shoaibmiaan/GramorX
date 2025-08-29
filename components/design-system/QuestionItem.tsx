@@ -8,7 +8,7 @@ type BaseProps = {
 };
 
 const statusRing: Record<NonNullable<BaseProps['status']>, string> = {
-  default: 'border-gray-200 dark:border-white/10',
+  default: 'border-border dark:border-border/20',
   answered: 'border-success/60',
   flagged: 'border-goldenYellow/60',
   review: 'border-electricBlue/60'
@@ -49,7 +49,7 @@ export const QuestionMCQ: React.FC<{
         <legend className="sr-only">Question {number}</legend>
         <div className="grid gap-2">
           {options.map(opt => (
-            <label key={opt.key} className="flex items-center gap-3 p-2 rounded-ds hover:bg-gray-50 dark:hover:bg-white/5">
+            <label key={opt.key} className="flex items-center gap-3 p-2 rounded-ds hover:bg-border/20 dark:hover:bg-foreground/5">
               <input
                 type="radio"
                 name={group}
@@ -86,8 +86,8 @@ export const QuestionTFNG: React.FC<{
             type="button"
             onClick={() => onChange?.(o.k)}
             className={`px-3 py-2 rounded-ds border text-small
-              ${value === o.k ? 'bg-primary text-white dark:bg-electricBlue' : 'bg-white dark:bg-dark/40 text-lightText dark:text-white'}
-              border-gray-200 dark:border-white/10`}
+              ${value === o.k ? 'bg-primary text-primary-foreground dark:bg-electricBlue' : 'bg-card dark:bg-dark/40 text-lightText dark:text-foreground'}
+              border-border dark:border-border/20`}
             aria-pressed={value === o.k}
           >
             {o.l}
@@ -111,7 +111,7 @@ export const QuestionGapFill: React.FC<{
     <QuestionShell number={number} status={status} className={className}>
       <input
         type="text"
-        className="w-full rounded-ds border bg-white text-lightText placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-dark/50 dark:text-white dark:placeholder-white/40 dark:border-purpleVibe/30 dark:focus:ring-electricBlue dark:focus:border-electricBlue px-3 py-2"
+        className="w-full rounded-ds border border-border bg-card text-lightText placeholder-mutedText focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-dark/50 dark:text-foreground dark:placeholder-mutedText/40 dark:border-purpleVibe/30 dark:focus:ring-electricBlue dark:focus:border-electricBlue px-3 py-2"
         value={value}
         onChange={(e) => onChange?.(e.target.value)}
         placeholder={placeholder}
