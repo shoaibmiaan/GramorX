@@ -1,14 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { createClient } from '@supabase/supabase-js';
-import { env } from '@/lib/env';
+import { createSupabaseServerClient } from '@/lib/supabaseServer';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { category } = req.query as { category: string };
-  const url = env.NEXT_PUBLIC_SUPABASE_URL;
-  const anon = env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  const supabase = createClient(url, anon, {
-    global: { headers: { Cookie: req.headers.cookie || '' } },
-  });
+  const supabase = createSupabaseServerClient({ req });
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {

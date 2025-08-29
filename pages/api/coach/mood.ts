@@ -1,6 +1,5 @@
-import { env } from '@/lib/env';
-import { createClient } from '@supabase/supabase-js';
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { createSupabaseServerClient } from '@/lib/supabaseServer';
 
 function getLastMonday(date: Date) {
   const d = new Date(date);
@@ -12,11 +11,7 @@ function getLastMonday(date: Date) {
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const supabase = createClient(
-    env.NEXT_PUBLIC_SUPABASE_URL,
-    env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    { global: { headers: { Cookie: req.headers.cookie || '' } } }
-  );
+  const supabase = createSupabaseServerClient({ req });
 
   const { data: { user }, error: userErr } = await supabase.auth.getUser();
   if (userErr || !user) {

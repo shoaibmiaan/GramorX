@@ -1,6 +1,7 @@
 // lib/routeAccess.ts
 import type { User } from '@supabase/supabase-js';
 import { extractRole, type AppRole } from './roles';
+import { supabaseBrowser as supabase } from './supabaseBrowser';
 export type { AppRole } from './roles';
 
 // Extract role from user/app metadata (null if none)
@@ -14,6 +15,9 @@ export const isPublicRoute = (path: string) => {
   if (path === '/community') return true;
   if (path === '/about') return true;
   if (path === '/contact') return true;
+
+  // Verification page remains accessible without an active session
+  if (path === '/auth/verify') return true;
 
   // Access-denied page must be public to avoid redirect loops.
   if (path === '/403') return true;
@@ -58,6 +62,18 @@ export const canAccess = (path: string, role: AppRole | null | undefined): boole
 
 // Determine the correct app destination based on user role and redirect.
 export const redirectByRole = (user: User | null | undefined) => {
+  const emailVerified = !!user?.email_confirmed_at;
+  const phoneVerified = !!user?.phone_confirmed_at;
+
+  if (user && !emailVerified && !phoneVerified) {
+    if (typeof window !== 'undefined') {
+      // Remove any existing session for unverified users
+      void supabase.auth.signOut();
+      window.location.assign('/auth/verify');
+    }
+    return '/auth/verify';
+  }
+
   const role = getUserRole(user);
   const path =
     role === 'teacher' ? '/teacher' : role === 'admin' ? '/admin' : '/dashboard';

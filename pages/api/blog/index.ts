@@ -1,7 +1,7 @@
 // pages/api/blog/index.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { createClient } from '@supabase/supabase-js';
 import { env } from '@/lib/env';
+import { createSupabaseServerClient } from '@/lib/supabaseServer';
 
 /** ===== Types ===== */
 type Category = 'Listening' | 'Reading' | 'Writing' | 'Speaking' | 'Study Plan' | 'Product';
@@ -118,13 +118,10 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<BlogListResponse | BlogCreateResponse>
 ) {
-  const url = env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !serviceKey) return bad(res, 500, 'Server misconfigured: missing Supabase env.');
+  if (!serviceKey) return bad(res, 500, 'Server misconfigured: missing Supabase env.');
 
-  const supa = createClient(url, serviceKey, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
+  const supa = createSupabaseServerClient({ serviceRole: true });
 
   if (req.method === 'GET') {
     const { q, cat, tag, sort, page, pageSize } = parseGetQuery(req);

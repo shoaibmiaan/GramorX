@@ -6,6 +6,7 @@ import {
   requiredRolesFor,
   isPublicRoute,
   isGuestOnlyRoute,
+  redirectByRole,
 } from './routeAccess';
 
 test('canAccess respects role gates', () => {
@@ -25,4 +26,17 @@ test('requiredRolesFor returns the correct roles', () => {
 test('signup flow paths bypass auth guards', () => {
   assert.strictEqual(isPublicRoute('/signup/phone'), true);
   assert.strictEqual(isGuestOnlyRoute('/signup/phone'), true);
+});
+
+test('redirectByRole sends unverified users to verification', () => {
+  const user: any = {
+    email_confirmed_at: null,
+    phone_confirmed_at: null,
+    app_metadata: { role: 'student' },
+  };
+  assert.strictEqual(redirectByRole(user), '/auth/verify');
+});
+
+test('verification page is considered public', () => {
+  assert.strictEqual(isPublicRoute('/auth/verify'), true);
 });
