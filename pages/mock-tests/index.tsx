@@ -18,6 +18,11 @@ export default function MockTests() {
                 Full Test
               </Link>
             </li>
+            <li>
+              <Link className="text-primary underline" href="/mock-tests/analytics">
+                Analytics
+              </Link>
+            </li>
             {sections.map((s) => (
               <li key={s}>
                 <Link className="text-primary underline" href={`/mock-tests/${s}`}>
