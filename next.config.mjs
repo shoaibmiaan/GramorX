@@ -14,6 +14,11 @@ const BYPASS_STRICT = process.env.BYPASS_STRICT_BUILD !== '0';
 const nextConfig = {
   reactStrictMode: true,
 
+  i18n: {
+    locales: ['en', 'ur', 'es', 'zh'],
+    defaultLocale: 'en',
+  },
+
   // 1) Skip ESLint during production builds (so warnings/errors won’t block)
   eslint: {
     ignoreDuringBuilds: BYPASS_STRICT,

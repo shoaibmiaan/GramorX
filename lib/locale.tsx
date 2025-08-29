@@ -1,4 +1,11 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useMemo,
+} from 'react';
+import { NextIntlProvider, createTranslator } from 'next-intl';
 
 interface LocaleContextValue {
   locale: string;
@@ -35,13 +42,24 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     loadMessages(locale).then(setMessages);
   }, [locale]);
 
-  const t = (key: string): string => {
-    return key.split('.').reduce((obj: any, part: string) => (obj ? obj[part] : undefined), messages) ?? key;
-  };
+  const translator = useMemo(
+    () => createTranslator({ locale, messages }),
+    [locale, messages]
+  );
 
   return (
-    <LocaleContext.Provider value={{ locale, setLocale, explanationLocale, setExplanationLocale, t }}>
-      {children}
+    <LocaleContext.Provider
+      value={{
+        locale,
+        setLocale,
+        explanationLocale,
+        setExplanationLocale,
+        t: (key: string) => translator(key) as string,
+      }}
+    >
+      <NextIntlProvider locale={locale} messages={messages}>
+        {children}
+      </NextIntlProvider>
     </LocaleContext.Provider>
   );
 };

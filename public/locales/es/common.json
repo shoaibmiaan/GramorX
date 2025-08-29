@@ -1,0 +1,16 @@
+{
+  "home": {
+    "title": "Bienvenido a GramorX"
+  },
+  "profileSetup": {
+    "completeProfile": "Completa tu perfil",
+    "description": "Afinaremos tu plan de estudio con IA y personalizaremos tu panel.",
+    "preferredLanguage": "Idioma preferido de la interfaz",
+    "explanationLanguage": "Idioma de explicación",
+    "saveDraft": "Guardar borrador",
+    "finishContinue": "Terminar y continuar"
+  },
+  "userMenu": {
+    "language": "Idioma"
+  }
+}
