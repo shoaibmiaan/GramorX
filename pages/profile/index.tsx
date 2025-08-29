@@ -10,6 +10,8 @@ import { useStreak } from '@/hooks/useStreak';
 import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser';
 import { useToast } from '@/components/design-system/Toast';
 import type { Profile } from '@/types/profile';
+import { Badge } from '@/components/design-system/Badge';
+import { badges } from '@/data/badges';
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -21,6 +23,7 @@ export default function ProfilePage() {
   const fileRef = useRef<HTMLInputElement | null>(null);
   const { error: toastError, success: toastSuccess } = useToast();
   const { current: streak } = useStreak();
+  const earnedBadges = [...badges.streaks, ...badges.milestones, ...badges.community];
 
   useEffect(() => {
     (async () => {
@@ -138,7 +141,14 @@ export default function ProfilePage() {
           <Card className="p-6 rounded-ds-2xl">
             <div className="flex items-center justify-between mb-6">
               <h1 className="font-slab text-display">Profile</h1>
-              <StreakIndicator value={streak} />
+              <div className="flex items-center gap-2">
+                <StreakIndicator value={streak} />
+                {earnedBadges.map((b) => (
+                  <Badge key={b.id} size="sm">
+                    {b.icon}
+                  </Badge>
+                ))}
+              </div>
             </div>
             <div className="flex items-center gap-4 mb-6">
               <div className="h-20 w-20 rounded-full bg-vibrantPurple/10 flex items-center justify-center overflow-hidden">
