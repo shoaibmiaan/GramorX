@@ -23,7 +23,7 @@ export const Input: React.FC<InputProps> = ({
   const describedBy =
     error ? `${inputId}-error` : hint ? `${inputId}-hint` : undefined;
   const base = [
-    'w-full rounded-ds border bg-white text-lightText placeholder-gray-500',
+    'form-control w-full rounded-ds border bg-white text-lightText placeholder-gray-500',
     'focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary',
     'disabled:opacity-60',
     'dark:bg-dark/50 dark:text-white dark:placeholder-white/40',

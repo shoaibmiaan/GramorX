@@ -8,7 +8,7 @@ export type TextareaProps = React.TextareaHTMLAttributes<HTMLTextAreaElement> & 
 
 export const Textarea: React.FC<TextareaProps> = ({ label, hint, error, className = '', ...props }) => {
   const base = [
-    'w-full rounded-ds border bg-white text-lightText placeholder-gray-500',
+    'form-control w-full rounded-ds border bg-white text-lightText placeholder-gray-500',
     'focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary',
     'dark:bg-dark/50 dark:text-white dark:placeholder-white/40 dark:border-purpleVibe/30 dark:focus:ring-electricBlue dark:focus:border-electricBlue',
   ].join(' ');

@@ -10,7 +10,7 @@ export type SelectProps = React.SelectHTMLAttributes<HTMLSelectElement> & {
 
 export const Select: React.FC<SelectProps> = ({ label, hint, error, options = [], className = '', children, ...props }) => {
   const base = [
-    'w-full rounded-ds border bg-white text-lightText',
+    'form-control w-full rounded-ds border bg-white text-lightText',
     'focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary',
     'dark:bg-dark/50 dark:text-white dark:border-purpleVibe/30 dark:focus:ring-electricBlue dark:focus:border-electricBlue',
   ].join(' ');

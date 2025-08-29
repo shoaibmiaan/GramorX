@@ -59,7 +59,7 @@ export const Button: React.FC<ButtonProps> = ({
   ...rest
 }) => {
   const base =
-    'btn focus:outline-none focus-visible:ring-2 focus-visible:ring-electricBlue/40 disabled:opacity-60 disabled:cursor-not-allowed';
+    'form-control btn focus:outline-none focus-visible:ring-2 focus-visible:ring-electricBlue/40 disabled:opacity-60 disabled:cursor-not-allowed';
   const fx = animated ? 'btn--fx' : ''; // apply shine/lift only when animated
 
   const cls = [
