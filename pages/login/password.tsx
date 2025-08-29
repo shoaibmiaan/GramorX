@@ -8,6 +8,7 @@ import { Button } from '@/components/design-system/Button';
 import { Alert } from '@/components/design-system/Alert';
 import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser';
 import { redirectByRole } from '@/lib/routeAccess';
+import { getAuthErrorMessage } from '@/lib/authErrors';
 
 export default function LoginWithPassword() {
   const [email, setEmail] = useState('');
@@ -33,19 +34,7 @@ export default function LoginWithPassword() {
     setLoading(true);
     const { error, data } = await supabase.auth.signInWithPassword({ email, password: pw });
     setLoading(false);
-
-    if (error) {
-      const msg = error.message?.toLowerCase() ?? '';
-      if (
-        error.code === 'invalid_grant' &&
-        (msg.includes('weak_password') || (msg.includes('password') && msg.includes('undefined')))
-      ) {
-        setErr('Use your Google/Facebook/Apple account to sign in');
-      } else {
-        setErr(error.message);
-      }
-      return;
-    }
+    if (error) return setErr(getAuthErrorMessage(error));
 
     if (data.session) {
       await supabase.auth.setSession({
@@ -57,12 +46,13 @@ export default function LoginWithPassword() {
         data: { user },
       } = await supabase.auth.getUser();
 
+      // Trigger MFA if any factor exists
       const factors = (user as any)?.factors ?? [];
       if (factors.length) {
         const f = factors[0];
         const { data: challenge, error: cErr } = await supabase.auth.mfa.challenge({ factorId: f.id });
         if (cErr) {
-          setErr(cErr.message);
+          setErr(getAuthErrorMessage(cErr));
           return;
         }
         setFactorId(f.id);
@@ -89,7 +79,7 @@ export default function LoginWithPassword() {
     setVerifying(false);
 
     if (error) {
-      setErr(error.message);
+      setErr(getAuthErrorMessage(error));
       return;
     }
 

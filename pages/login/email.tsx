@@ -3,10 +3,12 @@ import Link from 'next/link';
 import Image from 'next/image';
 import AuthLayout from '@/components/layouts/AuthLayout';
 import { Input } from '@/components/design-system/Input';
+import { PasswordInput } from '@/components/design-system/PasswordInput';
 import { Button } from '@/components/design-system/Button';
 import { Alert } from '@/components/design-system/Alert';
 import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser';
 import { redirectByRole } from '@/lib/routeAccess';
+import { getAuthErrorMessage } from '@/lib/authErrors';
 
 export default function LoginWithEmail() {
   const [email, setEmail] = useState('');
@@ -32,19 +34,7 @@ export default function LoginWithEmail() {
     setLoading(true);
     const { error, data } = await supabase.auth.signInWithPassword({ email, password: pw });
     setLoading(false);
-
-    if (error) {
-      const msg = error.message?.toLowerCase() ?? '';
-      if (
-        error.code === 'invalid_grant' &&
-        (msg.includes('weak_password') || (msg.includes('password') && msg.includes('undefined')))
-      ) {
-        setErr('Use your Google/Facebook/Apple account to sign in');
-      } else {
-        setErr(error.message);
-      }
-      return;
-    }
+    if (error) return setErr(getAuthErrorMessage(error));
 
     if (data.session) {
       await supabase.auth.setSession({
@@ -62,7 +52,7 @@ export default function LoginWithEmail() {
         const f = factors[0];
         const { data: challenge, error: cErr } = await supabase.auth.mfa.challenge({ factorId: f.id });
         if (cErr) {
-          setErr(cErr.message);
+          setErr(getAuthErrorMessage(cErr));
           return;
         }
         setFactorId(f.id);
@@ -90,7 +80,7 @@ export default function LoginWithEmail() {
     setVerifying(false);
 
     if (error) {
-      setErr(error.message);
+      setErr(getAuthErrorMessage(error));
       return;
     }
 
@@ -147,9 +137,8 @@ export default function LoginWithEmail() {
               autoComplete="email"
               required
             />
-            <Input
+            <PasswordInput
               label="Password"
-              type="password"
               placeholder="Your password"
               value={pw}
               onChange={(e) => setPw(e.target.value)}
