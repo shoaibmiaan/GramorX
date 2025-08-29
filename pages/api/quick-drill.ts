@@ -1,6 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { createClient } from '@supabase/supabase-js';
-import { env } from '@/lib/env';
+import { createSupabaseServerClient } from '@/lib/supabaseServer';
 
 // Simple placeholder drills for each skill
 const DRILLS: Record<string, string> = {
@@ -19,11 +18,7 @@ export default async function handler(
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const supabase = createClient(
-    env.NEXT_PUBLIC_SUPABASE_URL,
-    env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    { global: { headers: { Cookie: req.headers.cookie || '' } } }
-  );
+  const supabase = createSupabaseServerClient({ req });
 
   const {
     data: { user },

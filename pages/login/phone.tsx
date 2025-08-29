@@ -8,6 +8,7 @@ import { Alert } from '@/components/design-system/Alert';
 import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser';
 import { redirectByRole } from '@/lib/routeAccess';
 import { isValidE164Phone } from '@/utils/validation';
+import { getAuthErrorMessage } from '@/lib/authErrors';
 
 export default function LoginWithPhone() {
   const [phone, setPhone] = useState('');
@@ -29,9 +30,12 @@ export default function LoginWithPhone() {
     }
     setPhoneErr(null);
     setLoading(true);
-    const { error } = await supabase.auth.signInWithOtp({ phone: trimmedPhone, options: { shouldCreateUser: false } });
+    const { error } = await supabase.auth.signInWithOtp({
+      phone: trimmedPhone,
+      options: { shouldCreateUser: false },
+    });
     setLoading(false);
-    if (error) return setErr(error.message);
+    if (error) return setErr(getAuthErrorMessage(error));
     setResendAttempts(0);
     setStage('verify');
   }
@@ -40,22 +44,21 @@ export default function LoginWithPhone() {
     e.preventDefault();
     setErr(null);
     if (!code) return setErr('Enter the 6-digit code.');
+
     setLoading(true);
     // @ts-expect-error `token` is supported for verification
     const trimmedPhone = phone.trim();
     const { data, error } = await supabase.auth.signInWithOtp({ phone: trimmedPhone, token: code });
     setLoading(false);
-    if (error) return setErr(error.message);
+    if (error) return setErr(getAuthErrorMessage(error));
+
     if (data.session) {
       await supabase.auth.setSession({
         access_token: data.session.access_token,
         refresh_token: data.session.refresh_token,
       });
-      try {
-        await fetch('/api/auth/login-event', { method: 'POST' });
-      } catch (err) {
-        console.error(err);
-      }
+      try { await supabase.auth.updateUser({ data: { status: 'active' } }); } catch {}
+      try { await fetch('/api/auth/login-event', { method: 'POST' }); } catch {}
       redirectByRole(data.session.user);
     }
   }
@@ -65,10 +68,13 @@ export default function LoginWithPhone() {
     setLoading(true);
     setResending(true);
     const trimmedPhone = phone.trim();
-    const { error } = await supabase.auth.signInWithOtp({ phone: trimmedPhone, options: { shouldCreateUser: false } });
+    const { error } = await supabase.auth.signInWithOtp({
+      phone: trimmedPhone,
+      options: { shouldCreateUser: false },
+    });
     setLoading(false);
     setResending(false);
-    if (error) return setErr(error.message);
+    if (error) return setErr(getAuthErrorMessage(error));
     setResendAttempts((a) => a + 1);
   }
 
@@ -113,7 +119,14 @@ export default function LoginWithPhone() {
         </form>
       ) : (
         <form onSubmit={verifyOtp} className="space-y-6 mt-2">
-          <Input label="Verification code" inputMode="numeric" placeholder="123456" value={code} onChange={(e)=>setCode(e.target.value)} required />
+          <Input
+            label="Verification code"
+            inputMode="numeric"
+            placeholder="123456"
+            value={code}
+            onChange={(e)=>setCode(e.target.value)}
+            required
+          />
           <Button type="submit" variant="primary" className="w-full rounded-ds-xl" disabled={loading}>
             {loading && !resending ? 'Verifying…' : 'Verify & Continue'}
           </Button>

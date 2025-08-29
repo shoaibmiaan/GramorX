@@ -8,6 +8,7 @@ import { Button } from '@/components/design-system/Button';
 import { Alert } from '@/components/design-system/Alert';
 import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser';
 import { isValidE164Phone } from '@/utils/validation';
+import { getAuthErrorMessage } from '@/lib/authErrors';
 
 export default function SignupWithPhone() {
   const [phone, setPhone] = useState('');
@@ -35,12 +36,17 @@ export default function SignupWithPhone() {
     }
     setPhoneErr(null);
     setLoading(true);
+
+    const data: Record<string, string> = { status: 'pending_verification' };
+    if (referral) data.referral_code = referral.trim();
+
     const { error } = await supabase.auth.signInWithOtp({
       phone: trimmedPhone,
-      options: { shouldCreateUser: true, data: referral ? { referral_code: referral.trim() } : undefined },
+      options: { shouldCreateUser: true, data },
     });
+
     setLoading(false);
-    if (error) return setErr(error.message);
+    if (error) return setErr(getAuthErrorMessage(error));
     setStage('verify');
   }
 
@@ -48,16 +54,20 @@ export default function SignupWithPhone() {
     e.preventDefault();
     setErr(null);
     if (!code) return setErr('Enter the 6-digit code.');
+
     setLoading(true);
     const trimmedPhone = phone.trim();
     const { data, error } = await supabase.auth.verifyOtp({ phone: trimmedPhone, token: code, type: 'sms' });
     setLoading(false);
-    if (error) return setErr(error.message);
+
+    if (error) return setErr(getAuthErrorMessage(error));
+
     if (data.session) {
       await supabase.auth.setSession({
         access_token: data.session.access_token,
         refresh_token: data.session.refresh_token,
       });
+      try { await supabase.auth.updateUser({ data: { status: 'active' } }); } catch {}
       if (referral) {
         try {
           await fetch('/api/referrals', {
@@ -68,9 +78,7 @@ export default function SignupWithPhone() {
             },
             body: JSON.stringify({ code: referral.trim() }),
           });
-        } catch (err) {
-          // ignore
-        }
+        } catch {}
       }
       window.location.assign('/profile/setup');
     }

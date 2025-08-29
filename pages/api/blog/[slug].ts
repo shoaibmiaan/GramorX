@@ -1,7 +1,7 @@
 // pages/api/blog/[slug].ts
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { createClient } from '@supabase/supabase-js';
 import { env } from '@/lib/env';
+import { createSupabaseServerClient } from '@/lib/supabaseServer';
 
 export interface BlogPostResponse {
   ok: boolean;
@@ -29,11 +29,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   const slug = String(req.query.slug || '').trim();
   if (!slug) return res.status(400).json({ ok: false, message: 'Missing slug' });
 
-  const url = env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !serviceKey) return res.status(500).json({ ok: false, message: 'Server misconfigured' });
+  const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY; // ensure env parsed
+  if (!serviceKey) return res.status(500).json({ ok: false, message: 'Server misconfigured' });
 
-  const supa = createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
+  const supa = createSupabaseServerClient({ serviceRole: true });
   const { data, error } = await supa
     .from('blog_posts')
     .select('id,slug,title,excerpt,content_md,category,tags,read_min,likes,published_at,hero_image_url')

@@ -1,20 +1,13 @@
-import { env } from "@/lib/env";
 // pages/api/speaking/signed-url.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { createClient } from '@supabase/supabase-js';
-
-const URL = env.NEXT_PUBLIC_SUPABASE_URL;
-const ANON = env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const SERVICE = env.SUPABASE_SERVICE_ROLE_KEY; // <-- add to env (server only)
+import { createSupabaseServerClient } from '@/lib/supabaseServer';
 
 // Server client for storage signing + DB auth checks
-const svc = createClient(URL, SERVICE, { auth: { persistSession: false } });
+const svc = createSupabaseServerClient({ serviceRole: true });
 
 // Helper to get the authed user from cookie or Bearer
 function authClient(req: NextApiRequest) {
-  const headers: Record<string, string> = {};
-  if (req.headers.authorization) headers['Authorization'] = String(req.headers.authorization);
-  return createClient(URL, ANON, { global: { headers }, auth: { persistSession: false } });
+  return createSupabaseServerClient({ req });
 }
 
 // Parse bucket/object from various inputs

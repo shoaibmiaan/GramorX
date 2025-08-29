@@ -1,7 +1,6 @@
 // pages/api/support.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { createClient } from '@supabase/supabase-js';
-import { env } from '@/lib/env';
+import { createSupabaseServerClient } from '@/lib/supabaseServer';
 
 /** ========= Types ========= */
 type SupportCategory = 'account' | 'billing' | 'modules' | 'ai' | 'technical' | 'other';
@@ -86,16 +85,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     return res.status(405).json({ ok: false, message: 'Method Not Allowed' });
   }
 
-  // Validate env for server-only Supabase client
-  const url = env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceRoleKey = env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !serviceRoleKey) {
-    return res.status(500).json({
-      ok: false,
-      message: 'Server misconfigured: missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY.',
-    });
-  }
-
   // Validate body
   const parsed = asSupportRequest(req.body as unknown);
   if (!parsed.ok) {
@@ -106,9 +95,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   const ticketId = makeTicketId();
 
   // Create server-side Supabase client (service role; bypasses RLS)
-  const supabaseAdmin = createClient(url, serviceRoleKey, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
+  const supabaseAdmin = createSupabaseServerClient({ serviceRole: true });
 
   // Insert into public.support_tickets
   const { error } = await supabaseAdmin.from('support_tickets').insert({

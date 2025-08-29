@@ -1,6 +1,5 @@
-import { env } from '@/lib/env';
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { createClient } from '@supabase/supabase-js';
+import { createSupabaseServerClient } from '@/lib/supabaseServer';
 
 export default async function handler(
   req: NextApiRequest,
@@ -14,11 +13,7 @@ export default async function handler(
   const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
   if (!token) return res.status(401).json({ error: 'Unauthorized' });
 
-  const supabase = createClient(
-    env.NEXT_PUBLIC_SUPABASE_URL as string,
-    env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string,
-    { global: { headers: { Authorization: `Bearer ${token}` } } }
-  );
+  const supabase = createSupabaseServerClient({ headers: { Authorization: auth } });
 
   const { data: userData, error: userError } = await supabase.auth.getUser();
   const user = userData?.user;

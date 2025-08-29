@@ -1,4 +1,3 @@
-// pages/signup/password.tsx
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -40,8 +39,15 @@ export default function SignupWithPassword() {
       setEmailErr('Enter a valid email address.');
       return;
     }
-
     setEmailErr(null);
+
+    // Keep (and slightly strengthen) the password rule from main
+    // At least 8 chars, include letters & numbers; you can expand later to include symbols.
+    const pwRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d\S]{8,}$/;
+    if (!pwRegex.test(pw)) {
+      setErr('Use a stronger password (min 8 chars, include letters and numbers).');
+      return;
+    }
 
     try {
       setLoading(true);
@@ -59,13 +65,15 @@ export default function SignupWithPassword() {
       setLoading(false);
 
       if (error) {
-        setErr(error.message);
+        if (error.code === 'user_exists') {
+          setErr('user_exists');
+        } else {
+          setErr(error.message);
+        }
         return;
       }
 
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+      const { data: { session } } = await supabase.auth.getSession();
       if (referral && session) {
         try {
           await fetch('/api/referrals', {
@@ -76,7 +84,7 @@ export default function SignupWithPassword() {
             },
             body: JSON.stringify({ code: referral.trim() }),
           });
-        } catch (err) {
+        } catch {
           // ignore
         }
       }
@@ -90,7 +98,6 @@ export default function SignupWithPassword() {
     }
   }
 
-  // Right side: large logo only (preserves your split-screen design)
   const RightPanel = (
     <div className="hidden md:flex w-1/2 relative items-center justify-center bg-primary/10 dark:bg-dark">
       <Image
@@ -112,7 +119,17 @@ export default function SignupWithPassword() {
     >
       {err && (
         <Alert variant="error" title="Error" className="mb-4">
-          {err}
+          {err === 'user_exists' ? (
+            <>
+              Account already exists. Try{' '}
+              <Link href="/login" className="underline">
+                logging in
+              </Link>
+              .
+            </>
+          ) : (
+            err
+          )}
         </Alert>
       )}
 
