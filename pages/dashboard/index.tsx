@@ -215,6 +215,28 @@ export default function Dashboard() {
           </Card>
         </div>
 
+        {/* Next suggested lessons */}
+        {(ai.sequence ?? []).length > 0 && (
+          <div className="mt-10">
+            <h2 className="font-slab text-h2 mb-4">Next Lessons</h2>
+            <div className="grid gap-6 md:grid-cols-3">
+              {(ai.sequence ?? []).slice(0, 3).map((s) => (
+                <Card key={s} className="p-6 rounded-ds-2xl flex flex-col">
+                  <h3 className="font-slab text-h3 mb-2">{s}</h3>
+                  <Button
+                    as="a"
+                    href={`/learning/skills/${s.toLowerCase()}`}
+                    variant="primary"
+                    className="mt-auto rounded-ds-xl"
+                  >
+                    Start
+                  </Button>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Visa gap summary */}
         <div className="mt-10">
           <GapToGoal />
