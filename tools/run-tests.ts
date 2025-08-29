@@ -29,9 +29,9 @@ ensure('TWILIO_AUTH_TOKEN', 'dummytoken');
 ensure('TWILIO_VERIFY_SERVICE_SID', 'VAXxxxxxxxxxxxxxxxxxxxxxxxx');
 ensure('TWILIO_WHATSAPP_FROM', 'whatsapp:+10000000000');
 
-// ---- Collect tests only from _tests_ (skip lib/*.test.ts for now) ----------
+// ---- Collect tests from _tests_ and __tests__ (skip lib/*.test.ts for now) ---
 const ROOT = process.cwd();
-const TESTS_ROOT = path.join(ROOT, '_tests_');
+const TEST_DIRS = ['_tests_', '__tests__'];
 
 function collectTests(dir: string, out: string[] = []): string[] {
   if (!fs.existsSync(dir)) return out;
@@ -45,10 +45,10 @@ function collectTests(dir: string, out: string[] = []): string[] {
 }
 
 (async () => {
-  const testFiles = collectTests(TESTS_ROOT);
+  const testFiles = TEST_DIRS.flatMap((d) => collectTests(path.join(ROOT, d)));
 
   if (testFiles.length === 0) {
-    console.log('No tests found in _tests_. Exiting OK.');
+    console.log('No tests found. Exiting OK.');
     process.exit(0);
   }
 

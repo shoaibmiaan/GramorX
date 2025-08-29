@@ -8,11 +8,13 @@ import { Button } from '@/components/design-system/Button';
 import { Alert } from '@/components/design-system/Alert';
 import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser';
 import { redirectByRole } from '@/lib/routeAccess';
+import { isValidEmail } from '@/utils/validation';
 import { getAuthErrorMessage } from '@/lib/authErrors';
 
 export default function LoginWithEmail() {
   const [email, setEmail] = useState('');
   const [pw, setPw] = useState('');
+  const [emailErr, setEmailErr] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -26,12 +28,37 @@ export default function LoginWithEmail() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setErr(null);
-    if (!email || !pw) return setErr('Email and password are required.');
+
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail || !pw) {
+      setErr('Email and password are required.');
+      return;
+    }
+    if (!isValidEmail(trimmedEmail)) {
+      setEmailErr('Enter a valid email address.');
+      return;
+    }
+    setEmailErr(null);
 
     setLoading(true);
-    const { error, data } = await supabase.auth.signInWithPassword({ email, password: pw });
+    const { error, data } = await supabase.auth.signInWithPassword({
+      email: trimmedEmail,
+      password: pw,
+    });
     setLoading(false);
-    if (error) return setErr(getAuthErrorMessage(error));
+
+    if (error) {
+      const msg = error.message?.toLowerCase() ?? '';
+      if (
+        error.code === 'invalid_grant' &&
+        (msg.includes('weak_password') || (msg.includes('password') && msg.includes('undefined')))
+      ) {
+        setErr('Use your Google/Facebook/Apple account to sign in');
+      } else {
+        setErr(getAuthErrorMessage(error));
+      }
+      return;
+    }
 
     if (data.session) {
       await supabase.auth.setSession({
@@ -94,8 +121,28 @@ export default function LoginWithEmail() {
 
       {!otpSent ? (
         <form onSubmit={onSubmit} className="space-y-6 mt-2">
-          <Input label="Email" type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} autoComplete="email" required />
-          <PasswordInput label="Password" placeholder="Your password" value={pw} onChange={e => setPw(e.target.value)} autoComplete="current-password" required />
+          <Input
+            label="Email"
+            type="email"
+            placeholder="you@example.com"
+            value={email}
+            onChange={(e) => {
+              const v = e.target.value;
+              setEmail(v);
+              setEmailErr(!v || isValidEmail(v.trim()) ? null : 'Enter a valid email address.');
+            }}
+            autoComplete="email"
+            required
+            error={emailErr ?? undefined}
+          />
+          <PasswordInput
+            label="Password"
+            placeholder="Your password"
+            value={pw}
+            onChange={e => setPw(e.target.value)}
+            autoComplete="current-password"
+            required
+          />
           <Button type="submit" variant="primary" className="w-full rounded-ds-xl" disabled={loading}>
             {loading ? 'Signing in…' : 'Continue'}
           </Button>
