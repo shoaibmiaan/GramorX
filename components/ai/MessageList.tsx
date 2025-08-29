@@ -55,14 +55,14 @@ export function MessageList({
           <div className="mt-3 flex items-center justify-center gap-2">
             <button
               onClick={newChat}
-              className="text-caption rounded-full px-3 py-1 bg-card border border-border hover:bg-accent"
+              className="form-control text-small rounded-full px-3 bg-card border border-border hover:bg-accent"
             >
               New chat
             </button>
             <button
               onClick={toggleVoice}
               disabled={!voiceSupported || voiceDenied}
-              className="text-caption rounded-full px-3 py-1 border border-border bg-card hover:bg-accent disabled:opacity-50"
+              className="form-control text-small rounded-full px-3 border border-border bg-card hover:bg-accent disabled:opacity-50"
               title={
                 voiceSupported
                   ? voiceDenied
@@ -76,7 +76,7 @@ export function MessageList({
               🎙 {listening ? 'Stop' : 'Speak'}
             </button>
           </div>
-          <div className="mt-2 text-tiny text-muted-foreground/80">Tip: Alt+A toggles anywhere.</div>
+          <div className="mt-2 text-small text-muted-foreground/80">Tip: Alt+A toggles anywhere.</div>
         </div>
       )}
 
@@ -90,7 +90,7 @@ export function MessageList({
           }`}
           aria-live={m.id === streamingId ? 'polite' : undefined}
         >
-          <div className="text-micro uppercase tracking-wider text-muted-foreground mb-1">
+          <div className="text-small uppercase tracking-wider text-muted-foreground mb-1">
             {m.role === 'user' ? 'You' : 'GramorX AI'}
           </div>
           <div className="prose prose-sm dark:prose-invert max-w-none">
@@ -100,7 +100,7 @@ export function MessageList({
       ))}
 
       {loading && (
-        <div className="text-caption text-muted-foreground animate-pulse">Thinking…</div>
+        <div className="text-small text-muted-foreground animate-pulse">Thinking…</div>
       )}
     </div>
   );

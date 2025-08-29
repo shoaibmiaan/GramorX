@@ -28,6 +28,14 @@ module.exports = {
     '@next/next/no-img-element': 'warn',
     '@next/next/no-css-tags': 'warn',
     'react-hooks/exhaustive-deps': 'warn',
+    'no-restricted-syntax': [
+      'error',
+      {
+        selector: "Literal[value=/\\btext-(?:caption|tiny|micro)\\b/]",
+        message:
+          'Avoid undersized typography classes (text-caption/text-tiny/text-micro). Use text-small or text-body instead.',
+      },
+    ],
   },
   overrides: [
     // API routes & tests: loosen typing during sprint

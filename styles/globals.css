@@ -185,11 +185,14 @@ body { @apply font-sans text-lightText bg-lightBg overflow-x-hidden relative; }
 .section-dark { @apply bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90; }
 
 /* AI sidebar helpers (theme aware, token-only) */
+.form-control{
+  @apply min-h-11;
+}
 .ai-icon-btn{
-  @apply h-8 w-8 grid place-items-center rounded-md border border-border bg-card text-card-foreground hover:bg-accent hover:text-card-foreground disabled:opacity-50;
+  @apply form-control w-11 grid place-items-center rounded-md border border-border bg-card text-card-foreground hover:bg-accent hover:text-card-foreground disabled:opacity-50;
 }
 .ai-tab{
-  @apply h-8 px-3 rounded-md border border-border bg-card text-caption text-card-foreground hover:bg-accent hover:text-foreground;
+  @apply form-control px-3 rounded-md border border-border bg-card text-small text-card-foreground hover:bg-accent hover:text-foreground;
 }
 .ai-tab.is-active{
   @apply bg-primary text-primary-foreground;
