@@ -5,6 +5,7 @@ import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { useStreak } from '@/hooks/useStreak';
 import { Breadcrumbs, type Crumb } from '@/components/design-system/Breadcrumbs';
+import { BottomNav } from '@/components/navigation/BottomNav';
 
 export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { current } = useStreak();
@@ -27,6 +28,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         {children}
       </main>
       <Footer />
+      <BottomNav />
     </>
   );
 };
