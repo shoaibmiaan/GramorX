@@ -1,7 +1,7 @@
 // pages/api/blog/moderate.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { createClient } from '@supabase/supabase-js';
 import { env } from '@/lib/env';
+import { createSupabaseServerClient } from '@/lib/supabaseServer';
 
 export interface ModerateRequest {
   slug: string;
@@ -35,14 +35,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     return bad(res, 403, 'Forbidden');
   }
 
-  const url = env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !serviceKey) return bad(res, 500, 'Server misconfigured.');
+  if (!serviceKey) return bad(res, 500, 'Server misconfigured.');
 
   const parsed = validate(req.body as unknown);
   if (!parsed.ok) return bad(res, 400, 'Validation failed', parsed.errors);
 
-  const supa = createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
+  const supa = createSupabaseServerClient({ serviceRole: true });
   const now = new Date().toISOString();
 
   if (parsed.data.action === 'approve') {

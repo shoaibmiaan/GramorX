@@ -1,8 +1,7 @@
-import { env } from '@/lib/env';
 // pages/api/admin/set-pin.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { createClient } from '@supabase/supabase-js';
 import { requireRole } from '@/lib/requireRole';
+import { createSupabaseServerClient } from '@/lib/supabaseServer';
 
 type Resp = { ok: true; status: string } | { ok: false; error: string };
 
@@ -22,10 +21,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   if (!/^\d{4,6}$/.test(String(newPin))) return res.status(400).json({ ok: false, error: 'PIN must be 4–6 digits' });
 
   // 3) Call admin RPC with service_role (server only)
-  const svc = createClient(
-    env.NEXT_PUBLIC_SUPABASE_URL as string,
-    env.SUPABASE_SERVICE_ROLE_KEY as string
-  );
+  const svc = createSupabaseServerClient({ serviceRole: true });
 
   const { data, error } = await svc.rpc('admin_set_premium_pin', { user_email: email, new_pin: String(newPin) });
   if (error) return res.status(500).json({ ok: false, error: error.message });

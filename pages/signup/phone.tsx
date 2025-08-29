@@ -7,11 +7,14 @@ import { Input } from '@/components/design-system/Input';
 import { Button } from '@/components/design-system/Button';
 import { Alert } from '@/components/design-system/Alert';
 import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser';
+import { isValidE164Phone } from '@/utils/validation';
+import { getAuthErrorMessage } from '@/lib/authErrors';
 
 export default function SignupWithPhone() {
   const [phone, setPhone] = useState('');
   const [code, setCode] = useState('');
   const [stage, setStage] = useState<'request' | 'verify'>('request');
+  const [phoneErr, setPhoneErr] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [referral, setReferral] = useState('');
@@ -26,16 +29,24 @@ export default function SignupWithPhone() {
   async function requestOtp(e: React.FormEvent) {
     e.preventDefault();
     setErr(null);
-    if (!phone) return setErr('Enter your phone number in E.164 format, e.g. +923001234567');
+    const trimmedPhone = phone.trim();
+    if (!isValidE164Phone(trimmedPhone)) {
+      setPhoneErr('Enter your phone number in E.164 format, e.g. +923001234567');
+      return;
+    }
+    setPhoneErr(null);
     setLoading(true);
+
     const data: Record<string, string> = { status: 'pending_verification' };
     if (referral) data.referral_code = referral.trim();
+
     const { error } = await supabase.auth.signInWithOtp({
-      phone,
+      phone: trimmedPhone,
       options: { shouldCreateUser: true, data },
     });
+
     setLoading(false);
-    if (error) return setErr(error.message);
+    if (error) return setErr(getAuthErrorMessage(error));
     setStage('verify');
   }
 
@@ -43,21 +54,20 @@ export default function SignupWithPhone() {
     e.preventDefault();
     setErr(null);
     if (!code) return setErr('Enter the 6-digit code.');
+
     setLoading(true);
-    const { data, error } = await supabase.auth.verifyOtp({ phone, token: code, type: 'sms' });
+    const trimmedPhone = phone.trim();
+    const { data, error } = await supabase.auth.verifyOtp({ phone: trimmedPhone, token: code, type: 'sms' });
     setLoading(false);
-    if (error) return setErr(error.message);
+
+    if (error) return setErr(getAuthErrorMessage(error));
+
     if (data.session) {
       await supabase.auth.setSession({
         access_token: data.session.access_token,
         refresh_token: data.session.refresh_token,
       });
-      // Mark account as verified
-      try {
-        await supabase.auth.updateUser({ data: { status: 'active' } });
-      } catch {
-        // ignore update failures
-      }
+      try { await supabase.auth.updateUser({ data: { status: 'active' } }); } catch {}
       if (referral) {
         try {
           await fetch('/api/referrals', {
@@ -68,9 +78,7 @@ export default function SignupWithPhone() {
             },
             body: JSON.stringify({ code: referral.trim() }),
           });
-        } catch (err) {
-          // ignore
-        }
+        } catch {}
       }
       window.location.assign('/profile/setup');
     }
@@ -102,9 +110,14 @@ export default function SignupWithPhone() {
             type="tel"
             placeholder="+923001234567"
             value={phone}
-            onChange={(e) => setPhone(e.target.value)}
+            onChange={(e) => {
+              const v = e.target.value;
+              setPhone(v);
+              setPhoneErr(!v || isValidE164Phone(v.trim()) ? null : 'Enter your phone number in E.164 format, e.g. +923001234567');
+            }}
             required
             hint="Use E.164 format, e.g. +923001234567"
+            error={phoneErr ?? undefined}
           />
           <Input
             label="Referral code (optional)"

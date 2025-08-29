@@ -1,11 +1,11 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import Twilio from "twilio";
-import { createClient } from "@supabase/supabase-js";
 import { env } from "@/lib/env";
+import { createSupabaseServerClient } from "@/lib/supabaseServer";
 
-const { TWILIO_AUTH_TOKEN, NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY } = env;
+const { TWILIO_AUTH_TOKEN } = env;
 
-const supa = createClient(NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+const supa = createSupabaseServerClient({ serviceRole: true });
 
 export const config = { api: { bodyParser: true } };
 

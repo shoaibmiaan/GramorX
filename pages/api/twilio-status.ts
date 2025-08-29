@@ -1,11 +1,11 @@
 // pages/api/twilio-status.ts
 import { NextApiRequest, NextApiResponse } from "next";
 import Twilio from "twilio";
-import { createClient } from "@supabase/supabase-js";
 import { env } from "@/lib/env";
+import { createSupabaseServerClient } from "@/lib/supabaseServer";
 
-const { TWILIO_AUTH_TOKEN, SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
-const supa = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+const { TWILIO_AUTH_TOKEN } = env;
+const supa = createSupabaseServerClient({ serviceRole: true });
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") return res.status(405).end();

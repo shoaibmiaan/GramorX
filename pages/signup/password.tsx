@@ -1,4 +1,3 @@
-// pages/signup/password.tsx
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -9,10 +8,12 @@ import { PasswordInput } from '@/components/design-system/PasswordInput';
 import { Button } from '@/components/design-system/Button';
 import { Alert } from '@/components/design-system/Alert';
 import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser';
+import { isValidEmail } from '@/utils/validation';
 
 export default function SignupWithPassword() {
   const [email, setEmail] = useState('');
   const [pw, setPw] = useState('');
+  const [emailErr, setEmailErr] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [referral, setReferral] = useState('');
@@ -28,21 +29,30 @@ export default function SignupWithPassword() {
     e.preventDefault();
     setErr(null);
 
-    if (!email || !pw) {
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail || !pw) {
       setErr('Please fill in all fields.');
       return;
     }
 
-    const pwRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+    if (!isValidEmail(trimmedEmail)) {
+      setEmailErr('Enter a valid email address.');
+      return;
+    }
+    setEmailErr(null);
+
+    // Keep (and slightly strengthen) the password rule from main
+    // At least 8 chars, include letters & numbers; you can expand later to include symbols.
+    const pwRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d\S]{8,}$/;
     if (!pwRegex.test(pw)) {
-      setErr('Use a stronger password');
+      setErr('Use a stronger password (min 8 chars, include letters and numbers).');
       return;
     }
 
     try {
       setLoading(true);
       const { error } = await supabase.auth.signUp({
-        email,
+        email: trimmedEmail,
         password: pw,
         options: {
           emailRedirectTo:
@@ -63,9 +73,7 @@ export default function SignupWithPassword() {
         return;
       }
 
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+      const { data: { session } } = await supabase.auth.getSession();
       if (referral && session) {
         try {
           await fetch('/api/referrals', {
@@ -76,13 +84,13 @@ export default function SignupWithPassword() {
             },
             body: JSON.stringify({ code: referral.trim() }),
           });
-        } catch (err) {
+        } catch {
           // ignore
         }
       }
 
       if (typeof window !== 'undefined') {
-        window.location.assign(`/auth/verify?email=${encodeURIComponent(email)}`);
+        window.location.assign(`/auth/verify?email=${encodeURIComponent(trimmedEmail)}`);
       }
     } catch (e: any) {
       setLoading(false);
@@ -90,7 +98,6 @@ export default function SignupWithPassword() {
     }
   }
 
-  // Right side: large logo only (preserves your split-screen design)
   const RightPanel = (
     <div className="hidden md:flex w-1/2 relative items-center justify-center bg-primary/10 dark:bg-dark">
       <Image
@@ -132,9 +139,14 @@ export default function SignupWithPassword() {
           type="email"
           placeholder="you@example.com"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e) => {
+            const v = e.target.value;
+            setEmail(v);
+            setEmailErr(!v || isValidEmail(v.trim()) ? null : 'Enter a valid email address.');
+          }}
           autoComplete="email"
           required
+          error={emailErr ?? undefined}
         />
         <PasswordInput
           label="Password"

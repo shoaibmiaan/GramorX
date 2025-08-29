@@ -7,11 +7,14 @@ import { Button } from '@/components/design-system/Button';
 import { Alert } from '@/components/design-system/Alert';
 import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser';
 import { redirectByRole } from '@/lib/routeAccess';
+import { isValidE164Phone } from '@/utils/validation';
+import { getAuthErrorMessage } from '@/lib/authErrors';
 
 export default function LoginWithPhone() {
   const [phone, setPhone] = useState('');
   const [code, setCode] = useState('');
   const [stage, setStage] = useState<'request' | 'verify'>('request');
+  const [phoneErr, setPhoneErr] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
@@ -20,11 +23,19 @@ export default function LoginWithPhone() {
   async function requestOtp(e: React.FormEvent) {
     e.preventDefault();
     setErr(null);
-    if (!phone) return setErr('Enter your phone number in E.164 format, e.g. +923001234567');
+    const trimmedPhone = phone.trim();
+    if (!isValidE164Phone(trimmedPhone)) {
+      setPhoneErr('Enter your phone number in E.164 format, e.g. +923001234567');
+      return;
+    }
+    setPhoneErr(null);
     setLoading(true);
-    const { error } = await supabase.auth.signInWithOtp({ phone, options: { shouldCreateUser: false } });
+    const { error } = await supabase.auth.signInWithOtp({
+      phone: trimmedPhone,
+      options: { shouldCreateUser: false },
+    });
     setLoading(false);
-    if (error) return setErr(error.message);
+    if (error) return setErr(getAuthErrorMessage(error));
     setResendAttempts(0);
     setStage('verify');
   }
@@ -33,27 +44,21 @@ export default function LoginWithPhone() {
     e.preventDefault();
     setErr(null);
     if (!code) return setErr('Enter the 6-digit code.');
+
+    const trimmedPhone = phone.trim();
     setLoading(true);
     // @ts-expect-error `token` is supported for verification
-    const { data, error } = await supabase.auth.signInWithOtp({ phone, token: code });
+    const { data, error } = await supabase.auth.signInWithOtp({ phone: trimmedPhone, token: code });
     setLoading(false);
-    if (error) return setErr(error.message);
+    if (error) return setErr(getAuthErrorMessage(error));
+
     if (data.session) {
       await supabase.auth.setSession({
         access_token: data.session.access_token,
         refresh_token: data.session.refresh_token,
       });
-      // Ensure account is marked as verified
-      try {
-        await supabase.auth.updateUser({ data: { status: 'active' } });
-      } catch {
-        // ignore update failures
-      }
-      try {
-        await fetch('/api/auth/login-event', { method: 'POST' });
-      } catch (err) {
-        console.error(err);
-      }
+      try { await supabase.auth.updateUser({ data: { status: 'active' } }); } catch {}
+      try { await fetch('/api/auth/login-event', { method: 'POST' }); } catch {}
       redirectByRole(data.session.user);
     }
   }
@@ -63,8 +68,12 @@ export default function LoginWithPhone() {
     setResending(true);
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithOtp({ phone, options: { shouldCreateUser: false } });
-      if (error) return setErr(error.message);
+      const trimmedPhone = phone.trim();
+      const { error } = await supabase.auth.signInWithOtp({
+        phone: trimmedPhone,
+        options: { shouldCreateUser: false },
+      });
+      if (error) return setErr(getAuthErrorMessage(error));
       setResendAttempts((a) => a + 1);
     } finally {
       setLoading(false);
@@ -82,7 +91,7 @@ export default function LoginWithPhone() {
         <p className="text-body text-grayish dark:text-gray-300 max-w-md">Use a one-time SMS code to sign in.</p>
       </div>
       <div className="pt-8 text-small text-grayish dark:text-gray-400">
-        Prefer email? <Link href="/login/email" className="text-primary hover:underline">Use email & password</Link>
+        Prefer email? <Link href="/login/email" className="text-primary hover:underline">Use email &amp; password</Link>
       </div>
     </div>
   );
@@ -98,9 +107,14 @@ export default function LoginWithPhone() {
             type="tel"
             placeholder="+923001234567"
             value={phone}
-            onChange={(e) => setPhone(e.target.value)}
+            onChange={(e) => {
+              const v = e.target.value;
+              setPhone(v);
+              setPhoneErr(!v || isValidE164Phone(v.trim()) ? null : 'Enter your phone number in E.164 format, e.g. +923001234567');
+            }}
             required
             hint="Use E.164 format, e.g. +923001234567"
+            error={phoneErr ?? undefined}
           />
           <Button type="submit" variant="primary" className="w-full rounded-ds-xl" disabled={loading}>
             {loading ? 'Sending…' : 'Send code'}
@@ -108,11 +122,29 @@ export default function LoginWithPhone() {
         </form>
       ) : (
         <form onSubmit={verifyOtp} className="space-y-6 mt-2">
-          <Input label="Verification code" inputMode="numeric" placeholder="123456" value={code} onChange={(e)=>setCode(e.target.value)} required />
-          <Button type="submit" variant="primary" className="w-full rounded-ds-xl" disabled={loading}>
+          <Input
+            label="Verification code"
+            inputMode="numeric"
+            placeholder="123456"
+            value={code}
+            onChange={(e)=>setCode(e.target.value)}
+            required
+          />
+          <Button
+            type="submit"
+            variant="primary"
+            className="w-full rounded-ds-xl"
+            disabled={loading && !resending}
+          >
             {loading && !resending ? 'Verifying…' : 'Verify & Continue'}
           </Button>
-          <Button type="button" variant="secondary" className="w-full rounded-ds-xl" onClick={resendOtp} disabled={loading}>
+          <Button
+            type="button"
+            variant="secondary"
+            className="w-full rounded-ds-xl"
+            onClick={resendOtp}
+            disabled={loading}
+          >
             {loading && resending ? 'Resending…' : `Resend code${resendAttempts ? ` (${resendAttempts})` : ''}`}
           </Button>
         </form>
