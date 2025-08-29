@@ -32,6 +32,7 @@ const supabaseClient = {
               id: 'user1',
               app_metadata: { role: 'student' },
               user_metadata: {},
+              email_confirmed_at: '2024-01-01T00:00:00Z',
             },
             access_token: 'tok',
             refresh_token: 'ref',
@@ -41,6 +42,7 @@ const supabaseClient = {
       };
     },
     setSession: async () => {},
+    signOut: async () => {},
   },
 };
 require.cache[require.resolve('@supabase/supabase-js')] = {
