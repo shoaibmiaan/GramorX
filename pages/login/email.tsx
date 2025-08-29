@@ -5,47 +5,36 @@ import AuthLayout from '@/components/layouts/AuthLayout';
 import { Input } from '@/components/design-system/Input';
 import { PasswordInput } from '@/components/design-system/PasswordInput';
 import { Button } from '@/components/design-system/Button';
-import { Alert } from '@/components/design-system/Alert';
 import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser';
 import { redirectByRole } from '@/lib/routeAccess';
 import { isValidEmail } from '@/utils/validation';
 import { getAuthErrorMessage } from '@/lib/authErrors';
+import { useAsyncAction } from '@/hooks/useAsyncAction';
 
 export default function LoginWithEmail() {
   const [email, setEmail] = useState('');
   const [pw, setPw] = useState('');
   const [emailErr, setEmailErr] = useState<string | null>(null);
-  const [err, setErr] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
 
   // MFA state
   const [otp, setOtp] = useState('');
   const [otpSent, setOtpSent] = useState(false);
   const [factorId, setFactorId] = useState<string | null>(null);
   const [challengeId, setChallengeId] = useState<string | null>(null);
-  const [verifying, setVerifying] = useState(false);
 
-  async function onSubmit(e: React.FormEvent) {
+  const [onSubmit, loading] = useAsyncAction(async (e: React.FormEvent) => {
     e.preventDefault();
-    setErr(null);
-
     const trimmedEmail = email.trim();
-    if (!trimmedEmail || !pw) {
-      setErr('Email and password are required.');
-      return;
-    }
+    if (!trimmedEmail || !pw) throw new Error('Email and password are required.');
     if (!isValidEmail(trimmedEmail)) {
       setEmailErr('Enter a valid email address.');
       return;
     }
     setEmailErr(null);
-
-    setLoading(true);
     const { error, data } = await supabase.auth.signInWithPassword({
       email: trimmedEmail,
       password: pw,
     });
-    setLoading(false);
 
     if (error) {
       const msg = error.message?.toLowerCase() ?? '';
@@ -53,11 +42,10 @@ export default function LoginWithEmail() {
         error.code === 'invalid_grant' &&
         (msg.includes('weak_password') || (msg.includes('password') && msg.includes('undefined')))
       ) {
-        setErr('Use your Google/Facebook/Apple account to sign in');
+        throw new Error('Use your Google/Facebook/Apple account to sign in');
       } else {
-        setErr(getAuthErrorMessage(error));
+        throw new Error(getAuthErrorMessage(error));
       }
-      return;
     }
 
     if (data.session) {
@@ -71,7 +59,7 @@ export default function LoginWithEmail() {
       if (factors.length) {
         const f = factors[0];
         const { data: challenge, error: cErr } = await supabase.auth.mfa.challenge({ factorId: f.id });
-        if (cErr) return setErr(getAuthErrorMessage(cErr));
+        if (cErr) throw new Error(getAuthErrorMessage(cErr));
         setFactorId(f.id);
         setChallengeId(challenge?.id ?? null);
         setOtpSent(true);
@@ -81,22 +69,18 @@ export default function LoginWithEmail() {
       try { await fetch('/api/auth/login-event', { method: 'POST' }); } catch {}
       redirectByRole(data.session.user);
     }
-  }
-
-  async function verifyOtp(e: React.FormEvent) {
+  }, { error: 'Unable to sign in.' });
+  const [verifyOtpAction, verifying] = useAsyncAction(async (e: React.FormEvent) => {
     e.preventDefault();
     if (!factorId || !challengeId) return;
 
-    setVerifying(true);
     const { error } = await supabase.auth.mfa.verify({ factorId, challengeId, code: otp });
-    setVerifying(false);
-
-    if (error) return setErr(getAuthErrorMessage(error));
+    if (error) throw new Error(getAuthErrorMessage(error));
 
     try { await fetch('/api/auth/login-event', { method: 'POST' }); } catch {}
     const { data: { user } } = await supabase.auth.getUser();
     if (user) redirectByRole(user);
-  }
+  }, { error: 'Could not verify code' });
 
   const RightPanel = (
     <div className="h-full flex flex-col justify-between p-8 md:p-12 bg-gradient-to-br from-purpleVibe/10 via-electricBlue/5 to-neonGreen/10 dark:from-dark/50 dark:via-dark/30 dark:to-darker/60">
@@ -117,8 +101,6 @@ export default function LoginWithEmail() {
 
   return (
     <AuthLayout title="Sign in with Email" subtitle="Use your email & password." right={RightPanel}>
-      {err && <Alert variant="error" title="Error">{err}</Alert>}
-
       {!otpSent ? (
         <form onSubmit={onSubmit} className="space-y-6 mt-2">
           <Input
@@ -151,7 +133,7 @@ export default function LoginWithEmail() {
           </Button>
         </form>
       ) : (
-        <form onSubmit={verifyOtp} className="space-y-6 mt-2 max-w-xs">
+        <form onSubmit={verifyOtpAction} className="space-y-6 mt-2 max-w-xs">
           <Input label="Enter OTP" value={otp} onChange={e => setOtp(e.target.value)} autoComplete="one-time-code" placeholder="6-digit code" required />
           <Button type="submit" variant="primary" className="w-full rounded-ds-xl" disabled={verifying}>
             {verifying ? 'Verifying…' : 'Verify'}

@@ -4,8 +4,8 @@ import Image from 'next/image';
 import { useRouter } from 'next/router';
 import AuthLayout from '@/components/layouts/AuthLayout';
 import { Button } from '@/components/design-system/Button';
-import { Alert } from '@/components/design-system/Alert';
 import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser';
+import { useAsyncAction } from '@/hooks/useAsyncAction';
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
@@ -16,7 +16,6 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 }
 
 export default function LoginOptions() {
-  const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState<'apple' | 'google' | 'facebook' | null>(null);
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
   const router = useRouter();
@@ -58,11 +57,9 @@ export default function LoginOptions() {
     router.replace({ pathname: router.pathname, query: { ...rest } }, undefined, { shallow: true });
   }
 
-  async function oauth(provider: 'apple' | 'google' | 'facebook') {
+  const [oauth] = useAsyncAction(async (provider: 'apple' | 'google' | 'facebook') => {
+    setBusy(provider);
     try {
-      setErr(null);
-      setBusy(provider);
-
       const origin = typeof window !== 'undefined' ? window.location.origin : undefined;
       const next = `/dashboard${selectedRole ? `?role=${encodeURIComponent(selectedRole)}` : ''}`;
       const redirectTo = origin
@@ -74,12 +71,10 @@ export default function LoginOptions() {
         options: { redirectTo },
       });
       if (error) throw error;
-    } catch (e: unknown) {
-      const message = e instanceof Error ? e.message : 'Unable to continue.';
-      setErr(message);
+    } finally {
       setBusy(null);
     }
-  }
+  }, { error: 'Unable to continue.' });
 
   // Right-side: soft brand panel (no Card), token gradients, light/dark compliant
   const RightPanel = (
@@ -139,12 +134,6 @@ export default function LoginOptions() {
 
   return (
     <AuthLayout title="Welcome back" subtitle="Choose a sign-in method." right={RightPanel}>
-      {err && (
-        <Alert variant="error" title="Error" className="mb-4">
-          {err}
-        </Alert>
-      )}
-
       {!selectedRole ? (
         <>
           <SectionLabel>Sign in as</SectionLabel>

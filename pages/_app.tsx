@@ -8,6 +8,7 @@ import '@/styles/globals.css';
 
 import { Layout } from '@/components/Layout';
 import { ToastProvider } from '@/components/design-system/Toast';
+import { SpinnerProvider } from '@/components/design-system/Spinner';
 import { supabaseBrowser } from '@/lib/supabaseBrowser';
 import { env } from '@/lib/env';
 import { LanguageProvider, useLocale } from '@/lib/locale';
@@ -241,7 +242,9 @@ export default function App(props: AppProps) {
   return (
     <LanguageProvider>
       <ToastProvider>
-        <InnerApp {...props} />
+        <SpinnerProvider>
+          <InnerApp {...props} />
+        </SpinnerProvider>
       </ToastProvider>
     </LanguageProvider>
   );

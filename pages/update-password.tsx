@@ -1,52 +1,31 @@
 import React, { useState } from 'react';
-import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { Container } from '@/components/design-system/Container';
 import { Card } from '@/components/design-system/Card';
 import { Input } from '@/components/design-system/Input';
 import { Button } from '@/components/design-system/Button';
-import { Alert } from '@/components/design-system/Alert';
 import { supabase } from '@/lib/supabaseClient';
+import { useAsyncAction } from '@/hooks/useAsyncAction';
 
 export default function UpdatePassword() {
   const router = useRouter();
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false), [err, setErr] = useState<React.ReactNode>(null);
-  const [ok, setOk] = useState(false);
-
-  const submit = async (e: React.FormEvent) => {
+  const [submit, loading] = useAsyncAction(async (e: React.FormEvent) => {
     e.preventDefault();
-    setErr(null);
-    if (!password) return setErr('Please enter a new password.');
-    setLoading(true);
+    if (!password) throw new Error('Please enter a new password.');
     const { data: reused, error: rpcError } = await supabase.rpc('password_is_reused', { new_password: password });
-    if (rpcError) {
-      setLoading(false);
-      return setErr(rpcError.message);
-    }
-    if (reused) {
-      setLoading(false);
-      return setErr('Cannot reuse old password.');
-    }
+    if (rpcError) throw new Error(rpcError.message);
+    if (reused) throw new Error('Cannot reuse old password.');
     const { error } = await supabase.auth.updateUser({ password });
-    setLoading(false);
     if (error) {
       if (error.code === 'token_expired') {
-        return setErr(
-          <>
-            Link expired.{' '}
-            <Link href="/forgot-password" className="text-primary underline">
-              Request a new reset
-            </Link>
-          </>
-        );
+        throw new Error('Link expired. Request a new reset.');
       }
-      return setErr(error.message);
+      throw new Error(error.message);
     }
-    setOk(true);
     setTimeout(() => router.push('/login'), 800);
-  };
+  }, { success: 'Password updated', error: 'Could not update password' });
 
   return (
     <section className="min-h-[100svh] bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90">
@@ -60,9 +39,6 @@ export default function UpdatePassword() {
 
             <h1 className="font-slab text-h1 mb-2 text-primary dark:text-electricBlue">Set a new password</h1>
             <p className="text-grayish dark:text-white/75 mb-6">Enter your new password to continue.</p>
-
-            {err && <Alert variant="error" title="Couldn’t update" className="mb-4">{err}</Alert>}
-            {ok && <Alert variant="success" title="Updated" className="mb-4">Redirecting to login…</Alert>}
 
             <form onSubmit={submit} className="space-y-4">
               <Input label="New password" type="password" placeholder="••••••••"

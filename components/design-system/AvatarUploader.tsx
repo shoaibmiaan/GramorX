@@ -1,9 +1,9 @@
 import { env } from "@/lib/env";
 import React, { useEffect, useRef, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { Alert } from './Alert';
 import { Button } from './Button';
 import { Badge } from './Badge';
+import { useToast } from './Toast';
 
 type Props = {
   userId: string | null;
@@ -29,7 +29,7 @@ export const AvatarUploader: React.FC<Props> = ({
   const [preview, setPreview] = useState<string | null>(initialUrl ?? null);
   const [drag, setDrag] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const toast = useToast();
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -41,20 +41,19 @@ export const AvatarUploader: React.FC<Props> = ({
 
   const onSelect = (f: File) => {
     if (!f.type.startsWith('image/')) {
-      setError('Please choose an image file (JPG/PNG/WebP).');
+      toast.error('Please choose an image file (JPG/PNG/WebP).');
       return;
     }
     if (f.size > 3 * 1024 * 1024) {
-      setError('Max size is 3MB.');
+      toast.error('Max size is 3MB.');
       return;
     }
-    setError(null);
     setFile(f);
   };
 
   const upload = async () => {
     if (!userId || !file) return;
-    setBusy(true); setError(null);
+    setBusy(true);
 
     const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
     const path = `${userId}/avatar-${Date.now()}.${ext}`;
@@ -65,7 +64,7 @@ export const AvatarUploader: React.FC<Props> = ({
       contentType: file.type,
     });
 
-    if (upErr) { setBusy(false); setError(upErr.message); return; }
+    if (upErr) { setBusy(false); toast.error(upErr.message); return; }
 
     // Public URL (switch to signed if bucket is private)
     const { data } = supabase.storage.from(bucket).getPublicUrl(path);
@@ -118,8 +117,6 @@ export const AvatarUploader: React.FC<Props> = ({
           if (f) onSelect(f);
         }}
       />
-
-      {error && <Alert variant="error" className="mt-3">{error}</Alert>}
 
       <div className="mt-3 flex gap-3 justify-center">
         <Button variant="secondary" onClick={() => inputRef.current?.click()} className="rounded-ds-xl">
