@@ -22,6 +22,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [streak, setStreak] = useState(0); // wire to real data later
+  const [progressSaved, setProgressSaved] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -49,12 +50,41 @@ export default function Dashboard() {
     })();
   }, [router]);
 
+  const ai: AIPlan = profile?.ai_recommendation ?? {};
+  const prefs = profile?.study_prefs ?? [];
+  const notes = Array.isArray(ai.notes) ? ai.notes : [];
+
+  // After a session, rotate the studied skill to the end of study_prefs
+  useEffect(() => {
+    if (!profile || progressSaved) return;
+    const skill = typeof router.query.skill === 'string' ? router.query.skill : null;
+    if (!skill) return;
+
+    const current = (ai.sequence ?? prefs).slice();
+    if (!current.length) return;
+
+    const idx = current.indexOf(skill);
+    if (idx > -1) {
+      current.splice(idx, 1);
+    }
+    current.push(skill);
+
+    void supabase
+      .from('user_profiles')
+      .update({ study_prefs: current })
+      .eq('user_id', profile.user_id as string)
+      .then(() => {
+        setProfile({ ...profile, study_prefs: current });
+        setProgressSaved(true);
+      });
+  }, [profile, router.query.skill, progressSaved, ai.sequence, prefs]);
+
   if (loading) {
     return (
       <section className="py-24 bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90">
         <Container>
           <div className="grid gap-6 md:grid-cols-3">
-            {[...Array(3)].map((_,i)=>(
+            {[...Array(3)].map((_, i) => (
               <Card key={i} className="p-6 rounded-ds-2xl">
                 <div className="animate-pulse h-6 w-40 bg-gray-200 dark:bg-white/10 rounded" />
                 <div className="mt-4 animate-pulse h-24 bg-gray-200 dark:bg-white/10 rounded" />
@@ -65,10 +95,6 @@ export default function Dashboard() {
       </section>
     );
   }
-
-  const ai: AIPlan = profile?.ai_recommendation ?? {};
-  const prefs = profile?.study_prefs ?? [];
-  const notes = Array.isArray(ai.notes) ? ai.notes : [];
 
   return (
     <section className="py-24 bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90">
