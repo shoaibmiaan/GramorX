@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useCountdown } from '@/hooks/useCountdown';
 import { Container } from '@/components/design-system/Container';
 import { Card } from '@/components/design-system/Card';
+import { supabaseBrowser } from '@/lib/supabaseBrowser';
 
 export type Question = {
   id: number;
@@ -75,7 +76,7 @@ export function SectionTest({ section, duration, questions, onComplete }: Props)
     setAnswers(next);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     stop();
     const correct = questions.reduce(
       (sum, q, i) => sum + (answers[i] === q.answer ? 1 : 0),
@@ -103,6 +104,26 @@ export function SectionTest({ section, duration, questions, onComplete }: Props)
       } catch {
         // ignore
       }
+    }
+    try {
+      const {
+        data: { session },
+      } = await supabaseBrowser.auth.getSession();
+      const userId = session?.user?.id;
+      if (userId) {
+        await supabaseBrowser.from('mock_test_results').insert({
+          user_id: userId,
+          section: res.section,
+          band: res.band,
+          correct: res.correct,
+          total: res.total,
+          time_taken: res.timeTaken,
+          tab_switches: res.tabSwitches,
+          created_at: new Date().toISOString(),
+        });
+      }
+    } catch (e) {
+      console.error('Failed to save mock test result', e);
     }
     onComplete?.(res);
   };
