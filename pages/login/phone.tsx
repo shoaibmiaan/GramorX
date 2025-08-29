@@ -60,13 +60,16 @@ export default function LoginWithPhone() {
 
   async function resendOtp() {
     setErr(null);
-    setLoading(true);
     setResending(true);
-    const { error } = await supabase.auth.signInWithOtp({ phone, options: { shouldCreateUser: false } });
-    setLoading(false);
-    setResending(false);
-    if (error) return setErr(error.message);
-    setResendAttempts((a) => a + 1);
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithOtp({ phone, options: { shouldCreateUser: false } });
+      if (error) return setErr(error.message);
+      setResendAttempts((a) => a + 1);
+    } finally {
+      setLoading(false);
+      setResending(false);
+    }
   }
 
   const RightPanel = (
