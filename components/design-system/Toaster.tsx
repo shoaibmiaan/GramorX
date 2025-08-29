@@ -44,10 +44,10 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
           <div
             key={t.id}
             className={`rounded-ds-2xl p-4 shadow-lg border
-              ${t.intent === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-900 dark:bg-emerald-900/20 dark:border-emerald-700 dark:text-emerald-200'
-              : t.intent === 'error' ? 'bg-rose-50 border-rose-200 text-rose-900 dark:bg-rose-900/20 dark:border-rose-700 dark:text-rose-200'
-              : t.intent === 'warning' ? 'bg-amber-50 border-amber-200 text-amber-900 dark:bg-amber-900/20 dark:border-amber-700 dark:text-amber-200'
-              : 'bg-black/80 border-white/10 text-white'}`}
+              ${t.intent === 'success' ? 'bg-success/15 border-success/30 text-success dark:bg-success/20 dark:border-success/40 dark:text-success'
+              : t.intent === 'error' ? 'bg-error/15 border-error/30 text-error dark:bg-error/20 dark:border-error/40 dark:text-error'
+              : t.intent === 'warning' ? 'bg-goldenYellow/15 border-goldenYellow/30 text-goldenYellow dark:bg-goldenYellow/20 dark:border-goldenYellow/40 dark:text-goldenYellow'
+              : 'bg-dark/80 border-border text-body dark:border-border/50 dark:text-white'}`}
           >
             <div className="font-semibold">{t.title}</div>
             {t.desc && <div className="text-sm opacity-90 mt-1">{t.desc}</div>}

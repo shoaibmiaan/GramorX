@@ -45,7 +45,7 @@ export const QuestionNav: React.FC<{
     .sort((a, b) => a.qNo - b.qNo);
 
   return (
-    <aside className={`card-surface p-4 rounded-ds border border-gray-200 dark:border-white/10 sticky top-24 ${className}`}>
+    <aside className={`card-surface p-4 rounded-ds border border-lightBorder dark:border-white/10 sticky top-24 ${className}`}>
       <div className="flex items-center justify-between gap-2">
         <h3 className="text-h3 font-semibold">Questions</h3>
         <Badge variant="info" size="sm">{counts.answered}/{counts.total} done</Badge>
@@ -90,7 +90,7 @@ export const QuestionNav: React.FC<{
             ? 'bg-success/15 text-success border-success/30'
             : flagged
               ? 'bg-goldenYellow/15 text-goldenYellow border-goldenYellow/30'
-              : 'bg-gray-200/40 dark:bg-white/10 text-lightText dark:text-white border-gray-200/60 dark:border-white/10';
+              : 'bg-lightBorder/40 dark:bg-white/10 text-body dark:text-white border-lightBorder/60 dark:border-white/10';
 
           return (
             <button

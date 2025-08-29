@@ -35,7 +35,7 @@ export function WhatsAppOptIn() {
     <Card className="p-6 rounded-ds-2xl">
       <h2 className="font-slab text-h2 mb-4">WhatsApp updates</h2>
       {status === "success" ? (
-        <p className="text-sm text-gray-600 dark:text-grayish">
+        <p className="text-sm text-mutedText dark:text-grayish">
           You&apos;re subscribed to WhatsApp reminders.
         </p>
       ) : (

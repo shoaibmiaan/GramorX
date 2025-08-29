@@ -41,8 +41,8 @@ export function SavedItems() {
   if (loading) {
     return (
       <Card className="p-6 rounded-ds-2xl">
-        <div className="animate-pulse h-5 w-40 bg-gray-200 dark:bg-white/10 rounded" />
-        <div className="mt-4 animate-pulse h-4 w-64 bg-gray-200 dark:bg-white/10 rounded" />
+        <div className="animate-pulse h-5 w-40 bg-lightBorder dark:bg-white/10 rounded" />
+        <div className="mt-4 animate-pulse h-4 w-64 bg-lightBorder dark:bg-white/10 rounded" />
       </Card>
     );
   }
@@ -52,7 +52,7 @@ export function SavedItems() {
       <Card className="p-6 rounded-ds-2xl flex items-center justify-between">
         <div>
           <div className="font-semibold mb-1">Saved items</div>
-          <div className="text-sm text-gray-600 dark:text-grayish">Sign in to access your bookmarks.</div>
+          <div className="text-sm text-mutedText dark:text-grayish">Sign in to access your bookmarks.</div>
         </div>
         <Button href="/login" variant="primary" className="rounded-ds-xl">Sign in</Button>
       </Card>
@@ -85,7 +85,7 @@ export function SavedItems() {
         </select>
       </div>
       {items.filter((b) => filter === 'all' || b.category === filter).length === 0 ? (
-        <div className="text-sm text-gray-600 dark:text-grayish">No saved items yet.</div>
+        <div className="text-sm text-mutedText dark:text-grayish">No saved items yet.</div>
       ) : (
         <ul className="grid gap-2">
           {items
@@ -95,7 +95,7 @@ export function SavedItems() {
                 <Link href={linkFor(b)} className="underline">
                   {b.category}: {b.resource_id}
                 </Link>
-                <span className="text-sm text-gray-600 dark:text-grayish">
+                <span className="text-sm text-mutedText dark:text-grayish">
                   {new Date(b.created_at).toLocaleDateString()}
                 </span>
               </li>

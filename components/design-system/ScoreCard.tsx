@@ -30,7 +30,7 @@ export const ScoreCard: React.FC<ScoreCardProps> = ({ overall, subscores, title=
         <div className="relative h-24 w-24" aria-hidden="true">
           <svg viewBox="0 0 36 36" className="h-full w-full">
             <path
-              className="text-gray-200 dark:text-white/10"
+              className="text-lightBorder dark:text-white/10"
               stroke="currentColor"
               strokeWidth="3"
               fill="none"
@@ -51,7 +51,7 @@ export const ScoreCard: React.FC<ScoreCardProps> = ({ overall, subscores, title=
           </div>
         </div>
         <div>
-          <div className="text-small text-gray-600 dark:text-grayish">{title}</div>
+          <div className="text-small text-mutedText dark:text-grayish">{title}</div>
           <div className="text-h2 font-slab">Overall {band.toFixed(1)}</div>
           {subscores && (
             <div className="mt-3 grid grid-cols-2 gap-2 text-small">

@@ -63,9 +63,9 @@ export const ReevalPanel: React.FC<{
 
       <div className="mt-4">
         <label className="block">
-          <span className="mb-1.5 inline-block text-small text-gray-600 dark:text-grayish">Mode</span>
+          <span className="mb-1.5 inline-block text-small text-mutedText dark:text-grayish">Mode</span>
           <select
-            className="w-full p-3.5 rounded-ds border border-gray-200 dark:border-white/10 bg-white dark:bg-dark"
+            className="w-full p-3.5 rounded-ds border border-lightBorder dark:border-white/10 bg-card dark:bg-dark"
             value={mode}
             onChange={(e)=>setMode(e.target.value as any)}
           >
@@ -82,7 +82,7 @@ export const ReevalPanel: React.FC<{
             key={k}
             type="button"
             onClick={()=>toggleFocus(k)}
-            className={`p-3.5 rounded-ds border border-gray-200 dark:border-white/10 ${focus.includes(k)?'bg-electricBlue/10 text-electricBlue border-electricBlue/30':''}`}
+            className={`p-3.5 rounded-ds border border-lightBorder dark:border-white/10 ${focus.includes(k)?'bg-electricBlue/10 text-electricBlue border-electricBlue/30':''}`}
           >
             {k}
           </button>
@@ -99,7 +99,7 @@ export const ReevalPanel: React.FC<{
 
       {result && (
         <div className="mt-6 grid gap-4">
-          <div className="p-3.5 rounded-ds border border-gray-200 dark:border-white/10">
+          <div className="p-3.5 rounded-ds border border-lightBorder dark:border-white/10">
             <div className="flex items-center gap-3">
               <Badge variant="neutral" size="sm">Original: {original.bandOverall}</Badge>
               <Badge
@@ -113,7 +113,7 @@ export const ReevalPanel: React.FC<{
 
           <div className="grid sm:grid-cols-2 gap-3">
             {(['task','coherence','lexical','grammar'] as const).map(k => (
-              <div key={k} className="p-3.5 rounded-ds border border-gray-200 dark:border-white/10">
+              <div key={k} className="p-3.5 rounded-ds border border-lightBorder dark:border-white/10">
                 <div className="flex items-center justify-between">
                   <span className="capitalize">{k}</span>
                   <Badge

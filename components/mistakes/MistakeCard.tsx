@@ -25,11 +25,11 @@ export const MistakeCard: React.FC<MistakeCardProps> = ({ mistake, onReview }) =
     <Card className="p-4 rounded-ds-2xl">
       <div className="font-medium">{mistake.mistake}</div>
       {mistake.correction && (
-        <div className="text-sm text-gray-600 dark:text-grayish mt-1">
+        <div className="text-sm text-mutedText dark:text-grayish mt-1">
           Correct: {mistake.correction}
         </div>
       )}
-      <div className="text-xs text-gray-600 dark:text-grayish mt-2">
+      <div className="text-xs text-mutedText dark:text-grayish mt-2">
         Next review: {next}
       </div>
       <Button

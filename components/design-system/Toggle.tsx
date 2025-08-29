@@ -20,21 +20,21 @@ export const Toggle: React.FC<ToggleProps> = ({ checked=false, onChange, label, 
         onClick={() => !disabled && onChange?.(!checked)}
         className={[
           'relative inline-flex h-6 w-11 items-center rounded-ds transition',
-          checked ? 'bg-primary dark:bg-electricBlue' : 'bg-gray-300 dark:bg-white/20',
+          checked ? 'bg-primary dark:bg-electricBlue' : 'bg-lightBorder dark:bg-white/20',
           disabled ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer',
           'focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-electricBlue'
         ].join(' ')}
       >
         <span
           className={[
-            'inline-block h-5 w-5 transform rounded-ds bg-white dark:bg-dark transition',
+            'inline-block h-5 w-5 transform rounded-ds bg-card dark:bg-dark transition',
             checked ? 'translate-x-5' : 'translate-x-1'
           ].join(' ')}
         />
       </button>
       <div>
         {label && <div className="text-body">{label}</div>}
-        {hint && <div className="text-small text-gray-600 dark:text-grayish">{hint}</div>}
+        {hint && <div className="text-small text-mutedText dark:text-grayish">{hint}</div>}
       </div>
     </label>
   );

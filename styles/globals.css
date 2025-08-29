@@ -1,3 +1,5 @@
+@import './tokens.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -5,41 +7,9 @@
 /* Ensure full-height layout */
 html, body, #__next { height: 100%; }
 
-/* =========================
-   Color tokens → RGB triplets
-   (must match design-system/tokens/colors.js)
-   ========================= */
-:root{
-  --color-primary:        67 97 238;   /* #4361ee */
-  --color-primaryDark:    58 86 212;   /* #3a56d4 */
-  --color-secondary:     247 37 133;   /* #f72585 */
-  --color-accent:         76 201 240;  /* #4cc9f0 */
-  --color-success:        46 196 182;  /* #2ec4b6 */
-
-  --color-purpleVibe:    157 78 221;   /* #9d4edd */
-  --color-vibrantPurple: 157 78 221;   /* alias */
-  --color-electricBlue:    0 187 249;  /* #00bbf9 */
-  --color-neonGreen:     128 255 219;  /* #80ffdb */
-  --color-sunsetOrange:  255 107 107;  /* #ff6b6b */
-  --color-sunsetRed:     255  77  77;  /* #ff4d4d */
-  --color-goldenYellow:  255 209 102;  /* #ffd166 */
-
-  --color-dark:           15  15  27;  /* #0f0f1b */
-  --color-darker:          7   7  16;  /* #070710 */
-  --color-lightBg:       240 242 245;  /* #f0f2f5 */
-  --color-lightText:      26  26  46;  /* #1a1a2e */
-  /* darker gray for accessible body text on light backgrounds */
-  --color-grayish:       106 106 134;  /* #6a6a86 */
-
-  --color-lightCard:     255 255 255;  /* #ffffff */
-  --color-lightBorder:   224 224 224;  /* #e0e0e0 */
-  --color-border:        224 224 224;  /* #e0e0e0 */
-  --color-mutedText:     208 208 224;  /* #d0d0e0 */
-}
-
 /* Light = default; Dark via .dark on <html> (next-themes) */
-body { @apply font-sans text-lightText bg-lightBg overflow-x-hidden relative; }
-.dark body { @apply text-white bg-gradient-to-br from-darker to-dark; }
+body { @apply font-sans text-body bg-lightBg overflow-x-hidden relative; }
+.dark body { @apply text-body bg-gradient-to-br from-darker to-dark; }
 
 /* =========================
    Headings → Roboto Slab (no circular apply)

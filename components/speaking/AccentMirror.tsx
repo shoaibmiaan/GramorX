@@ -36,7 +36,7 @@ export const AccentMirror: React.FC<{ accent: Accent }> = ({ accent }) => {
   }, [accent]);
 
   if (loading) return <p>Loading prompts...</p>;
-  if (error) return <p className="text-red-600">{error}</p>;
+  if (error) return <p className="text-error">{error}</p>;
   if (!data) return null;
 
   return (

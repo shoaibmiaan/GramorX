@@ -52,6 +52,9 @@ module.exports = {
         lightBorder: 'rgb(var(--color-lightBorder) / <alpha-value>)',
         mutedText:   'rgb(var(--color-mutedText) / <alpha-value>)',
 
+        body:        'rgb(var(--color-body) / <alpha-value>)',
+        error:       'rgb(var(--color-error) / <alpha-value>)',
+
         // Components
         card: {
           DEFAULT:    'rgb(var(--color-lightCard) / <alpha-value>)',

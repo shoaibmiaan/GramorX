@@ -24,14 +24,14 @@ const QUICK = [
 // Named export to match Layout import style
 export const Footer: React.FC = () => {
   return (
-    <footer className="py-16 border-t border-gray-200 dark:border-purpleVibe/20">
+    <footer className="py-16 border-t border-lightBorder dark:border-purpleVibe/20">
       <Container>
         {/* 1 col on mobile -> 2 on small -> 4 on md (mobile-friendly, nothing else changed) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10 mb-10">
           {/* Brand + Socials */}
           <div>
             <h3 className="text-xl font-semibold mb-4">IELTS MasterPortal</h3>
-            <p className="text-lightText dark:text-white">
+            <p className="text-body dark:text-white">
               The most advanced IELTS preparation platform powered by AI technology and expert
               teaching methodologies.
             </p>
@@ -51,7 +51,7 @@ export const Footer: React.FC = () => {
             </h3>
             <ul className="space-y-2">
               {RESOURCES.map((x) => (
-                <li key={x.label} className="text-gray-600 dark:text-grayish">
+                <li key={x.label} className="text-mutedText dark:text-grayish">
                   <NavLink href={x.href} label={x.label} className="!px-0 !py-1" />
                 </li>
               ))}
@@ -65,7 +65,7 @@ export const Footer: React.FC = () => {
             </h3>
             <ul className="space-y-2">
               {QUICK.map((x) => (
-                <li key={x.label} className="text-gray-600 dark:text-grayish">
+                <li key={x.label} className="text-mutedText dark:text-grayish">
                   <NavLink href={x.href} label={x.label} className="!px-0 !py-1" />
                 </li>
               ))}
@@ -77,7 +77,7 @@ export const Footer: React.FC = () => {
             <h3 className="text-xl font-semibold mb-4 relative after:absolute after:-bottom-2 after:left-0 after:w-12 after:h-[3px] after:bg-primary dark:after:bg-neonGreen">
               Contact Us
             </h3>
-            <ul className="space-y-3 text-gray-600 dark:text-grayish">
+            <ul className="space-y-3 text-mutedText dark:text-grayish">
               <li>
                 <i className="fas fa-envelope mr-2" />
                 <a href="mailto:info@solvioadvisors.com" className="hover:underline">
@@ -100,7 +100,7 @@ export const Footer: React.FC = () => {
           </div>
         </div>
 
-        <div className="text-center pt-8 border-t border-gray-200 dark:border-purpleVibe/20 text-sm text-gray-600 dark:text-grayish">
+        <div className="text-center pt-8 border-t border-lightBorder dark:border-purpleVibe/20 text-sm text-mutedText dark:text-grayish">
           &copy; {new Date().getFullYear()} IELTS MasterPortal. All rights reserved. Launching soon!
         </div>
       </Container>

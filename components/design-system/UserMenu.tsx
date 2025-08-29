@@ -140,7 +140,7 @@ export const UserMenu: React.FC<{
           className="absolute right-0 mt-2 w-64 rounded-2xl border border-vibrantPurple/20 bg-lightBg dark:bg-dark shadow-lg overflow-hidden"
         >
           {showEmail && (email || name) && (
-            <div className="px-4 py-3 text-small text-grayish dark:text-white/70 border-b border-vibrantPurple/15">
+            <div className="px-4 py-3 text-small text-grayish dark:text-body/70 border-b border-vibrantPurple/15">
               <div className="flex items-center gap-3">
                 <div className="h-9 w-9 rounded-full bg-vibrantPurple/15 flex items-center justify-center overflow-hidden">
                   {localAvatar ? (
@@ -151,7 +151,7 @@ export const UserMenu: React.FC<{
                   )}
                 </div>
                 <div>
-                  <div className="font-medium text-lightText dark:text-white">{name ?? email}</div>
+                  <div className="font-medium text-body dark:text-white">{name ?? email}</div>
                   {email && name && <div className="opacity-80">{email}</div>}
                 </div>
               </div>

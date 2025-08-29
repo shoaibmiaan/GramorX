@@ -25,4 +25,6 @@ module.exports = {
   // Generic border token (alias of lightBorder)
   border: '#e0e0e0',
   mutedText: '#d0d0e0',     // subtle text color
+  body: '#1a1a2e',          // default body text
+  error: '#ff4d4d',         // alias of sunsetRed
 };

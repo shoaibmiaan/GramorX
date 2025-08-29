@@ -36,7 +36,7 @@ export default function AuthLayout({
       <div className="flex flex-col justify-center w-full md:w-1/2 px-8 py-12">
         <div className="flex justify-between items-center mb-8">
           <span className="font-slab text-h2 md:text-display text-gradient-primary">GramorX</span>
-          <span className="text-small text-grayish dark:text-gray-400">IELTS Portal</span>
+          <span className="text-small text-grayish dark:text-grayish">IELTS Portal</span>
         </div>
 
         <Container className="max-w-md w-full">

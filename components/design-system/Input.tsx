@@ -23,7 +23,7 @@ export const Input: React.FC<InputProps> = ({
   const describedBy =
     error ? `${inputId}-error` : hint ? `${inputId}-hint` : undefined;
   const base = [
-    'w-full rounded-ds border bg-white text-lightText placeholder-gray-500',
+    'w-full rounded-ds border bg-card text-body placeholder-mutedText',
     'focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary',
     'disabled:opacity-60',
     'dark:bg-dark/50 dark:text-white dark:placeholder-white/40',
@@ -36,13 +36,13 @@ export const Input: React.FC<InputProps> = ({
   return (
     <label className={`block ${className}`}>
       {label && (
-        <span className="mb-1.5 inline-block text-small text-gray-600 dark:text-grayish">
+        <span className="mb-1.5 inline-block text-small text-mutedText dark:text-grayish">
           {label}
         </span>
       )}
       <div className={`relative flex items-center ${error ? 'text-sunsetOrange' : ''}`}>
         {iconLeft && (
-          <span className="absolute left-3 text-gray-500 dark:text-white/50">
+          <span className="absolute left-3 text-mutedText dark:text-white/50">
             {iconLeft}
           </span>
         )}
@@ -55,7 +55,7 @@ export const Input: React.FC<InputProps> = ({
           {...props}
         />
         {iconRight && (
-          <span className="absolute right-3 text-gray-500 dark:text-white/50">
+          <span className="absolute right-3 text-mutedText dark:text-white/50">
             {iconRight}
           </span>
         )}
@@ -65,7 +65,7 @@ export const Input: React.FC<InputProps> = ({
           {error}
         </span>
       ) : hint ? (
-        <span id={`${inputId}-hint`} className="mt-1 block text-small text-gray-600 dark:text-grayish">
+        <span id={`${inputId}-hint`} className="mt-1 block text-small text-mutedText dark:text-grayish">
           {hint}
         </span>
       ) : null}

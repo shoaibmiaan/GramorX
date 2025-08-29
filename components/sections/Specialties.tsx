@@ -38,7 +38,7 @@ export const Specialties: React.FC<{ id?: string; className?: string }> = ({ id 
                 </span>
                 <div>
                   <h3 className="text-h3 font-semibold mb-1">{it.title}</h3>
-                  <p className="text-body text-gray-600 dark:text-grayish">{it.desc}</p>
+                  <p className="text-body text-mutedText dark:text-grayish">{it.desc}</p>
                 </div>
               </div>
             </Card>
