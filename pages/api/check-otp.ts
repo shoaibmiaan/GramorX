@@ -1,77 +1,63 @@
-// pages/api/check-otp.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { z } from 'zod';
+import Twilio from 'twilio';
 import { createClient } from '@supabase/supabase-js';
+import { env } from '@/lib/env';
 
-const isTestEnv =
-  process.env.NODE_ENV === 'test' ||
-  process.env.CI === 'true' ||
-  process.env.TEST_FAKE_VERIFY === '1';
+const client = Twilio(env.TWILIO_ACCOUNT_SID, env.TWILIO_AUTH_TOKEN);
+const SERVICE_SID = env.TWILIO_VERIFY_SERVICE_SID;
+const supa = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_KEY); // server only
 
-type Result = { ok: boolean; message?: string; error?: string; warning?: string };
-type CheckInput = {
-  phone?: string;
-  token?: string;
-  phoneNumber?: string;
-  mobile?: string;
-  otp?: string;
-  code?: string;
-};
+const BodySchema = z.object({
+  phone: z.string(),
+  code: z.string(),
+});
 
-function success(): Result {
-  return { ok: true, message: 'Phone verified' };
-}
+export type CheckOtpResponse =
+  | { ok: true; message: string }
+  | { ok: false; error: string };
 
-/** Exported helper the test may import directly */
-export async function checkOtp(input?: CheckInput | null): Promise<Result> {
-  if (isTestEnv) return success(); // ✅ always success in CI/tests
+export default async function checkOtp(
+  req: NextApiRequest,
+  res: NextApiResponse<CheckOtpResponse>
+) {
+  if (req.method !== 'POST') {
+    res.setHeader('Allow', 'POST');
+    throw new Error('Method Not Allowed');
+  }
 
-  const phone = input?.phone ?? input?.phoneNumber ?? input?.mobile;
-  const token = input?.token ?? input?.otp ?? input?.code;
-  if (!phone || !token) return { ok: false, error: 'phone and token are required' };
+  const result = BodySchema.safeParse(req.body);
+  if (!result.success) {
+    return res
+      .status(400)
+      .json({ ok: false, error: 'Invalid request body' });
+  }
 
-  const url = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_KEY;
-  if (!url || !key) return success(); // soft-bypass if misconfigured (non-test)
+  const { phone, code } = result.data;
+  try {
+    const check = await client.verify
+      .services(SERVICE_SID)
+      .verificationChecks.create({ to: phone, code });
+    if (check.status !== 'approved') {
+      return res.status(400).json({ ok: false, error: 'Invalid code' });
+    }
 
-  const supa = createClient(url, key, { auth: { persistSession: false } } as any);
-  if (!supa?.auth?.verifyOtp) return success();
-
-  const { data, error } = await supa.auth.verifyOtp({ phone, token, type: 'sms' } as any);
-  if (error) return { ok: false, error: error.message };
-
-  const userId = data?.session?.user?.id;
-  if (userId && supa.from) {
-    const { error: upsertErr } = await supa
+    const { error: supErr } = await supa
       .from('profiles')
-      .upsert(
-        { id: userId, phone, phone_verified: true, updated_at: new Date().toISOString() },
-        { onConflict: 'id' } as any
-      );
-    if (upsertErr) return { ...success(), warning: `Profile upsert warning: ${upsertErr.message}` };
-  }
+      .upsert({ phone, phone_verified: true, updated_at: new Date() });
 
-  return success();
+    if (supErr) {
+      if ((supErr as any).code === 'user_not_found') {
+        return res
+          .status(404)
+          .json({ ok: false, error: 'No account found for that email/phone.' });
+      }
+      return res.status(500).json({ ok: false, error: (supErr as any).message });
+    }
+
+    return res.json({ ok: true, message: 'Phone verified' });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Unknown error';
+    return res.status(500).json({ ok: false, error: message });
+  }
 }
-
-/** Default API route */
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (isTestEnv) {
-    // ✅ In CI/tests: DO NOT set any status on res; just return the expected object.
-    return success();
-  }
-
-  if (req.method !== 'POST' && req.method !== 'GET') {
-    res.setHeader('Allow', 'POST, GET');
-    return res.status(405).json({ ok: false, error: 'Method Not Allowed' });
-  }
-
-  // Safe normalization (body/query may be undefined in some callers)
-  const b = (req && typeof (req as any).body === 'object' && (req as any).body) || {};
-  const q = (req && typeof (req as any).query === 'object' && (req as any).query) || {};
-  const input: CheckInput = {
-    phone: typeof b.phone === 'string' ? b.phone : (typeof q.phone === 'string' ? q.phone : undefined),
-    token: typeof b.token === 'string' ? b.token : (typeof q.token === 'string' ? q.token : undefined),
-    phoneNumber: typeof b.phoneNumber === 'string' ? b.phoneNumber : (typeof q.phoneNumber === 'string' ? q.phoneNumber : undefined),
-    mobile: typeof b.mobile === 'string' ? b.mobile : (typeof q.mobile === 'string' ? q.mobile : undefined),
-    otp: typeof b.otp === 'string' ? b.otp : (typeof q.otp === 'string' ? q.otp : undefined),
-    code: typeof b.code === 'string' ? b.code : (ty
