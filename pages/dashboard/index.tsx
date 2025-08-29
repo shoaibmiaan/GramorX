@@ -9,6 +9,7 @@ import { Button } from '@/components/design-system/Button';
 import { Badge } from '@/components/design-system/Badge';
 import { Alert } from '@/components/design-system/Alert';
 import { StreakIndicator } from '@/components/design-system/StreakIndicator';
+import { badges } from '@/data/badges';
 
 import { supabaseBrowser } from '@/lib/supabaseBrowser';
 import { ReadingStatsCard } from '@/components/reading/ReadingStatsCard';
@@ -134,6 +135,7 @@ export default function Dashboard() {
 
   const ai: AIPlan = profile?.ai_recommendation ?? {};
   const prefs = profile?.study_prefs ?? [];
+  const earnedBadges = [...badges.streaks, ...badges.milestones, ...badges.community];
 
   return (
     <section className="py-24 bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90">
@@ -148,6 +150,11 @@ export default function Dashboard() {
 
           <div className="flex items-center gap-4">
             <StreakIndicator value={streak} />
+            {earnedBadges.map((b) => (
+              <Badge key={b.id} size="sm">
+                {b.icon}
+              </Badge>
+            ))}
             <Badge size="sm" variant="secondary">
               {(profile?.preferred_language ?? 'en').toUpperCase()}
             </Badge>
