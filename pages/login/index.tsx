@@ -83,7 +83,8 @@ export default function LoginOptions() {
 
   // Right-side: soft brand panel (no Card), token gradients, light/dark compliant
   const RightPanel = (
-    <div className="h-full flex flex-col justify-between p-8 md:p-12 bg-gradient-to-br from-purpleVibe/10 via-electricBlue/5 to-neonGreen/10 dark:from-dark/50 dark:via-dark/30 dark:to-darker/60">
+    <div className="hidden md:flex w-1/2">
+      <div className="h-full flex flex-col justify-between p-8 md:p-12 bg-gradient-to-br from-purpleVibe/10 via-electricBlue/5 to-neonGreen/10 dark:from-dark/50 dark:via-dark/30 dark:to-darker/60">
       <div>
         <div className="flex items-center gap-3 mb-6">
           <Image
@@ -121,17 +122,18 @@ export default function LoginOptions() {
         </ul>
       </div>
 
-      <div className="pt-8">
-        <div className="text-small text-grayish dark:text-gray-400">
-          By continuing, you agree to our{' '}
-          <Link href="/legal/terms" className="text-primaryDark hover:underline">
-            Terms
-          </Link>{' '}
-          and{' '}
-          <Link href="/legal/privacy" className="text-primaryDark hover:underline">
-            Privacy Policy
-          </Link>
-          .
+        <div className="pt-8">
+          <div className="text-small text-grayish dark:text-gray-400">
+            By continuing, you agree to our{' '}
+            <Link href="/legal/terms" className="text-primaryDark hover:underline">
+              Terms
+            </Link>{' '}
+            and{' '}
+            <Link href="/legal/privacy" className="text-primaryDark hover:underline">
+              Privacy Policy
+            </Link>
+            .
+          </div>
         </div>
       </div>
     </div>
@@ -142,7 +144,6 @@ export default function LoginOptions() {
       title="Welcome back"
       subtitle="Choose a sign-in method."
       right={RightPanel}
-      showRightOnMobile={false}
     >
       {err && (
         <Alert variant="error" title="Error" className="mb-4">
