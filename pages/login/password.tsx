@@ -26,10 +26,7 @@ export default function LoginWithPassword() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setErr(null);
-    if (!email || !pw) {
-      setErr('Please fill in all fields.');
-      return;
-    }
+    if (!email || !pw) return setErr('Please fill in all fields.');
 
     setLoading(true);
     const { error, data } = await supabase.auth.signInWithPassword({ email, password: pw });
@@ -42,30 +39,19 @@ export default function LoginWithPassword() {
         refresh_token: data.session.refresh_token,
       });
 
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      // Trigger MFA if any factor exists
+      const { data: { user } } = await supabase.auth.getUser();
       const factors = (user as any)?.factors ?? [];
       if (factors.length) {
         const f = factors[0];
         const { data: challenge, error: cErr } = await supabase.auth.mfa.challenge({ factorId: f.id });
-        if (cErr) {
-          setErr(getAuthErrorMessage(cErr));
-          return;
-        }
+        if (cErr) return setErr(getAuthErrorMessage(cErr));
         setFactorId(f.id);
         setChallengeId(challenge?.id ?? null);
         setOtpSent(true);
         return;
       }
 
-      try {
-        await fetch('/api/auth/login-event', { method: 'POST' });
-      } catch (err) {
-        console.error(err);
-      }
+      try { await fetch('/api/auth/login-event', { method: 'POST' }); } catch {}
       redirectByRole(data.session.user);
     }
   }
@@ -77,21 +63,10 @@ export default function LoginWithPassword() {
     setVerifying(true);
     const { error } = await supabase.auth.mfa.verify({ factorId, challengeId, code: otp });
     setVerifying(false);
+    if (error) return setErr(getAuthErrorMessage(error));
 
-    if (error) {
-      setErr(getAuthErrorMessage(error));
-      return;
-    }
-
-    try {
-      await fetch('/api/auth/login-event', { method: 'POST' });
-    } catch (err) {
-      console.error(err);
-    }
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    try { await fetch('/api/auth/login-event', { method: 'POST' }); } catch {}
+    const { data: { user } } = await supabase.auth.getUser();
     if (user) redirectByRole(user);
   }
 
@@ -114,51 +89,22 @@ export default function LoginWithPassword() {
 
   return (
     <AuthLayout title="Sign in with Email" subtitle="Use your email & password." right={RightPanel}>
-      {err && (
-        <div className="mb-4">
-          <Alert variant="error" title="Error">{err}</Alert>
-        </div>
-      )}
+      {err && <Alert variant="error" title="Error">{err}</Alert>}
 
       {!otpSent ? (
-        <>
-          <form onSubmit={onSubmit} className="space-y-6 mt-2">
-            <Input
-              label="Email"
-              type="email"
-              placeholder="you@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              autoComplete="email"
-              required
-            />
-            <PasswordInput
-              label="Password"
-              placeholder="Your password"
-              value={pw}
-              onChange={(e) => setPw(e.target.value)}
-              autoComplete="current-password"
-              required
-            />
-            <Button type="submit" variant="primary" className="w-full rounded-ds-xl" disabled={loading}>
-              {loading ? 'Signing in…' : 'Continue'}
-            </Button>
-          </form>
-
+        <form onSubmit={onSubmit} className="space-y-6 mt-2">
+          <Input label="Email" type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} autoComplete="email" required />
+          <PasswordInput label="Password" placeholder="Your password" value={pw} onChange={e => setPw(e.target.value)} autoComplete="current-password" required />
+          <Button type="submit" variant="primary" className="w-full rounded-ds-xl" disabled={loading}>
+            {loading ? 'Signing in…' : 'Continue'}
+          </Button>
           <Button asChild variant="secondary" className="mt-4 w-full rounded-ds-xl">
             <Link href="/forgot-password">Forgot password?</Link>
           </Button>
-        </>
+        </form>
       ) : (
         <form onSubmit={verifyOtp} className="space-y-6 mt-2 max-w-xs">
-          <Input
-            label="Enter OTP"
-            value={otp}
-            onChange={(e) => setOtp(e.target.value)}
-            autoComplete="one-time-code"
-            placeholder="6-digit code"
-            required
-          />
+          <Input label="Enter OTP" value={otp} onChange={e => setOtp(e.target.value)} autoComplete="one-time-code" placeholder="6-digit code" required />
           <Button type="submit" variant="primary" className="w-full rounded-ds-xl" disabled={verifying}>
             {verifying ? 'Verifying…' : 'Verify'}
           </Button>
