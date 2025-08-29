@@ -26,11 +26,11 @@ export const Drawer: React.FC<DrawerProps> = ({ open, onClose, side='right', tit
 
   return (
     <div className="fixed inset-0 z-50">
-      <div className="absolute inset-0 bg-black/30 dark:bg-black/60" onClick={onClose} aria-hidden="true" />
+      <div className="absolute inset-0 bg-dark/30 dark:bg-dark/60" onClick={onClose} aria-hidden="true" />
       <div className={`absolute ${pos} ${size} card-surface shadow-xl ${className}`} role="dialog" aria-modal="true">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-white/10">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border dark:border-vibrantPurple/20">
           <div className="font-semibold">{title}</div>
-          <button onClick={onClose} className="rounded-ds p-2 hover:bg-gray-100 dark:hover:bg-white/10" aria-label="Close">
+          <button onClick={onClose} className="rounded-ds p-2 hover:bg-border/20 dark:hover:bg-border/20" aria-label="Close">
             <i className="fas fa-times" aria-hidden="true" />
           </button>
         </div>

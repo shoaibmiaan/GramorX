@@ -30,7 +30,7 @@ export const ScoreCard: React.FC<ScoreCardProps> = ({ overall, subscores, title=
         <div className="relative h-24 w-24" aria-hidden="true">
           <svg viewBox="0 0 36 36" className="h-full w-full">
             <path
-              className="text-gray-200 dark:text-white/10"
+              className="text-border dark:text-border/20"
               stroke="currentColor"
               strokeWidth="3"
               fill="none"
@@ -51,13 +51,13 @@ export const ScoreCard: React.FC<ScoreCardProps> = ({ overall, subscores, title=
           </div>
         </div>
         <div>
-          <div className="text-small text-gray-600 dark:text-grayish">{title}</div>
+          <div className="text-small text-mutedText">{title}</div>
           <div className="text-h2 font-slab">Overall {band.toFixed(1)}</div>
           {subscores && (
             <div className="mt-3 grid grid-cols-2 gap-2 text-small">
               {Object.entries(subscores).map(([k, v]) => (
                 v != null && (
-                  <div key={k} className="flex items-center justify-between rounded-ds px-2.5 py-1.5 bg-purpleVibe/10 text-lightText dark:text-white">
+                  <div key={k} className="flex items-center justify-between rounded-ds px-2.5 py-1.5 bg-purpleVibe/10 text-lightText dark:text-foreground">
                     <span className="capitalize">{k.replace(/([A-Z])/g, ' $1')}</span>
                     <span className="font-semibold tabular-nums">{clampBand(v).toFixed(1)}</span>
                   </div>

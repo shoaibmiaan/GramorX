@@ -27,7 +27,7 @@ export const Ribbon: React.FC<{
       aria-hidden="true"
     >
       <span
-        className={`inline-block py-1 px-8 text-xs font-bold tracking-wide text-white bg-gradient-to-r ${variantCls[variant]} shadow-glow rounded-ds`}
+        className={`inline-block py-1 px-8 text-xs font-bold tracking-wide text-primary-foreground bg-gradient-to-r ${variantCls[variant]} shadow-glow rounded-ds`}
       >
         {label}
       </span>
