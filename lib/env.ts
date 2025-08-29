@@ -38,6 +38,7 @@ const envSchema = z.object({
   LOCAL_ADMIN_TOKEN: z.string().optional(),
   ADMIN_API_TOKEN: z.string().optional(),
   SITE_URL: z.string().url().optional(),
+  PORT: z.coerce.number().optional(),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
 });
 
@@ -77,22 +78,49 @@ const raw = {
   LOCAL_ADMIN_TOKEN: process.env.LOCAL_ADMIN_TOKEN,
   ADMIN_API_TOKEN: process.env.ADMIN_API_TOKEN,
   SITE_URL: process.env.SITE_URL,
+  PORT: process.env.PORT,
   NODE_ENV: process.env.NODE_ENV as any,
 };
+
+const skipValidation =
+  process.env.SKIP_ENV_VALIDATION === 'true' || raw.NODE_ENV === 'test';
 
 const parsed = envSchema.safeParse(raw);
 
 if (!parsed.success && typeof window === 'undefined') {
-  const errors = parsed.error.issues
-    .map((i) => `${i.path.join('.')}: ${i.message}`)
-    .join('\n');
-  console.error('Invalid environment variables:\n' + errors);
-  throw new Error('Invalid environment variables');
+  if (skipValidation) {
+    const warnings = parsed.error.issues
+      .map((i) => `${i.path.join('.')}: ${i.message}`)
+      .join('\n');
+    console.warn(
+      'Skipping environment variable validation. Falling back to safe defaults:\n' +
+        warnings,
+    );
+  } else {
+    const errors = parsed.error.issues
+      .map((i) => `${i.path.join('.')}: ${i.message}`)
+      .join('\n');
+    console.error('Invalid environment variables:\n' + errors);
+    throw new Error('Invalid environment variables');
+  }
 }
+
+const defaults = {
+  NEXT_PUBLIC_SUPABASE_URL: 'http://localhost:54321',
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: 'anon_key',
+  SUPABASE_URL: 'http://localhost:54321',
+  SUPABASE_SERVICE_KEY: 'service_key',
+  SUPABASE_SERVICE_ROLE_KEY: 'service_role_key',
+  TWILIO_ACCOUNT_SID: 'ACXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
+  TWILIO_AUTH_TOKEN: 'auth_token',
+  TWILIO_VERIFY_SERVICE_SID: 'VAXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
+  TWILIO_WHATSAPP_FROM: 'whatsapp:+10000000000',
+};
 
 export const env = (parsed.success
   ? parsed.data
   : {
+      ...defaults,
       ...raw,
       NEXT_PUBLIC_IDLE_TIMEOUT_MINUTES: Number(
         raw.NEXT_PUBLIC_IDLE_TIMEOUT_MINUTES ?? 30,

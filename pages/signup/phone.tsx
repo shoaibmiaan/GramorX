@@ -28,9 +28,11 @@ export default function SignupWithPhone() {
     setErr(null);
     if (!phone) return setErr('Enter your phone number in E.164 format, e.g. +923001234567');
     setLoading(true);
+    const data: Record<string, string> = { status: 'pending_verification' };
+    if (referral) data.referral_code = referral.trim();
     const { error } = await supabase.auth.signInWithOtp({
       phone,
-      options: { shouldCreateUser: true, data: referral ? { referral_code: referral.trim() } : undefined },
+      options: { shouldCreateUser: true, data },
     });
     setLoading(false);
     if (error) return setErr(error.message);
@@ -50,6 +52,12 @@ export default function SignupWithPhone() {
         access_token: data.session.access_token,
         refresh_token: data.session.refresh_token,
       });
+      // Mark account as verified
+      try {
+        await supabase.auth.updateUser({ data: { status: 'active' } });
+      } catch {
+        // ignore update failures
+      }
       if (referral) {
         try {
           await fetch('/api/referrals', {

@@ -11,12 +11,19 @@ export default function SignupOptions() {
   const ref = typeof router.query.ref === 'string' ? router.query.ref : '';
 
   async function signUpOAuth(provider: 'apple' | 'google' | 'facebook') {
-    await supabase.auth.signInWithOAuth({
+    const { data } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
         redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/profile/setup` : undefined,
+        skipBrowserRedirect: true,
       },
     });
+
+    if (data?.linked_email) {
+      router.push(`/login?message=${encodeURIComponent('Account exists—use login.')}`);
+    } else if (data?.url) {
+      window.location.href = data.url;
+    }
   }
 
   const RightPanel = (
