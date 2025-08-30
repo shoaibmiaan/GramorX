@@ -8,7 +8,7 @@ import { Container } from '@/components/design-system/Container';
 // import { Card } from '@/components/design-system/Card';
 // import { Button } from '@/components/design-system/Button';
 import { RoleGuard } from '@/components/auth/RoleGuard';
-import { useToast } from '@/components/design-system/Toast';
+import { useToast } from '@/components/design-system/Toaster';
 
 // ---- Types ----
 type KPI = { label: string; value: string; sub?: string; href?: string };

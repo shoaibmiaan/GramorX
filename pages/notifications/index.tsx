@@ -4,7 +4,7 @@ import { Container } from '@/components/design-system/Container';
 import { Card } from '@/components/design-system/Card';
 import { Button } from '@/components/design-system/Button';
 import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser';
-import { useToast } from '@/components/design-system/Toast';
+import { useToast } from '@/components/design-system/Toaster';
 
 export default function NotificationSettings() {
   const router = useRouter();

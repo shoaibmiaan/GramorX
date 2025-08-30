@@ -1,5 +1,6 @@
 // components/listening/AudioSectionsPlayer.tsx
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ProgressBar } from '@/components/design-system/ProgressBar';
 
 type MCQ = {
   id: string;
@@ -327,7 +328,6 @@ export const AudioSectionsPlayer: React.FC<AudioSectionsPlayerProps> = ({
           <span>{Math.round(pct * 100)}%</span>
         </div>
         <div
-          className={`h-3 rounded-ds bg-gray-200 dark:bg-white/10 ${allowSeek ? 'cursor-pointer' : 'cursor-not-allowed'}`}
           onClick={(e) => {
             if (!allowSeek) return;
             const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
@@ -339,9 +339,9 @@ export const AudioSectionsPlayer: React.FC<AudioSectionsPlayerProps> = ({
           aria-valuemax={100}
           aria-valuenow={Math.round(pct * 100)}
         >
-          <div
-            className="h-3 rounded-ds bg-primary"
-            style={{ width: `${pct * 100}%` }}
+          <ProgressBar
+            value={pct * 100}
+            className={allowSeek ? 'cursor-pointer' : 'cursor-not-allowed'}
           />
         </div>
       </div>
