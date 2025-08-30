@@ -60,7 +60,7 @@ function InnerApp({ Component, pageProps }: AppProps) {
   const isAuthPage = useMemo(
     () =>
       /^\/(login|signup|register)(\/|$)/.test(pathname) ||
-      /^\/auth\/(login|signup|register)(\/|$)/.test(pathname),
+      /^\/auth\/(login|signup|register|verify)(\/|$)/.test(pathname),
     [pathname]
   );
 
