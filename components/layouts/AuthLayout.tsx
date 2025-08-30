@@ -41,16 +41,16 @@ export default function AuthLayout({
   return (
     <div className="min-h-[100dvh] flex flex-col md:flex-row bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90">
       {/* Left: content */}
-      <div className="flex flex-col justify-center w-full md:w-1/2 px-8 py-12">
-        <div className="flex justify-between items-center mb-8">
-          <span className="font-slab text-h2 md:text-display text-gradient-primary">GramorX</span>
-          <span className="text-small text-grayish dark:text-gray-400">IELTS Portal</span>
+      <div className="flex flex-col justify-center w-full md:w-1/2 px-6 py-8 sm:px-8 sm:py-12 lg:px-12 lg:py-16">
+        <div className="flex justify-between items-center mb-6 sm:mb-8">
+          <span className="font-slab text-h3 sm:text-h2 md:text-display text-gradient-primary">GramorX</span>
+          <span className="text-xs sm:text-small text-grayish dark:text-gray-400">IELTS Portal</span>
         </div>
 
-        <Container className="max-w-md w-full">
-          <h1 className="font-slab text-h2 text-gradient-primary">{title}</h1>
-          {subtitle && <p className="text-grayish mt-1">{subtitle}</p>}
-          <div className="mt-6">{children}</div>
+        <Container className="w-full max-w-sm sm:max-w-md md:max-w-lg">
+          <h1 className="font-slab text-h3 sm:text-h2 lg:text-display text-gradient-primary">{title}</h1>
+          {subtitle && <p className="mt-1 text-sm sm:text-base text-grayish">{subtitle}</p>}
+          <div className="mt-4 sm:mt-6">{children}</div>
         </Container>
       </div>
 
@@ -58,7 +58,7 @@ export default function AuthLayout({
       <div className={rightWrapperClass}>{rightContent}</div>
 
       {/* Theme toggle */}
-      <div className="absolute top-4 right-4">
+      <div className="absolute top-2 right-2 sm:top-4 sm:right-4">
         <ThemeToggle />
       </div>
     </div>
