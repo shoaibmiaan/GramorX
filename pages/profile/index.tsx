@@ -11,7 +11,8 @@ import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser';
 import { useToast } from '@/components/design-system/Toaster';
 import type { Profile } from '@/types/profile';
 import { Badge } from '@/components/design-system/Badge';
-import { badges } from '@/data/badges';
+import type { Badge as BadgeType } from '@/data/badges';
+import { getUserBadges } from '@/lib/gamification';
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -24,7 +25,7 @@ export default function ProfilePage() {
   const fileRef = useRef<HTMLInputElement | null>(null);
   const { error: toastError, success: toastSuccess } = useToast();
   const { current: streak } = useStreak();
-  const earnedBadges = [...badges.streaks, ...badges.milestones, ...badges.community];
+  const [earnedBadges, setEarnedBadges] = useState<BadgeType[]>([]);
 
   useEffect(() => {
     (async () => {
@@ -34,13 +35,14 @@ export default function ProfilePage() {
         return;
       }
       setUserId(session.user.id);
+
       const { data, error } = await supabase
         .from('user_profiles')
         .select('*')
         .eq('user_id', session.user.id)
         .maybeSingle();
 
-      if (error || !data || data.draft) {
+      if (error || !data || (data as any).draft) {
         router.replace('/profile/setup');
         return;
       }
@@ -48,6 +50,16 @@ export default function ProfilePage() {
       setProfile(data as Profile);
       setCommOptIn((data as any).marketing_opt_in ?? true);
       setHistoryText((data as any).study_history ?? '');
+
+      // Load user badges as well (from the other branch)
+      try {
+        const userBadges = await getUserBadges(session.user.id);
+        setEarnedBadges(userBadges);
+      } catch (e) {
+        // Non-blocking: log silently
+        console.warn('Failed to load badges', e);
+      }
+
       setLoading(false);
     })();
   }, [router]);
@@ -209,6 +221,7 @@ export default function ProfilePage() {
               Edit profile
             </Button>
           </Card>
+
           <Card className="p-6 rounded-ds-2xl">
             <h2 className="font-slab text-display mb-4">Account & Privacy</h2>
             <Toggle
@@ -236,6 +249,7 @@ export default function ProfilePage() {
           </Card>
 
           <SavedItems />
+
           <Card className="p-6 rounded-ds-2xl">
             <h2 className="font-slab text-display mb-4">Study history</h2>
             <textarea
@@ -265,4 +279,3 @@ export default function ProfilePage() {
     </section>
   );
 }
-
