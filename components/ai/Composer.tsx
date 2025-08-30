@@ -49,8 +49,7 @@ export function Composer({
           }}
           rows={1}
           placeholder="Type or tap 🎙 to speak… (Enter to send, Shift+Enter = new line)"
-          className="w-full resize-none rounded-2xl border border-border bg-background px-3 py-2 text-small outline-none focus:ring-2 focus:ring-primary/40"
-          style={{ maxHeight: 148 }}
+          className="w-full resize-none rounded-2xl border border-border bg-background px-3 py-2 text-small outline-none focus:ring-2 focus:ring-primary/40 max-h-[148px]"
         />
         <button
           onClick={() => send()}
