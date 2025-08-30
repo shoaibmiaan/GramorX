@@ -13,12 +13,6 @@ const BYPASS_STRICT = process.env.BYPASS_STRICT_BUILD !== '0';
 
 const nextConfig = {
   reactStrictMode: true,
-
-  images: {
-    formats: ['image/avif', 'image/webp'],
-    deviceSizes: [320, 420, 768, 1024, 1200],
-  },
-
   // 1) Skip ESLint during production builds (so warnings/errors won’t block)
   eslint: {
     ignoreDuringBuilds: BYPASS_STRICT,
@@ -31,7 +25,7 @@ const nextConfig = {
 
   images: {
     formats: ['image/avif', 'image/webp'],
-    deviceSizes: [640, 750, 828, 1080, 1200, 1920],
+    deviceSizes: [320, 420, 640, 750, 768, 828, 1024, 1080, 1200, 1920],
     dangerouslyAllowSVG: true,
     contentDispositionType: 'inline',
   },

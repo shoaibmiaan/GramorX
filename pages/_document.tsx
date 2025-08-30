@@ -4,6 +4,7 @@ export default function Document() {
   return (
     <Html lang="en">
       <Head>
+        <meta charSet="utf-8" />
         {/* Do NOT include viewport meta here (Next.js warns). Use per-page <Head>. */}
 
         {/* Base SEO */}
@@ -15,9 +16,13 @@ export default function Document() {
           name="keywords"
           content="IELTS, exam prep, English learning, AI, listening, reading, writing, speaking"
         />
+        <meta name="robots" content="index,follow" />
+        <meta name="author" content="GramorX" />
+        <link rel="canonical" href="https://gramorx.com" />
 
         {/* Open Graph / Twitter */}
         <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="GramorX" />
         <meta property="og:title" content="GramorX – AI IELTS Prep" />
         <meta
           property="og:description"
@@ -54,6 +59,23 @@ export default function Document() {
               name: 'GramorX',
               url: 'https://gramorx.com',
               logo: '/brand/logo.png',
+            }),
+          }}
+        />
+        {/* JSON-LD: WebSite */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'WebSite',
+              name: 'GramorX',
+              url: 'https://gramorx.com',
+              potentialAction: {
+                '@type': 'SearchAction',
+                target: 'https://gramorx.com/search?q={search_term_string}',
+                'query-input': 'required name=search_term_string',
+              },
             }),
           }}
         />

@@ -1,3 +1,4 @@
+"use client";
 // components/admin/ImpersonationBanner.tsx
 import React, { useEffect, useState } from 'react';
 import { supabaseBrowser } from '@/lib/supabaseBrowser';
