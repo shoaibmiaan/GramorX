@@ -19,6 +19,17 @@ export default function LoginWithPhone() {
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
   const [resendAttempts, setResendAttempts] = useState(0);
+  const [cooldown, setCooldown] = useState(0);
+
+  const MAX_RESENDS = Number(process.env.NEXT_PUBLIC_MAX_RESEND_ATTEMPTS ?? 3);
+  const RESEND_COOLDOWN = Number(process.env.NEXT_PUBLIC_RESEND_COOLDOWN ?? 30);
+
+  const useSafeEffect = typeof React.useEffect === 'function' ? React.useEffect : () => {};
+  useSafeEffect(() => {
+    if (!cooldown) return;
+    const timer = setInterval(() => setCooldown((c) => (c > 0 ? c - 1 : 0)), 1000);
+    return () => clearInterval(timer);
+  }, [cooldown]);
 
   async function requestOtp(e: React.FormEvent) {
     e.preventDefault();
@@ -37,6 +48,7 @@ export default function LoginWithPhone() {
     setLoading(false);
     if (error) return setErr(getAuthErrorMessage(error));
     setResendAttempts(0);
+    setCooldown(RESEND_COOLDOWN);
     setStage('verify');
   }
 
@@ -64,6 +76,7 @@ export default function LoginWithPhone() {
   }
 
   async function resendOtp() {
+    if (resendAttempts >= MAX_RESENDS || cooldown > 0) return;
     setErr(null);
     setResending(true);
     setLoading(true);
@@ -75,6 +88,14 @@ export default function LoginWithPhone() {
       });
       if (error) return setErr(getAuthErrorMessage(error));
       setResendAttempts((a) => a + 1);
+      setCooldown(RESEND_COOLDOWN);
+      try {
+        await fetch('/api/auth/otp-limit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone: trimmedPhone }),
+        });
+      } catch {}
     } finally {
       setLoading(false);
       setResending(false);
@@ -143,10 +164,23 @@ export default function LoginWithPhone() {
             variant="secondary"
             className="w-full rounded-ds-xl"
             onClick={resendOtp}
-            disabled={loading}
+            disabled={loading || cooldown > 0 || resendAttempts >= MAX_RESENDS}
           >
-            {loading && resending ? 'Resending…' : `Resend code${resendAttempts ? ` (${resendAttempts})` : ''}`}
+            {loading && resending
+              ? 'Resending…'
+              : cooldown > 0
+                ? `Resend in ${cooldown}s`
+                : resendAttempts >= MAX_RESENDS
+                  ? 'Resend limit reached'
+                  : `Resend code (${MAX_RESENDS - resendAttempts} left)`}
           </Button>
+          <p className="text-small text-grayish dark:text-gray-400 text-center">
+            {resendAttempts >= MAX_RESENDS
+              ? 'No resend attempts left.'
+              : cooldown > 0
+                ? `You can resend the code in ${cooldown}s.`
+                : `${MAX_RESENDS - resendAttempts} resend attempts remaining.`}
+          </p>
         </form>
       )}
 
