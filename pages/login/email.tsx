@@ -41,29 +41,24 @@ export default function LoginWithEmail() {
     setEmailErr(null);
 
     setLoading(true);
-    const { error, data } = await supabase.auth.signInWithPassword({
-      email: trimmedEmail,
-      password: pw,
-    });
-    setLoading(false);
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: trimmedEmail, password: pw }),
+      });
+      const body = await res.json().catch(() => ({}));
+      setLoading(false);
 
-    if (error) {
-      const msg = error.message?.toLowerCase() ?? '';
-      if (
-        error.code === 'invalid_grant' &&
-        (msg.includes('weak_password') || (msg.includes('password') && msg.includes('undefined')))
-      ) {
-        setErr('Use your Google/Facebook/Apple account to sign in');
-      } else {
-        setErr(getAuthErrorMessage(error));
+      if (!res.ok || !body.session) {
+        const msg = typeof body.error === 'string' ? body.error : 'Unable to sign in. Please try again.';
+        setErr(msg);
+        return;
       }
-      return;
-    }
 
-    if (data.session) {
       await supabase.auth.setSession({
-        access_token: data.session.access_token,
-        refresh_token: data.session.refresh_token,
+        access_token: body.session.access_token,
+        refresh_token: body.session.refresh_token,
       });
 
       const { data: { user } } = await supabase.auth.getUser();
@@ -79,7 +74,10 @@ export default function LoginWithEmail() {
       }
 
       try { await fetch('/api/auth/login-event', { method: 'POST' }); } catch {}
-      redirectByRole(data.session.user);
+      redirectByRole(body.session.user);
+    } catch (e) {
+      setLoading(false);
+      setErr('Unable to sign in. Please try again.');
     }
   }
 
