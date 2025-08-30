@@ -25,6 +25,8 @@ import GapToGoal from '@/components/visa/GapToGoal';
 import MotivationCoach from '@/components/coach/MotivationCoach';
 import type { Profile, AIPlan } from '@/types/profile';
 import { SavedItems } from '@/components/dashboard/SavedItems';
+import ShareLinkCard from '@/components/dashboard/ShareLinkCard';
+import WhatsAppOptIn from '@/components/dashboard/WhatsAppOptIn';
 
 export default function Dashboard() {
   const router = useRouter();
@@ -319,6 +321,12 @@ export default function Dashboard() {
           </Card>
 
           <ReadingStatsCard />
+        </div>
+
+        {/* Engagement */}
+        <div className="mt-10 grid gap-6 md:grid-cols-2">
+          <ShareLinkCard />
+          <WhatsAppOptIn />
         </div>
 
         {/* Skill analytics */}

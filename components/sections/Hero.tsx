@@ -228,7 +228,7 @@ export const Hero: React.FC<HeroProps> = ({ onStreakChange }) => {
           </Card>
 
           <div className="flex gap-4 mt-8 justify-center">
-            <Button href="/#waitlist" variant="primary">
+            <Button href="/waitlist" variant="primary">
               Join Exclusive Waitlist
             </Button>
             <Button href="/learning" variant="secondary">

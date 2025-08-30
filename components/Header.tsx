@@ -19,8 +19,8 @@ const MODULE_LINKS: ModuleLink[] = [
   { label: 'Speaking', href: '/speaking', desc: 'Pronunciation & fluency' },
 ];
 
-// Removed Join Waitlist
 const NAV: { href: string; label: string }[] = [
+  { href: '/waitlist', label: 'Join Waitlist' },
   { href: '#pricing', label: 'Pricing' },
 ];
 

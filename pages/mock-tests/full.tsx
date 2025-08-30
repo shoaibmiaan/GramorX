@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
-import SectionTest, { SectionResult } from '@/components/mock-tests/SectionTest';
+import { useRef } from 'react';
+import SectionTest, { SectionResult, SectionTestHandle } from '@/components/mock-tests/SectionTest';
 import { mockSections } from '@/data/mockTests';
 import { Container } from '@/components/design-system/Container';
 import { Card } from '@/components/design-system/Card';
+import ExamLayout from '@/components/layouts/ExamLayout';
 
 const order = ['listening', 'reading', 'writing', 'speaking'] as const;
 
@@ -14,6 +16,7 @@ type Progress = {
 export default function FullTestPage() {
   const [progress, setProgress] = useState<Progress>({ current: 0, results: [] });
   const [finished, setFinished] = useState(false);
+  const testRef = useRef<SectionTestHandle>(null);
 
   // load progress
   useEffect(() => {
@@ -88,11 +91,19 @@ export default function FullTestPage() {
   const sectionData = mockSections[currentKey];
 
   return (
-    <SectionTest
-      section={currentKey}
-      duration={sectionData.duration}
-      questions={sectionData.questions}
-      onComplete={handleSectionComplete}
-    />
+    <ExamLayout
+      exam="mock-test"
+      slug={`full-${currentKey}`}
+      title={`${currentKey.charAt(0).toUpperCase() + currentKey.slice(1)} Section`}
+      seconds={sectionData.duration}
+      onElapsed={() => testRef.current?.submit()}
+    >
+      <SectionTest
+        ref={testRef}
+        section={currentKey}
+        questions={sectionData.questions}
+        onComplete={handleSectionComplete}
+      />
+    </ExamLayout>
   );
 }

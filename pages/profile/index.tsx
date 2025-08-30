@@ -8,7 +8,7 @@ import { StreakIndicator } from '@/components/design-system/StreakIndicator';
 import { SavedItems } from '@/components/dashboard/SavedItems';
 import { useStreak } from '@/hooks/useStreak';
 import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser';
-import { useToast } from '@/components/design-system/Toast';
+import { useToast } from '@/components/design-system/Toaster';
 import type { Profile } from '@/types/profile';
 import { Badge } from '@/components/design-system/Badge';
 import { badges } from '@/data/badges';
