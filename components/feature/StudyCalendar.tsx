@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect, useMemo, useState } from 'react';
 import { Card } from '@/components/design-system/Card';
 import { useStreak } from '@/hooks/useStreak';

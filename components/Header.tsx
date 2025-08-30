@@ -1,14 +1,25 @@
 // components/sections/Header.tsx
+"use client";
+
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useTheme } from 'next-themes';
+import dynamic from 'next/dynamic';
+import Image from 'next/image';
 import { Container } from '@/components/design-system/Container';
 import { NavLink } from '@/components/design-system/NavLink';
 import { supabaseBrowser } from '@/lib/supabaseBrowser';
-import { UserMenu } from '@/components/design-system/UserMenu';
-import { NotificationBell } from '@/components/design-system/NotificationBell';
 import type { AuthChangeEvent, Session } from '@supabase/supabase-js';
+
+const UserMenu = dynamic(() => import('@/components/design-system/UserMenu'), {
+  ssr: false,
+});
+
+const NotificationBell = dynamic(
+  () => import('@/components/design-system/NotificationBell'),
+  { ssr: false }
+);
 
 type ModuleLink = { label: string; href: string; desc?: string };
 
@@ -71,7 +82,6 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
   const [scrolled, setScrolled] = useState(false);
 
   const [ready, setReady] = useState(false);
-  const [role, setRole] = useState<string | null>(null);
   const [user, setUser] = useState<{ id: string | null; email: string | null; name: string | null; avatarUrl: string | null }>({
     id: null, email: null, name: null, avatarUrl: null,
   });
@@ -111,14 +121,6 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
 
   useEffect(() => {
     let cancelled = false;
-    const computeRole = async (uid: string | null, appMeta?: any, userMeta?: any) => {
-      let r: any = appMeta?.role ?? userMeta?.role ?? null;
-      if (!r && uid) {
-        const { data: prof } = await supabaseBrowser.from('profiles').select('role').eq('id', uid).single();
-        r = prof?.role ?? null;
-      }
-      return r ? String(r).toLowerCase() : null;
-    };
 
     const sync = async () => {
       const { data } = await supabaseBrowser.auth.getSession();
@@ -131,8 +133,6 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
           name: typeof userMeta['full_name'] === 'string' ? (userMeta['full_name'] as string) : null,
           avatarUrl: typeof userMeta['avatar_url'] === 'string' ? (userMeta['avatar_url'] as string) : null,
         });
-        const r = await computeRole(s?.id ?? null, s?.app_metadata, userMeta);
-        if (!cancelled) setRole(r);
         setReady(true);
       }
     };
@@ -148,9 +148,7 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
           name: typeof userMeta['full_name'] === 'string' ? (userMeta['full_name'] as string) : null,
           avatarUrl: typeof userMeta['avatar_url'] === 'string' ? (userMeta['avatar_url'] as string) : null,
         });
-        const r = await computeRole(s?.id ?? null, s?.app_metadata, userMeta);
-        setRole(r);
-        if (!s) setStreakState(0); // reset on sign-out
+          if (!s) setStreakState(0); // reset on sign-out
       }
     );
 
@@ -201,13 +199,7 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
     };
   }, [mobileOpen]);
 
-  const signOut = async () => {
-    await supabaseBrowser.auth.signOut();
-    setStreakState(0);
-    router.replace('/login');
-  };
-
-  return (
+    return (
     <header
       className={[
         'sticky top-0 z-50 transition-colors',
@@ -222,7 +214,14 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
             className="flex items-center gap-3 group"
             aria-label="Go to home"
           >
-            <img src="/brand/logo.png" alt="GramorX logo" className="h-11 w-11 rounded-lg object-contain" />
+            <Image
+              src="/brand/logo.png"
+              alt="GramorX logo"
+              width={44}
+              height={44}
+              className="rounded-lg object-contain"
+              priority
+            />
             <span className="font-slab font-bold text-3xl">
               <span className="text-gradient-primary group-hover:opacity-90 transition">GramorX</span>
             </span>

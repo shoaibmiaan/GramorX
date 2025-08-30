@@ -1,3 +1,5 @@
+"use client";
+
 // components/design-system/UserMenu.tsx
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
