@@ -116,7 +116,7 @@ export default function LoginWithPassword() {
   );
 
   return (
-    <AuthLayout title="Sign in with Email" subtitle="Use your email & password." right={RightPanel}>
+    <AuthLayout title="Sign in with Email & Password" subtitle="Use your email & password." right={RightPanel}>
       {err && <Alert variant="error" title="Error">{err}</Alert>}
 
       {!otpSent ? (

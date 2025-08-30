@@ -211,7 +211,7 @@ export default function LoginOptions() {
               >
                 <span className="inline-flex items-center gap-3">
                   <i className="fas fa-envelope text-xl" aria-hidden />
-                  Email (Password)
+                  Email &amp; Password
                 </span>
               </Link>
             </Button>
