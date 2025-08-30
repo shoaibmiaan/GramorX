@@ -11,7 +11,8 @@ import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser';
 import { useToast } from '@/components/design-system/Toaster';
 import type { Profile } from '@/types/profile';
 import { Badge } from '@/components/design-system/Badge';
-import { badges } from '@/data/badges';
+import type { Badge as BadgeType } from '@/data/badges';
+import { getUserBadges } from '@/lib/gamification';
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -23,7 +24,7 @@ export default function ProfilePage() {
   const fileRef = useRef<HTMLInputElement | null>(null);
   const { error: toastError, success: toastSuccess } = useToast();
   const { current: streak } = useStreak();
-  const earnedBadges = [...badges.streaks, ...badges.milestones, ...badges.community];
+  const [earnedBadges, setEarnedBadges] = useState<BadgeType[]>([]);
 
   useEffect(() => {
     (async () => {
@@ -46,6 +47,8 @@ export default function ProfilePage() {
 
       setProfile(data as Profile);
       setCommOptIn((data as any).marketing_opt_in ?? true);
+      const userBadges = await getUserBadges(session.user.id);
+      setEarnedBadges(userBadges);
       setLoading(false);
     })();
   }, [router]);
