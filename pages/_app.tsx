@@ -24,6 +24,7 @@ import {
 import { PremiumThemeProvider } from '@/premium-ui/theme/PremiumThemeProvider';
 import { ImpersonationBanner } from '@/components/admin/ImpersonationBanner';
 import SidebarAI from '@/components/ai/SidebarAI';
+import AuthAssistant from '@/components/auth/AuthAssistant';
 
 import { Poppins, Roboto_Slab } from 'next/font/google';
 const poppins = Poppins({
@@ -60,6 +61,8 @@ function InnerApp({ Component, pageProps }: AppProps) {
       /^\/auth\/(login|signup|register)(\/|$)/.test(pathname),
     [pathname]
   );
+
+  const showAuthAssistant = useMemo(() => /^\/(login|signup)(\/|$)/.test(pathname), [pathname]);
 
   const isNoChromeRoute = useMemo(() => {
     return /\/exam(\/|$)|\/exam-room(\/|$)|\/focus-mode(\/|$)/.test(pathname);
@@ -231,6 +234,7 @@ function InnerApp({ Component, pageProps }: AppProps) {
             {pageBody}
           </>
         )}
+        {showAuthAssistant && <AuthAssistant />}
         <SidebarAI />
       </div>
     </ThemeProvider>
