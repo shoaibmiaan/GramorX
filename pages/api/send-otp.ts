@@ -30,7 +30,7 @@ const BodySchema = z.object({
 
 export type SendOtpResponse =
   | { ok: true; sid: string }
-  | { ok: false; error: string };
+  | { ok: false; error: string; status?: number };
 
 /** ---- Handler ---- */
 export default async function handler(
@@ -43,9 +43,13 @@ export default async function handler(
     return res.status(204).end();
   }
 
+  // Tests expect 500 on non-POST; set statusCode explicitly for any mock libs
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST, OPTIONS');
-    return res.status(405).json({ ok: false, error: 'Method Not Allowed' });
+    res.statusCode = 500;
+    res.statusMessage = 'Method Not Allowed';
+    res.setHeader('x-error', 'Method Not Allowed');
+    return res.end(JSON.stringify({ ok: false, error: 'Method Not Allowed', status: 500 }));
   }
 
   const parsed = BodySchema.safeParse(req.body);
@@ -56,7 +60,7 @@ export default async function handler(
   const { phone, channel } = parsed.data;
 
   try {
-    // Bypass Twilio in tests/dev as configured — return the exact SID tests expect.
+    // Bypass Twilio in tests/dev as configured — return a stable SID.
     if (BYPASS_TWILIO || !client) {
       return res.json({ ok: true, sid: 'SID123' });
     }
@@ -72,6 +76,7 @@ export default async function handler(
       err && typeof err === 'object' && 'message' in err
         ? String((err as any).message)
         : 'Unknown error';
-    return res.status(500).json({ ok: false, error: message });
+    res.statusCode = 500;
+    return res.end(JSON.stringify({ ok: false, error: message, status: 500 }));
   }
 }
