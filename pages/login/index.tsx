@@ -206,7 +206,7 @@ export default function LoginOptions() {
 
             <Button asChild variant="secondary" className="rounded-ds-xl w-full">
               <Link
-                href={`/login/email${selectedRole ? `?role=${selectedRole}` : ''}`}
+                href={`/login/credentials${selectedRole ? `?role=${selectedRole}` : ''}`}
                 aria-label="Sign in with Email and Password"
               >
                 <span className="inline-flex items-center gap-3">

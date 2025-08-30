@@ -9,10 +9,9 @@ import { Alert } from '@/components/design-system/Alert';
 import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser';
 import { redirectByRole } from '@/lib/routeAccess';
 import { isValidEmail } from '@/utils/validation';
-import { getAuthErrorMessage } from '@/lib/authErrors';
 import useEmailLoginMFA from '@/hooks/useEmailLoginMFA';
 
-export default function LoginWithPassword() {
+export default function LoginWithCredentials() {
   const [email, setEmail] = useState('');
   const [pw, setPw] = useState('');
   const [emailErr, setEmailErr] = useState<string | null>(null);
@@ -37,7 +36,7 @@ export default function LoginWithPassword() {
 
     const trimmedEmail = email.trim();
     if (!trimmedEmail || !pw) {
-      setErr('Please fill in all fields.');
+      setErr('Email and password are required.');
       return;
     }
     if (!isValidEmail(trimmedEmail)) {
@@ -84,14 +83,14 @@ export default function LoginWithPassword() {
       <div>
         <div className="flex items-center gap-3 mb-6">
           <Image src="/brand/logo.png" alt="GramorX" width={40} height={40} className="rounded-ds object-contain" priority />
-          <h2 className="font-slab text-h2 text-gradient-primary">Welcome back</h2>
+          <h2 className="font-slab text-h2 text-gradient-primary">Sign in to GramorX</h2>
         </div>
         <p className="text-body text-grayish dark:text-gray-300 max-w-md">
-          Continue where you left off across Listening, Reading, Writing & Speaking.
+          Access all IELTS modules with progress tracking & AI feedback.
         </p>
       </div>
       <div className="pt-8 text-small text-grayish dark:text-gray-400">
-        Need an account? <Link href="/signup" className="text-primary hover:underline">Sign up</Link>
+        New here? <Link href="/signup" className="text-primaryDark hover:underline">Create an account</Link>
       </div>
     </div>
   );
@@ -146,3 +145,4 @@ export default function LoginWithPassword() {
     </AuthLayout>
   );
 }
+
