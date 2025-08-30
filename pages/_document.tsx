@@ -4,22 +4,47 @@ export default function Document() {
   return (
     <Html lang="en">
       <Head>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="description" content="GramorX – AI-powered IELTS preparation platform" />
-        <meta name="keywords" content="IELTS, exam prep, English learning" />
-        <meta property="og:title" content="GramorX" />
-        <meta property="og:description" content="AI-powered IELTS preparation platform" />
+        {/* Do NOT include viewport meta here (Next.js warns). Use per-page <Head>. */}
+
+        {/* Base SEO */}
+        <meta
+          name="description"
+          content="GramorX is an AI-powered platform for personalized IELTS preparation across Listening, Reading, Writing, and Speaking."
+        />
+        <meta
+          name="keywords"
+          content="IELTS, exam prep, English learning, AI, listening, reading, writing, speaking"
+        />
+
+        {/* Open Graph / Twitter */}
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://gramorx.example.com" />
-        <meta property="og:image" content="/brand/logo.png" />
+        <meta property="og:title" content="GramorX – AI IELTS Prep" />
+        <meta
+          property="og:description"
+          content="Achieve your IELTS goals with adaptive practice and real-time feedback."
+        />
+        <meta property="og:url" content="https://gramorx.com" />
+        <meta property="og:image" content="/brand/og-image.png" />
         <meta name="twitter:card" content="summary_large_image" />
+
+        {/* Fonts & Icons */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Roboto+Slab:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Roboto+Slab:wght@300;400;500;600;700&display=swap"
+          rel="stylesheet"
+        />
+        <link
+          rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+        />
+
+        {/* PWA */}
         <link rel="manifest" href="/manifest.json" />
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.svg" />
+
+        {/* JSON-LD: Organization */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -27,7 +52,7 @@ export default function Document() {
               '@context': 'https://schema.org',
               '@type': 'Organization',
               name: 'GramorX',
-              url: 'https://gramorx.example.com',
+              url: 'https://gramorx.com',
               logo: '/brand/logo.png',
             }),
           }}

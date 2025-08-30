@@ -26,13 +26,22 @@ export default function AuthCallback() {
       const { data, error } = await supabase.auth.exchangeCodeForSession(url);
       if (error) {
         setErr(error.message);
+      } else if (!data.session) {
+        setErr('No active session. Please try signing in again.');
       } else {
         try {
           await fetch('/api/auth/login-event', { method: 'POST' });
         } catch (err) {
           console.error(err);
         }
-        redirectByRole(data.session?.user ?? null);
+        const user = data.session.user;
+        const mfaEnabled = (user.user_metadata as any)?.mfa_enabled;
+        const mfaVerified = (user.user_metadata as any)?.mfa_verified;
+        if (mfaEnabled && !mfaVerified) {
+          window.location.assign('/auth/mfa');
+          return;
+        }
+        redirectByRole(user ?? null);
       }
     })();
   }, []);
