@@ -6,7 +6,7 @@ import { Card } from '@/components/design-system/Card';
 import { Button } from '@/components/design-system/Button';
 import { Input } from '@/components/design-system/Input';
 import { Badge } from '@/components/design-system/Badge';
-import { AccentPicker } from '@/components/speaking/AccentPicker';
+import { AccentPicker, type Accent } from '@/components/speaking/AccentPicker';
 import { useSpeech } from '@/components/speaking/useSpeech';
 import { supabaseBrowser } from '@/lib/supabaseBrowser';
 
@@ -114,8 +114,29 @@ export default function AIPartnerPage() {
 
   const lastBlobRef = useRef<Blob | null>(null);
 
-  // Speech
-  const { supported, voices, voiceName, setVoiceName, speak, stop, pickRegion } = useSpeech({ defaultAccent: 'US' });
+  // Accent preference (persisted in localStorage)
+  const [accent, setAccent] = useState<Accent>(() => {
+    if (typeof window === 'undefined') return 'US';
+    return (localStorage.getItem('speakingAccent') as Accent) || 'US';
+  });
+
+  // Speech synthesis
+  const { supported, speak, stop, pickRegion } = useSpeech({ defaultAccent: accent });
+
+  // Speech recognition
+  const recRef = useRef<SpeechRecognition | null>(null);
+  const [recSupported, setRecSupported] = useState(false);
+  const [listening, setListening] = useState(false);
+
+  const handleAccent = useCallback((a: Accent) => {
+    setAccent(a);
+    if (typeof window !== 'undefined') localStorage.setItem('speakingAccent', a);
+    pickRegion(a);
+  }, [pickRegion]);
+
+  useEffect(() => {
+    pickRegion(accent);
+  }, [accent, pickRegion]);
 
   // Prevent accidental submits from nested <form>s
   useEffect(() => {
@@ -159,11 +180,12 @@ export default function AIPartnerPage() {
 
   useEffect(() => { void ensureAttempt().catch(() => {}); }, [ensureAttempt]);
 
-  const sendText = useCallback(async () => {
-    const text = pending.trim();
+  const sendText = useCallback(async (override?: string) => {
+    const text = (override ?? pending).trim();
     if (!text) return;
-    setMsgs(m => [...m, { role: 'user', text }]);
-    setPending('');
+    const history = [...msgs, { role: 'user', text }];
+    setMsgs(history);
+    if (!override) setPending('');
     try {
       const { data: { session } } = await supabaseBrowser.auth.getSession();
       const id = await ensureAttempt();
@@ -174,7 +196,7 @@ export default function AIPartnerPage() {
           'Content-Type': 'application/json',
           ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
         },
-        body: JSON.stringify({ attemptId: id, history: msgs, userText: text }),
+        body: JSON.stringify({ attemptId: id, history, userText: text, accent }),
         credentials: 'include',
       });
       const raw = await r.text();
@@ -186,7 +208,32 @@ export default function AIPartnerPage() {
     } catch (e: any) {
       setMetaMsg({ kind: 'err', text: e?.message || 'Send failed' });
     }
-  }, [pending, msgs, autoSpeak, supported, speak, ensureAttempt]);
+  }, [pending, msgs, autoSpeak, supported, speak, ensureAttempt, accent]);
+
+  // Init browser speech recognition
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const SR: any = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SR) return;
+    const rec = new SR();
+    rec.lang = accent === 'UK' ? 'en-GB' : accent === 'AUS' ? 'en-AU' : 'en-US';
+    rec.interimResults = false;
+    rec.onresult = (e: any) => {
+      const text = String(e.results[0][0].transcript || '').trim();
+      if (text) sendText(text);
+    };
+    rec.onstart = () => setListening(true);
+    rec.onend = () => setListening(false);
+    recRef.current = rec;
+    setRecSupported(true);
+  }, [accent, sendText]);
+
+  const startListening = useCallback(() => {
+    recRef.current?.start();
+  }, []);
+  const stopListening = useCallback(() => {
+    recRef.current?.stop();
+  }, []);
 
   // Save recorded audio → upload, then STT+reply
   const handleBlob = useCallback(async (blob: Blob) => {
@@ -212,7 +259,9 @@ export default function AIPartnerPage() {
           attemptId: id,
           audioBase64: b64,
           mime: blob.type || 'audio/webm',
-          audioUrl: up.path
+          audioUrl: up.path,
+          history: msgs,
+          accent
         }),
         credentials: 'include',
       });
@@ -316,11 +365,21 @@ export default function AIPartnerPage() {
               ))}
             </div>
 
-            <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto]">
+            <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto_auto]">
               <Input placeholder="Type your answer…" value={pending} onChange={e => setPending(e.target.value)} />
-              <Button onClick={sendText} variant="primary" className="rounded-ds-xl" disabled={!pending.trim()} type="button">
+              <Button onClick={() => sendText()} variant="primary" className="rounded-ds-xl" disabled={!pending.trim()} type="button">
                 Send
               </Button>
+              {recSupported && (
+                <Button
+                  onClick={listening ? stopListening : startListening}
+                  variant={listening ? 'primary' : 'secondary'}
+                  className="rounded-ds-xl"
+                  type="button"
+                >
+                  {listening ? 'Listening…' : 'Speak'}
+                </Button>
+              )}
             </div>
 
             {/* status row + actions */}
@@ -368,18 +427,7 @@ export default function AIPartnerPage() {
               <h3 className="text-h3">Accent & Voice</h3>
               {supported ? (
                 <>
-                  <AccentPicker
-                    voices={voices}
-                    voiceName={voiceName}
-                    onChange={setVoiceName}
-                    className="mt-3"
-                  />
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <Button onClick={() => pickRegion('UK')} variant="secondary" className="rounded-ds" type="button">UK</Button>
-                    <Button onClick={() => pickRegion('US')} variant="secondary" className="rounded-ds" type="button">US</Button>
-                    <Button onClick={() => pickRegion('AUS')} variant="secondary" className="rounded-ds" type="button">AUS</Button>
-                  </div>
-
+                  <AccentPicker value={accent} onChange={handleAccent} />
                   <div className="mt-3 flex gap-2">
                     <Button onClick={() => setAutoSpeak(!autoSpeak)} variant={autoSpeak ? 'primary' : 'secondary'} className="rounded-ds" type="button">
                       {autoSpeak ? 'Auto-speak: On' : 'Auto-speak: Off'}

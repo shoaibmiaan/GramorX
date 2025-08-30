@@ -33,8 +33,17 @@ export default function VerifyPage() {
       );
       if (error) {
         setError(error.message);
+      } else if (!data.session) {
+        setError('Session missing. Please try again.');
       } else {
-        redirectByRole(data.session?.user ?? null);
+        const user = data.session.user;
+        const mfaEnabled = (user.user_metadata as any)?.mfa_enabled;
+        const mfaVerified = (user.user_metadata as any)?.mfa_verified;
+        if (mfaEnabled && !mfaVerified) {
+          window.location.assign('/auth/mfa');
+          return;
+        }
+        redirectByRole(user ?? null);
       }
     })();
   }, [hasCode, router]);

@@ -1,20 +1,16 @@
-// components/sections/Header.tsx
-"use client";
+'use client';
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useTheme } from 'next-themes';
-import dynamic from 'next/dynamic';
-import Image from 'next/image';
 import { Container } from '@/components/design-system/Container';
 import { NavLink } from '@/components/design-system/NavLink';
 import { supabaseBrowser } from '@/lib/supabaseBrowser';
+import { UserMenu } from '@/components/design-system/UserMenu';
+import dynamic from 'next/dynamic';
 import type { AuthChangeEvent, Session } from '@supabase/supabase-js';
-
-const UserMenu = dynamic(() => import('@/components/design-system/UserMenu'), {
-  ssr: false,
-});
 
 const NotificationBell = dynamic(
   () => import('@/components/design-system/NotificationBell'),
@@ -35,7 +31,6 @@ const NAV: { href: string; label: string }[] = [
   { href: '#pricing', label: 'Pricing' },
 ];
 
-// 🔥 Fire streak pill (icon + value)
 function FireStreak({ value }: { value: number }) {
   return (
     <span
@@ -48,7 +43,6 @@ function FireStreak({ value }: { value: number }) {
   );
 }
 
-// Icon-only theme toggle (no Light/Dark text)
 function IconOnlyThemeToggle() {
   const { theme, setTheme, resolvedTheme } = useTheme();
   const isDark = (theme ?? resolvedTheme) === 'dark';
@@ -59,7 +53,6 @@ function IconOnlyThemeToggle() {
       onClick={() => setTheme(isDark ? 'light' : 'dark')}
       className="inline-flex h-10 w-10 items-center justify-center rounded-lg hover:bg-purpleVibe/10"
     >
-      {/* Moon / Sun icons (inline SVG, no text) */}
       {isDark ? (
         <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor" aria-hidden="true">
           <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
@@ -82,13 +75,14 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
   const [scrolled, setScrolled] = useState(false);
 
   const [ready, setReady] = useState(false);
+  const [role, setRole] = useState<string | null>(null);
   const [user, setUser] = useState<{ id: string | null; email: string | null; name: string | null; avatarUrl: string | null }>({
     id: null, email: null, name: null, avatarUrl: null,
   });
 
-  // Streak (kept from your last version, now rendered with FireStreak)
   const [streakState, setStreakState] = useState<number>(streak ?? 0);
   useEffect(() => { if (typeof streak === 'number') setStreakState(streak); }, [streak]);
+
   const fetchStreak = useCallback(async () => {
     if (typeof streak === 'number') return;
     const { data: session } = await supabaseBrowser.auth.getSession();
@@ -97,7 +91,9 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
     const res = await fetch('/api/words/today', { headers: { Authorization: `Bearer ${token}` } });
     if (res.ok) { const j = await res.json(); if (typeof j?.streakDays === 'number') setStreakState(j.streakDays); }
   }, [streak]);
+
   useEffect(() => { fetchStreak(); }, [fetchStreak]);
+
   useEffect(() => {
     const onChanged = (e: Event) => {
       const ce = e as CustomEvent<{ value?: number }>;
@@ -108,7 +104,6 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
     return () => window.removeEventListener('streak:changed', onChanged as EventListener);
   }, [fetchStreak]);
 
-  // Solid header when scrolled or any menu open (fixes the “looks not right” overlay)
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 4);
     onScroll();
@@ -121,6 +116,14 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
 
   useEffect(() => {
     let cancelled = false;
+    const computeRole = async (uid: string | null, appMeta?: any, userMeta?: any) => {
+      let r: any = appMeta?.role ?? userMeta?.role ?? null;
+      if (!r && uid) {
+        const { data: prof } = await supabaseBrowser.from('profiles').select('role').eq('id', uid).single();
+        r = prof?.role ?? null;
+      }
+      return r ? String(r).toLowerCase() : null;
+    };
 
     const sync = async () => {
       const { data } = await supabaseBrowser.auth.getSession();
@@ -133,6 +136,8 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
           name: typeof userMeta['full_name'] === 'string' ? (userMeta['full_name'] as string) : null,
           avatarUrl: typeof userMeta['avatar_url'] === 'string' ? (userMeta['avatar_url'] as string) : null,
         });
+        const r = await computeRole(s?.id ?? null, s?.app_metadata, userMeta);
+        if (!cancelled) setRole(r);
         setReady(true);
       }
     };
@@ -148,7 +153,9 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
           name: typeof userMeta['full_name'] === 'string' ? (userMeta['full_name'] as string) : null,
           avatarUrl: typeof userMeta['avatar_url'] === 'string' ? (userMeta['avatar_url'] as string) : null,
         });
-          if (!s) setStreakState(0); // reset on sign-out
+        const r = await computeRole(s?.id ?? null, s?.app_metadata, userMeta);
+        setRole(r);
+        if (!s) setStreakState(0);
       }
     );
 
@@ -199,7 +206,13 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
     };
   }, [mobileOpen]);
 
-    return (
+  const signOut = async () => {
+    await supabaseBrowser.auth.signOut();
+    setStreakState(0);
+    router.replace('/login');
+  };
+
+  return (
     <header
       className={[
         'sticky top-0 z-50 transition-colors',
@@ -208,7 +221,7 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
     >
       <Container>
         <div className="flex items-center justify-between py-4 md:py-5">
-          {/* Brand — bigger logo + name */}
+          {/* Brand */}
           <Link
             href={user.id ? '/dashboard' : '/'}
             className="flex items-center gap-3 group"
@@ -219,8 +232,9 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
               alt="GramorX logo"
               width={44}
               height={44}
-              className="rounded-lg object-contain"
               priority
+              sizes="44px"
+              className="h-11 w-11 rounded-lg object-contain"
             />
             <span className="font-slab font-bold text-3xl">
               <span className="text-gradient-primary group-hover:opacity-90 transition">GramorX</span>
@@ -316,7 +330,7 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
                       email={user.email}
                       name={user.name}
                       avatarUrl={user.avatarUrl}
-                      onSignOut={async () => { await supabaseBrowser.auth.signOut(); setStreakState(0); router.replace('/login'); }}
+                      onSignOut={signOut}
                     />
                   </li>
                 ) : (
@@ -333,7 +347,6 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
                 <li><div className="h-9 w-24 rounded-full bg-gray-200 dark:bg-white/10 animate-pulse" /></li>
               )}
 
-              {/* 🔥 Fire streak + icon-only theme */}
               <li><FireStreak value={streakState} /></li>
               <li><NotificationBell /></li>
               <li><IconOnlyThemeToggle /></li>
@@ -364,7 +377,7 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
         </div>
       </Container>
 
-      {/* Mobile panel (solid background; no transparency when open) */}
+      {/* Mobile panel */}
       {mobileOpen && (
         <div className="md:hidden border-t border-purpleVibe/20 bg-lightBg dark:bg-dark shadow-lg">
           <Container>
@@ -373,7 +386,7 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
               {ready && user.id ? (
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={async () => { await supabaseBrowser.auth.signOut(); setStreakState(0); router.replace('/login'); }}
+                    onClick={signOut}
                     className="px-4 py-2 rounded-full bg-gradient-to-r from-purpleVibe to-electricBlue text-white font-semibold hover:opacity-90 transition"
                   >
                     Sign out
@@ -445,7 +458,6 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
                   )}
                 </li>
 
-                {/* Pricing (waitlist removed) */}
                 {NAV.map((n) => (
                   <li key={n.href}>
                     <NavLink
