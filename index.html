@@ -4,55 +4,15 @@
   <meta charset="utf-8" />
   <title>IELTS Platform Implementation Tracker</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    :root{
-      --bg:#0b0c10; --card:#111319; --text:#e8eaed; --muted:#a7b0bf;
-      --border:#232733; --acc:#3b82f6; --ok:#10b981; --warn:#f59e0b;
-    }
-    *{box-sizing:border-box}
-    body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif}
-    .wrap{max-width:1200px;margin:0 auto;padding:20px}
-    h1{margin:0 0 8px}
-    .legend{color:var(--muted);margin-bottom:8px}
-    .bar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;
-         position:sticky;top:0;background:rgba(11,12,16,.9);backdrop-filter:blur(6px);
-         border-bottom:1px solid var(--border);padding:10px;margin:6px 0 12px}
-    select,button{background:var(--card);color:var(--text);border:1px solid var(--border);
-           border-radius:8px;padding:8px 10px}
-    .stats{display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 10px}
-    .stat{background:var(--card);border:1px solid var(--border);padding:6px 10px;border-radius:8px}
-    table{width:100%;border-collapse:collapse}
-    thead th{position:sticky;top:56px;background:var(--bg);z-index:2;color:#b9c2d0;
-             text-align:left;font-weight:600;padding:10px;border-bottom:1px solid var(--border)}
-    tbody td{padding:10px;border-bottom:1px solid var(--border);vertical-align:top}
-
-    .pill{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;border:1px solid var(--border)}
-    .pill.todo{background:#1a1d25}
-    .pill.prog{background:#1e2431;border-color:#2a3346;color:#c5d2ea}
-    .pill.done{background:#0f1d17;border-color:#124d3a;color:#a9efd4}
-    .nowrap{white-space:nowrap}
-    .muted{color:var(--muted)}
-    .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px}
-    .section-title{font-weight:700;margin-bottom:8px}
-    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px}
-    .badge{display:inline-block;font-size:12px;padding:2px 8px;border-radius:999px;border:1px solid var(--border)}
-    .badge.ok{background:#0f1d17;color:#a9efd4}
-    .badge.warn{background:#241c0f;color:#f5d39e}
-    .bar .btn{cursor:pointer}
-    .sum{min-width:280px}
-    input[type="date"]{background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:6px}
-    .hint{font-size:12px;color:#92a0b6;margin-top:6px}
-    a.link{color:var(--acc);text-decoration:none;border-bottom:1px dashed var(--acc)}
-    a.link:hover{opacity:.9}
-  </style>
+  <link rel="stylesheet" href="styles/tracker.css" />
 </head>
-<body>
+<body class="bg-dark text-foreground">
   <div class="wrap">
     <h1>📋 IELTS Platform Implementation Tracker</h1>
-    <div class="legend">Legend: <code>[ ]</code> Not started • <code>[~]</code> In progress • <code>[x]</code> Completed</div>
+    <div class="legend text-mutedText">Legend: <code>[ ]</code> Not started • <code>[~]</code> In progress • <code>[x]</code> Completed</div>
 
     <!-- QUICK NAV: deep links so you can go anywhere from anywhere -->
-    <div class="card" style="margin:12px 0 16px">
+    <div class="card card-spacing">
       <div class="section-title">🧭 Quick Nav — Deep Links</div>
       <div class="grid">
         <div><a href="/admin" class="link">/admin</a> → Overview KPIs & drill-downs</div>
@@ -69,7 +29,7 @@
     </div>
 
     <!-- START HERE: FIRST STEPS -->
-    <div class="card" style="margin:12px 0 16px">
+    <div class="card card-spacing">
       <div class="section-title">🚦 Start Here (Day 0 → Day 7)</div>
       <div class="grid">
         <div><span class="badge ok">P1</span> <b>Unblock the build</b><br/>Fix ESLint TypeScript errors; prefer <code>@ts-expect-error</code> for known temporary issues.</div>
