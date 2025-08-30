@@ -3,6 +3,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { z } from 'zod';
+import { requireCredits } from '@/lib/credits';
 
 const BodySchema = z.object({
   attemptId: z.string().uuid(),
@@ -76,6 +77,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   if (attemptErr) return res.status(404).json({ error: 'Attempt not found' });
   if (attempt.user_id && attempt.user_id !== userId) return res.status(403).json({ error: 'Forbidden' });
+
+  try {
+    await requireCredits(userId, 1);
+  } catch (e: any) {
+    if (e?.code === 'NO_CREDITS') {
+      return res.status(402).json({ error: 'Not enough credits' });
+    }
+    return res.status(500).json({ error: 'Credit check failed' });
+  }
 
   // 4) Call Gemini
   try {

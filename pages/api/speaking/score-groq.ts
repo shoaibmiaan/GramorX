@@ -3,6 +3,8 @@ import { env } from "@/lib/env";
 import type { NextApiRequest, NextApiResponse } from 'next';
 import Groq from 'groq-sdk';
 import { z } from 'zod';
+import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
+import { requireCredits } from '@/lib/credits';
 
 const groq = new Groq({ apiKey: env.GROQ_API_KEY });
 
@@ -17,6 +19,19 @@ const OutputSchema = z.object({
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+
+  const supabase = createServerSupabaseClient({ req, res });
+  const { data: userResp, error: authErr } = await supabase.auth.getUser();
+  if (authErr || !userResp?.user) return res.status(401).json({ error: 'Unauthorized' });
+
+  try {
+    await requireCredits(userResp.user.id, 1);
+  } catch (e: any) {
+    if (e?.code === 'NO_CREDITS') {
+      return res.status(402).json({ error: 'Not enough credits' });
+    }
+    return res.status(500).json({ error: 'Credit check failed' });
+  }
 
   const { transcript, part } = (req.body ?? {}) as {
     transcript?: string;

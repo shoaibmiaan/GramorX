@@ -1,6 +1,6 @@
 import React from 'react';
 
-export type PaymentMethod = 'jazzcash' | 'easypaisa' | 'card';
+export type PaymentMethod = 'jazzcash' | 'easypaisa' | 'card' | 'stripe' | 'paypal';
 
 interface Props {
   selected: PaymentMethod;
@@ -12,6 +12,8 @@ export const PaymentOptions: React.FC<Props> = ({ selected, onChange }) => {
     { label: 'JazzCash', value: 'jazzcash' },
     { label: 'Easypaisa', value: 'easypaisa' },
     { label: 'Card / International', value: 'card' },
+    { label: 'Stripe', value: 'stripe' },
+    { label: 'PayPal', value: 'paypal' },
   ];
   return (
     <div className="space-y-2">

@@ -2,9 +2,11 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { verifyJazzCash } from '@/lib/payments/jazzcash';
 import { verifyEasypaisa } from '@/lib/payments/easypaisa';
 import { verifyCard } from '@/lib/payments/card';
+import { verifyStripe } from '@/lib/payments/stripe';
+import { verifyPaypal } from '@/lib/payments/paypal';
 import { supabaseService } from '@/lib/supabaseService';
 
-type Provider = 'jazzcash' | 'easypaisa' | 'card';
+type Provider = 'jazzcash' | 'easypaisa' | 'card' | 'stripe' | 'paypal';
 
 export default async function webhook(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).end();
@@ -20,6 +22,12 @@ export default async function webhook(req: NextApiRequest, res: NextApiResponse)
       break;
     case 'card':
       valid = verifyCard(req.body);
+      break;
+    case 'stripe':
+      valid = verifyStripe(req.body);
+      break;
+    case 'paypal':
+      valid = verifyPaypal(req.body);
       break;
     default:
       return res.status(400).json({ error: 'Unknown provider' });

@@ -49,7 +49,12 @@ const tiers = [
   },
 ];
 
-export const Pricing: React.FC = () => {
+interface Props {
+  /** Lowercase name of the user's current tier (e.g. `compass`). */
+  currentTier?: string | null;
+}
+
+export const Pricing: React.FC<Props> = ({ currentTier }) => {
   return (
     <section
       id="pricing"
@@ -86,11 +91,14 @@ export const Pricing: React.FC = () => {
               </ul>
 
               <Button
-                href="/waitlist"
+                href={currentTier?.toLowerCase() === t.name.toLowerCase() ? undefined : '/waitlist'}
                 variant={t.featured ? 'primary' : 'secondary'}
                 className="w-full justify-center"
+                disabled={currentTier?.toLowerCase() === t.name.toLowerCase()}
               >
-                Join Waitlist
+                {currentTier?.toLowerCase() === t.name.toLowerCase()
+                  ? 'Current Plan'
+                  : 'Join Waitlist'}
               </Button>
             </Card>
           ))}
