@@ -91,6 +91,58 @@ function correctValue(q: Question): any {
   return '';
 }
 
+// --- Diff utilities for gap questions ---
+type DiffToken = { type: 'same' | 'add' | 'del'; word: string };
+
+function diffWords(correct: string, user: string): DiffToken[] {
+  const a = correct.trim() ? correct.trim().split(/\s+/) : [];
+  const b = user.trim() ? user.trim().split(/\s+/) : [];
+  const m = a.length;
+  const n = b.length;
+  const dp: number[][] = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      if (a[i - 1] === b[j - 1]) dp[i][j] = dp[i - 1][j - 1] + 1;
+      else dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+    }
+  }
+  const tokens: DiffToken[] = [];
+  let i = m, j = n;
+  while (i > 0 && j > 0) {
+    if (a[i - 1] === b[j - 1]) {
+      tokens.unshift({ type: 'same', word: a[i - 1] });
+      i--; j--;
+    } else if (dp[i - 1][j] >= dp[i][j - 1]) {
+      tokens.unshift({ type: 'del', word: a[i - 1] });
+      i--;
+    } else {
+      tokens.unshift({ type: 'add', word: b[j - 1] });
+      j--;
+    }
+  }
+  while (i > 0) { tokens.unshift({ type: 'del', word: a[i - 1] }); i--; }
+  while (j > 0) { tokens.unshift({ type: 'add', word: b[j - 1] }); j--; }
+  return tokens;
+}
+
+const TextDiff: React.FC<{ correct: string; user: string; view: 'user' | 'correct' }> = ({ correct, user, view }) => {
+  const tokens = useMemo(() => diffWords(correct, user), [correct, user]);
+  const parts = tokens.filter(t => (view === 'user' ? t.type !== 'del' : t.type !== 'add'));
+  if (parts.length === 0) return <span>—</span>;
+  return (
+    <>
+      {parts.map((t, idx) => {
+        const text = t.word + (idx < parts.length - 1 ? ' ' : '');
+        if (t.type === 'same') return <span key={idx}>{text}</span>;
+        const cls = view === 'user' ? 'bg-sunsetOrange/30 text-sunsetOrange' : 'bg-success/20 text-success';
+        return (
+          <span key={idx} className={`${cls} rounded px-0.5`}>{text}</span>
+        );
+      })}
+    </>
+  );
+};
+
 export default function AnswerReview({ questions, answers, className = '' }: Props) {
   const aMap = useMemo(() => toMap(answers), [answers]);
 
@@ -166,16 +218,28 @@ export default function AnswerReview({ questions, answers, className = '' }: Pro
                 {/* Answers row */}
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="text-small opacity-70 mr-1">Your answer:</span>
-                  <Badge variant={ok ? 'success' : unanswered ? 'warning' : 'danger'} size="sm">
-                    {formatAnswer(q, user)}
-                  </Badge>
+                  {q.type === 'gap' && !unanswered ? (
+                    <Badge variant={ok ? 'success' : 'danger'} size="sm" className="flex-wrap">
+                      <TextDiff correct={String(correct)} user={String(user)} view="user" />
+                    </Badge>
+                  ) : (
+                    <Badge variant={ok ? 'success' : unanswered ? 'warning' : 'danger'} size="sm">
+                      {formatAnswer(q, user)}
+                    </Badge>
+                  )}
 
                   {!ok && (
                     <>
                       <span className="text-small opacity-70 mx-2">Correct:</span>
-                      <Badge variant="success" size="sm">
-                        {formatAnswer(q, correct)}
-                      </Badge>
+                      {q.type === 'gap' ? (
+                        <Badge variant="success" size="sm" className="flex-wrap">
+                          <TextDiff correct={String(correct)} user={String(user)} view="correct" />
+                        </Badge>
+                      ) : (
+                        <Badge variant="success" size="sm">
+                          {formatAnswer(q, correct)}
+                        </Badge>
+                      )}
                     </>
                   )}
                 </div>

@@ -42,9 +42,10 @@ export type AudioSectionsPlayerProps = {
   masterAudioUrl: string;
   sections: ListeningSection[];
   initialSectionIndex?: number;
-  autoAdvance?: boolean;       // default: true
-  allowSeek?: boolean;         // default: false (exam-like)
-  isSubmitted?: boolean;       // unlocks transcript
+  autoAdvance?: boolean; // default: true
+  allowSeek?: boolean; // default: false (exam-like)
+  isSubmitted?: boolean; // unlocks transcript (for exam review)
+  showTranscript?: boolean; // if false, hide transcript block entirely
   onReady?: () => void;
   onPlay?: (sectionIndex: number) => void;
   onPause?: (sectionIndex: number) => void;
@@ -63,6 +64,7 @@ export const AudioSectionsPlayer: React.FC<AudioSectionsPlayerProps> = ({
   autoAdvance = true,
   allowSeek = false,
   isSubmitted = false,
+  showTranscript = true,
   onReady,
   onPlay,
   onPause,
@@ -347,24 +349,28 @@ export const AudioSectionsPlayer: React.FC<AudioSectionsPlayerProps> = ({
       </div>
 
       {/* Transcript */}
-      <div className="mt-4">
-        <div className="text-small opacity-70 mb-1">Transcript</div>
-        <div
-          className={`p-3.5 rounded-ds border border-gray-200 dark:border-white/10 ${isSubmitted ? '' : 'blur-sm select-none pointer-events-none'}`}
-          aria-live="polite"
-        >
-          {current.transcript ? (
-            <p className="opacity-90">{current.transcript}</p>
-          ) : (
-            <p className="opacity-60">No transcript available for this section.</p>
+      {showTranscript && (
+        <div className="mt-4">
+          <div className="text-small opacity-70 mb-1">Transcript</div>
+          <div
+            className={`p-3.5 rounded-ds border border-gray-200 dark:border-white/10 ${
+              isSubmitted ? '' : 'blur-sm select-none pointer-events-none'
+            }`}
+            aria-live="polite"
+          >
+            {current.transcript ? (
+              <p className="opacity-90">{current.transcript}</p>
+            ) : (
+              <p className="opacity-60">No transcript available for this section.</p>
+            )}
+          </div>
+          {!isSubmitted && (
+            <div className="text-small opacity-60 mt-1">
+              Transcript will unlock after you submit.
+            </div>
           )}
         </div>
-        {!isSubmitted && (
-          <div className="text-small opacity-60 mt-1">
-            Transcript will unlock after you submit.
-          </div>
-        )}
-      </div>
+      )}
 
       {/* Hidden audio element holder (managed via ref) */}
       <div className="sr-only" aria-hidden="true" />

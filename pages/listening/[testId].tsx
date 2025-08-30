@@ -1,4 +1,4 @@
-// pages/listening/[slug].tsx
+// pages/listening/[testId].tsx
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
 import { supabase } from '@/lib/supabaseClient';
@@ -52,7 +52,9 @@ const TOTAL_TIME_SEC = 30 * 60; // 30 minutes
 
 export default function ListeningTestPage() {
   const router = useRouter();
-  const { slug } = router.query as { slug?: string };
+  const { testId } = router.query as { testId?: string };
+  // Alias existing logic expecting `slug`
+  const slug = testId;
 
   // --- Auth state ---
   const [userId, setUserId] = useState<string | null>(null);
@@ -63,6 +65,7 @@ export default function ListeningTestPage() {
   const [currentIdx, setCurrentIdx] = useState(0);
   const [autoPlay, setAutoPlay] = useState(true);
   const [checked, setChecked] = useState(false);
+  const [showTranscript, setShowTranscript] = useState(false);
 
   // --- Save state ---
   const [saving, setSaving] = useState(false);
@@ -336,9 +339,17 @@ export default function ListeningTestPage() {
                 onComplete={handleAutoSubmit}
                 running={!submittedRef.current}
               />
-              <Badge variant={autoPlay ? 'success' : 'warning'}>Auto-play: {autoPlay ? 'On' : 'Off'}</Badge>
+              <Badge variant={autoPlay ? 'success' : 'warning'}>
+                Auto-play: {autoPlay ? 'On' : 'Off'}
+              </Badge>
               <Button variant="secondary" onClick={() => setAutoPlay((v) => !v)}>
                 Toggle Auto-play
+              </Button>
+              <Badge variant={showTranscript ? 'info' : 'warning'}>
+                Transcript: {showTranscript ? 'On' : 'Off'}
+              </Badge>
+              <Button variant="secondary" onClick={() => setShowTranscript((v) => !v)}>
+                Toggle Transcript
               </Button>
             </div>
           </div>
@@ -364,6 +375,8 @@ export default function ListeningTestPage() {
             sections={test.sections}
             initialSectionIndex={currentIdx}
             autoAdvance={autoPlay}
+            isSubmitted={showTranscript}
+            showTranscript={showTranscript}
             onSectionChange={setCurrentIdx}
             className="mt-8"
           />
