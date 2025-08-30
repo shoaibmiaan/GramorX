@@ -9,9 +9,21 @@ export default function AuthCallback() {
 
   useEffect(() => {
     (async () => {
-      const { data, error } = await supabase.auth.exchangeCodeForSession(
-        typeof window !== 'undefined' ? window.location.href : ''
-      );
+      const url = typeof window !== 'undefined' ? window.location.href : '';
+      const sp = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams();
+      const code = sp.get('code');
+      const urlError = sp.get('error_description') || sp.get('error');
+
+      if (urlError) {
+        setErr(urlError);
+        return;
+      }
+      if (!code) {
+        setErr('Missing authorization code. Please try signing in again.');
+        return;
+      }
+
+      const { data, error } = await supabase.auth.exchangeCodeForSession(url);
       if (error) {
         setErr(error.message);
       } else {
@@ -35,4 +47,3 @@ export default function AuthCallback() {
     </AuthLayout>
   );
 }
-
