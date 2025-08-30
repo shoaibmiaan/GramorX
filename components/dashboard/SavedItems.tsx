@@ -15,6 +15,8 @@ export function SavedItems() {
   const [authed, setAuthed] = useState(true);
   const [items, setItems] = useState<SavedItem[]>([]);
   const [filter, setFilter] = useState('all');
+  const [sort, setSort] = useState<'newest' | 'oldest'>('newest');
+  const [tags, setTags] = useState<Record<string, string[]>>({});
 
   useEffect(() => {
     let active = true;
@@ -37,6 +39,25 @@ export function SavedItems() {
     })();
     return () => { active = false; };
   }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const stored = localStorage.getItem('saved-tags');
+      if (stored) setTags(JSON.parse(stored));
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      localStorage.setItem('saved-tags', JSON.stringify(tags));
+    } catch {
+      // ignore
+    }
+  }, [tags]);
 
   if (loading) {
     return (
@@ -70,7 +91,7 @@ export function SavedItems() {
   return (
     <Card className="p-6 rounded-ds-2xl">
       <h2 className="font-slab text-h2 mb-4">Saved items</h2>
-      <div className="mb-4">
+      <div className="mb-4 flex gap-3">
         <select
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
@@ -83,6 +104,14 @@ export function SavedItems() {
           <option value="vocabulary">Vocabulary</option>
           <option value="grammar">Grammar</option>
         </select>
+        <select
+          value={sort}
+          onChange={(e) => setSort(e.target.value as 'newest' | 'oldest')}
+          className="border rounded p-1 text-sm dark:bg-black dark:border-white/10"
+        >
+          <option value="newest">Newest</option>
+          <option value="oldest">Oldest</option>
+        </select>
       </div>
       {items.filter((b) => filter === 'all' || b.category === filter).length === 0 ? (
         <div className="text-sm text-gray-600 dark:text-grayish">No saved items yet.</div>
@@ -90,16 +119,54 @@ export function SavedItems() {
         <ul className="grid gap-2">
           {items
             .filter((b) => filter === 'all' || b.category === filter)
-            .map((b) => (
-              <li key={`${b.category}:${b.type}:${b.resource_id}`} className="flex items-center justify-between">
-                <Link href={linkFor(b)} className="underline">
-                  {b.category}: {b.resource_id}
-                </Link>
-                <span className="text-sm text-gray-600 dark:text-grayish">
-                  {new Date(b.created_at).toLocaleDateString()}
-                </span>
-              </li>
-            ))}
+            .sort((a, b) =>
+              sort === 'newest'
+                ? b.created_at.localeCompare(a.created_at)
+                : a.created_at.localeCompare(b.created_at),
+            )
+            .map((b) => {
+              const key = `${b.category}:${b.type}:${b.resource_id}`;
+              const tagList = tags[key] || [];
+              return (
+                <li key={key} className="flex items-center justify-between gap-4">
+                  <Link href={linkFor(b)} className="underline">
+                    {b.category}: {b.resource_id}
+                  </Link>
+                  <div className="flex items-center gap-2">
+                    {tagList.map((t) => (
+                      <span
+                        key={t}
+                        className="text-xs px-1 rounded bg-vibrantPurple/10 text-vibrantPurple"
+                      >
+                        {t}
+                      </span>
+                    ))}
+                    <input
+                      className="w-20 border rounded px-1 text-xs dark:bg-black dark:border-white/10"
+                      placeholder="tag"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          const val = (e.target as HTMLInputElement).value.trim();
+                          if (val) {
+                            setTags((prev) => {
+                              const next = { ...prev };
+                              const arr = next[key] ? [...next[key]] : [];
+                              if (!arr.includes(val)) arr.push(val);
+                              next[key] = arr;
+                              return next;
+                            });
+                            (e.target as HTMLInputElement).value = '';
+                          }
+                        }
+                      }}
+                    />
+                    <span className="text-sm text-gray-600 dark:text-grayish">
+                      {new Date(b.created_at).toLocaleDateString()}
+                    </span>
+                  </div>
+                </li>
+              );
+            })}
         </ul>
       )}
     </Card>
