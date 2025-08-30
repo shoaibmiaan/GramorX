@@ -28,6 +28,7 @@ export default function Dashboard() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [showTips, setShowTips] = useState(false);
 
   // Hook now exposes: nextRestart + shields + claimShield + useShield
   const {
@@ -109,6 +110,20 @@ export default function Dashboard() {
   }, [router]);
 
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const dismissed = localStorage.getItem('dashboardTipsDismissed');
+      if (!dismissed) setShowTips(true);
+    }
+  }, []);
+
+  const dismissTips = () => {
+    setShowTips(false);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('dashboardTipsDismissed', '1');
+    }
+  };
+
+  useEffect(() => {
     if (streakLoading) return;
     const today = getDayKeyInTZ();
     if (lastDayKey !== today) {
@@ -184,6 +199,17 @@ export default function Dashboard() {
         {nextRestart && (
           <Alert variant="info" className="mt-6">
             Streak will restart on {nextRestart}.
+          </Alert>
+        )}
+
+        {showTips && (
+          <Alert variant="info" className="mt-6">
+            <div className="flex items-center justify-between gap-4">
+              <span>Explore practice modules and track your progress from here.</span>
+              <Button size="sm" variant="secondary" onClick={dismissTips} className="rounded-ds-xl">
+                Got it
+              </Button>
+            </div>
           </Alert>
         )}
 

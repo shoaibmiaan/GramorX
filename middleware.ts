@@ -16,6 +16,12 @@ export async function middleware(req: NextRequest) {
         url.pathname = '/signup/phone';
         return NextResponse.redirect(url);
       }
+      const onboarded = payload?.user_metadata?.onboarding_complete;
+      if (!onboarded && !pathname.startsWith('/onboarding') && !pathname.startsWith('/signup')) {
+        const url = req.nextUrl.clone();
+        url.pathname = '/onboarding';
+        return NextResponse.redirect(url);
+      }
     } catch {
       // ignore token parse issues
     }
