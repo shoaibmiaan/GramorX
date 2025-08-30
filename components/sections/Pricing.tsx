@@ -86,7 +86,6 @@ export const Pricing: React.FC = () => {
               </ul>
 
               <Button
-                as="a"
                 href="#waitlist"
                 variant={t.featured ? 'primary' : 'secondary'}
                 className="w-full justify-center"

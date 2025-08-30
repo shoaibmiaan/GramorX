@@ -3,6 +3,7 @@ import { Container } from '@/components/design-system/Container';
 import { Card } from '@/components/design-system/Card';
 import { Button } from '@/components/design-system/Button';
 import { Badge } from '@/components/design-system/Badge';
+import { NavLink } from '@/components/design-system/NavLink';
 
 export default function ExamStrategy() {
   return (
@@ -28,7 +29,7 @@ export default function ExamStrategy() {
               <li>• Build exam‑day checklist</li>
             </ul>
             <div className="mt-5 flex gap-3">
-              <Button as="a" href="/learning/strategies?area=all" variant="secondary" className="rounded-ds-xl">
+              <Button href="/learning/strategies?area=all" variant="secondary" className="rounded-ds-xl">
                 Read strategies
               </Button>
             </div>
@@ -43,8 +44,8 @@ export default function ExamStrategy() {
               <li>• Speaking: record → STT → pronunciation & feedback</li>
             </ul>
             <div className="mt-5 grid grid-cols-2 gap-3">
-              <Button as="a" href="/writing" variant="primary" className="rounded-ds-xl">Try Writing</Button>
-              <Button as="a" href="/listening" variant="secondary" className="rounded-ds-xl">Try Listening</Button>
+              <Button href="/writing" variant="primary" className="rounded-ds-xl">Try Writing</Button>
+              <Button href="/listening" variant="secondary" className="rounded-ds-xl">Try Listening</Button>
             </div>
           </Card>
 
@@ -57,8 +58,8 @@ export default function ExamStrategy() {
               <li>• Track progress; repeat weak areas</li>
             </ul>
             <div className="mt-5 grid grid-cols-2 gap-3">
-              <Button as="a" href="/writing" variant="secondary" className="rounded-ds-xl">Open Review</Button>
-              <Button as="a" href="/reading" variant="secondary" className="rounded-ds-xl">Open Reading</Button>
+              <Button href="/writing" variant="secondary" className="rounded-ds-xl">Open Review</Button>
+              <Button href="/reading" variant="secondary" className="rounded-ds-xl">Open Reading</Button>
             </div>
           </Card>
         </div>
@@ -71,12 +72,16 @@ export default function ExamStrategy() {
             { label: 'Writing', href: '/writing' },
             { label: 'Speaking', href: '/speaking' },
           ].map(x => (
-            <a key={x.href} href={x.href} className="p-3.5 rounded-ds border border-gray-200 dark:border-white/10 hover:bg-electricBlue/5 transition">
+            <NavLink
+              key={x.href}
+              href={x.href}
+              className="p-3.5 rounded-ds border border-gray-200 dark:border-white/10 hover:bg-electricBlue/5 transition"
+            >
               <div className="flex items-center justify-between">
                 <span className="font-medium">{x.label}</span>
                 <i className="fas fa-arrow-right text-grayish" aria-hidden="true" />
               </div>
-            </a>
+            </NavLink>
           ))}
         </div>
       </Container>
