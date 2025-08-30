@@ -10,6 +10,13 @@ export async function middleware(req: NextRequest) {
   if (token) {
     try {
       const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64url').toString());
+      const exp = payload?.exp ? payload.exp * 1000 : 0;
+      if (exp && exp < Date.now()) {
+        const res = NextResponse.redirect(new URL('/login', req.url));
+        res.cookies.delete('sb-access-token');
+        res.cookies.delete('sb-refresh-token');
+        return res;
+      }
       const status = payload?.user_metadata?.status;
       if (status === 'pending_verification' && !pathname.startsWith('/signup')) {
         const url = req.nextUrl.clone();
@@ -20,6 +27,13 @@ export async function middleware(req: NextRequest) {
       if (!onboarded && !pathname.startsWith('/onboarding') && !pathname.startsWith('/signup')) {
         const url = req.nextUrl.clone();
         url.pathname = '/onboarding';
+        return NextResponse.redirect(url);
+      }
+      const mfaEnabled = payload?.user_metadata?.mfa_enabled;
+      const mfaVerified = payload?.user_metadata?.mfa_verified;
+      if (mfaEnabled && !mfaVerified && !pathname.startsWith('/auth/mfa')) {
+        const url = req.nextUrl.clone();
+        url.pathname = '/auth/mfa';
         return NextResponse.redirect(url);
       }
     } catch {

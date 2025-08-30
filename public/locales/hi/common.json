@@ -1,0 +1,16 @@
+{
+  "home": {
+    "title": "GramorX में आपका स्वागत है"
+  },
+  "profileSetup": {
+    "completeProfile": "अपनी प्रोफ़ाइल पूर्ण करें",
+    "description": "हम आपकी अध्ययन योजना को एआई से बेहतर बनाएंगे और डैशबोर्ड को व्यक्तिगत करेंगे।",
+    "preferredLanguage": "पसंदीदा भाषा",
+    "explanationLanguage": "व्याख्या की भाषा",
+    "saveDraft": "ड्राफ्ट सहेजें",
+    "finishContinue": "समाप्त करें और जारी रखें"
+  },
+  "userMenu": {
+    "language": "भाषा"
+  }
+}

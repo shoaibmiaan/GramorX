@@ -176,6 +176,7 @@ export const UserMenu: React.FC<{
               <option value="ur">Urdu</option>
               <option value="ar">Arabic</option>
               <option value="hi">Hindi</option>
+              <option value="es">Spanish</option>
             </select>
           </div>
 

@@ -20,6 +20,7 @@ export default function ProfilePage() {
   const [userId, setUserId] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [commOptIn, setCommOptIn] = useState(true);
+  const [historyText, setHistoryText] = useState('');
   const fileRef = useRef<HTMLInputElement | null>(null);
   const { error: toastError, success: toastSuccess } = useToast();
   const { current: streak } = useStreak();
@@ -46,6 +47,7 @@ export default function ProfilePage() {
 
       setProfile(data as Profile);
       setCommOptIn((data as any).marketing_opt_in ?? true);
+      setHistoryText((data as any).study_history ?? '');
       setLoading(false);
     })();
   }, [router]);
@@ -234,6 +236,30 @@ export default function ProfilePage() {
           </Card>
 
           <SavedItems />
+          <Card className="p-6 rounded-ds-2xl">
+            <h2 className="font-slab text-display mb-4">Study history</h2>
+            <textarea
+              value={historyText}
+              onChange={(e) => setHistoryText(e.target.value)}
+              className="w-full rounded-ds border border-black/10 dark:border-white/10 p-2 h-32"
+              placeholder="Add notes about your learning journey"
+            />
+            <Button
+              variant="secondary"
+              className="mt-4"
+              onClick={async () => {
+                if (!userId) return;
+                const { error } = await supabase
+                  .from('user_profiles')
+                  .update({ study_history: historyText })
+                  .eq('user_id', userId);
+                if (error) toastError(error.message);
+                else toastSuccess('History updated');
+              }}
+            >
+              Save history
+            </Button>
+          </Card>
         </div>
       </Container>
     </section>
