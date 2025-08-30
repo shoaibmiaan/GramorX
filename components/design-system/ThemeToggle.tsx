@@ -1,5 +1,6 @@
 import React from 'react';
 import { useTheme } from 'next-themes';
+import { SunIcon, MoonIcon } from '@/lib/icons';
 
 export function ThemeToggle() {
   const { resolvedTheme, setTheme } = useTheme();
@@ -15,7 +16,11 @@ export function ThemeToggle() {
       aria-label="Toggle color theme"
       title="Toggle theme"
     >
-      <span aria-hidden className="text-base">{isDark ? '🌙' : '☀️'}</span>
+      {isDark ? (
+        <MoonIcon className="h-4 w-4" aria-hidden />
+      ) : (
+        <SunIcon className="h-4 w-4" aria-hidden />
+      )}
       <span className="opacity-80">{isDark ? 'Dark' : 'Light'}</span>
     </button>
   );

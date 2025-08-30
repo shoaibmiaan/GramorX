@@ -1,8 +1,11 @@
 import type { StorybookConfig } from '@storybook/react';
 
 const config: StorybookConfig = {
-  framework: '@storybook/react',
-  stories: ['../components/**/*.stories.@(ts|tsx|mdx)'],
+  framework: { name: '@storybook/react', options: {} },
+  stories: [
+    '../design-system/**/*.stories.@(ts|tsx|mdx)',
+    '../components/**/*.stories.@(ts|tsx|mdx)',
+  ],
   addons: [
     '@storybook/addon-essentials',
     '@storybook/addon-viewport',
@@ -10,6 +13,7 @@ const config: StorybookConfig = {
     '@storybook/addon-backgrounds',
     '@storybook/addon-toolbars',
   ],
-  docs: { autodocs: true },
+  docs: { autodocs: 'tag' },
 };
+
 export default config;

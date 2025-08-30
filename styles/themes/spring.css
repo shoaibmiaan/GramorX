@@ -1,0 +1,4 @@
+html[data-season='spring'] {
+  --season-bg: #fdf6f6;
+  --season-accent: #ff6b6b;
+}

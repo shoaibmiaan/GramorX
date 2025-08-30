@@ -1,0 +1,4 @@
+html[data-season='summer'] {
+  --season-bg: #fffbe6;
+  --season-accent: #ffa500;
+}

@@ -28,7 +28,7 @@ export const Select: React.FC<SelectProps> = ({ label, hint, error, options = []
           {children}
         </select>
         <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 opacity-70">
-          <ChevronDownIcon className="h-4 w-4" aria-hidden />
+          <ChevronDownIcon className="h-4 w-4" aria-hidden="true" />
         </span>
       </div>
       {error ? (
