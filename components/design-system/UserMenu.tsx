@@ -1,4 +1,6 @@
 // components/design-system/UserMenu.tsx
+"use client";
+
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { supabaseBrowser } from '@/lib/supabaseBrowser';
@@ -124,7 +126,7 @@ export const UserMenu: React.FC<{
         {localAvatar ? (
           // Using <img> here to avoid Next remote domain config issues
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={localAvatar} alt="" className="h-9 w-9 rounded-full object-cover" decoding="async" />
+          <img src={localAvatar} alt="User avatar" className="h-9 w-9 rounded-full object-cover" decoding="async" />
         ) : (
           fallbackInitial
         )}
@@ -145,7 +147,7 @@ export const UserMenu: React.FC<{
                 <div className="h-9 w-9 rounded-full bg-vibrantPurple/15 flex items-center justify-center overflow-hidden">
                   {localAvatar ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={localAvatar} alt="" className="h-9 w-9 object-cover" decoding="async" />
+                    <img src={localAvatar} alt="User avatar" className="h-9 w-9 object-cover" decoding="async" />
                   ) : (
                     <span className="text-vibrantPurple font-semibold">{fallbackInitial}</span>
                   )}

@@ -212,7 +212,11 @@ export default function CourseDetailPage() {
           <Card className="p-0 rounded-ds-2xl overflow-hidden">
             {course.thumbnail_url ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={course.thumbnail_url} alt="" className="h-64 w-full object-cover" />
+              <img
+                src={course.thumbnail_url}
+                alt={course.title ? `${course.title} thumbnail` : 'Course thumbnail'}
+                className="h-64 w-full object-cover"
+              />
             ) : (
               <div className="h-64 w-full bg-purpleVibe/10" />
             )}

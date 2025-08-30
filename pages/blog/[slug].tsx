@@ -69,7 +69,14 @@ export default function BlogPostPage({ ok, post }: Props) {
                 {/* Content */}
                 <Card className="p-6 rounded-ds-2xl">
                   <div className="aspect-video rounded-ds bg-gradient-to-br from-primary/15 to-accent/15 mb-6 overflow-hidden">
-                    {post.hero_image_url ? <img src={post.hero_image_url} alt="" className="w-full h-full object-cover" /> : null}
+                    {post.hero_image_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={post.hero_image_url}
+                        alt={post.title ? `${post.title} hero image` : 'Blog hero image'}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : null}
                   </div>
                   <article className="prose prose-neutral dark:prose-invert max-w-none">
                     {/* Minimal markdown display (paragraph split) to avoid extra deps */}

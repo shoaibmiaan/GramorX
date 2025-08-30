@@ -1,3 +1,5 @@
+"use client";
+
 import { env } from "@/lib/env";
 import React, { useEffect, useRef, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
