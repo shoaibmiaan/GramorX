@@ -27,7 +27,7 @@ require.cache[require.resolve('../lib/supabaseServer')] = {
   exports: { createSupabaseServerClient: () => supabaseClient },
 };
 
-const handler = require('../pages/api/notifications').default;
+const handler = require('../pages/api/notifications/index').default;
 
 (async () => {
   const res = {
@@ -46,7 +46,7 @@ const handler = require('../pages/api/notifications').default;
   await handler({ method: 'GET', headers: {} } as any, res as any);
   assert.equal(res.statusCode, 200);
   assert.ok(Array.isArray(res.body.notifications));
-  assert.equal(res.body.notifications[0].message, 'Welcome to GramorX!');
+  assert.equal(res.body.notifications[0].title, 'Welcome to GramorX!');
   assert.equal(res.body.unread, 1);
   console.log('notifications API default message tested');
 })();

@@ -5,9 +5,11 @@ import { useRouter } from 'next/router';
 import React, { useEffect, useMemo, useState } from 'react';
 import { ThemeProvider } from 'next-themes';
 import '@/styles/globals.css';
+import '@/styles/themes/index.css';
 
 import { Layout } from '@/components/Layout';
 import { ToastProvider } from '@/components/design-system/Toaster';
+import { NotificationProvider } from '@/components/notifications/NotificationProvider';
 import { supabaseBrowser } from '@/lib/supabaseBrowser';
 import { env } from '@/lib/env';
 import { LanguageProvider, useLocale } from '@/lib/locale';
@@ -245,7 +247,9 @@ export default function App(props: AppProps) {
   return (
     <LanguageProvider>
       <ToastProvider>
-        <InnerApp {...props} />
+        <NotificationProvider>
+          <InnerApp {...props} />
+        </NotificationProvider>
       </ToastProvider>
     </LanguageProvider>
   );

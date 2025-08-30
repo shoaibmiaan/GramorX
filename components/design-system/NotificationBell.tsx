@@ -1,42 +1,14 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { BellIcon } from '@/lib/icons';
+import { useNotifications } from '@/components/notifications/NotificationProvider';
 
-export type Notification = {
-  id: string;
-  message: string;
-  url?: string;
-  read?: boolean;
-};
-
-/** Notification bell with dropdown, fetch + mark-as-read, a11y-safe. */
+/** Notification bell with dropdown, context-driven and a11y-safe. */
 export const NotificationBell: React.FC = () => {
   const [open, setOpen] = useState(false);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const { notifications, unread, markRead } = useNotifications();
   const buttonRef = useRef<HTMLButtonElement | null>(null);
   const popoverRef = useRef<HTMLDivElement | null>(null);
-
-  // Load notifications on mount
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch('/api/notifications');
-        if (!res.ok) return;
-        const data = await res.json();
-        const list: Notification[] = Array.isArray(data)
-          ? data
-          : Array.isArray(data?.notifications)
-            ? data.notifications
-            : [];
-        if (!cancelled) setNotifications(list);
-      } catch {
-        /* noop */
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   // Close on outside click / Escape
   useEffect(() => {
@@ -61,27 +33,8 @@ export const NotificationBell: React.FC = () => {
     };
   }, [open]);
 
-  const unread = useMemo(
-    () => notifications.reduce((c, n) => c + (n.read ? 0 : 1), 0),
-    [notifications]
-  );
-
-  const markAsRead = async (id: string) => {
-    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
-    try {
-      await fetch(`/api/notifications/${id}/read`, { method: 'POST' });
-    } catch {
-      /* noop */
-    }
-  };
-
   const markAllAsRead = async () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-    try {
-      await fetch('/api/notifications/mark-all-read', { method: 'POST' });
-    } catch {
-      /* noop */
-    }
+    await Promise.all(notifications.filter((n) => !n.read_at).map((n) => markRead(n.id)));
   };
 
   return (
@@ -96,7 +49,7 @@ export const NotificationBell: React.FC = () => {
         onClick={() => setOpen((v) => !v)}
         className="relative inline-flex h-10 w-10 items-center justify-center rounded-lg hover:bg-purpleVibe/10"
       >
-        <i className="fas fa-bell" aria-hidden="true" />
+        <BellIcon className="h-5 w-5" aria-hidden="true" />
         {unread > 0 && (
           <span
             aria-live="polite"
@@ -125,58 +78,61 @@ export const NotificationBell: React.FC = () => {
             {notifications.map((n) => {
               const isInternal = n.url?.startsWith('/');
               const row = (
-                <div className={`flex items-start gap-2 px-3 py-2 ${n.read ? 'opacity-60' : ''}`}>
-                  <span className="flex-1">{n.message}</span>
-                  {!n.read && (
-                      <button
-                        className="text-xs text-purpleVibe hover:underline"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          markAsRead(n.id);
+                <div className={`flex items-start gap-2 px-3 py-2 ${n.read_at ? 'opacity-60' : ''}`}>
+                  <div className="flex-1">
+                    <div className="font-medium">{n.title}</div>
+                    {n.body && <div className="text-sm">{n.body}</div>}
+                  </div>
+                  {!n.read_at && (
+                    <button
+                      className="text-xs text-purpleVibe hover:underline"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        markRead(n.id);
+                      }}
+                    >
+                      Mark
+                    </button>
+                  )}
+                </div>
+              );
+
+              return (
+                <li key={n.id} role="menuitem" className="hover:bg-purpleVibe/5">
+                  {n.url ? (
+                    isInternal ? (
+                      <Link
+                        href={n.url}
+                        className="block"
+                        onClick={() => {
+                          markRead(n.id);
+                          setOpen(false);
                         }}
                       >
-                        Mark
-                      </button>
-                    )}
-                  </div>
-                );
-
-                return (
-                  <li key={n.id} role="menuitem" className="hover:bg-purpleVibe/5">
-                    {n.url ? (
-                      isInternal ? (
-                        <Link
-                          href={n.url}
-                          className="block"
-                          onClick={() => {
-                            markAsRead(n.id);
-                            setOpen(false);
-                          }}
-                        >
-                          {row}
-                        </Link>
-                      ) : (
-                        <a
-                          href={n.url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="block"
-                          onClick={() => {
-                            markAsRead(n.id);
-                            setOpen(false);
-                          }}
-                        >
-                          {row}
-                        </a>
-                      )
-                    ) : (
-                      <button className="block w-full text-left" onClick={() => markAsRead(n.id)}>
                         {row}
-                      </button>
-                    )}
-                  </li>
-                );
-              })}
+                      </Link>
+                    ) : (
+                      <a
+                        href={n.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="block"
+                        onClick={() => {
+                          markRead(n.id);
+                          setOpen(false);
+                        }}
+                      >
+                        {row}
+                      </a>
+                    )
+                  ) : (
+                    <button className="block w-full text-left" onClick={() => markRead(n.id)}>
+                      {row}
+                    </button>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         </div>
       )}
