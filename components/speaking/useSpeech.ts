@@ -1,3 +1,4 @@
+'use client';
 // components/speaking/useSpeech.ts
 import { useEffect, useRef, useState } from 'react';
 

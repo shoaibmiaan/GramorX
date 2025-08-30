@@ -1,5 +1,7 @@
 // components/sections/Header.tsx
+'use client';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useTheme } from 'next-themes';
@@ -222,7 +224,14 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
             className="flex items-center gap-3 group"
             aria-label="Go to home"
           >
-            <img src="/brand/logo.png" alt="GramorX logo" className="h-11 w-11 rounded-lg object-contain" />
+            <Image
+              src="/brand/logo.png"
+              alt="GramorX logo"
+              width={44}
+              height={44}
+              className="h-11 w-11 rounded-lg object-contain"
+              priority
+            />
             <span className="font-slab font-bold text-3xl">
               <span className="text-gradient-primary group-hover:opacity-90 transition">GramorX</span>
             </span>
