@@ -12,6 +12,7 @@ import { StreakIndicator } from '@/components/design-system/StreakIndicator';
 import { badges } from '@/data/badges';
 
 import { supabaseBrowser } from '@/lib/supabaseBrowser';
+import { getTotalStudyTime } from '@/lib/study-time';
 import { ReadingStatsCard } from '@/components/reading/ReadingStatsCard';
 import QuickDrillButton from '@/components/quick/QuickDrillButton';
 import { WordOfTheDayCard } from '@/components/feature/WordOfTheDayCard';
@@ -34,6 +35,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [showTips, setShowTips] = useState(false);
+  const [studyTime, setStudyTime] = useState(0);
 
   // Hook now exposes: nextRestart + shields + claimShield + useShield
   const {
@@ -102,6 +104,8 @@ export default function Dashboard() {
         }
 
         setProfile(data as Profile);
+        const total = await getTotalStudyTime(session.user.id);
+        setStudyTime(total);
         setLoading(false);
       } catch (e) {
         console.error(e);
@@ -225,7 +229,7 @@ export default function Dashboard() {
         </div>
 
         {/* Top summary cards */}
-        <div className="mt-10 grid gap-6 md:grid-cols-3">
+        <div className="mt-10 grid gap-6 md:grid-cols-4">
           <Card className="p-6 rounded-ds-2xl">
             <div className="text-small opacity-70 mb-1">Goal Band</div>
             <div className="text-h1 font-semibold">
@@ -255,6 +259,17 @@ export default function Dashboard() {
                   {s}
                 </Badge>
               ))}
+            </div>
+          </Card>
+
+          <Card className="p-6 rounded-ds-2xl">
+            <div className="text-small opacity-70 mb-1">Study Time</div>
+            <div className="text-h1 font-semibold">
+              {Math.round(studyTime / 60)}
+              <span className="text-h3 ml-1">hrs</span>
+            </div>
+            <div className="mt-3 text-small opacity-80">
+              Total minutes: {studyTime}
             </div>
           </Card>
         </div>
