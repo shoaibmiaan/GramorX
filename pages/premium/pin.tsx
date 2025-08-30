@@ -2,6 +2,7 @@
 import * as React from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
+import { requirePremium } from '@/lib/requirePremium';
 
 function isInternalRoute(url: string) {
   return url.startsWith('/') && !url.startsWith('//') && !url.includes('://');
@@ -107,3 +108,5 @@ export default function PremiumPinPage() {
     </React.Fragment>
   );
 }
+
+export { requirePremium as getServerSideProps };

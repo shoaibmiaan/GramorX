@@ -2,6 +2,7 @@ import * as React from 'react';
 import { ThemeSwitcherPremium } from '@/premium-ui/theme/ThemeSwitcher';
 import { PrCard } from '@/premium-ui/components/PrCard';
 import { PrButton } from '@/premium-ui/components/PrButton';
+import { requirePremium } from '@/lib/requirePremium';
 
 
 export default function PremiumHome() {
@@ -34,3 +35,5 @@ return (
 </main>
 );
 }
+
+export { requirePremium as getServerSideProps };

@@ -87,11 +87,11 @@ export const Pricing: React.FC = () => {
 
               <Button
                 as="a"
-                href="#waitlist"
+                href={`/checkout?plan=${t.name.toLowerCase()}`}
                 variant={t.featured ? 'primary' : 'secondary'}
                 className="w-full justify-center"
               >
-                Join Waitlist
+                Select Plan
               </Button>
             </Card>
           ))}
