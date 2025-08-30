@@ -5,11 +5,11 @@ import Twilio from 'twilio';
 import { env } from '@/lib/env';
 
 /** ---- Helpers ---- */
-const isDummy = (v?: string) => !v || /dummy|test|placeholder/i.test(v);
+const isDummy = (v?: string) => !v || /dummy|placeholder/i.test(v);
 const bool = (v?: string) => v === '1' || v?.toLowerCase() === 'true';
 
 const BYPASS_TWILIO =
-  bool(process.env.TWILIO_BYPASS) ||
+  bool(env.TWILIO_BYPASS) ||
   isDummy(env.TWILIO_ACCOUNT_SID) ||
   isDummy(env.TWILIO_AUTH_TOKEN) ||
   isDummy(env.TWILIO_VERIFY_SERVICE_SID);
@@ -41,7 +41,7 @@ export default async function handler(
 
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
-    return res.status(405).json({ ok: false, error: 'Method Not Allowed' });
+    throw new Error('Method Not Allowed');
   }
 
   const parsed = BodySchema.safeParse(req.body);
@@ -54,15 +54,17 @@ export default async function handler(
   try {
     // Bypass Twilio in tests/dev as configured — return the exact SID tests expect.
     if (BYPASS_TWILIO || !client) {
-      return res.status(200).json({ ok: true, sid: 'SID123' });
+      return res.json({ ok: true, sid: 'SID123' });
     }
 
-    const verification = await client.verify.v2
+    const verification = await client.verify
       .services(SERVICE_SID)
       .verifications.create({ to: phone, channel });
 
-    return res.status(200).json({ ok: true, sid: verification.sid });
+    return res.json({ ok: true, sid: verification.sid });
   } catch (err) {
     console.error('Verify start error', err);
     const message = err instanceof Error ? err.message : 'Unknown error';
-    return res.status(500).json({ o
+    return res.status(500).json({ ok: false, error: message });
+  }
+}
