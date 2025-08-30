@@ -14,6 +14,8 @@ import { badges } from '@/data/badges';
 import { supabaseBrowser } from '@/lib/supabaseBrowser';
 import { ReadingStatsCard } from '@/components/reading/ReadingStatsCard';
 import QuickDrillButton from '@/components/quick/QuickDrillButton';
+import { WordOfTheDayCard } from '@/components/feature/WordOfTheDayCard';
+import { HeaderStreakChip } from '@/components/feature/HeaderStreakChip';
 
 import { useStreak } from '@/hooks/useStreak';
 import { getDayKeyInTZ } from '@/lib/streak';
@@ -164,6 +166,7 @@ export default function Dashboard() {
           </div>
 
           <div className="flex items-center gap-4">
+            <HeaderStreakChip />
             <StreakIndicator value={streak} />
             {earnedBadges.map((b) => (
               <Badge key={b.id} size="sm">
@@ -212,6 +215,11 @@ export default function Dashboard() {
             </div>
           </Alert>
         )}
+
+        {/* Word of the day */}
+        <div className="mt-10">
+          <WordOfTheDayCard />
+        </div>
 
         {/* Top summary cards */}
         <div className="mt-10 grid gap-6 md:grid-cols-3">

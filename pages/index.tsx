@@ -21,6 +21,7 @@ import * as CertificationBadgesMod from '@/components/sections/CertificationBadg
 import * as TestimonialsMod from '@/components/sections/Testimonials';
 import * as PricingMod from '@/components/sections/Pricing';
 import * as WaitlistMod from '@/components/sections/Waitlist';
+import { HeaderStreakChip } from '@/components/feature/HeaderStreakChip';
 
 type ModulesModule = typeof import('@/components/sections/Modules');
 type CertificationBadgesModule = typeof import('@/components/sections/CertificationBadges');
@@ -80,6 +81,9 @@ export default function HomePage() {
         <title>{t('home.title')}</title>
       </Head>
       <Hero streak={streak} onStreakChange={onStreakChange} />
+      <div className="mt-6 flex justify-center">
+        <HeaderStreakChip />
+      </div>
 
       <section
         id="partners"
