@@ -1,5 +1,5 @@
 // pages/speaking/roleplay/[scenario].tsx
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { Container } from '@/components/design-system/Container';
@@ -8,6 +8,8 @@ import { Button } from '@/components/design-system/Button';
 import { Badge } from '@/components/design-system/Badge';
 import { Input } from '@/components/design-system/Input';
 import { authHeaders } from '@/lib/supabaseBrowser';
+import MessageList from '@/components/ai/MessageList';
+import SidebarHeader, { type ConnState } from '@/components/ai/SidebarHeader';
 
 type Msg = { id: string; role: 'user' | 'bot'; text: string; audioUrl?: string | null; createdAt: string };
 
@@ -103,9 +105,21 @@ export default function RoleplayPage() {
   const [err, setErr] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
   const [input, setInput] = useState('');
-
+  const [isMobile, setIsMobile] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const rec = useInlineRecorder();
-  const audioRefs = useRef<Record<string, HTMLAudioElement | null>>({});
+  const toggleVoice = () => {};
+  const voiceSupported = false;
+  const voiceDenied = false;
+  const listening = false;
+  const newChat = () => setChat([]);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
 
   const ensureAttempt = useCallback(async (): Promise<string> => {
     if (attemptId) return attemptId;
@@ -249,10 +263,15 @@ export default function RoleplayPage() {
     }
   };
 
-  const playBotAudio = (id: string) => {
-    const a = audioRefs.current[id];
-    a?.play();
-  };
+  const conn: ConnState = err ? 'error' : busy ? 'online' : 'idle';
+  const items = chat.map((m) => ({
+    id: m.id,
+    role: m.role === 'bot' ? 'assistant' : 'user',
+    content: m.text,
+  }));
+  const renderText = (raw: string) => (
+    <p className="whitespace-pre-wrap text-sm leading-relaxed">{raw}</p>
+  );
 
   return (
     <div className="py-24">
@@ -275,54 +294,21 @@ export default function RoleplayPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Conversation */}
-          <Card className="p-0 lg:col-span-2 overflow-hidden">
-            <div className="p-4 border-b border-black/5 dark:border-white/10 flex items-center justify-between">
-              <div className="font-semibold">Conversation</div>
-              <div className="flex items-center gap-2">
-                <Button variant="ghost" onClick={() => setChat([])}>Clear</Button>
-                <Link href={attemptId ? `/speaking/partner/review/${attemptId}` : '#'} aria-disabled={!attemptId}>
-                  <Button disabled={!attemptId}>Review</Button>
-                </Link>
-              </div>
-            </div>
-
-            <div className="p-4 space-y-3 max-h-[60vh] overflow-y-auto">
-              {chat.length === 0 && (
-                <div className="text-sm text-gray-600 dark:text-grayish">
-                  Starting roleplay…
-                </div>
-              )}
-              {chat.map((m) => (
-                <div key={m.id} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div
-                    className={`max-w-[80%] rounded-ds-2xl px-4 py-3 ${
-                      m.role === 'user' ? 'bg-purpleVibe/10 text-purpleVibe' : 'card-surface'
-                    }`}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className="flex-1">
-                        <p className="whitespace-pre-wrap text-sm leading-relaxed">{m.text}</p>
-                        <div className="mt-1 text-[11px] opacity-70">{new Date(m.createdAt).toLocaleTimeString()}</div>
-                      </div>
-
-                      {/* Bot bubble play icon */}
-                      {m.role === 'bot' && m.audioUrl && (
-                        <button
-                          className="shrink-0 h-8 w-8 grid place-items-center rounded-full border border-black/10 dark:border-white/10 hover:bg-black/5 dark:hover:bg-white/5"
-                          title="Play reply"
-                          onClick={() => playBotAudio(m.id)}
-                        >
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                            <path d="M8 5v14l11-7z" />
-                          </svg>
-                          <audio ref={(el) => (audioRefs.current[m.id] = el)} src={m.audioUrl || undefined} preload="none" />
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+          <Card className="p-0 lg:col-span-2 overflow-hidden flex flex-col">
+            <SidebarHeader title="Conversation" status={conn} onClose={newChat} />
+            <MessageList
+              items={items}
+              loading={busy}
+              streamingId={null}
+              renderMarkdown={renderText}
+              scrollRef={scrollRef}
+              isMobile={isMobile}
+              newChat={newChat}
+              toggleVoice={toggleVoice}
+              voiceSupported={voiceSupported}
+              voiceDenied={voiceDenied}
+              listening={listening}
+            />
 
             {/* Composer */}
             <div className="p-4 border-t border-black/5 dark:border-white/10">
