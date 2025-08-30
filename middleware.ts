@@ -6,6 +6,9 @@ export async function middleware(req: NextRequest) {
   const { pathname, search, origin } = req.nextUrl;
 
   const token = req.cookies.get('sb-access-token')?.value;
+  let role: string | null = null;
+  let tier: string | null = null;
+  let trial = false;
 
   if (token) {
     try {
@@ -22,18 +25,37 @@ export async function middleware(req: NextRequest) {
         url.pathname = '/onboarding';
         return NextResponse.redirect(url);
       }
+      role = payload?.app_metadata?.role || payload?.user_metadata?.role || null;
+      tier = payload?.user_metadata?.tier || null;
+      trial = Boolean(payload?.user_metadata?.trialing);
     } catch {
       // ignore token parse issues
     }
   }
 
-  if (!pathname.startsWith('/premium')) return NextResponse.next();
+  const requestHeaders = new Headers(req.headers);
+  if (tier) requestHeaders.set('x-user-tier', String(tier));
+  if (trial) requestHeaders.set('x-user-trial', '1');
+
+  if (pathname.startsWith('/trial') && !trial) {
+    const url = req.nextUrl.clone();
+    url.pathname = '/pricing';
+    return NextResponse.redirect(url);
+  }
+
+  if (!pathname.startsWith('/premium')) {
+    return NextResponse.next({ request: { headers: requestHeaders } });
+  }
 
   if (!token) {
     const url = req.nextUrl.clone();
     url.pathname = '/login';
     url.search = `?next=${encodeURIComponent(pathname + (search || ''))}`;
     return NextResponse.redirect(url);
+  }
+
+  if (role === 'admin' || role === 'teacher') {
+    return NextResponse.next({ request: { headers: requestHeaders } });
   }
 
   try {
@@ -48,13 +70,15 @@ export async function middleware(req: NextRequest) {
       return NextResponse.redirect(url);
     }
 
-    const { active } = await resp.json();
-    if (!active) {
+    const { active, tier: apiTier } = await resp.json();
+    const effectiveTier = tier || apiTier;
+    if (!active || !effectiveTier || effectiveTier === 'compass') {
       const url = req.nextUrl.clone();
       url.pathname = '/pricing';
       url.search = `?next=${encodeURIComponent(pathname + (search || ''))}`;
       return NextResponse.redirect(url);
     }
+    requestHeaders.set('x-user-tier', String(effectiveTier));
   } catch (error) {
     console.error('Failed to verify premium status', error);
     const url = req.nextUrl.clone();
@@ -63,7 +87,7 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  return NextResponse.next();
+  return NextResponse.next({ request: { headers: requestHeaders } });
 }
 
 export const config = {
