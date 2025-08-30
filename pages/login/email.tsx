@@ -10,6 +10,7 @@ import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser';
 import { redirectByRole } from '@/lib/routeAccess';
 import { isValidEmail } from '@/utils/validation';
 import { getAuthErrorMessage } from '@/lib/authErrors';
+import useEmailLoginMFA from '@/hooks/useEmailLoginMFA';
 
 export default function LoginWithEmail() {
   const [email, setEmail] = useState('');
@@ -18,16 +19,21 @@ export default function LoginWithEmail() {
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // MFA state
-  const [otp, setOtp] = useState('');
-  const [otpSent, setOtpSent] = useState(false);
-  const [factorId, setFactorId] = useState<string | null>(null);
-  const [challengeId, setChallengeId] = useState<string | null>(null);
-  const [verifying, setVerifying] = useState(false);
+  const {
+    otp,
+    setOtp,
+    otpSent,
+    createChallenge,
+    verifyOtp,
+    verifying,
+    error: mfaErr,
+    setError: setMfaErr,
+  } = useEmailLoginMFA();
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setErr(null);
+    setMfaErr(null);
 
     const trimmedEmail = email.trim();
     if (!trimmedEmail || !pw) {
@@ -62,16 +68,8 @@ export default function LoginWithEmail() {
       });
 
       const { data: { user } } = await supabase.auth.getUser();
-      const factors = (user as any)?.factors ?? [];
-      if (factors.length) {
-        const f = factors[0];
-        const { data: challenge, error: cErr } = await supabase.auth.mfa.challenge({ factorId: f.id });
-        if (cErr) return setErr(getAuthErrorMessage(cErr));
-        setFactorId(f.id);
-        setChallengeId(challenge?.id ?? null);
-        setOtpSent(true);
-        return;
-      }
+      const challenged = await createChallenge(user);
+      if (challenged) return;
 
       try { await fetch('/api/auth/login-event', { method: 'POST' }); } catch {}
       redirectByRole(body.session.user);
@@ -79,21 +77,6 @@ export default function LoginWithEmail() {
       setLoading(false);
       setErr('Unable to sign in. Please try again.');
     }
-  }
-
-  async function verifyOtp(e: React.FormEvent) {
-    e.preventDefault();
-    if (!factorId || !challengeId) return;
-
-    setVerifying(true);
-    const { error } = await supabase.auth.mfa.verify({ factorId, challengeId, code: otp });
-    setVerifying(false);
-
-    if (error) return setErr(getAuthErrorMessage(error));
-
-    try { await fetch('/api/auth/login-event', { method: 'POST' }); } catch {}
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) redirectByRole(user);
   }
 
   const RightPanel = (
@@ -115,7 +98,7 @@ export default function LoginWithEmail() {
 
   return (
     <AuthLayout title="Sign in with Email" subtitle="Use your email & password." right={RightPanel}>
-      {err && <Alert variant="error" title="Error">{err}</Alert>}
+      {(err || mfaErr) && <Alert variant="error" title="Error">{err || mfaErr}</Alert>}
 
       {!otpSent ? (
         <form onSubmit={onSubmit} className="space-y-6 mt-2">
