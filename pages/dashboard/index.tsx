@@ -19,7 +19,8 @@ import { HeaderStreakChip } from '@/components/feature/HeaderStreakChip';
 
 import { useStreak } from '@/hooks/useStreak';
 import { getDayKeyInTZ } from '@/lib/streak';
-import StudyCalendar from '@/components/feature/StudyCalendar';
+import dynamic from 'next/dynamic';
+const StudyCalendar = dynamic(() => import('@/components/feature/StudyCalendar'), { ssr: false });
 import GoalRoadmap from '@/components/feature/GoalRoadmap';
 import GapToGoal from '@/components/visa/GapToGoal';
 import MotivationCoach from '@/components/coach/MotivationCoach';

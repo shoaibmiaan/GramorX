@@ -8,6 +8,8 @@ import { Container } from '@/components/design-system/Container';
 // import { Card } from '@/components/design-system/Card';
 // import { Button } from '@/components/design-system/Button';
 import { RoleGuard } from '@/components/auth/RoleGuard';
+import { getCurrentRole } from '@/lib/roles';
+import type { AppRole } from '@/lib/roles';
 import { useToast } from '@/components/design-system/Toaster';
 
 // ---- Types ----
@@ -54,6 +56,7 @@ type ProviderStatus = {
 export default function AdminIndex() {
   // Faux loading for polish
   const [loading, setLoading] = useState(true);
+  const [role, setRole] = useState<AppRole | null>(null);
 
   // 🔎 Top toolbar state
   const [range, setRange] = useState<'7d' | '30d' | '90d'>('7d');
@@ -162,6 +165,10 @@ export default function AdminIndex() {
   useEffect(() => {
     const t = setTimeout(() => setLoading(false), 600);
     return () => clearTimeout(t);
+  }, []);
+
+  useEffect(() => {
+    getCurrentRole().then((r) => setRole(r));
   }, []);
 
   // CSV export for quick wins
@@ -275,22 +282,24 @@ export default function AdminIndex() {
         {/* Quick Nav */}
         <div className="mt-6 grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-3">
           {[
-            { label: 'Students', href: '/admin/students?active=1' },
-            { label: 'Teachers', href: '/admin/teachers' },
-            { label: 'Reports', href: `/admin/reports?range=last-7d` },
-            { label: 'AI Queue', href: '/admin/ai-queue?status=pending' },
-            { label: 'Blog Moderation', href: '/admin/blog/moderation' },
-            { label: 'Support', href: '/admin/support' },
-          ].map((item) => (
-            <Link
-              key={item.label}
-              href={item.href}
-              className="group rounded-2xl border p-3 hover:bg-muted transition"
-            >
-              <div className="font-medium">{item.label}</div>
-              <div className="text-xs text-muted-foreground group-hover:underline">Open →</div>
-            </Link>
-          ))}
+            { label: 'Students', href: '/admin/students?active=1', roles: ['admin', 'teacher'] },
+            { label: 'Teachers', href: '/admin/teachers', roles: ['admin'] },
+            { label: 'Reports', href: `/admin/reports?range=last-7d`, roles: ['admin', 'teacher'] },
+            { label: 'AI Queue', href: '/admin/ai-queue?status=pending', roles: ['admin'] },
+            { label: 'Blog Moderation', href: '/admin/blog/moderation', roles: ['admin', 'teacher'] },
+            { label: 'Support', href: '/admin/support', roles: ['admin', 'teacher'] },
+          ]
+            .filter((item) => !role || item.roles.includes(role))
+            .map((item) => (
+              <Link
+                key={item.label}
+                href={item.href}
+                className="group rounded-2xl border p-3 hover:bg-muted transition"
+              >
+                <div className="font-medium">{item.label}</div>
+                <div className="text-xs text-muted-foreground group-hover:underline">Open →</div>
+              </Link>
+            ))}
         </div>
 
         {/* KPI Cards */}
@@ -625,38 +634,40 @@ export default function AdminIndex() {
         </section>
 
         {/* CTA Row */}
-        <section className="mt-8 flex flex-wrap gap-2">
-          <Link
-            href="/admin/reports?range=last-30d&module=all"
-            className="rounded-xl border px-4 h-10 inline-grid place-items-center hover:bg-muted"
-          >
-            Generate Monthly Report
-          </Link>
-          <Link
-            href="/admin/teachers?invite=1"
-            className="rounded-xl border px-4 h-10 inline-grid place-items-center hover:bg-muted"
-          >
-            Invite Teacher
-          </Link>
-          <Link
-            href="/admin/tools/cache?invalidate=1"
-            className="rounded-xl border px-4 h-10 inline-grid place-items-center hover:bg-muted"
-          >
-            Invalidate Caches
-          </Link>
-          <Link
-            href="/admin/blog/new"
-            className="rounded-xl border px-4 h-10 inline-grid place-items-center hover:bg-muted"
-          >
-            Compose Blog Post
-          </Link>
-          <Link
-            href="/admin/system/sync"
-            className="rounded-xl border px-4 h-10 inline-grid place-items-center hover:bg-muted"
-          >
-            Run Nightly Sync
-          </Link>
-        </section>
+        {role === 'admin' && (
+          <section className="mt-8 flex flex-wrap gap-2">
+            <Link
+              href="/admin/reports?range=last-30d&module=all"
+              className="rounded-xl border px-4 h-10 inline-grid place-items-center hover:bg-muted"
+            >
+              Generate Monthly Report
+            </Link>
+            <Link
+              href="/admin/teachers?invite=1"
+              className="rounded-xl border px-4 h-10 inline-grid place-items-center hover:bg-muted"
+            >
+              Invite Teacher
+            </Link>
+            <Link
+              href="/admin/tools/cache?invalidate=1"
+              className="rounded-xl border px-4 h-10 inline-grid place-items-center hover:bg-muted"
+            >
+              Invalidate Caches
+            </Link>
+            <Link
+              href="/admin/blog/new"
+              className="rounded-xl border px-4 h-10 inline-grid place-items-center hover:bg-muted"
+            >
+              Compose Blog Post
+            </Link>
+            <Link
+              href="/admin/system/sync"
+              className="rounded-xl border px-4 h-10 inline-grid place-items-center hover:bg-muted"
+            >
+              Run Nightly Sync
+            </Link>
+          </section>
+        )}
       </Container>
     </RoleGuard>
   );

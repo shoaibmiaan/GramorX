@@ -5,22 +5,18 @@ const withPWA = withPWAInit({
   dest: 'public',
   register: true,
   skipWaiting: true,
-  disable: process.env.NODE_ENV === 'development', // no SW in dev
+  // Disable SW in dev for faster DX
+  disable: process.env.NODE_ENV === 'development',
 });
 
-// Turn bypass ON by default; set to "0" to enforce locally/CI
+// Turn bypass ON by default; set BYPASS_STRICT_BUILD="0" to enforce locally/CI
 const BYPASS_STRICT = process.env.BYPASS_STRICT_BUILD !== '0';
 
+/** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
 
-  images: {
-    formats: ['image/avif', 'image/webp'],
-    dangerouslyAllowSVG: true,
-    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
-  },
-
-  // 1) Skip ESLint during production builds (so warnings/errors won’t block)
+  // 1) Skip ESLint during production builds (warnings/errors won’t block)
   eslint: {
     ignoreDuringBuilds: BYPASS_STRICT,
   },
@@ -30,8 +26,18 @@ const nextConfig = {
     ignoreBuildErrors: BYPASS_STRICT,
   },
 
+  images: {
+    formats: ['image/avif', 'image/webp'],
+    // merged sizes (mobile → desktop)
+    deviceSizes: [320, 420, 640, 750, 768, 828, 1024, 1080, 1200, 1920],
+    // Safe SVG settings
+    dangerouslyAllowSVG: true,
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    // good for inline display (e.g., reports/previews)
+    contentDispositionType: 'inline',
+  },
+
   // …any other Next config you already have
 };
 
 export default withPWA(nextConfig);
-
