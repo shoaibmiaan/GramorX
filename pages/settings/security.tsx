@@ -26,6 +26,7 @@ export default function SecuritySettings() {
   const [otp, setOtp] = useState('');
   const [otpSent, setOtpSent] = useState(false);
   const [mfaEnabled, setMfaEnabled] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     fetch('/api/auth/sessions')
@@ -65,6 +66,27 @@ export default function SecuritySettings() {
   async function revoke(id: string) {
     await fetch(`/api/auth/sessions/${id}`, { method: 'DELETE' });
     setSessions((s) => s.filter((x) => x.id !== id));
+  }
+
+  async function exportData() {
+    setExporting(true);
+    const res = await fetch('/api/export');
+    const data = await res.json();
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'gramorx-data.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    setExporting(false);
+  }
+
+  async function deleteAccount() {
+    if (!confirm('Delete your account?')) return;
+    await fetch('/api/account/delete', { method: 'POST' });
+    await supabase.auth.signOut();
+    window.location.href = '/';
   }
 
   return (
@@ -119,6 +141,18 @@ export default function SecuritySettings() {
                   ))}
                 </ul>
               )}
+            </div>
+
+            <div>
+              <h2 className="font-slab text-h3 mb-2">Data Controls</h2>
+              <div className="space-y-2 max-w-xs">
+                <Button onClick={exportData} disabled={exporting}>
+                  {exporting ? 'Preparing...' : 'Export My Data'}
+                </Button>
+                <Button variant="secondary" onClick={deleteAccount}>
+                  Delete Account
+                </Button>
+              </div>
             </div>
           </Card>
         </div>

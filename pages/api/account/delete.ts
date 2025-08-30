@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { createSupabaseServerClient } from '@/lib/supabaseServer';
+import { purgeUserData } from '@/lib/gdpr';
+import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const supabase = createSupabaseServerClient({ req });
@@ -12,8 +13,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   if (req.method === 'POST') {
     try {
-      await supabaseAdmin.from('user_profiles').delete().eq('user_id', user.id);
-      await supabaseAdmin.from('user_bookmarks').delete().eq('user_id', user.id);
+      await purgeUserData(user.id);
+      // remove auth user
       await supabaseAdmin.auth.admin.deleteUser(user.id);
       return res.status(200).json({ success: true });
     } catch (err: any) {
