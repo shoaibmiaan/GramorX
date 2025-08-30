@@ -104,5 +104,20 @@ export default async function handler(
     }
   }
 
+  try {
+    const { count: notifCount, error: notifErr } = await supabaseAdmin
+      .from('notifications')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id);
+
+    if (!notifErr && notifCount === 0) {
+      await supabaseAdmin
+        .from('notifications')
+        .insert({ user_id: user.id, message: 'Welcome to GramorX!' });
+    }
+  } catch (e) {
+    console.error('Failed to insert welcome notification', e);
+  }
+
   return res.status(200).json({ success: true, newDevice: isNew });
 }

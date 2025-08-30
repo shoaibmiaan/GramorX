@@ -16,6 +16,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .eq('user_id', user.id)
       .order('created_at', { ascending: false });
     if (error) return res.status(500).json({ error: error.message });
+    if (!data || data.length === 0) {
+      const welcome = {
+        id: 'welcome',
+        message: 'Welcome to GramorX!',
+        url: null,
+        read: false,
+        created_at: new Date().toISOString(),
+      };
+      return res.status(200).json({ notifications: [welcome], unread: 1 });
+    }
     const unread = data.filter((n) => !n.read).length;
     return res.status(200).json({ notifications: data, unread });
   }
