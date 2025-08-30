@@ -147,7 +147,7 @@ export default function ListeningIndexPage() {
           <div>
             <h1 className="font-slab text-4xl text-gradient-primary">Listening Tests</h1>
             <p className="text-grayish max-w-2xl">
-              Pick a paper to start or resume where you left off. Auto‑play per section & transcript toggle are built in.
+              Pick a paper to start or resume where you left off. Auto‑play per section & answer review are built in.
             </p>
           </div>
           <div className="flex gap-2">

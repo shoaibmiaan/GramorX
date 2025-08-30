@@ -23,12 +23,6 @@ type Row = {
   user_answer: any;
 };
 
-// Define ReviewQ type locally since AnswerReview doesn’t export it
-type ReviewQ =
-  | { type: 'mcq'; prompt: string; userAnswer: string; options: any[] }
-  | { type: 'gap'; prompt: string; userAnswer: string; correct: any[] }
-  | { type: 'match'; prompt: string; pairs: { left: any; user: any; correct: any }[] };
-
 export default function ReviewScreen({ slug, attemptId }: { slug: string; attemptId?: string | null }) {
   const [rows, setRows] = useState<Row[] | null>(null);
   const [err, setErr] = useState<string | null>(null);
@@ -77,55 +71,61 @@ export default function ReviewScreen({ slug, attemptId }: { slug: string; attemp
     return () => { mounted = false; };
   }, [slug, attemptId]);
 
-  // Map DB rows → ReviewQ[]
-  const items: ReviewQ[] = useMemo(() => {
-    if (!rows) return [];
-    return rows.map((r) => {
+  const { questions, answers } = useMemo(() => {
+    if (!rows) return { questions: [], answers: [] };
+    const qs: any[] = [];
+    const ans: any[] = [];
+    rows.forEach((r, idx) => {
+      const qno = idx + 1;
       if (r.type === 'mcq') {
-        return {
-          type: 'mcq',
-          prompt: r.prompt,
-          userAnswer: r.user_answer?.label ?? '',
-          options: Array.isArray(r.options) ? r.options : [],
-        } as ReviewQ;
+        const opts = Array.isArray(r.options) ? r.options.map((o: any) => o.label ?? String(o)) : [];
+        const correctOpt = Array.isArray(r.options)
+          ? r.options.find((o: any) => o.correct)?.label ?? ''
+          : '';
+        qs.push({ qno, type: 'mcq', prompt: r.prompt, options: opts, answer_key: { value: correctOpt } });
+        const user = r.user_answer?.label ?? r.user_answer?.value ?? '';
+        ans.push({ qno, answer: user });
+      } else if (r.type === 'gap') {
+        const correctText = Array.isArray(r.correct) ? r.correct[0] : r.correct;
+        qs.push({ qno, type: 'gap', prompt: r.prompt, answer_key: { text: correctText } });
+        const user = r.user_answer?.text ?? '';
+        ans.push({ qno, answer: user });
+      } else {
+        const left = r.options?.left ?? [];
+        const right = r.options?.right ?? [];
+        const pairs = Array.isArray(r.correct) ? r.correct.map((p: any) => [p.left, p.right]) : [];
+        const userPairs = (r.user_answer?.pairs ?? []).map((p: any) => [p.left, p.right]);
+        qs.push({ qno, type: 'match', match_left: left, match_right: right, answer_key: { pairs } });
+        ans.push({ qno, answer: userPairs });
       }
-      if (r.type === 'gap') {
-        return {
-          type: 'gap',
-          prompt: r.prompt,
-          userAnswer: r.user_answer?.text ?? '',
-          correct: Array.isArray(r.correct) ? r.correct : [r.correct].filter(Boolean),
-        } as ReviewQ;
-      }
-      const qPairs = Array.isArray(r.correct) ? r.correct : [];
-      const uPairs = r.user_answer?.pairs ?? [];
-      const merged = qPairs.map((qp: any) => {
-        const u = uPairs.find((x: any) => x.left === qp.left);
-        return { left: qp.left, user: u?.user ?? null, correct: qp.right };
-      });
-      return { type: 'match', prompt: r.prompt, pairs: merged } as ReviewQ;
     });
+    return { questions: qs, answers: ans };
   }, [rows]);
 
-  // Compute summary
   const summary = useMemo(() => {
     let total = 0, correct = 0;
-    for (const q of items) {
+    const aMap: Record<number, any> = Object.fromEntries(answers.map((a: any) => [a.qno, a.answer]));
+    for (const q of questions) {
+      const user = aMap[q.qno];
       if (q.type === 'mcq') {
         total += 1;
-        const ans = q.options.find((o:any)=>o.correct)?.label ?? '';
-        if (isCorrect((q as any).userAnswer || '', ans)) correct += 1;
+        if (isCorrect(user || '', q.answer_key.value)) correct += 1;
       } else if (q.type === 'gap') {
         total += 1;
-        if (isCorrect((q as any).userAnswer || '', (q as any).correct)) correct += 1;
+        if (isCorrect(user || '', q.answer_key.text)) correct += 1;
       } else {
-        for (const p of q.pairs) { total += 1; if (p.user === p.correct) correct += 1; }
+        total += 1;
+        const want = q.answer_key.pairs ?? [];
+        const got = Array.isArray(user) ? user : [];
+        const sort = (arr: any[]) =>
+          [...arr].map((p: any) => [Number(p[0]), Number(p[1])]).sort((a, b) => (a[0] - b[0]) || (a[1] - b[1]));
+        if (JSON.stringify(sort(want)) === JSON.stringify(sort(got))) correct += 1;
       }
     }
     const accuracy = total ? (correct / total) * 100 : 0;
     const band = Number(((accuracy / 100) * 9).toFixed(1));
     return { total, correct, accuracy, band };
-  }, [items]);
+  }, [questions, answers]);
 
   if (loading) {
     return (
@@ -143,7 +143,7 @@ export default function ReviewScreen({ slug, attemptId }: { slug: string; attemp
     return <Alert variant="error" title="Couldn’t load your review">{err}</Alert>;
   }
 
-  if (!items.length) {
+  if (!questions.length) {
     return (
       <EmptyState
         title="Nothing to review yet"
@@ -165,7 +165,7 @@ export default function ReviewScreen({ slug, attemptId }: { slug: string; attemp
       </Card>
       <div className="lg:col-span-2">
         {/* ✅ Use AnswerReview directly */}
-        <AnswerReview questions={[]} answers={[]} />
+        <AnswerReview questions={questions} answers={answers} />
       </div>
     </div>
   );
