@@ -1,16 +1,21 @@
 import { env } from "@/lib/env";
 // pages/reading/passage/[slug].tsx
-import React, { useEffect, useMemo, useState, useCallback } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import type { GetServerSideProps } from 'next';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import { createClient } from '@supabase/supabase-js';
 import { Container } from '@/components/design-system/Container';
 import { Card } from '@/components/design-system/Card';
 import { Button } from '@/components/design-system/Button';
 import { Badge } from '@/components/design-system/Badge';
-import { Input } from '@/components/design-system/Input';
 import { supabaseBrowser } from '@/lib/supabaseBrowser';
-import { type AnswerValue } from '@/components/reading/useReadingAnswers';
+import {
+  useReadingAnswers,
+  type AnswerValue,
+} from '@/components/reading/useReadingAnswers';
+import { QuestionRenderer } from '@/components/reading/QuestionRenderer';
+import { ReadingFilterBar } from '@/components/reading/ReadingFilterBar';
 
 type QKind = 'tfng' | 'mcq' | 'matching' | 'short';
 
@@ -67,27 +72,9 @@ export const getServerSideProps: GetServerSideProps<Props> = async (ctx) => {
 };
 
 export default function ReadingRunner({ slug, title, difficulty, words, content, questions }: Props) {
-  const [answers, setAnswers] = useState<Record<string, AnswerValue>>({});
+  const router = useRouter();
+  const store = useReadingAnswers(slug);
   const [sec, setSec] = useState(60 * 30); // 30 minutes
-
-  // -------- Draft (restore on mount, save on demand) --------
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(`reading_draft_${slug}`);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (parsed?.answers && typeof parsed.answers === 'object') {
-          setAnswers(parsed.answers);
-        }
-      }
-    } catch {}
-  }, [slug]);
-
-  const saveDraft = useCallback(() => {
-    try {
-      localStorage.setItem(`reading_draft_${slug}`, JSON.stringify({ answers }));
-    } catch {}
-  }, [slug, answers]);
 
   // -------- Timer --------
   useEffect(() => {
@@ -104,16 +91,14 @@ export default function ReadingRunner({ slug, title, difficulty, words, content,
 
   const maxPts = useMemo(() => questions.reduce((s, q) => s + (q.points ?? 1), 0), [questions]);
 
-  // -------- Answer setter --------
-  const put = (q: Question, value: AnswerValue) => {
-    setAnswers((a) => ({ ...a, [q.id]: value })); // store by id (API also accepts order_no)
-  };
+  const typeFilter = (router.query.type as QKind | 'all') || 'all';
+  const filtered = useMemo(() => {
+    if (typeFilter === 'all') return questions;
+    return questions.filter((q) => q.kind === typeFilter);
+  }, [questions, typeFilter]);
 
   // -------- Submit --------
   const handleSubmit = async () => {
-    // Persist draft first (safety)
-    saveDraft();
-
     const { data: { session } } = await supabaseBrowser.auth.getSession();
     const token = session?.access_token ?? '';
 
@@ -122,7 +107,7 @@ export default function ReadingRunner({ slug, title, difficulty, words, content,
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({
         passageSlug: slug,
-        answers,
+        answers: store.answers,
         durationMs: (60 * 30 - sec) > 0 ? (60 * 30 - sec) * 1000 : null,
       }),
     });
@@ -149,7 +134,7 @@ export default function ReadingRunner({ slug, title, difficulty, words, content,
             <Badge>{questions.length} questions</Badge>
             <Badge>Max {maxPts} pts</Badge>
             <Badge>⏱ {hhmmss(sec)}</Badge>
-            <Badge>Answered: {Object.keys(answers).length}/{questions.length}</Badge>
+            <Badge>Answered: {Object.keys(store.answers).length}/{questions.length}</Badge>
           </div>
         </div>
 
@@ -160,70 +145,45 @@ export default function ReadingRunner({ slug, title, difficulty, words, content,
           </div>
         </Card>
 
-        {/* Questions */}
+        {/* Filter + Questions */}
+        <ReadingFilterBar className="mb-4" />
         <div className="grid gap-4">
-          {questions.map((q) => (
-            <Card key={q.id} className="p-5">
-              <div className="flex items-start justify-between mb-3">
-                <div className="font-medium">
-                  <span className="text-gray-500 mr-2">Question {q.order_no}.</span>
-                  {q.prompt}
-                </div>
-                <Badge>{q.kind.toUpperCase()}</Badge>
-              </div>
-
-              {q.kind === 'tfng' && (
-                <div className="flex flex-wrap gap-2">
-                  {['True', 'False', 'Not Given'].map((opt) => (
-                    <Button
-                      key={opt}
-                      variant={String(answers[q.id]) === opt ? 'primary' : 'secondary'}
-                      className="rounded-ds-xl"
-                      onClick={() => put(q, opt)}
-                    >
-                      {opt}
-                    </Button>
-                  ))}
-                </div>
-              )}
-
-              {q.kind === 'mcq' && (
-                <div className="grid gap-2">
-                  {(Array.isArray(q.options) ? q.options : []).map((opt: string, i: number) => (
-                    <label key={i} className="flex items-center gap-3 cursor-pointer">
-                      <input
-                        type="radio"
-                        name={q.id}
-                        checked={String(answers[q.id] ?? '') === opt}
-                        onChange={() => put(q, opt)}
-                      />
-                      <span>{opt}</span>
-                    </label>
-                  ))}
-                </div>
-              )}
-
-              {q.kind === 'short' && (
-                <Input
-                  placeholder="Type your answer"
-                  value={answers[q.id] ?? ''}
-                  onChange={(e) => put(q, e.target.value)}
-                />
-              )}
-
-              {q.kind === 'matching' && (
-                <Input
-                  placeholder="Enter comma-separated matches e.g. A,B,C,D"
-                  value={
-                    Array.isArray(answers[q.id])
-                      ? (answers[q.id] as string[]).join(',')
-                      : (answers[q.id] ?? '')
+          {filtered.map((q) => {
+            const qData =
+              q.kind === 'tfng'
+                ? { kind: 'tfng', id: q.id, prompt: q.prompt }
+                : q.kind === 'mcq'
+                ? {
+                    kind: 'mcq' as const,
+                    id: q.id,
+                    prompt: q.prompt,
+                    options: Array.isArray(q.options) ? q.options : [],
                   }
-                  onChange={(e) => put(q, e.target.value.split(',').map((s) => s.trim()))}
+                : q.kind === 'matching'
+                ? {
+                    kind: 'matching' as const,
+                    id: q.id,
+                    prompt: q.prompt,
+                    pairs: Array.isArray(q.options?.pairs) ? q.options.pairs : [],
+                  }
+                : { kind: 'short' as const, id: q.id, prompt: q.prompt };
+            return (
+              <Card key={q.id} className="p-5">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="font-medium">
+                    <span className="text-gray-500 mr-2">Question {q.order_no}.</span>
+                    {q.prompt}
+                  </div>
+                  <Badge>{q.kind.toUpperCase()}</Badge>
+                </div>
+                <QuestionRenderer
+                  slug={slug}
+                  question={qData as any}
+                  onChange={(id, v) => store.setAnswer(id, v)}
                 />
-              )}
-            </Card>
-          ))}
+              </Card>
+            );
+          })}
         </div>
 
         {/* Actions */}
@@ -232,7 +192,7 @@ export default function ReadingRunner({ slug, title, difficulty, words, content,
             Back to Catalog
           </Link>
           <div className="flex gap-3">
-            <Button variant="secondary" className="rounded-ds-xl" onClick={saveDraft}>
+            <Button variant="secondary" className="rounded-ds-xl" onClick={() => {/* answers persisted */}}>
               Save Draft
             </Button>
             <Button variant="primary" className="rounded-ds-xl" onClick={handleSubmit}>

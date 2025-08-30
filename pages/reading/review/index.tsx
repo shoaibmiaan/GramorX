@@ -14,6 +14,7 @@ import { Card } from '@/components/design-system/Card';
 import { Badge } from '@/components/design-system/Badge';
 import { Button } from '@/components/design-system/Button';
 import { Alert } from '@/components/design-system/Alert';
+import { ReadingFilterBar } from '@/components/reading/ReadingFilterBar';
 
 type Kind = 'tfng' | 'mcq' | 'matching' | 'short';
 
@@ -149,6 +150,12 @@ const ReviewPage: NextPage<Props> = ({ passage, questions, notFound, error }) =>
   const [explanations, setExplanations] = useState<Record<string, string>>({});
   const [loadErr, setLoadErr] = useState<string | null>(null);
   const { explanationLocale } = useLocale();
+
+  const typeFilter = (router.query.type as Kind | 'all') || 'all';
+  const filteredQuestions = useMemo(() => {
+    if (typeFilter === 'all') return questions;
+    return questions.filter((q) => q.kind === typeFilter);
+  }, [questions, typeFilter]);
 
   // Load answers:
   // 1) If attemptId: fetch attempt from Supabase with user token
@@ -336,8 +343,9 @@ const ReviewPage: NextPage<Props> = ({ passage, questions, notFound, error }) =>
           </Card>
         )}
 
+        <ReadingFilterBar className="mb-6" />
         <div className="grid gap-6">
-          {questions.map((q, idx) => {
+          {filteredQuestions.map((q, idx) => {
             const user = answers ? answers[q.id] : undefined;
             const ok = answers ? isCorrect(q, user) : false;
 
