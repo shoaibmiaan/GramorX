@@ -1,6 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { redis } from '@/lib/redis';
+import { evaluateRisk, riskThreshold } from '@/lib/risk';
+import { incrementFlaggedLogin } from '@/lib/metrics';
 
 const MAX_ATTEMPTS = 5;
 const BLOCK_TIME_SEC = 60 * 15; // 15 minutes
@@ -18,6 +20,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const ipRaw = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '';
   const ip = Array.isArray(ipRaw) ? ipRaw[0] : ipRaw.split(',')[0];
+  const userAgent = req.headers['user-agent'] || '';
+
+  const risk = await evaluateRisk({ ip, userAgent, email });
+  if (risk.score >= riskThreshold) {
+    console.warn('Login attempt flagged', { ip, userAgent, email, score: risk.score });
+    incrementFlaggedLogin();
+    return res
+      .status(403)
+      .json({ error: 'Login blocked due to suspicious activity.' });
+  }
+
   const key = `login:fail:${ip}`;
 
   const attemptsStr = await redis.get(key);
