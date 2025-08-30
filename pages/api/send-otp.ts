@@ -65,4 +65,7 @@ export default async function handler(
   } catch (err) {
     console.error('Verify start error', err);
     const message = err instanceof Error ? err.message : 'Unknown error';
-    return res.status(500).json({ o
+    return res.status(500).json({ ok: false, error: message });
+  }
+}
+
