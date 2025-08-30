@@ -16,12 +16,15 @@ const Hero = dynamic(
   { ssr: false, loading: () => <div className="min-h-[60vh]" /> }
 );
 
-// Robust static imports for the rest (default OR named export)
+// Static imports (support default OR named)
 import * as ModulesMod from '@/components/sections/Modules';
 import * as CertificationBadgesMod from '@/components/sections/CertificationBadges';
 import * as TestimonialsMod from '@/components/sections/Testimonials';
 import * as PricingMod from '@/components/sections/Pricing';
 import * as WaitlistMod from '@/components/sections/Waitlist';
+
+// Keep both sides from the conflict
+import { HeaderStreakChip } from '@/components/feature/HeaderStreakChip';
 import * as SpecialtiesMod from '@/components/sections/Specialties';
 import * as DrillGeneratorMod from '@/components/sections/Learning/DrillGenerator';
 import * as TipsGridMod from '@/components/sections/Learning/TipsGrid';
@@ -51,26 +54,24 @@ const CourseCatalogModTyped = CourseCatalogMod as CourseCatalogModule;
 
 const Modules = ModulesModTyped.Modules ?? ModulesModTyped.default;
 const CertificationBadges =
-  CertificationBadgesModTyped.CertificationBadges ??
-  CertificationBadgesModTyped.default;
+  CertificationBadgesModTyped.CertificationBadges ?? CertificationBadgesModTyped.default;
 const Testimonials =
   TestimonialsModTyped.Testimonials ?? TestimonialsModTyped.default;
 const Pricing = PricingModTyped.Pricing ?? PricingModTyped.default;
 const Waitlist = WaitlistModTyped.Waitlist ?? WaitlistModTyped.default;
 const Specialties = SpecialtiesModTyped.Specialties ?? SpecialtiesModTyped.default;
-const DrillGenerator =
-  DrillGeneratorModTyped.DrillGenerator ?? DrillGeneratorModTyped.default;
+const DrillGenerator = DrillGeneratorModTyped.DrillGenerator ?? DrillGeneratorModTyped.default;
 const TipsGrid = TipsGridModTyped.TipsGrid ?? TipsGridModTyped.default;
-const CourseCatalog =
-  CourseCatalogModTyped.CourseCatalog ?? CourseCatalogModTyped.default;
+const CourseCatalog = CourseCatalogModTyped.CourseCatalog ?? CourseCatalogModTyped.default;
 
 export default function HomePage() {
   const { t } = useLocale();
-  // keep your streak logic intact
+
+  // Streak state (kept intact)
   const [streak, setStreak] = useState(0);
   const onStreakChange = useCallback((n: number) => setStreak(n), []);
 
-  // Smooth scroll for same-page anchors (unchanged, tightened)
+  // Smooth scroll for same-page anchors
   useEffect(() => {
     const clickHandler = (ev: MouseEvent) => {
       const target = ev.target as HTMLElement | null;
@@ -98,7 +99,12 @@ export default function HomePage() {
       <Head>
         <title>{t('home.title')}</title>
       </Head>
+
       <Hero streak={streak} onStreakChange={onStreakChange} />
+
+      <div className="mt-6 flex justify-center">
+        <HeaderStreakChip />
+      </div>
 
       <section
         id="partners"
@@ -130,7 +136,6 @@ export default function HomePage() {
       </section>
 
       <TipsGrid />
-
       <CourseCatalog />
 
       <section
