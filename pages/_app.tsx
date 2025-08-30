@@ -7,7 +7,7 @@ import { ThemeProvider } from 'next-themes';
 import '@/styles/globals.css';
 
 import { Layout } from '@/components/Layout';
-import { ToastProvider } from '@/components/design-system/Toast';
+import { ToastProvider } from '@/components/design-system/Toaster';
 import { supabaseBrowser } from '@/lib/supabaseBrowser';
 import { env } from '@/lib/env';
 import { LanguageProvider, useLocale } from '@/lib/locale';

@@ -8,7 +8,7 @@ import { Badge } from '@/components/design-system/Badge';
 import ChallengeScore from '@/components/review/ChallengeScore';
 import { ReevalPanel } from '@/components/writing/ReevalPanel';
 import { ReevalHistory, type ReevalRow } from '@/components/writing/ReevalHistory';
-import { useToast } from '@/components/design-system/Toast';
+import { useToast } from '@/components/design-system/Toaster';
 
 type Criteria = { task:number; coherence:number; lexical:number; grammar:number };
 type Attempt = {
