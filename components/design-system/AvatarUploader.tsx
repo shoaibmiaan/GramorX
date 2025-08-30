@@ -1,5 +1,7 @@
+"use client";
 import { env } from "@/lib/env";
 import React, { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 import { createClient } from '@supabase/supabase-js';
 import { Alert } from './Alert';
 import { Button } from './Button';
@@ -92,9 +94,11 @@ export const AvatarUploader: React.FC<Props> = ({
         onClick={() => inputRef.current?.click()}
       >
         {preview ? (
-          <img
+          <Image
             src={preview}
             alt="Avatar preview"
+            width={112}
+            height={112}
             className="mx-auto h-28 w-28 rounded-full object-cover ring-2 ring-primary/40"
           />
         ) : (
