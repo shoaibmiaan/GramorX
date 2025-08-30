@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import Head from 'next/head';
 import dynamic from 'next/dynamic';
 import { useLocale } from '@/lib/locale';
+import { Container } from '@/components/design-system/Container';
 
 // Robust dynamic import for Hero: supports default OR named export
 const Hero = dynamic(
@@ -21,6 +22,10 @@ import * as CertificationBadgesMod from '@/components/sections/CertificationBadg
 import * as TestimonialsMod from '@/components/sections/Testimonials';
 import * as PricingMod from '@/components/sections/Pricing';
 import * as WaitlistMod from '@/components/sections/Waitlist';
+import * as SpecialtiesMod from '@/components/sections/Specialties';
+import * as DrillGeneratorMod from '@/components/sections/Learning/DrillGenerator';
+import * as TipsGridMod from '@/components/sections/Learning/TipsGrid';
+import * as CourseCatalogMod from '@/components/sections/Learning/CourseCatalog';
 
 type ModulesModule = typeof import('@/components/sections/Modules');
 type CertificationBadgesModule = typeof import('@/components/sections/CertificationBadges');
@@ -29,12 +34,20 @@ type PricingModule = typeof import('@/components/sections/Pricing');
 type WaitlistModule = typeof import('@/components/sections/Waitlist') & {
   Waitlist?: typeof import('@/components/sections/Waitlist').default;
 };
+type SpecialtiesModule = typeof import('@/components/sections/Specialties');
+type DrillGeneratorModule = typeof import('@/components/sections/Learning/DrillGenerator');
+type TipsGridModule = typeof import('@/components/sections/Learning/TipsGrid');
+type CourseCatalogModule = typeof import('@/components/sections/Learning/CourseCatalog');
 
 const ModulesModTyped = ModulesMod as ModulesModule;
 const CertificationBadgesModTyped = CertificationBadgesMod as CertificationBadgesModule;
 const TestimonialsModTyped = TestimonialsMod as TestimonialsModule;
 const PricingModTyped = PricingMod as PricingModule;
 const WaitlistModTyped = WaitlistMod as WaitlistModule;
+const SpecialtiesModTyped = SpecialtiesMod as SpecialtiesModule;
+const DrillGeneratorModTyped = DrillGeneratorMod as DrillGeneratorModule;
+const TipsGridModTyped = TipsGridMod as TipsGridModule;
+const CourseCatalogModTyped = CourseCatalogMod as CourseCatalogModule;
 
 const Modules = ModulesModTyped.Modules ?? ModulesModTyped.default;
 const CertificationBadges =
@@ -44,6 +57,12 @@ const Testimonials =
   TestimonialsModTyped.Testimonials ?? TestimonialsModTyped.default;
 const Pricing = PricingModTyped.Pricing ?? PricingModTyped.default;
 const Waitlist = WaitlistModTyped.Waitlist ?? WaitlistModTyped.default;
+const Specialties = SpecialtiesModTyped.Specialties ?? SpecialtiesModTyped.default;
+const DrillGenerator =
+  DrillGeneratorModTyped.DrillGenerator ?? DrillGeneratorModTyped.default;
+const TipsGrid = TipsGridModTyped.TipsGrid ?? TipsGridModTyped.default;
+const CourseCatalog =
+  CourseCatalogModTyped.CourseCatalog ?? CourseCatalogModTyped.default;
 
 export default function HomePage() {
   const { t } = useLocale();
@@ -94,6 +113,25 @@ export default function HomePage() {
       >
         <Modules />
       </section>
+
+      <Specialties />
+
+      <section
+        id="drills"
+        className="py-24 bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90"
+      >
+        <Container>
+          <h2 className="font-slab text-h2">AI Drill Generator</h2>
+          <p className="text-grayish mb-8">
+            Generate quick practice on any IELTS topic.
+          </p>
+          <DrillGenerator />
+        </Container>
+      </section>
+
+      <TipsGrid />
+
+      <CourseCatalog />
 
       <section
         id="testimonials"
