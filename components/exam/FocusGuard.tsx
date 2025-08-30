@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useState } from 'react';
 import { Alert } from '@/components/design-system/Alert';
 import { recordFocusViolation } from '@/lib/examSecurity';

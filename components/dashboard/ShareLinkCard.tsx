@@ -1,3 +1,5 @@
+"use client";
+
 import React from 'react';
 import { Card } from '@/components/design-system/Card';
 import { Button } from '@/components/design-system/Button';
