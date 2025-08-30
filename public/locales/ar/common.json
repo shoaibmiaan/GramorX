@@ -1,0 +1,16 @@
+{
+  "home": {
+    "title": "مرحبًا بكم في GramorX"
+  },
+  "profileSetup": {
+    "completeProfile": "أكمل ملفك الشخصي",
+    "description": "سنستخدم الذكاء الاصطناعي لتخصيص خطة دراستك ولوحتك.",
+    "preferredLanguage": "اللغة المفضلة",
+    "explanationLanguage": "لغة الشرح",
+    "saveDraft": "حفظ المسودة",
+    "finishContinue": "إنهاء ومتابعة"
+  },
+  "userMenu": {
+    "language": "اللغة"
+  }
+}
