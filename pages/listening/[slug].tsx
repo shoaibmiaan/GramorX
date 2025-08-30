@@ -13,7 +13,7 @@ import { Timer } from '@/components/design-system/Timer';
 import { scoreAll } from '@/lib/listening/score';
 import { rawToBand } from '@/lib/listening/band';
 import { SaveItemButton } from '@/components/SaveItemButton';
-import NoiseLadderPlayer from '@/components/listening/NoiseLadderPlayer';
+import AudioSectionsPlayer from '@/components/listening/AudioSectionsPlayer';
 
 type MCQ = {
   id: string;
@@ -62,7 +62,6 @@ export default function ListeningTestPage() {
   const [test, setTest] = useState<ListeningTest | null>(null);
   const [currentIdx, setCurrentIdx] = useState(0);
   const [autoPlay, setAutoPlay] = useState(true);
-  const [showTranscript, setShowTranscript] = useState(false);
   const [checked, setChecked] = useState(false);
 
   // --- Save state ---
@@ -76,41 +75,7 @@ export default function ListeningTestPage() {
   const [timeLeft, setTimeLeft] = useState(TOTAL_TIME_SEC);
   const submittedRef = useRef(false);
 
-  // --- Audio & timing ---
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [ready, setReady] = useState(false);
-  const gapMsRef = useRef<number>(850); // 700–1000ms gap feels natural
-
-  const noiseLayers = useMemo(
-    () => [
-      { label: 'Off', src: null },
-      { label: 'Café', src: '/audio/noise/cafe.mp3', volume: 0.2 },
-      { label: 'Street', src: '/audio/noise/street.mp3', volume: 0.3 },
-    ],
-    []
-  );
-  const [noiseLevel, setNoiseLevel] = useState(0);
-
-  useEffect(() => {
-    if (!userId) return;
-    supabase
-      .from('user_noise_progress')
-      .select('noise_level')
-      .eq('user_id', userId)
-      .single()
-      .then(({ data }) => {
-        if (data?.noise_level != null) {
-          setNoiseLevel(data.noise_level);
-        }
-      });
-  }, [userId]);
-
-  const updateNoiseLevel = async (lvl: number) => {
-    setNoiseLevel(lvl);
-    if (userId) {
-      await supabase.from('user_noise_progress').upsert({ user_id: userId, noise_level: lvl });
-    }
-  };
+  // --- Audio & timing handled via AudioSectionsPlayer ---
 
   // --- Load auth user (robust and race-free) ---
   useEffect(() => {
@@ -243,56 +208,6 @@ export default function ListeningTestPage() {
     return () => clearTimeout(id);
   }, [answers, currentIdx, slug]);
 
-  // --- Audio slice auto-play + gap between sections ---
-  useEffect(() => {
-    const section = test?.sections[currentIdx] ?? null;
-    if (!test || !section) return;
-
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    let advanceTimer: number | null = null;
-
-    const seekToStart = () => {
-      audio.currentTime = section.startMs / 1000;
-      setReady(true);
-      if (autoPlay) {
-        audio.play().catch(() => {});
-      }
-    };
-
-    const onLoaded = () => {
-      seekToStart();
-    };
-
-    const onTimeUpdate = () => {
-      const tMs = audio.currentTime * 1000;
-      if (tMs >= section.endMs - 25) {
-        audio.pause();
-        if (autoPlay && currentIdx < test.sections.length - 1 && advanceTimer == null) {
-          advanceTimer = window.setTimeout(() => {
-            setCurrentIdx((i) => i + 1);
-            advanceTimer = null;
-          }, gapMsRef.current);
-        }
-      }
-    };
-
-    audio.addEventListener('loadedmetadata', onLoaded);
-    audio.addEventListener('timeupdate', onTimeUpdate);
-
-    // If metadata already available (when swapping slices on same src)
-    if (audio.readyState >= 1) onLoaded();
-
-    return () => {
-      audio.removeEventListener('loadedmetadata', onLoaded);
-      audio.removeEventListener('timeupdate', onTimeUpdate);
-      if (advanceTimer) {
-        clearTimeout(advanceTimer);
-      }
-    };
-  }, [test, autoPlay, currentIdx]);
-
   // --- Answer helpers ---
   const handleMCQ = (q: MCQ, val: string) => {
     setAnswers((prev) => ({ ...prev, [q.id]: val }));
@@ -411,7 +326,7 @@ export default function ListeningTestPage() {
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <h1 className="font-slab text-4xl text-gradient-primary">{test.title}</h1>
-              <p className="text-grayish">Auto-play per section • Transcript toggle • Answer highlighting</p>
+              <p className="text-grayish">Auto-play per section • Answer highlighting</p>
             </div>
             <div className="flex items-center gap-3">
               <SaveItemButton resourceId={slug || ''} type="listening" category="bookmark" />
@@ -443,71 +358,24 @@ export default function ListeningTestPage() {
           )}
           {saving && <Alert variant="info" className="mt-6">Saving…</Alert>}
 
-          {/* Audio + controls */}
-          <Card className="p-6 mt-8">
-            <div className="flex flex-col md:flex-row items-center gap-4">
-              <audio
-                ref={audioRef}
-                src={test.masterAudioUrl}
-                controls
-                className="w-full md:w-auto"
-                onPlay={() => setReady(true)}
-              />
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="secondary"
-                  onClick={() => setCurrentIdx((i) => Math.max(0, i - 1))}
-                  disabled={currentIdx === 0}
-                >
-                  ← Prev
-                </Button>
-                <Button
-                  variant="secondary"
-                  onClick={() => setCurrentIdx((i) => Math.min(secCount - 1, i + 1))}
-                  disabled={currentIdx === secCount - 1}
-                >
-                  Next →
-                </Button>
-                <Button
-                  onClick={() => {
-                    const a = audioRef.current;
-                    if (!a) return;
-                    if (a.paused) {
-                      a.play().catch(() => {});
-                    } else {
-                      a.pause();
-                    }
-                  }}
-                >
-                  {ready && audioRef.current?.paused ? 'Play' : 'Pause'}
-                </Button>
-                <Button variant="secondary" onClick={() => setShowTranscript((v) => !v)}>
-                  {showTranscript ? 'Hide transcript' : 'Show transcript'}
-                </Button>
-                {!!userId && (
-                  <Button variant="secondary" onClick={persistAnswers} disabled={saving}>
-                    Save progress
-                  </Button>
-                )}
-                <NoiseLadderPlayer
-                  audioRef={audioRef}
-                  layers={noiseLayers}
-                  level={noiseLevel}
-                  onLevelChange={updateNoiseLevel}
-                />
-              </div>
+          <AudioSectionsPlayer
+            key={currentIdx}
+            masterAudioUrl={test.masterAudioUrl}
+            sections={test.sections}
+            initialSectionIndex={currentIdx}
+            autoAdvance={autoPlay}
+            onSectionChange={setCurrentIdx}
+            className="mt-8"
+          />
+          <div className="mt-4 text-small opacity-80">
+            Section {currentSection?.orderNo} of {secCount} • {sliceSecs}s slice
+          </div>
+          {!!userId && (
+            <div className="mt-4">
+              <Button variant="secondary" onClick={persistAnswers} disabled={saving}>
+                Save progress
+              </Button>
             </div>
-            <div className="mt-4 text-small opacity-80">
-              Section {currentSection?.orderNo} of {secCount} • {sliceSecs}s slice
-            </div>
-          </Card>
-
-          {/* Transcript */}
-          {showTranscript && currentSection?.transcript && (
-            <Card className="p-6 mt-6">
-              <h3 className="font-semibold mb-2">Transcript</h3>
-              <p className="opacity-90">{currentSection.transcript}</p>
-            </Card>
           )}
 
           {/* Questions */}
