@@ -11,7 +11,7 @@
     "lint": "next lint",
     "pin:hash": "ts-node tools/hash-pin.ts",
     "diagnose": "powershell -ExecutionPolicy Bypass -File .\\\\tools\\\\report-build-issues.ps1",
-    "test": "tsx tools/run-tests.ts",
+    "test": "TWILIO_BYPASS=1 tsx tools/run-tests.ts",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
   },
