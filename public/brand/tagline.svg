@@ -1,3 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="250" height="40" viewBox="0 0 250 40">
-  <text x="0" y="28" font-size="24" fill="#4F46E5" font-family="Poppins, sans-serif">AI-Powered IELTS Prep</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="40" viewBox="0 0 320 40">
+  <rect width="320" height="40" rx="8" fill="#6C5CE7" opacity="0.08"/>
+  <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle"
+        font-family="Poppins, sans-serif" font-size="16" fill="#6C5CE7">
+    Unlock Band 8+ with AI
+  </text>
 </svg>
