@@ -7,7 +7,6 @@ import { Input } from '@/components/design-system/Input';
 import { PasswordInput } from '@/components/design-system/PasswordInput';
 import { Button } from '@/components/design-system/Button';
 import { Alert } from '@/components/design-system/Alert';
-import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser';
 import { isValidEmail } from '@/utils/validation';
 
 export default function SignupWithPassword() {
@@ -41,40 +40,27 @@ export default function SignupWithPassword() {
     }
     setEmailErr(null);
 
-    // Keep (and slightly strengthen) the password rule from main
-    // At least 8 chars, include letters & numbers; you can expand later to include symbols.
-    const pwRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d\S]{8,}$/;
-    if (!pwRegex.test(pw)) {
-      setErr('Use a stronger password (min 8 chars, include letters and numbers).');
-      return;
-    }
-
     try {
       setLoading(true);
-      const { error } = await supabase.auth.signUp({
-        email: trimmedEmail,
-        password: pw,
-        options: {
-          emailRedirectTo:
-            typeof window !== 'undefined'
-              ? `${window.location.origin}/auth/verify`
-              : undefined,
-          data: referral ? { referral_code: referral.trim() } : undefined,
-        },
+      const res = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: trimmedEmail,
+          password: pw,
+          referral,
+        }),
       });
+      const data = await res.json();
       setLoading(false);
 
-      if (error) {
-        if (error.code === 'user_exists') {
-          setErr('user_exists');
-        } else {
-          setErr(error.message);
-        }
+      if (!res.ok) {
+        setErr(data.error || 'Something went wrong. Please try again.');
         return;
       }
 
-      const { data: { session } } = await supabase.auth.getSession();
-      if (referral && session) {
+      const session = data.session;
+      if (referral && session?.access_token) {
         try {
           await fetch('/api/referrals', {
             method: 'POST',
