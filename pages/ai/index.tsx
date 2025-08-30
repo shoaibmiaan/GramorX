@@ -5,6 +5,8 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Head from 'next/head';
+import MessageList from '@/components/ai/MessageList';
+import SidebarHeader, { type ConnState } from '@/components/ai/SidebarHeader';
 
 type Msg = { id: string; role: 'user' | 'assistant'; content: string };
 type WireMsg = { role: 'system' | 'user' | 'assistant'; content: string };
@@ -92,6 +94,12 @@ export default function AIChatPage() {
   const [statusNote, setStatusNote] = useState<string>('');
   const [provider] = useState<Provider>('auto'); // keep UI minimal; can expose later if needed
   const [streamingId, setStreamingId] = useState<string | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
+  const [listening, setListening] = useState(false);
+  const voiceSupported = false;
+  const voiceDenied = false;
+
+  const toggleVoice = () => setListening((l) => !l);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -103,6 +111,14 @@ export default function AIChatPage() {
     if (!isBrowser) return;
     localStorage.setItem(LS_THREAD, JSON.stringify(messages));
   }, [messages]);
+
+  useEffect(() => {
+    if (!isBrowser) return;
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
 
   // System prompt – concise by default
   const system = useMemo<WireMsg>(
@@ -198,6 +214,18 @@ export default function AIChatPage() {
     setMessages([]);
   };
 
+  const conn: ConnState = !isBrowser
+    ? 'idle'
+    : !navigator.onLine
+    ? 'offline'
+    : statusNote.includes('System issue')
+    ? 'error'
+    : statusNote.includes('Slow')
+    ? 'stalled'
+    : busy || streamingId
+    ? 'online'
+    : 'idle';
+
   // Auto-grow textarea
   useEffect(() => {
     const el = textareaRef.current; if (!el) return;
@@ -214,91 +242,28 @@ export default function AIChatPage() {
       </Head>
 
       <div className="min-h-[100svh] bg-background text-foreground flex flex-col">
-        {/* Header */}
-        <header className="sticky top-0 z-20 border-b border-border bg-background/80 backdrop-blur">
-          <div className="mx-auto max-w-4xl px-4 h-14 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="h-6 w-6 rounded-xl bg-gradient-to-r from-primary/20 via-accent/20 to-secondary/20" />
-              <h1 className="font-semibold tracking-tight">Chat with AI</h1>
+        <div className="mx-auto max-w-4xl w-full">
+          <SidebarHeader title="Chat with AI" status={conn} onClose={newChat} className="sticky top-0 z-20" />
+        </div>
+
+          {/* Main */}
+          <main className="flex-1">
+            <div className="mx-auto max-w-4xl">
+              <MessageList
+                items={messages}
+                loading={busy}
+                streamingId={streamingId}
+                renderMarkdown={renderBlocks}
+                scrollRef={scrollRef}
+                isMobile={isMobile}
+                newChat={newChat}
+                toggleVoice={toggleVoice}
+                voiceSupported={voiceSupported}
+                voiceDenied={voiceDenied}
+                listening={listening}
+              />
             </div>
-            <div className="flex items-center gap-2">
-              {statusNote && (
-                <span className="text-[11px] text-muted-foreground hidden sm:inline">{statusNote}</span>
-              )}
-              <button
-                onClick={newChat}
-                className="text-xs rounded-md border border-border bg-card hover:bg-accent px-3 py-1"
-                title="New chat"
-              >
-                New
-              </button>
-            </div>
-          </div>
-        </header>
-
-        {/* Main */}
-        <main className="flex-1">
-          <div className="mx-auto max-w-4xl px-4">
-            {/* Empty state */}
-            {messages.length === 0 && (
-              <section className="py-10 text-center">
-                <div className="inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-gradient-to-br from-primary/15 to-accent/15 border border-border mb-3">
-                  <span className="text-lg">✨</span>
-                </div>
-                <h2 className="text-lg font-semibold">How can I help?</h2>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Ask anything IELTS or study-related. I’ll keep it concise and actionable.
-                </p>
-
-                <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
-                  {[
-                    '7-Day IELTS plan for Band 7.5',
-                    'Explain True/False/Not Given traps',
-                    'Band 8 outline for tech & privacy',
-                  ].map((q) => (
-                    <button
-                      key={q}
-                      onClick={() => send(q)}
-                      className="text-xs rounded-full px-3 py-1 bg-card border border-border hover:bg-accent"
-                    >
-                      {q}
-                    </button>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {/* Messages */}
-            <div
-              ref={scrollRef}
-              className="space-y-3 pb-36 pt-4"
-            >
-              {messages.map((m) => (
-                <div key={m.id} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div
-                    className={`max-w-[85%] md:max-w-[70%] rounded-2xl px-3 py-2 text-sm leading-relaxed border ${
-                      m.role === 'user'
-                        ? 'bg-primary text-primary-foreground border-primary'
-                        : 'bg-card text-card-foreground border-border'
-                    }`}
-                    aria-live={m.id === streamingId ? 'polite' : undefined}
-                  >
-                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">
-                      {m.role === 'user' ? 'You' : 'GramorX AI'}
-                    </div>
-                    <div className="prose prose-sm dark:prose-invert max-w-none">
-                      {renderBlocks(m.content)}
-                    </div>
-                  </div>
-                </div>
-              ))}
-
-              {busy && (
-                <div className="text-xs text-muted-foreground animate-pulse">Thinking…</div>
-              )}
-            </div>
-          </div>
-        </main>
+          </main>
 
         {/* Composer */}
         <div className="fixed inset-x-0 bottom-0 border-t border-border bg-background/90 backdrop-blur">
