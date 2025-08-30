@@ -217,7 +217,11 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
       <Container>
         <div className="flex items-center justify-between py-4 md:py-5">
           {/* Brand — bigger logo + name */}
-          <Link href="/" className="flex items-center gap-3 group" aria-label="Go to home">
+          <Link
+            href={user.id ? '/dashboard' : '/'}
+            className="flex items-center gap-3 group"
+            aria-label="Go to home"
+          >
             <img src="/brand/logo.png" alt="GramorX logo" className="h-11 w-11 rounded-lg object-contain" />
             <span className="font-slab font-bold text-3xl">
               <span className="text-gradient-primary group-hover:opacity-90 transition">GramorX</span>
@@ -227,6 +231,7 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
           {/* Desktop */}
           <nav className="hidden md:block" aria-label="Primary">
             <ul className="flex items-center gap-3 relative">
+              {user.id && <li><NavLink href="/dashboard" label="Dashboard" /></li>}
               <li className="relative" ref={modulesRef}>
                 <button
                   onClick={() => setOpenDesktopModules(v => !v)}
@@ -255,7 +260,7 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
                         </div>
                         <div className="grid sm:grid-cols-2 gap-3">
                           {MODULE_LINKS.map((m) => (
-                            <Link
+                            <NavLink
                               key={m.href}
                               href={m.href}
                               className="group rounded-ds border border-transparent hover:border-purpleVibe/20 p-4 flex items-start gap-3 hover:bg-purpleVibe/10"
@@ -271,7 +276,7 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
                                 <div className="font-medium">{m.label}</div>
                                 {m.desc && <div className="text-small text-grayish">{m.desc}</div>}
                               </div>
-                            </Link>
+                            </NavLink>
                           ))}
                         </div>
                       </div>
@@ -390,14 +395,25 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
 
             <nav aria-label="Mobile Navigation" className="pb-4">
               <ul className="flex flex-col gap-1">
+                {user.id && (
+                  <li>
+                    <NavLink
+                      href="/dashboard"
+                      className="block px-3 py-3 rounded-lg hover:bg-purpleVibe/10"
+                      onClick={() => setMobileOpen(false)}
+                    >
+                      Dashboard
+                    </NavLink>
+                  </li>
+                )}
                 <li>
-                  <Link
+                  <NavLink
                     href="/learning"
                     className="block px-3 py-3 rounded-lg hover:bg-purpleVibe/10"
                     onClick={() => setMobileOpen(false)}
                   >
                     Learning
-                  </Link>
+                  </NavLink>
                 </li>
 
                 {/* Modules accordion */}
@@ -417,13 +433,13 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
                     <ul id="mobile-modules-list" className="mt-1 ml-2 rounded-lg border border-purpleVibe/20 overflow-hidden">
                       {MODULE_LINKS.map((m) => (
                         <li key={m.href}>
-                          <Link
+                          <NavLink
                             href={m.href}
                             className="block px-4 py-3 hover:bg-purpleVibe/10"
                             onClick={() => setMobileOpen(false)}
                           >
                             {m.label}
-                          </Link>
+                          </NavLink>
                         </li>
                       ))}
                     </ul>
@@ -433,23 +449,23 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
                 {/* Pricing (waitlist removed) */}
                 {NAV.map((n) => (
                   <li key={n.href}>
-                    <Link
+                    <NavLink
                       href={n.href}
                       className="block px-3 py-3 rounded-lg hover:bg-purpleVibe/10"
                       onClick={() => setMobileOpen(false)}
                     >
                       {n.label}
-                    </Link>
+                    </NavLink>
                   </li>
                 ))}
                 <li>
-                  <Link
+                  <NavLink
                     href="/premium"
                     className="block px-3 py-3 rounded-lg hover:bg-purpleVibe/10"
                     onClick={() => setMobileOpen(false)}
                   >
                     premium
-                  </Link>
+                  </NavLink>
                 </li>
               </ul>
             </nav>
