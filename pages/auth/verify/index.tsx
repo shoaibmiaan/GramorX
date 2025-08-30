@@ -1,4 +1,4 @@
-// pages/auth/verify.tsx
+// pages/auth/verify/index.tsx
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
 import AuthLayout from '@/components/layouts/AuthLayout';

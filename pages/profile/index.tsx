@@ -94,7 +94,7 @@ export default function ProfilePage() {
 
   const requestExport = async () => {
     try {
-      const res = await fetch('/api/account/export');
+      const res = await fetch('/api/export');
       if (!res.ok) throw new Error('Failed');
       const json = await res.json();
       const blob = new Blob([JSON.stringify(json, null, 2)], {
