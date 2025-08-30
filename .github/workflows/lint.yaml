@@ -1,0 +1,38 @@
+name: Lint
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      NODE_VERSION: '20'
+      NODE_ENV: test
+
+      # Dummy values for env.ts validation
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: anon_dummy
+      SUPABASE_URL: https://example.supabase.co
+      SUPABASE_SERVICE_KEY: service_dummy
+      SUPABASE_SERVICE_ROLE_KEY: role_dummy
+
+      TWILIO_ACCOUNT_SID: ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+      TWILIO_AUTH_TOKEN: dummytoken
+      TWILIO_VERIFY_SERVICE_SID: VAXxxxxxxxxxxxxxxxxxxxxxxxx
+      TWILIO_WHATSAPP_FROM: whatsapp:+10000000000
+
+      NEXT_PUBLIC_IDLE_TIMEOUT_MINUTES: '60'
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run lint
