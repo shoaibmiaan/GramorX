@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import { ExamShell } from '@/premium-ui/exam/ExamShell';
 import { PrAudioPlayer } from '@/premium-ui/components/PrAudioPlayer';
 import { PrButton } from '@/premium-ui/components/PrButton';
+import { requirePremium } from '@/lib/requirePremium';
 
 export default function ListeningExam() {
   const router = useRouter();
@@ -60,4 +61,6 @@ export default function ListeningExam() {
     </ExamShell>
   );
 }
+
+export { requirePremium as getServerSideProps };
 

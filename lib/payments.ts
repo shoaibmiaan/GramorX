@@ -9,18 +9,22 @@ export const stripe = new Stripe(secret, {
 });
 
 export async function createCheckoutSession(opts: {
-  customer: string;
+  customer?: string;
+  customerEmail?: string;
   priceId: string;
   successUrl: string;
   cancelUrl: string;
+  metadata?: Record<string, string>;
 }) {
-  const { customer, priceId, successUrl, cancelUrl } = opts;
+  const { customer, customerEmail, priceId, successUrl, cancelUrl, metadata } = opts;
   return stripe.checkout.sessions.create({
     customer,
+    customer_email: customerEmail,
     mode: 'subscription',
     line_items: [{ price: priceId, quantity: 1 }],
     success_url: successUrl,
     cancel_url: cancelUrl,
+    metadata,
   });
 }
 
