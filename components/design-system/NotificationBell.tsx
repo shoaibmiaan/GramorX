@@ -122,17 +122,12 @@ export const NotificationBell: React.FC = () => {
           </div>
 
           <ul id="notification-menu" role="menu" className="max-h-72 overflow-auto text-sm">
-            {notifications.length === 0 ? (
-              <li role="menuitem" className="px-3 py-3 opacity-80">
-                No notifications
-              </li>
-            ) : (
-              notifications.map((n) => {
-                const isInternal = n.url?.startsWith('/');
-                const row = (
-                  <div className={`flex items-start gap-2 px-3 py-2 ${n.read ? 'opacity-60' : ''}`}>
-                    <span className="flex-1">{n.message}</span>
-                    {!n.read && (
+            {notifications.map((n) => {
+              const isInternal = n.url?.startsWith('/');
+              const row = (
+                <div className={`flex items-start gap-2 px-3 py-2 ${n.read ? 'opacity-60' : ''}`}>
+                  <span className="flex-1">{n.message}</span>
+                  {!n.read && (
                       <button
                         className="text-xs text-purpleVibe hover:underline"
                         onClick={(e) => {
@@ -181,8 +176,7 @@ export const NotificationBell: React.FC = () => {
                     )}
                   </li>
                 );
-              })
-            )}
+              })}
           </ul>
         </div>
       )}

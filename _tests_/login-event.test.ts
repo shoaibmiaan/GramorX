@@ -30,6 +30,8 @@ require.cache[require.resolve('@supabase/supabase-js')] = {
 // Mock Supabase admin client
 let existing = false;
 let inserted: any = null;
+let notificationCount = 0;
+let notifInserted: any = null;
 const adminClient = {
   from: (table: string) => {
     if (table === 'login_events') {
@@ -54,6 +56,18 @@ const adminClient = {
           },
           maybeSingle: async () => ({ data: { phone: '+1234567890', email: 'u1@example.com' } }),
         }),
+      } as any;
+    }
+    if (table === 'notifications') {
+      return {
+        select: () => ({
+          eq: async () => ({ count: notificationCount, error: null }),
+        }),
+        insert: async (row: any) => {
+          notifInserted = row;
+          notificationCount++;
+          return { error: null };
+        },
       } as any;
     }
     return {} as any;
@@ -105,6 +119,8 @@ const handler = require('../pages/api/auth/login-event').default;
   existing = false;
   smsSent = false;
   inserted = null;
+  notificationCount = 0;
+  notifInserted = null;
   await handler(
     { method: 'POST', headers: { 'x-forwarded-for': '1.2.3.4', 'user-agent': 'agent' } } as any,
     res as any,
@@ -112,17 +128,22 @@ const handler = require('../pages/api/auth/login-event').default;
   assert.equal(res.body.newDevice, true);
   assert.equal(inserted.ip_address, '1.2.3.4');
   assert.equal(smsSent, true);
+  assert.equal(notifInserted.message, 'Welcome to GramorX!');
+  assert.equal(notificationCount, 1);
 
   // Existing device skips OTP
   existing = true;
   smsSent = false;
   inserted = null;
+  notificationCount = 1;
+  notifInserted = null;
   await handler(
     { method: 'POST', headers: { 'x-forwarded-for': '1.2.3.4', 'user-agent': 'agent' } } as any,
     res as any,
   );
   assert.equal(res.body.newDevice, false);
   assert.equal(smsSent, false);
+  assert.equal(notifInserted, null);
 
   console.log('login-event endpoint tested');
 })();
