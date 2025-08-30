@@ -5,6 +5,23 @@ export default function Document() {
     <Html lang="en">
       <Head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="description" content="GramorX IELTS practice platform" />
+        <meta name="keywords" content="IELTS, practice, exam prep" />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="GramorX" />
+        <meta property="og:description" content="GramorX IELTS practice platform" />
+        <link rel="canonical" href="https://gramorx.example.com" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'WebSite',
+              name: 'GramorX',
+              url: 'https://gramorx.example.com',
+            }),
+          }}
+        />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Roboto+Slab:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
