@@ -10,42 +10,9 @@ import { Input } from '@/components/design-system/Input';
 import { authHeaders } from '@/lib/supabaseBrowser';
 import MessageList from '@/components/ai/MessageList';
 import SidebarHeader, { type ConnState } from '@/components/ai/SidebarHeader';
+import { getScenario } from '@/data/roleplay/scenarios';
 
 type Msg = { id: string; role: 'user' | 'bot'; text: string; audioUrl?: string | null; createdAt: string };
-
-const SCENARIOS: Record<
-  string,
-  { title: string; intro: string; goals: string[]; starter?: string }
-> = {
-  'job-interview': {
-    title: 'Job Interview',
-    intro:
-      'You are interviewing for a junior marketing role. The examiner plays the interviewer. Keep answers focused and professional.',
-    goals: ['Introduce yourself', 'Explain experience', 'Discuss strengths/weaknesses', 'Ask a question back'],
-    starter: 'Good morning, thanks for coming in. Could you start by telling me a bit about yourself?',
-  },
-  hotel: {
-    title: 'Hotel Check-in',
-    intro:
-      'You arrive late at a hotel. The examiner is the receptionist. Handle a booking issue politely and clearly.',
-    goals: ['Confirm booking', 'Handle issue (no rooms / wrong date)', 'Request solution', 'Close politely'],
-    starter: 'Welcome to BlueWave Hotel. Do you have a reservation with us today?',
-  },
-  bank: {
-    title: 'Bank Account Opening',
-    intro:
-      'You want to open a savings account. The examiner is a bank clerk. Provide clear information and ask about fees.',
-    goals: ['State purpose', 'Provide ID details (fictional)', 'Ask about fees/interest', 'Confirm next steps'],
-    starter: 'Hello! How can I help you today?',
-  },
-  immigration: {
-    title: 'Immigration Desk',
-    intro:
-      'You land at an international airport. The examiner is an immigration officer. Answer briefly and clearly.',
-    goals: ['State visit purpose', 'Length of stay', 'Accommodation', 'Return ticket details'],
-    starter: 'Good afternoon. May I see your passport? What is the purpose of your visit?',
-  },
-};
 
 function useInlineRecorder() {
   const mediaRef = useRef<MediaRecorder | null>(null);
@@ -96,8 +63,8 @@ function useInlineRecorder() {
 
 export default function RoleplayPage() {
   const router = useRouter();
-  const scenarioKey = (router.query.scenario as string) || 'job-interview';
-  const meta = SCENARIOS[scenarioKey] ?? SCENARIOS['job-interview'];
+  const scenarioKey = (router.query.scenario as string) || 'check-in';
+  const meta = getScenario(scenarioKey) || getScenario('check-in');
 
   const [attemptId, setAttemptId] = useState<string | null>(null);
   const [chat, setChat] = useState<Msg[]>([]);
@@ -162,19 +129,19 @@ export default function RoleplayPage() {
       headers,
       body: JSON.stringify({
         attemptId: id,
-        text: meta.starter || 'Let’s begin the roleplay.',
+        text: meta?.intro || 'Let’s begin the roleplay.',
         role: 'system',
         scenario: scenarioKey,
       }),
     });
     const json = await res.json();
-    const botText: string = json?.replyText ?? meta.starter ?? '…';
+    const botText: string = json?.replyText ?? meta?.intro ?? '…';
     const botAudio: string | undefined = json?.replyAudioUrl ?? json?.audioUrl;
     setChat((c) => [
       ...c,
       { id: crypto.randomUUID(), role: 'bot', text: botText, audioUrl: botAudio || null, createdAt: new Date().toISOString() },
     ]);
-  }, [chat.length, ensureAttempt, meta.starter, scenarioKey]);
+  }, [chat.length, ensureAttempt, meta?.intro, scenarioKey]);
 
   useEffect(() => {
     // seed on first mount / scenario change
@@ -278,8 +245,8 @@ export default function RoleplayPage() {
       <Container>
         <div className="mb-6 flex items-center justify-between gap-4">
           <div>
-            <h1 className="text-h1 font-semibold">Roleplay — {meta.title}</h1>
-            <p className="text-gray-600 dark:text-grayish">{meta.intro}</p>
+            <h1 className="text-h1 font-semibold">Roleplay — {meta?.title}</h1>
+            <p className="text-gray-600 dark:text-grayish">{meta?.intro}</p>
           </div>
           <div className="flex flex-col items-end gap-2">
             <Badge intent={attemptId ? 'success' : 'neutral'}>
@@ -334,16 +301,16 @@ export default function RoleplayPage() {
                 </Button>
               </div>
               <div className="mt-2 text-xs text-gray-600 dark:text-grayish">
-                Scenario: <span className="font-medium">{meta.title}</span>. You can send text, voice, or both.
+                Scenario: <span className="font-medium">{meta?.title}</span>. You can send text, voice, or both.
               </div>
             </div>
           </Card>
 
           {/* Scenario goals */}
           <Card className="p-6">
-            <h3 className="text-h3 font-semibold mb-2">Goals</h3>
+            <h3 className="text-h3 font-semibold mb-2">Sample Prompts</h3>
             <ul className="list-disc pl-5 space-y-1 text-sm">
-              {meta.goals.map((g, i) => (
+              {(meta?.sample || []).map((g, i) => (
                 <li key={i}>{g}</li>
               ))}
             </ul>

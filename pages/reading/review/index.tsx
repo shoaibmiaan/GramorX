@@ -259,21 +259,14 @@ const ReviewPage: NextPage<Props> = ({ passage, questions, notFound, error }) =>
 
   async function explain(q: ReviewQuestion) {
     try {
-      const payload = {
-        passage: passage?.contentHtml ?? '',
-        question: { kind: q.kind, prompt: q.prompt, id: q.id },
-        userAnswer: answers ? answers[q.id] : null,
-        correctAnswer:
-          Array.isArray(q.answers) && q.kind !== 'matching' ? q.answers[0] : q.answers,
-      };
       const res = await fetch('/api/reading/explain', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ attemptId, qid: q.id }),
       });
       const json = await res.json();
-      if (json?.explanation) {
-        const text = await translateExplanation(json.explanation, explanationLocale);
+      if (json?.text) {
+        const text = await translateExplanation(json.text, explanationLocale);
         setExplanations((prev) => ({ ...prev, [q.id]: text }));
       }
     } catch {

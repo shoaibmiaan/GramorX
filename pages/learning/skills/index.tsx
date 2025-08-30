@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { Container } from '@/components/design-system/Container';
 import { Card } from '@/components/design-system/Card';
 import { Badge } from '@/components/design-system/Badge';
@@ -28,7 +27,7 @@ export default function SkillsHub() {
               </div>
               <p className="mt-2 text-body opacity-90">{s.blurb}</p>
               <div className="mt-6">
-                <Button as="a" href={`/learning/skills/${s.key}`} variant="primary" className="rounded-ds">
+                <Button as="a" href={`/learning/skills/lessons?skill=${s.key}`} variant="primary" className="rounded-ds">
                   Explore {s.title}
                 </Button>
               </div>

@@ -1,3 +1,4 @@
+'use client';
 // components/speaking/useTTS.ts
 export type Accent = 'UK' | 'US' | 'AUS';
 
