@@ -1,5 +1,8 @@
 // components/sections/Header.tsx
+"use client";
+
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useTheme } from 'next-themes';
@@ -7,8 +10,10 @@ import { Container } from '@/components/design-system/Container';
 import { NavLink } from '@/components/design-system/NavLink';
 import { supabaseBrowser } from '@/lib/supabaseBrowser';
 import { UserMenu } from '@/components/design-system/UserMenu';
-import { NotificationBell } from '@/components/design-system/NotificationBell';
+import dynamic from 'next/dynamic';
 import type { AuthChangeEvent, Session } from '@supabase/supabase-js';
+
+const NotificationBell = dynamic(() => import('@/components/design-system/NotificationBell'), { ssr: false });
 
 type ModuleLink = { label: string; href: string; desc?: string };
 
@@ -222,7 +227,15 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
             className="flex items-center gap-3 group"
             aria-label="Go to home"
           >
-            <img src="/brand/logo.png" alt="GramorX logo" className="h-11 w-11 rounded-lg object-contain" />
+            <Image
+              src="/brand/logo.png"
+              alt="GramorX logo"
+              width={44}
+              height={44}
+              priority
+              sizes="44px"
+              className="h-11 w-11 rounded-lg object-contain"
+            />
             <span className="font-slab font-bold text-3xl">
               <span className="text-gradient-primary group-hover:opacity-90 transition">GramorX</span>
             </span>

@@ -14,6 +14,19 @@ const BYPASS_STRICT = process.env.BYPASS_STRICT_BUILD !== '0';
 const nextConfig = {
   reactStrictMode: true,
 
+  images: {
+    formats: ['image/avif', 'image/webp'],
+  },
+
+  webpack: (config) => {
+    config.module.rules.push({
+      test: /\.svg$/i,
+      issuer: /\.[jt]sx?$/,
+      use: ['@svgr/webpack'],
+    });
+    return config;
+  },
+
   // 1) Skip ESLint during production builds (so warnings/errors won’t block)
   eslint: {
     ignoreDuringBuilds: BYPASS_STRICT,
