@@ -25,6 +25,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       audioBase64,
       mime = 'audio/webm',
       audioUrl, // optional (Storage key for the chat clip)
+      accent,
     } = (req.body || {}) as {
       attemptId?: string;
       history?: HistoryMsg[];
@@ -32,6 +33,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       audioBase64?: string;
       mime?: string;
       audioUrl?: string;
+      accent?: string;
     };
 
     if (!GROQ) return res.status(500).json({ error: 'Missing GROQ_API_KEY' });
@@ -43,7 +45,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         content:
           'You are an IELTS Speaking practice partner. Be concise and natural. ' +
           'Ask one question at a time. Use follow-ups when answers are short or vague. ' +
-          'Avoid repeating the exact question text; paraphrase. No markdown.',
+          'Avoid repeating the exact question text; paraphrase. No markdown.' +
+          (accent ? ` Respond using a ${accent} accent.` : ''),
       },
     ];
 
