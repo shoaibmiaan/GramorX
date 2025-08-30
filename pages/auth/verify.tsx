@@ -1,6 +1,7 @@
 // pages/auth/verify.tsx
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
+import Image from 'next/image';
 import AuthLayout from '@/components/layouts/AuthLayout';
 import { Alert } from '@/components/design-system/Alert';
 import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser';
@@ -58,7 +59,22 @@ export default function VerifyPage() {
       : 'Check your inbox for a verification link.';
 
   return (
-    <AuthLayout title="Verify your account" subtitle={subtitle}>
+    <AuthLayout
+      title="Verify your account"
+      subtitle={subtitle}
+      right={
+        <div className="relative w-full h-full flex items-center justify-center bg-primary/10 dark:bg-dark">
+          <Image
+            src="/brand/logo.png"
+            alt="GramorX Logo"
+            width={420}
+            height={420}
+            className="object-contain"
+          />
+        </div>
+      }
+      showRightOnMobile
+    >
       {error ? (
         <Alert variant="error" title="Verification error" className="mt-4">
           {error}
