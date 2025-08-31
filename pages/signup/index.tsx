@@ -5,6 +5,15 @@ import { useRouter } from 'next/router';
 import AuthLayout from '@/components/layouts/AuthLayout';
 import { Button } from '@/components/design-system/Button';
 import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser';
+import {
+  AppleIcon,
+  GoogleIcon,
+  FacebookIcon,
+  MailIcon,
+  SmsIcon,
+  PhoneIcon,
+  UserCheckIcon,
+} from '@/components/design-system/icons';
 
 export default function SignupOptions() {
   const router = useRouter();
@@ -37,9 +46,9 @@ export default function SignupOptions() {
           Start your IELTS journey with AI support and personalized plans.
         </p>
         <ul className="mt-6 space-y-3 text-body text-grayish dark:text-gray-300">
-          <li className="flex items-center gap-3"><i className="fas fa-user-check" aria-hidden />Apple / Google / Facebook</li>
-          <li className="flex items-center gap-3"><i className="fas fa-envelope" aria-hidden />Email & password</li>
-          <li className="flex items-center gap-3"><i className="fas fa-mobile-alt" aria-hidden />Phone (OTP)</li>
+          <li className="flex items-center gap-3"><UserCheckIcon className="h-5 w-5" />Apple / Google / Facebook</li>
+          <li className="flex items-center gap-3"><MailIcon className="h-5 w-5" />Email & password</li>
+          <li className="flex items-center gap-3"><PhoneIcon className="h-5 w-5" />Phone (OTP)</li>
         </ul>
       </div>
       <div className="pt-8 text-small text-grayish dark:text-gray-400">
@@ -51,23 +60,23 @@ export default function SignupOptions() {
   return (
     <AuthLayout title="Sign up to GramorX" subtitle="Choose a sign-up method." right={RightPanel}>
       <div className="grid gap-3">
-        <Button onClick={() => signUpOAuth('apple')} variant="secondary" className="rounded-ds-xl" fullWidth>
-          <span className="inline-flex items-center gap-3"><i className="fab fa-apple text-xl" aria-hidden /> Sign up with Apple</span>
+        <Button onClick={() => signUpOAuth('apple')} variant="secondary" className="rounded-ds-xl w-full">
+          <span className="inline-flex items-center gap-3"><AppleIcon className="h-5 w-5" /> Sign up with Apple</span>
         </Button>
-        <Button onClick={() => signUpOAuth('google')} variant="secondary" className="rounded-ds-xl" fullWidth>
-          <span className="inline-flex items-center gap-3"><i className="fab fa-google text-xl" aria-hidden /> Sign up with Google</span>
+        <Button onClick={() => signUpOAuth('google')} variant="secondary" className="rounded-ds-xl w-full">
+          <span className="inline-flex items-center gap-3"><GoogleIcon className="h-5 w-5" /> Sign up with Google</span>
         </Button>
-        <Button onClick={() => signUpOAuth('facebook')} variant="secondary" className="rounded-ds-xl" fullWidth>
-          <span className="inline-flex items-center gap-3"><i className="fab fa-facebook-f text-xl" aria-hidden /> Sign up with Facebook</span>
+        <Button onClick={() => signUpOAuth('facebook')} variant="secondary" className="rounded-ds-xl w-full">
+          <span className="inline-flex items-center gap-3"><FacebookIcon className="h-5 w-5" /> Sign up with Facebook</span>
         </Button>
         <Button asChild variant="secondary" className="rounded-ds-xl" fullWidth>
           <Link href={`/signup/password${ref ? `?ref=${ref}` : ''}`}>
-            <span className="inline-flex items-center gap-3"><i className="fas fa-envelope text-xl" aria-hidden /> Sign up with Email</span>
+            <span className="inline-flex items-center gap-3"><MailIcon className="h-5 w-5" /> Sign up with Email</span>
           </Link>
         </Button>
         <Button asChild variant="secondary" className="rounded-ds-xl" fullWidth>
           <Link href={`/signup/phone${ref ? `?ref=${ref}` : ''}`}>
-            <span className="inline-flex items-center gap-3"><i className="fas fa-sms text-xl" aria-hidden /> Sign up with Phone</span>
+            <span className="inline-flex items-center gap-3"><SmsIcon className="h-5 w-5" /> Sign up with Phone</span>
           </Link>
         </Button>
       </div>

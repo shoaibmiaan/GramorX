@@ -5,6 +5,16 @@ import { useRouter } from 'next/router';
 import AuthLayout from '@/components/layouts/AuthLayout';
 import { Button } from '@/components/design-system/Button';
 import { Alert } from '@/components/design-system/Alert';
+import {
+  AppleIcon,
+  GoogleIcon,
+  FacebookIcon,
+  MailIcon,
+  SmsIcon,
+  ShieldIcon,
+  PhoneIcon,
+  ChartIcon,
+} from '@/components/design-system/icons';
 import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser';
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
@@ -104,19 +114,19 @@ export default function LoginOptions() {
 
         <ul className="mt-6 space-y-3 text-body text-grayish dark:text-gray-300">
           <li className="flex items-center gap-3">
-            <i className="fas fa-shield-alt text-success" aria-hidden />
+            <ShieldIcon className="h-5 w-5 text-success" />
             Secure OAuth (Apple, Google, Facebook)
           </li>
           <li className="flex items-center gap-3">
-            <i className="fas fa-mobile-alt" aria-hidden />
+            <PhoneIcon className="h-5 w-5" />
             Phone OTP sign-in
           </li>
           <li className="flex items-center gap-3">
-            <i className="fas fa-envelope" aria-hidden />
+            <MailIcon className="h-5 w-5" />
             Email &amp; Password
           </li>
           <li className="flex items-center gap-3">
-            <i className="fas fa-chart-line text-electricBlue" aria-hidden />
+            <ChartIcon className="h-5 w-5 text-electricBlue" />
             Personalized study plan &amp; analytics
           </li>
         </ul>
@@ -176,7 +186,7 @@ export default function LoginOptions() {
               fullWidth
             >
               <span className="inline-flex items-center gap-3">
-                <i className="fab fa-apple text-xl" aria-hidden />
+                <AppleIcon className="h-5 w-5" />
                 {busy === 'apple' ? 'Opening Apple…' : 'Continue with Apple'}
               </span>
             </Button>
@@ -189,7 +199,7 @@ export default function LoginOptions() {
               fullWidth
             >
               <span className="inline-flex items-center gap-3">
-                <i className="fab fa-google text-xl" aria-hidden />
+                <GoogleIcon className="h-5 w-5" />
                 {busy === 'google' ? 'Opening Google…' : 'Continue with Google'}
               </span>
             </Button>
@@ -202,7 +212,7 @@ export default function LoginOptions() {
               fullWidth
             >
               <span className="inline-flex items-center gap-3">
-                <i className="fab fa-facebook-f text-xl" aria-hidden />
+                <FacebookIcon className="h-5 w-5" />
                 {busy === 'facebook' ? 'Opening Facebook…' : 'Continue with Facebook'}
               </span>
             </Button>
@@ -213,7 +223,7 @@ export default function LoginOptions() {
                 aria-label="Sign in with Email and Password"
               >
                 <span className="inline-flex items-center gap-3">
-                  <i className="fas fa-envelope text-xl" aria-hidden />
+                  <MailIcon className="h-5 w-5" />
                   Email (Password)
                 </span>
               </Link>
@@ -225,7 +235,7 @@ export default function LoginOptions() {
                 aria-label="Sign in with Phone OTP"
               >
                 <span className="inline-flex items-center gap-3">
-                  <i className="fas fa-sms text-xl" aria-hidden />
+                  <SmsIcon className="h-5 w-5" />
                   Phone (OTP)
                 </span>
               </Link>
