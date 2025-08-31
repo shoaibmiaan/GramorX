@@ -23,7 +23,7 @@ export default function SignupOptions() {
     const { data } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
-        redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/profile/setup` : undefined,
+        redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/welcome` : undefined,
         skipBrowserRedirect: true,
       },
     });
