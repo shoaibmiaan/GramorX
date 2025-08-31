@@ -9,12 +9,21 @@ import { Input } from '@/components/design-system/Input';
 import { Modal } from '@/components/design-system/Modal';
 import type { Profile } from '@/types/profile';
 
+interface Row {
+  id: string;
+  full_name: string | null;
+  email: string | null;
+  role: Profile['role'];
+  created_at: string | null;
+  last_sign_in_at: string | null;
+}
+
 const ROLES: Profile['role'][] = ['student','teacher','admin'];
 
 function AdminUsers() {
   const [loading, setLoading] = useState(true);
   const [changingId, setChangingId] = useState<string | null>(null);
-  const [rows, setRows] = useState<Profile[]>([]);
+  const [rows, setRows] = useState<Row[]>([]);
   const [q, setQ] = useState('');
   const [pinEmail, setPinEmail] = useState<string | null>(null);
   const [pin, setPin] = useState('');
@@ -23,16 +32,19 @@ function AdminUsers() {
 
   const fetchUsers = async () => {
     setLoading(true);
-    const { data, error } = await supabaseBrowser
-      .from('profiles')
-      .select('id, full_name, role, email')
-      .order('full_name', { ascending: true, nullsFirst: true });
-
-    if (error) {
-      console.error(error);
+    try {
+      const { data } = await supabaseBrowser.auth.getSession();
+      const tok = data?.session?.access_token;
+      if (!tok) throw new Error('No session');
+      const r = await fetch('/api/admin/users/list', {
+        headers: { Authorization: `Bearer ${tok}` },
+      });
+      const j = await r.json();
+      if (!r.ok) throw new Error(j?.error || 'Failed');
+      setRows(j as Row[]);
+    } catch (e) {
+      console.error(e);
       setRows([]);
-    } else {
-      setRows(data as Profile[]);
     }
     setLoading(false);
   };
@@ -46,6 +58,7 @@ function AdminUsers() {
     if (!needle) return rows;
     return rows.filter(r =>
       (r.full_name ?? '').toLowerCase().includes(needle) ||
+      (r.email ?? '').toLowerCase().includes(needle) ||
       r.id.toLowerCase().includes(needle) ||
       r.role.toLowerCase().includes(needle)
     );
@@ -138,7 +151,7 @@ function AdminUsers() {
               <Input
                 value={q}
                 onChange={e => setQ(e.target.value)}
-                placeholder="Search by name, id, or role"
+                placeholder="Search by name, email, id, or role"
               />
               <Button onClick={fetchUsers} variant="secondary">Refresh</Button>
             </div>
@@ -151,8 +164,11 @@ function AdminUsers() {
               <thead>
                 <tr className="border-b border-black/5 dark:border-white/10">
                   <th className="px-5 py-3 text-xs uppercase tracking-wider">Name</th>
+                  <th className="px-5 py-3 text-xs uppercase tracking-wider">Email</th>
                   <th className="px-5 py-3 text-xs uppercase tracking-wider">User ID</th>
                   <th className="px-5 py-3 text-xs uppercase tracking-wider">Role</th>
+                  <th className="px-5 py-3 text-xs uppercase tracking-wider">Last Login</th>
+                  <th className="px-5 py-3 text-xs uppercase tracking-wider">Account Created</th>
                   <th className="px-5 py-3 text-xs uppercase tracking-wider">Premium PIN</th>
                   <th className="px-5 py-3 text-xs uppercase tracking-wider">Actions</th>
                 </tr>
@@ -160,23 +176,30 @@ function AdminUsers() {
               <tbody>
                 {loading ? (
                   <tr>
-                    <td className="px-5 py-4" colSpan={5}>
+                    <td className="px-5 py-4" colSpan={8}>
                       <div className="animate-pulse h-5 w-40 bg-gray-200 dark:bg-white/10 rounded" />
                     </td>
                   </tr>
                 ) : filtered.length === 0 ? (
                   <tr>
-                    <td className="px-5 py-6 text-grayish" colSpan={5}>No users found.</td>
+                    <td className="px-5 py-6 text-grayish" colSpan={8}>No users found.</td>
                   </tr>
                 ) : (
                   filtered.map(u => (
                     <tr key={u.id} className="border-t border-black/5 dark:border-white/10">
                       <td className="px-5 py-4 font-medium">{u.full_name ?? '–'}</td>
+                      <td className="px-5 py-4 text-sm text-grayish">{u.email ?? '–'}</td>
                       <td className="px-5 py-4 text-sm text-grayish">{u.id}</td>
                       <td className="px-5 py-4">
                         <Badge variant={u.role === 'admin' ? 'warning' : u.role === 'teacher' ? 'info' : 'secondary'}>
                           {u.role}
                         </Badge>
+                      </td>
+                      <td className="px-5 py-4 text-sm text-grayish">
+                        {u.last_sign_in_at ? new Date(u.last_sign_in_at).toLocaleString() : '–'}
+                      </td>
+                      <td className="px-5 py-4 text-sm text-grayish">
+                        {u.created_at ? new Date(u.created_at).toLocaleString() : '–'}
                       </td>
                       <td className="px-5 py-4">
                         <Button
