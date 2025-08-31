@@ -2,6 +2,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { z } from 'zod';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { rateLimit } from '@/lib/rateLimit';
 
 type Ok = { ok: true; id: string | null; duplicate: boolean; message: string };
 type Fail = {
@@ -126,6 +127,8 @@ export default async function handler(
     res.setHeader('Allow', 'POST');
     return res.status(405).json({ ok: false, error: 'Method Not Allowed' });
   }
+
+  if (!(await rateLimit(req, res))) return;
 
   const parsed = InSchema.safeParse(req.body);
   if (!parsed.success) {

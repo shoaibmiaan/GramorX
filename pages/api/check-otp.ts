@@ -3,6 +3,7 @@ import { z } from 'zod';
 import Twilio from 'twilio';
 import { createClient } from '@supabase/supabase-js';
 import { env } from '@/lib/env';
+import { rateLimit } from '@/lib/rateLimit';
 
 const client = Twilio(env.TWILIO_ACCOUNT_SID, env.TWILIO_AUTH_TOKEN);
 const SERVICE_SID = env.TWILIO_VERIFY_SERVICE_SID;
@@ -25,6 +26,8 @@ export default async function checkOtp(
     res.setHeader('Allow', 'POST');
     throw new Error('Method Not Allowed');
   }
+
+  if (!(await rateLimit(req, res))) return;
 
   const result = BodySchema.safeParse(req.body);
   if (!result.success) {
