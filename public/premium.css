@@ -1,1 +1,84 @@
-:root,html{--pr-radius:16px;--pr-shadow-md:0 8px 24px rgba(0,0,0,.2);--pr-shadow-lg:0 18px 48px rgba(0,0,0,.3);--pr-ring:0 0 0 3px color-mix(in oklab,var(--pr-primary),#fff 40%)}html[data-pr-theme=carbon]{--pr-bg:#0b0f1a;--pr-fg:#e6eaf2;--pr-card:#121829;--pr-border:#24304a;--pr-primary:#00e0b8;--pr-on-primary:#001413;--pr-accent:#7b61ff;--pr-danger:#ff6b6b;--pr-warning:#ffd166;--pr-success:#12b886}html[data-pr-theme=ivory]{--pr-bg:#fbfbfd;--pr-fg:#0d1220;--pr-card:#fff;--pr-border:#e6e9f2;--pr-primary:#4c6fff;--pr-on-primary:#fff;--pr-accent:#12b886;--pr-danger:#e03131;--pr-warning:#f59f00;--pr-success:#2f9e44}html[data-pr-theme=royal]{--pr-bg:#0a1226;--pr-fg:#f6f7fb;--pr-card:#0f1a3a;--pr-border:#1c2a55;--pr-primary:#d9b970;--pr-on-primary:#1a1200;--pr-accent:#2e8bff;--pr-danger:#ff7a85;--pr-warning:#ffd68a;--pr-success:#89f0c0}html[data-pr-theme=aurora]{--pr-bg:#0c0c15;--pr-fg:#edefff;--pr-card:#131324;--pr-border:#2a2a45;--pr-primary:#9a4dff;--pr-on-primary:#130027;--pr-accent:#15d1c2;--pr-danger:#ff87b7;--pr-warning:#ffc46b;--pr-success:#5be7a9;background-image:radial-gradient(1000px 600px at 10% -10%,rgba(154,77,255,.12),transparent 60%),radial-gradient(1200px 700px at 110% 10%,rgba(21,209,194,.1),transparent 70%);background-attachment:fixed}.pr-themed .card{border-radius:var(--pr-radius);background:var(--pr-card);border:1px solid var(--pr-border);box-shadow:var(--pr-shadow-md)}
+/* Premium Exam Room CSS Variables
+   Attach a theme by setting: <html data-pr-theme="carbon"> etc.
+   The Tailwind build for premium should include this file.
+*/
+
+:root, html {
+  --pr-radius: 16px;
+  --pr-shadow-md: 0 8px 24px rgba(0,0,0,0.20);
+  --pr-shadow-lg: 0 18px 48px rgba(0,0,0,0.30);
+  --pr-ring: 0 0 0 3px color-mix(in oklab, var(--pr-primary), white 40%);
+}
+
+/* Carbon Noir (dark) */
+
+html[data-pr-theme="carbon"] {
+  --pr-bg: #0B0F1A;
+  --pr-fg: #E6EAF2;
+  --pr-card: #121829;
+  --pr-border: #24304A;
+  --pr-primary: #00E0B8;
+  --pr-on-primary: #001413;
+  --pr-accent: #7B61FF;
+  --pr-danger: #FF6B6B;
+  --pr-warning: #FFD166;
+  --pr-success: #12B886;
+}
+
+/* Ivory Quartz (light) */
+
+html[data-pr-theme="ivory"] {
+  --pr-bg: #FBFBFD;
+  --pr-fg: #0D1220;
+  --pr-card: #FFFFFF;
+  --pr-border: #E6E9F2;
+  --pr-primary: #4C6FFF;
+  --pr-on-primary: #FFFFFF;
+  --pr-accent: #12B886;
+  --pr-danger: #E03131;
+  --pr-warning: #F59F00;
+  --pr-success: #2F9E44;
+}
+
+/* Royal Aster (navy+gold) */
+
+html[data-pr-theme="royal"] {
+  --pr-bg: #0A1226;
+  --pr-fg: #F6F7FB;
+  --pr-card: #0F1A3A;
+  --pr-border: #1C2A55;
+  --pr-primary: #D9B970;
+  /* gold */
+  --pr-on-primary: #1A1200;
+  --pr-accent: #2E8BFF;
+  --pr-danger: #FF7A85;
+  --pr-warning: #FFD68A;
+  --pr-success: #89F0C0;
+}
+
+/* Aurora Neo (vibrant gradient) */
+
+html[data-pr-theme="aurora"] {
+  --pr-bg: #0C0C15;
+  --pr-fg: #EDEFFF;
+  --pr-card: #131324;
+  --pr-border: #2A2A45;
+  --pr-primary: #9A4DFF;
+  --pr-on-primary: #130027;
+  --pr-accent: #15D1C2;
+  --pr-danger: #FF87B7;
+  --pr-warning: #FFC46B;
+  --pr-success: #5BE7A9;
+  background-image: radial-gradient(1000px 600px at 10% -10%, rgba(154,77,255,0.12), transparent 60%),
+                    radial-gradient(1200px 700px at 110% 10%, rgba(21,209,194,0.10), transparent 70%);
+  background-attachment: fixed;
+}
+
+/* Utilities (optional) */
+
+.pr-themed .card {
+  border-radius: var(--pr-radius);
+  background: var(--pr-card);
+  border: 1px solid var(--pr-border);
+  box-shadow: var(--pr-shadow-md);
+}

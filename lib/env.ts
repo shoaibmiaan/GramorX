@@ -9,6 +9,11 @@ const envSchema = z.object({
   NEXT_PUBLIC_DEBUG: z.string().optional(),
   NEXT_PUBLIC_SITE_URL: z.string().url().optional(),
 
+  // ➕ Optional analytics/monitoring (added)
+  NEXT_PUBLIC_GA4_ID: z.string().optional(),
+  NEXT_PUBLIC_META_PIXEL_ID: z.string().optional(),
+  NEXT_PUBLIC_SENTRY_DSN: z.string().optional(),
+
   // Server-only vars
   SUPABASE_URL: z.string().url(),
   SUPABASE_SERVICE_KEY: z.string().min(1),
@@ -49,6 +54,11 @@ const raw = {
   NEXT_PUBLIC_IDLE_TIMEOUT_MINUTES: process.env.NEXT_PUBLIC_IDLE_TIMEOUT_MINUTES,
   NEXT_PUBLIC_DEBUG: process.env.NEXT_PUBLIC_DEBUG,
   NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
+
+  // ➕ Added
+  NEXT_PUBLIC_GA4_ID: process.env.NEXT_PUBLIC_GA4_ID,
+  NEXT_PUBLIC_META_PIXEL_ID: process.env.NEXT_PUBLIC_META_PIXEL_ID,
+  NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN,
 
   SUPABASE_URL: process.env.SUPABASE_URL,
   SUPABASE_SERVICE_KEY: process.env.SUPABASE_SERVICE_KEY,
@@ -126,3 +136,11 @@ export const env = (parsed.success
         raw.NEXT_PUBLIC_IDLE_TIMEOUT_MINUTES ?? 30,
       ),
     }) as z.infer<typeof envSchema>;
+
+// ➕ tiny helpers used by analytics/monitoring
+export const isBrowser = typeof window !== 'undefined';
+export const isServer = !isBrowser;
+export function bool(val?: string, fallback = false) {
+  if (val == null) return fallback;
+  return ['1', 'true', 'yes', 'on'].includes(String(val).toLowerCase());
+}
