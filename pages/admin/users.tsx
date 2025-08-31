@@ -6,6 +6,7 @@ import { Card } from '@/components/design-system/Card';
 import { Button } from '@/components/design-system/Button';
 import { Badge } from '@/components/design-system/Badge';
 import { Input } from '@/components/design-system/Input';
+import { Modal } from '@/components/design-system/Modal';
 import type { Profile } from '@/types/profile';
 
 const ROLES: Profile['role'][] = ['student','teacher','admin'];
@@ -15,12 +16,16 @@ function AdminUsers() {
   const [changingId, setChangingId] = useState<string | null>(null);
   const [rows, setRows] = useState<Profile[]>([]);
   const [q, setQ] = useState('');
+  const [pinEmail, setPinEmail] = useState<string | null>(null);
+  const [pin, setPin] = useState('');
+  const [pinBusy, setPinBusy] = useState(false);
+  const [pinMsg, setPinMsg] = useState<string | null>(null);
 
   const fetchUsers = async () => {
     setLoading(true);
     const { data, error } = await supabaseBrowser
       .from('profiles')
-      .select('id, full_name, role')
+      .select('id, full_name, role, email')
       .order('full_name', { ascending: true, nullsFirst: true });
 
     if (error) {
@@ -64,6 +69,57 @@ function AdminUsers() {
     }
   };
 
+  const openPin = (email: string | null) => {
+    setPinEmail(email);
+    setPin('');
+    setPinMsg(null);
+  };
+
+  const closePin = () => {
+    setPinEmail(null);
+    setPin('');
+    setPinMsg(null);
+  };
+
+  const generatePin = () => {
+    const len = Math.floor(Math.random() * 3) + 4; // 4-6
+    let s = '';
+    for (let i = 0; i < len; i++) s += Math.floor(Math.random() * 10);
+    setPin(s);
+  };
+
+  const callPinApi = async (path: string, body: any) => {
+    if (!pinEmail) return;
+    setPinBusy(true);
+    setPinMsg(null);
+    try {
+      const { data } = await supabaseBrowser.auth.getSession();
+      const tok = data?.session?.access_token;
+      if (!tok) {
+        setPinMsg('No session');
+        return;
+      }
+      const r = await fetch(path, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${tok}`,
+        },
+        body: JSON.stringify(body),
+      });
+      const j = await r.json();
+      if (j?.ok) setPinMsg('Success');
+      else setPinMsg(j?.error || j?.reason || 'Failed');
+    } catch (e: any) {
+      setPinMsg(e?.message || 'Error');
+    } finally {
+      setPinBusy(false);
+    }
+  };
+
+  const savePin = () => callPinApi('/api/admin/premium/set-pin', { email: pinEmail, newPin: pin });
+  const clearPin = () => callPinApi('/api/admin/premium/clear-pin', { email: pinEmail });
+
   return (
     <section className="py-24 bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90">
       <Container>
@@ -97,19 +153,20 @@ function AdminUsers() {
                   <th className="px-5 py-3 text-xs uppercase tracking-wider">Name</th>
                   <th className="px-5 py-3 text-xs uppercase tracking-wider">User ID</th>
                   <th className="px-5 py-3 text-xs uppercase tracking-wider">Role</th>
+                  <th className="px-5 py-3 text-xs uppercase tracking-wider">Premium PIN</th>
                   <th className="px-5 py-3 text-xs uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
                   <tr>
-                    <td className="px-5 py-4" colSpan={4}>
+                    <td className="px-5 py-4" colSpan={5}>
                       <div className="animate-pulse h-5 w-40 bg-gray-200 dark:bg-white/10 rounded" />
                     </td>
                   </tr>
                 ) : filtered.length === 0 ? (
                   <tr>
-                    <td className="px-5 py-6 text-grayish" colSpan={4}>No users found.</td>
+                    <td className="px-5 py-6 text-grayish" colSpan={5}>No users found.</td>
                   </tr>
                 ) : (
                   filtered.map(u => (
@@ -120,6 +177,15 @@ function AdminUsers() {
                         <Badge variant={u.role === 'admin' ? 'warning' : u.role === 'teacher' ? 'info' : 'secondary'}>
                           {u.role}
                         </Badge>
+                      </td>
+                      <td className="px-5 py-4">
+                        <Button
+                          variant="secondary"
+                          onClick={() => openPin(u.email ?? null)}
+                          disabled={!u.email}
+                        >
+                          Manage
+                        </Button>
                       </td>
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-2">
@@ -149,6 +215,30 @@ function AdminUsers() {
             </table>
           </div>
         </Card>
+        <Modal
+          open={!!pinEmail}
+          onClose={closePin}
+          title="Manage Premium PIN"
+          footer={
+            <div className="flex justify-between items-center gap-2">
+              <Button variant="ghost" onClick={clearPin} disabled={pinBusy}>Clear PIN</Button>
+              <div className="flex gap-2">
+                <Button variant="secondary" onClick={generatePin} disabled={pinBusy}>Generate</Button>
+                <Button onClick={savePin} disabled={!/^\d{4,6}$/.test(pin) || pinBusy} loading={pinBusy}>Save</Button>
+              </div>
+            </div>
+          }
+        >
+          <Input
+            label="New PIN"
+            value={pin}
+            onChange={e => setPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
+            inputMode="numeric"
+            type="password"
+            placeholder="4-6 digits"
+          />
+          {pinMsg && <p className="mt-2 text-sm">{pinMsg}</p>}
+        </Modal>
       </Container>
     </section>
   );
