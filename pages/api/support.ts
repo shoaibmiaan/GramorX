@@ -1,6 +1,7 @@
 // pages/api/support.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { createSupabaseServerClient } from '@/lib/supabaseServer';
+import logger from '@/utils/logger';
 
 /** ========= Types ========= */
 type SupportCategory = 'account' | 'billing' | 'modules' | 'ai' | 'technical' | 'other';
@@ -111,14 +112,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   });
 
   if (error) {
-    // eslint-disable-next-line no-console
-    console.error('[SupportTicket][InsertError]', error);
+    logger.error('[SupportTicket][InsertError]', error);
     return res.status(500).json({ ok: false, message: 'Failed to save ticket.' });
   }
 
-  // Optional: log for debugging (remove in production)
-  // eslint-disable-next-line no-console
-  console.log('[SupportTicket][Created]', { ticketId, email: data.email, category: data.category });
+  // Optional: log for debugging
+  logger.debug('[SupportTicket][Created]', {
+    ticketId,
+    email: data.email,
+    category: data.category,
+  });
 
   return res.status(200).json({
     ok: true,

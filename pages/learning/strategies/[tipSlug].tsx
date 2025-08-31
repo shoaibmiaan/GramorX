@@ -5,6 +5,7 @@ import type { GetServerSideProps } from 'next';
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import logger from '@/utils/logger';
 
 import { Container } from '@/components/design-system/Container';
 import { Card } from '@/components/design-system/Card';
@@ -158,16 +159,18 @@ export default function TipDetail({
       const normalized = normalizeDrill(data);
 
       if (DEBUG) {
-        // eslint-disable-next-line no-console
-        console.groupCollapsed(`[drill/detail] ${tip.slug} (${tip.area}/${tip.difficulty})`);
-        // eslint-disable-next-line no-console
-        console.log('request', { skill: tip.area, level: tip.difficulty, tipSlug: tip.slug });
-        // eslint-disable-next-line no-console
-        console.log('response', data);
-        // eslint-disable-next-line no-console
-        console.log('normalized', normalized);
-        // eslint-disable-next-line no-console
-        console.groupEnd();
+        logger.debug(
+          `[drill/detail] ${tip.slug} (${tip.area}/${tip.difficulty}) request`,
+          { skill: tip.area, level: tip.difficulty, tipSlug: tip.slug }
+        );
+        logger.debug(
+          `[drill/detail] ${tip.slug} (${tip.area}/${tip.difficulty}) response`,
+          data
+        );
+        logger.debug(
+          `[drill/detail] ${tip.slug} (${tip.area}/${tip.difficulty}) normalized`,
+          normalized
+        );
       }
 
       setDrill(normalized);

@@ -4,6 +4,7 @@ import Twilio from "twilio";
 import { z } from "zod";
 import { env } from "./lib/env";
 import { supabaseService } from "./lib/supabaseService";
+import logger from "@/utils/logger";
 
 const app = express();
 app.use(express.urlencoded({ extended: false }));
@@ -77,7 +78,7 @@ app.post(
         .upsert(payload, { onConflict: "message_sid" });
 
       if (error) {
-        console.error("Supabase error:", error);
+        logger.error("Supabase error:", error);
         return res.status(500).json({
           error: "Error storing message status",
           details: error.message,
@@ -86,11 +87,11 @@ app.post(
 
       res.status(200).send("OK");
     } catch (err) {
-      console.error("Webhook error:", err);
+      logger.error("Webhook error:", err);
       res.status(500).json({ error: "Server error" });
     }
   }
 );
 
 const port = env.PORT ?? 4000;
-app.listen(port, () => console.log(`Twilio webhook listening on :${port}`));
+app.listen(port, () => logger.info(`Twilio webhook listening on :${port}`));

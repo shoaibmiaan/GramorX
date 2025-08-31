@@ -41,7 +41,8 @@
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
     "twilio": "^5.8.0",
-    "zod": "^3.25.76"
+    "zod": "^3.25.76",
+    "pino": "^8.17.0"
   },
   "devDependencies": {
     "@mdx-js/react": "^2.3.0",
