@@ -12,5 +12,12 @@
   },
   "userMenu": {
     "language": "Language"
+  },
+  "premiumPin": {
+    "info": "PINs are sent via email invitations.",
+    "noPinPrefix": "If you don't have one,",
+    "contactSupport": "contact support",
+    "or": "or",
+    "viewPricing": "view pricing"
   }
 }

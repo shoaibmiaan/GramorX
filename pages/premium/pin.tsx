@@ -1,7 +1,9 @@
 // pages/premium/pin.tsx
 import * as React from 'react';
 import Head from 'next/head';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
+import { useLocale } from '@/lib/locale';
 import { PremiumThemeProvider } from '@/premium-ui/theme/PremiumThemeProvider';
 import { ThemeSwitcherPremium } from '@/premium-ui/theme/ThemeSwitcher';
 import { PrButton } from '@/premium-ui/components/PrButton';
@@ -13,20 +15,20 @@ function isInternalRoute(url: string) {
 
 export default function PremiumPinPage() {
   const router = useRouter();
-  let nextUrl =
+  const { t } = useLocale();
+
+  const rawNext =
     typeof router.query.next === 'string' && router.query.next ? router.query.next : '/premium';
+  const nextUrl = isInternalRoute(rawNext) ? rawNext : '/premium';
 
   const [pin, setPin] = React.useState('');
   const [loading, setLoading] = React.useState(false);
-
-  if (!isInternalRoute(nextUrl)) {
-    nextUrl = '/premium';
-  }
-
   const [err, setErr] = React.useState<string | null>(null);
   const inputRef = React.useRef<HTMLInputElement>(null);
 
-  React.useEffect(() => { inputRef.current?.focus(); }, []);
+  React.useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
 
   async function submitPin(e?: React.FormEvent) {
     e?.preventDefault();
@@ -64,14 +66,17 @@ export default function PremiumPinPage() {
           <title>Enter Premium PIN</title>
         </Head>
 
-        <main className="pr-grid pr-place-items-center pr-min-h-[100dvh]">
+        <main className="pr-grid pr-place-items-center pr-min-h-[100dvh] pr-p-4">
           <div className="pr-absolute pr-top-4 pr-right-4">
             <ThemeSwitcherPremium />
           </div>
-          <section className="pr-w-full pr-max-w-md pr-mx-auto pr-p-6">
+
+          <section className="pr-w-full pr-max-w-md pr-mx-auto pr-p-2">
             <PrCard className="pr-p-6 md:pr-p-8">
               <h1 className="pr-font-semibold pr-text-2xl pr-mb-2">Enter Premium PIN</h1>
-              <p className="pr-muted pr-mb-6">Access the distraction-free Premium Exam Room.</p>
+              <p className="pr-muted pr-mb-6">
+                Access the distraction-free Premium Exam Room.
+              </p>
 
               <form onSubmit={submitPin} className="pr-space-y-4">
                 <label className="pr-block">
@@ -107,6 +112,19 @@ export default function PremiumPinPage() {
                   You’ll be redirected to <span className="pr-font-medium">{nextUrl}</span>.
                 </p>
               </form>
+
+              <p className="pr-text-sm pr-muted pr-text-center pr-mt-4">
+                {t('premiumPin.info')}{' '}
+                {t('premiumPin.noPinPrefix')}{' '}
+                <a href="mailto:support@gramorx.com" className="pr-link">
+                  {t('premiumPin.contactSupport')}
+                </a>{' '}
+                {t('premiumPin.or')}{' '}
+                <Link href="/pricing" className="pr-link">
+                  {t('premiumPin.viewPricing')}
+                </Link>
+                .
+              </p>
             </PrCard>
           </section>
         </main>

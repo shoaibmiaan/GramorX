@@ -12,5 +12,12 @@
   },
   "userMenu": {
     "language": "زبان"
+  },
+  "premiumPin": {
+    "info": "PIN ای میل دعوت کے ذریعے بھیجے جاتے ہیں۔",
+    "noPinPrefix": "اگر آپ کے پاس نہیں ہے،",
+    "contactSupport": "مدد سے رابطہ کریں",
+    "or": "یا",
+    "viewPricing": "قیمتیں دیکھیں"
   }
 }

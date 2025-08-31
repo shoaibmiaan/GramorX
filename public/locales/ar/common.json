@@ -12,5 +12,12 @@
   },
   "userMenu": {
     "language": "اللغة"
+  },
+  "premiumPin": {
+    "info": "يتم إرسال أرقام PIN عبر دعوات البريد الإلكتروني.",
+    "noPinPrefix": "إذا لم يكن لديك واحد،",
+    "contactSupport": "اتصل بالدعم",
+    "or": "أو",
+    "viewPricing": "اطلع على الأسعار"
   }
 }
