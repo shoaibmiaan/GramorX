@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import { supabase } from '@/lib/supabaseClient';
 import { ExamShell } from '@/premium-ui/exam/ExamShell';
 import { PrButton } from '@/premium-ui/components/PrButton';
+import { ResultPanel, Criteria } from '@/premium-ui/results/ResultPanel';
 
 // Basic types for reading tests
 export type Question = {
@@ -37,6 +38,8 @@ export default function ReadingExam() {
   const [passageIdx, setPassageIdx] = React.useState(0);
   const [answers, setAnswers] = React.useState<Record<string, string>>({});
   const [review, setReview] = React.useState(false);
+  const [result, setResult] = React.useState<{ band: number; criteria: Criteria; feedback: string } | null>(null);
+  const attemptIdRef = React.useRef<string>(typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : Math.random().toString(36).slice(2));
 
   // fetch test from Supabase
   React.useEffect(() => {
@@ -117,6 +120,23 @@ export default function ReadingExam() {
   const onSubmit = async () => {
     await saveAnswers();
     setReview(true);
+
+    try {
+      const attemptId = attemptIdRef.current;
+      const text = Object.values(answers).join('\n');
+      await fetch(`/api/exam/${attemptId}/submit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text }),
+      });
+      const r = await fetch(`/api/exam/${attemptId}/score`);
+      if (r.ok) {
+        const json = await r.json();
+        setResult({ band: json.band ?? json.bandOverall, criteria: json.criteria, feedback: json.feedback });
+      }
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const currentPassage = test?.passages[passageIdx];
@@ -206,6 +226,10 @@ export default function ReadingExam() {
             <div className="pr-flex pr-justify-end">
               <PrButton onClick={onSubmit}>Submit</PrButton>
             </div>
+          )}
+
+          {review && result && (
+            <ResultPanel band={result.band} criteria={result.criteria} feedback={result.feedback} />
           )}
         </div>
       )}
