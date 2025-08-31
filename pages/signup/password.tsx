@@ -85,15 +85,22 @@ export default function SignupWithPassword() {
   }
 
   const RightPanel = (
-    <div className="hidden md:flex w-1/2 relative items-center justify-center bg-primary/10 dark:bg-dark">
-      <Image
-        src="/brand/logo.png"
-        alt="GramorX Logo"
-        width={420}
-        height={420}
-        className="object-contain"
-        priority
-      />
+    <div className="h-full flex flex-col justify-between p-8 md:p-12 bg-gradient-to-br from-purpleVibe/10 via-electricBlue/5 to-neonGreen/10 dark:from-dark/50 dark:via-dark/30 dark:to-darker/60">
+      <div>
+        <div className="flex items-center gap-3 mb-6">
+          <Image src="/brand/logo.png" alt="GramorX" width={40} height={40} className="rounded-ds object-contain" priority />
+          <h2 className="font-slab text-h2 text-gradient-primary">Email sign-up</h2>
+        </div>
+        <p className="text-body text-grayish dark:text-gray-300 max-w-md">
+          Create your account using email & password.
+        </p>
+      </div>
+      <div className="pt-8 text-small text-grayish dark:text-gray-400">
+        Prefer phone?{' '}
+        <Link href="/signup/phone" className="text-primaryDark hover:underline">
+          Use Phone (OTP)
+        </Link>
+      </div>
     </div>
   );
 

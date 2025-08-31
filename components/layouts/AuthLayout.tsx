@@ -21,7 +21,7 @@ type Props = {
 };
 
 const DefaultRight = () => (
-  <div className="relative w-full h-full flex items-center justify-center bg-primary/10 dark:bg-dark">
+  <div className="h-full flex items-center justify-center p-8 md:p-12 bg-gradient-to-br from-purpleVibe/10 via-electricBlue/5 to-neonGreen/10 dark:from-dark/50 dark:via-dark/30 dark:to-darker/60">
     <Image src="/brand/logo.png" alt="GramorX Logo" width={420} height={420} className="object-contain" />
   </div>
 );
