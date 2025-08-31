@@ -70,10 +70,10 @@ export default function PremiumHome({ plan }: Props) {
 
   return (
     <main className="pr-p-6 pr-space-y-6">
-      <div className="pr-flex pr-items-center pr-justify-between">
+      <header className="pr-flex pr-items-center pr-justify-between">
         <h1 className="pr-text-2xl pr-font-semibold">Premium Exam Room</h1>
         <ThemeSwitcherPremium />
-      </div>
+      </header>
 
       <div className="pr-grid md:pr-grid-cols-2 pr-gap-6">
         <PrCard className="pr-p-6">
