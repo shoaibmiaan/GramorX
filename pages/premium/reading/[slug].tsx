@@ -1,8 +1,10 @@
+// pages/reading/[slug].tsx
 import * as React from 'react';
 import { useRouter } from 'next/router';
 import { supabase } from '@/lib/supabaseClient';
 import { ExamShell } from '@/premium-ui/exam/ExamShell';
 import { PrButton } from '@/premium-ui/components/PrButton';
+import { ExamGate } from '@/premium-ui/access/ExamGate';
 import { PinGate } from '@/premium-ui/access/PinGate';
 
 // Basic types for reading tests
@@ -33,16 +35,18 @@ export default function ReadingExam() {
   const router = useRouter();
   const slug = String(router.query.slug || '');
 
+  const [ready, setReady] = React.useState(false);       // subscription verified
+  const [unlocked, setUnlocked] = React.useState(false); // pin verified
+
   const [test, setTest] = React.useState<ReadingTest | null>(null);
   const [currentQ, setCurrentQ] = React.useState(1);
   const [passageIdx, setPassageIdx] = React.useState(0);
   const [answers, setAnswers] = React.useState<Record<string, string>>({});
   const [review, setReview] = React.useState(false);
-  const [unlocked, setUnlocked] = React.useState(false);
 
-  // fetch test from Supabase
+  // fetch test from Supabase once subscription gate passes
   React.useEffect(() => {
-    if (!slug) return;
+    if (!ready || !slug) return;
     supabase
       .from('lm_reading_tests')
       .select('slug,title,passages,duration_sec')
@@ -58,7 +62,7 @@ export default function ReadingExam() {
           });
         }
       });
-  }, [slug]);
+  }, [slug, ready]);
 
   const totalQuestions = React.useMemo(() => {
     if (!test) return 0;
@@ -78,8 +82,8 @@ export default function ReadingExam() {
       count += len;
     }
     setTimeout(() => {
-      const el = document.querySelector(`[data-q="${qNo}"]`);
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const el = document.querySelector<HTMLElement>(`[data-q="${qNo}"]`);
+      el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 0);
   };
 
@@ -121,11 +125,13 @@ export default function ReadingExam() {
     setReview(true);
   };
 
-  const currentPassage = test?.passages[passageIdx];
+  // Gate #1: subscription/plan check
+  if (!ready) return <ExamGate onReady={() => setReady(true)} />;
 
-  if (!unlocked) {
-    return <PinGate onSuccess={() => setUnlocked(true)} />;
-  }
+  // Gate #2: exam PIN check
+  if (!unlocked) return <PinGate onSuccess={() => setUnlocked(true)} />;
+
+  const currentPassage = test?.passages[passageIdx];
 
   return (
     <ExamShell
@@ -163,6 +169,7 @@ export default function ReadingExam() {
                 <p className="pr-font-medium">
                   {q.qNo}. {q.prompt}
                 </p>
+
                 {q.type === 'mcq' ? (
                   <div className="pr-flex pr-flex-col pr-gap-2">
                     {q.options?.map((opt) => (
@@ -201,6 +208,7 @@ export default function ReadingExam() {
                     onChange={(e) => handleAnswer(q.id, e.target.value)}
                   />
                 )}
+
                 {review && q.answer && (
                   <p className="pr-text-sm pr-opacity-70">Correct: {q.answer}</p>
                 )}
