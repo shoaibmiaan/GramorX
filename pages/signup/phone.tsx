@@ -168,20 +168,21 @@ export default function SignupWithPhone() {
             value={referral}
             onChange={(e) => setReferral(e.target.value)}
           />
-          <Button type="submit" variant="primary" className="w-full rounded-ds-xl" disabled={loading}>
+          <Button type="submit" variant="primary" className="rounded-ds-xl" fullWidth disabled={loading}>
             {loading ? 'Sending…' : 'Send code'}
           </Button>
         </form>
       ) : (
         <form onSubmit={verifyOtp} className="space-y-6 mt-2">
           <Input label="Verification code" inputMode="numeric" placeholder="123456" value={code} onChange={(e)=>setCode(e.target.value)} required />
-          <Button type="submit" variant="primary" className="w-full rounded-ds-xl" disabled={loading && !resending}>
+          <Button type="submit" variant="primary" className="rounded-ds-xl" fullWidth disabled={loading && !resending}>
             {loading && !resending ? 'Verifying…' : 'Verify & Continue'}
           </Button>
           <Button
             type="button"
             variant="secondary"
-            className="w-full rounded-ds-xl"
+            className="rounded-ds-xl"
+            fullWidth
             onClick={resendOtp}
             disabled={loading || cooldown > 0 || resendAttempts >= MAX_RESENDS}
           >
@@ -203,7 +204,7 @@ export default function SignupWithPhone() {
         </form>
       )}
 
-      <Button asChild variant="secondary" className="mt-6 rounded-ds-xl w-full">
+      <Button asChild variant="secondary" className="mt-6 rounded-ds-xl" fullWidth>
         <Link href="/signup">Back to Sign-up Options</Link>
       </Button>
     </AuthLayout>

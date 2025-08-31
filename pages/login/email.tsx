@@ -124,23 +124,23 @@ export default function LoginWithEmail() {
             autoComplete="current-password"
             required
           />
-          <Button type="submit" variant="primary" className="w-full rounded-ds-xl" disabled={loading}>
+          <Button type="submit" variant="primary" className="rounded-ds-xl" fullWidth disabled={loading}>
             {loading ? 'Signing in…' : 'Continue'}
           </Button>
-          <Button asChild variant="secondary" className="mt-4 w-full rounded-ds-xl">
+          <Button asChild variant="secondary" className="mt-4 rounded-ds-xl" fullWidth>
             <Link href="/forgot-password">Forgot password?</Link>
           </Button>
         </form>
       ) : (
         <form onSubmit={verifyOtp} className="space-y-6 mt-2 max-w-xs">
           <Input label="Enter OTP" value={otp} onChange={e => setOtp(e.target.value)} autoComplete="one-time-code" placeholder="6-digit code" required />
-          <Button type="submit" variant="primary" className="w-full rounded-ds-xl" disabled={verifying}>
+          <Button type="submit" variant="primary" className="rounded-ds-xl" fullWidth disabled={verifying}>
             {verifying ? 'Verifying…' : 'Verify'}
           </Button>
         </form>
       )}
 
-      <Button asChild variant="secondary" className="mt-6 rounded-ds-xl w-full">
+      <Button asChild variant="secondary" className="mt-6 rounded-ds-xl" fullWidth>
         <Link href="/login">Back to Login Options</Link>
       </Button>
     </AuthLayout>

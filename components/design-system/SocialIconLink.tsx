@@ -2,7 +2,7 @@ import React from 'react';
 
 export const SocialIconLink: React.FC<{
   href: string;
-  icon: string; // e.g., 'facebook-f', 'twitter', 'instagram'
+  icon: React.ReactNode;
   label: string;
   className?: string;
 }> = ({ href, icon, label, className = '' }) => (
@@ -13,6 +13,6 @@ export const SocialIconLink: React.FC<{
       bg-primary/10 text-primary hover:-translate-y-0.5
       dark:bg-purpleVibe/10 dark:text-neonGreen ${className}`}
   >
-    <i className={`fab fa-${icon}`} aria-hidden="true" />
+    {icon}
   </a>
 );
