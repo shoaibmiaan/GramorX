@@ -318,7 +318,7 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
 
               <li><NavLink href="/learning" label="Learning" /></li>
               {NAV.map((n) => (<li key={n.href}><NavLink href={n.href} label={n.label} /></li>))}
-              <li><NavLink href="/premium" label="premium" /></li>
+              <li><NavLink href="/premium/pin" label="premium" /></li>
 
               {ready ? (
                 user.id ? (
