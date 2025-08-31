@@ -376,9 +376,15 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
         </div>
       </Container>
 
+      {/* Mobile menu overlay */}
+      <div
+        className={`fixed inset-0 z-40 bg-black/40 md:hidden transition-opacity ${mobileOpen ? '' : 'pointer-events-none opacity-0'}`}
+        onClick={() => setMobileOpen(false)}
+      />
+
       {/* Mobile panel (solid background; no transparency when open) */}
       {mobileOpen && (
-        <div className="md:hidden border-t border-purpleVibe/20 bg-lightBg dark:bg-dark shadow-lg">
+        <div className="relative z-50 md:hidden border-t border-purpleVibe/20 bg-lightBg dark:bg-dark shadow-lg">
           <Container>
             <div className="py-3 flex items-center justify-between">
               <FireStreak value={streakState} />
