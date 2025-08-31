@@ -9,14 +9,17 @@ import { ThemeSwitcherPremium } from '@/premium-ui/theme/ThemeSwitcher';
 import { PrButton } from '@/premium-ui/components/PrButton';
 import { PrCard } from '@/premium-ui/components/PrCard';
 
-function isInternalRoute(url: string) {
+function isInternalRoute(url: string): boolean {
   return url.startsWith('/') && !url.startsWith('//') && !url.includes('://');
 }
+
+type VerifyPinError = { error?: string };
 
 export default function PremiumPinPage() {
   const router = useRouter();
   const { t } = useLocale();
 
+  // Sanitize the redirect target
   const rawNext =
     typeof router.query.next === 'string' && router.query.next ? router.query.next : '/premium';
   const nextUrl = isInternalRoute(rawNext) ? rawNext : '/premium';
@@ -50,8 +53,8 @@ export default function PremiumPinPage() {
         return;
       }
 
-      const data = await res.json().catch(() => ({} as any));
-      setErr((data as any)?.error ?? 'Incorrect PIN. Try again.');
+      const data: VerifyPinError = await res.json().catch(() => ({} as VerifyPinError));
+      setErr(data.error ?? 'Incorrect PIN. Try again.');
     } catch {
       setErr('Network error. Please try again.');
     } finally {
@@ -78,7 +81,7 @@ export default function PremiumPinPage() {
                 Access the distraction-free Premium Exam Room.
               </p>
 
-              <form onSubmit={submitPin} className="pr-space-y-4">
+              <form onSubmit={submitPin} className="pr-space-y-4" noValidate>
                 <label className="pr-block">
                   <span className="pr-mb-1.5 pr-inline-block pr-text-sm pr-muted">PIN</span>
                   <input
@@ -86,6 +89,7 @@ export default function PremiumPinPage() {
                     type="password"
                     inputMode="numeric"
                     autoComplete="one-time-code"
+                    aria-label="Premium PIN"
                     value={pin}
                     onChange={(e) => setPin(e.target.value)}
                     disabled={loading}
@@ -95,7 +99,10 @@ export default function PremiumPinPage() {
                 </label>
 
                 {err && (
-                  <div className="pr-rounded-xl pr-border pr-border-[var(--pr-danger)] pr-bg-[color-mix(in oklab,var(--pr-danger),var(--pr-bg) 85%)] pr-text-[var(--pr-danger)] pr-p-3 pr-text-sm">
+                  <div
+                    role="alert"
+                    className="pr-rounded-xl pr-border pr-border-[var(--pr-danger)] pr-bg-[color-mix(in oklab,var(--pr-danger),var(--pr-bg) 85%)] pr-text-[var(--pr-danger)] pr-p-3 pr-text-sm"
+                  >
                     {err}
                   </div>
                 )}
