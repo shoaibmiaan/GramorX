@@ -410,12 +410,13 @@ const ReviewPage: NextPage<Props> = ({ passage, questions, notFound, error }) =>
           })}
         </div>
 
-        <div className="mt-8 flex gap-3">
+        <div className="mt-8 flex flex-col gap-3 sm:flex-row">
           <Button
             as="a"
             href={`/reading/passage/${encodeURIComponent(passage.slug)}`}
             variant="primary"
-            className="rounded-ds-xl"
+            fullWidth
+            className="rounded-ds-xl px-4 py-3 text-base sm:w-auto"
           >
             Retake Passage
           </Button>
@@ -423,7 +424,8 @@ const ReviewPage: NextPage<Props> = ({ passage, questions, notFound, error }) =>
             as="a"
             href="/reading"
             variant="secondary"
-            className="rounded-ds-xl"
+            fullWidth
+            className="rounded-ds-xl px-4 py-3 text-base sm:w-auto"
           >
             Back to Reading List
           </Button>
