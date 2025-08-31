@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import { supabase } from '@/lib/supabaseClient';
 import { ExamShell } from '@/premium-ui/exam/ExamShell';
 import { PrButton } from '@/premium-ui/components/PrButton';
+import { PinGate } from '@/premium-ui/access/PinGate';
 
 // Basic types for reading tests
 export type Question = {
@@ -37,6 +38,7 @@ export default function ReadingExam() {
   const [passageIdx, setPassageIdx] = React.useState(0);
   const [answers, setAnswers] = React.useState<Record<string, string>>({});
   const [review, setReview] = React.useState(false);
+  const [unlocked, setUnlocked] = React.useState(false);
 
   // fetch test from Supabase
   React.useEffect(() => {
@@ -120,6 +122,10 @@ export default function ReadingExam() {
   };
 
   const currentPassage = test?.passages[passageIdx];
+
+  if (!unlocked) {
+    return <PinGate onSuccess={() => setUnlocked(true)} />;
+  }
 
   return (
     <ExamShell
