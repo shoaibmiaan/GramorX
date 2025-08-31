@@ -165,10 +165,10 @@ export default function LoginOptions() {
         <>
           <SectionLabel>Sign in as</SectionLabel>
           <div className="grid gap-3">
-            <Button onClick={() => chooseRole('student')} variant="secondary" className="rounded-ds-xl w-full">
+            <Button onClick={() => chooseRole('student')} variant="secondary" className="rounded-ds-xl" fullWidth>
               Student
             </Button>
-            <Button onClick={() => chooseRole('teacher')} variant="secondary" className="rounded-ds-xl w-full">
+            <Button onClick={() => chooseRole('teacher')} variant="secondary" className="rounded-ds-xl" fullWidth>
               Teacher
             </Button>
           </div>
@@ -182,7 +182,8 @@ export default function LoginOptions() {
               onClick={() => oauth('apple')}
               disabled={busy === 'apple'}
               variant="secondary"
-              className="rounded-ds-xl w-full"
+              className="rounded-ds-xl"
+              fullWidth
             >
               <span className="inline-flex items-center gap-3">
                 <AppleIcon className="h-5 w-5" />
@@ -194,7 +195,8 @@ export default function LoginOptions() {
               onClick={() => oauth('google')}
               disabled={busy === 'google'}
               variant="secondary"
-              className="rounded-ds-xl w-full"
+              className="rounded-ds-xl"
+              fullWidth
             >
               <span className="inline-flex items-center gap-3">
                 <GoogleIcon className="h-5 w-5" />
@@ -206,7 +208,8 @@ export default function LoginOptions() {
               onClick={() => oauth('facebook')}
               disabled={busy === 'facebook'}
               variant="secondary"
-              className="rounded-ds-xl w-full"
+              className="rounded-ds-xl"
+              fullWidth
             >
               <span className="inline-flex items-center gap-3">
                 <FacebookIcon className="h-5 w-5" />
@@ -214,7 +217,7 @@ export default function LoginOptions() {
               </span>
             </Button>
 
-            <Button asChild variant="secondary" className="rounded-ds-xl w-full">
+            <Button asChild variant="secondary" className="rounded-ds-xl" fullWidth>
               <Link
                 href={`/login/email${selectedRole ? `?role=${selectedRole}` : ''}`}
                 aria-label="Sign in with Email and Password"
@@ -226,7 +229,7 @@ export default function LoginOptions() {
               </Link>
             </Button>
 
-            <Button asChild variant="secondary" className="rounded-ds-xl w-full">
+            <Button asChild variant="secondary" className="rounded-ds-xl" fullWidth>
               <Link
                 href={`/login/phone${selectedRole ? `?role=${selectedRole}` : ''}`}
                 aria-label="Sign in with Phone OTP"

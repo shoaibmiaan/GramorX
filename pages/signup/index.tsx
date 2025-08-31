@@ -69,12 +69,12 @@ export default function SignupOptions() {
         <Button onClick={() => signUpOAuth('facebook')} variant="secondary" className="rounded-ds-xl w-full">
           <span className="inline-flex items-center gap-3"><FacebookIcon className="h-5 w-5" /> Sign up with Facebook</span>
         </Button>
-        <Button asChild variant="secondary" className="rounded-ds-xl w-full">
+        <Button asChild variant="secondary" className="rounded-ds-xl" fullWidth>
           <Link href={`/signup/password${ref ? `?ref=${ref}` : ''}`}>
             <span className="inline-flex items-center gap-3"><MailIcon className="h-5 w-5" /> Sign up with Email</span>
           </Link>
         </Button>
-        <Button asChild variant="secondary" className="rounded-ds-xl w-full">
+        <Button asChild variant="secondary" className="rounded-ds-xl" fullWidth>
           <Link href={`/signup/phone${ref ? `?ref=${ref}` : ''}`}>
             <span className="inline-flex items-center gap-3"><SmsIcon className="h-5 w-5" /> Sign up with Phone</span>
           </Link>
