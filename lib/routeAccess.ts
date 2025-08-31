@@ -75,8 +75,15 @@ export const redirectByRole = (user: User | null | undefined) => {
   }
 
   const role = getUserRole(user);
+  const onboarded = !!(user as any)?.user_metadata?.onboarding_complete;
   const path =
-    role === 'teacher' ? '/teacher' : role === 'admin' ? '/admin' : '/dashboard';
+    role === 'teacher'
+      ? '/teacher'
+      : role === 'admin'
+        ? '/admin'
+        : onboarded
+          ? '/dashboard'
+          : '/welcome';
   if (typeof window !== 'undefined') {
     window.location.assign(path);
   }
