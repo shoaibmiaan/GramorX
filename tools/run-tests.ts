@@ -1,5 +1,5 @@
 // tools/run-tests.ts
-// Minimal TS test runner for CI: set safe envs and run only _tests_/ files.
+// Minimal TS test runner for CI: set safe envs and run only __tests__ files.
 // Executes with: `npm test` -> "tsx tools/run-tests.ts"
 
 import fs from 'node:fs';
@@ -29,9 +29,9 @@ ensure('TWILIO_AUTH_TOKEN', 'dummytoken');
 ensure('TWILIO_VERIFY_SERVICE_SID', 'VAXxxxxxxxxxxxxxxxxxxxxxxxx');
 ensure('TWILIO_WHATSAPP_FROM', 'whatsapp:+10000000000');
 
-// ---- Collect tests from _tests_ and __tests__ (skip lib/*.test.ts for now) ---
+// ---- Collect tests from __tests__ (skip lib/*.test.ts for now) ---
 const ROOT = process.cwd();
-const TEST_DIRS = ['_tests_', '__tests__'];
+const TEST_DIRS = ['__tests__'];
 
 function collectTests(dir: string, out: string[] = []): string[] {
   if (!fs.existsSync(dir)) return out;
