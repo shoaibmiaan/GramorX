@@ -12,5 +12,12 @@
   },
   "userMenu": {
     "language": "Idioma"
+  },
+  "premiumPin": {
+    "info": "Los PIN se envían mediante invitaciones por correo electrónico.",
+    "noPinPrefix": "Si no tienes uno,",
+    "contactSupport": "contacta con soporte",
+    "or": "o",
+    "viewPricing": "consulta los precios"
   }
 }

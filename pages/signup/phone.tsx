@@ -95,7 +95,7 @@ export default function SignupWithPhone() {
           });
         } catch {}
       }
-      window.location.assign('/profile/setup');
+      window.location.assign('/welcome');
     }
   }
 
