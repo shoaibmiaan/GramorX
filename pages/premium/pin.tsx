@@ -1,7 +1,9 @@
 // pages/premium/pin.tsx
 import * as React from 'react';
 import Head from 'next/head';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
+import { useLocale } from '@/lib/locale';
 
 function isInternalRoute(url: string) {
   return url.startsWith('/') && !url.startsWith('//') && !url.includes('://');
@@ -9,6 +11,7 @@ function isInternalRoute(url: string) {
 
 export default function PremiumPinPage() {
   const router = useRouter();
+  const { t } = useLocale();
   let nextUrl =
     typeof router.query.next === 'string' && router.query.next ? router.query.next : '/premium';
 
@@ -97,13 +100,27 @@ export default function PremiumPinPage() {
                 {loading ? 'Verifying…' : 'Unlock Premium'}
               </button>
 
-              <p className="text-small text-grayish text-center">
-                You’ll be redirected to <span className="font-medium">{nextUrl}</span>.
-              </p>
-            </form>
-          </div>
-        </section>
-      </main>
-    </React.Fragment>
-  );
+            <p className="text-small text-grayish text-center">
+              You’ll be redirected to <span className="font-medium">{nextUrl}</span>.
+            </p>
+          </form>
+          <p className="mt-4 text-small text-grayish text-center">
+            {t('premiumPin.info')} {t('premiumPin.noPinPrefix')}{' '}
+            <a
+              href="mailto:support@gramorx.com"
+              className="underline text-primary"
+            >
+              {t('premiumPin.contactSupport')}
+            </a>{' '}
+            {t('premiumPin.or')}{' '}
+            <Link href="/pricing" className="underline text-primary">
+              {t('premiumPin.viewPricing')}
+            </Link>
+            .
+          </p>
+        </div>
+      </section>
+    </main>
+  </React.Fragment>
+);
 }
