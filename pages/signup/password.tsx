@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useRouter } from 'next/router';
 import AuthLayout from '@/components/layouts/AuthLayout';
+import AuthSidePanel from '@/components/layouts/AuthSidePanel';
 import { Input } from '@/components/design-system/Input';
 import { PasswordInput } from '@/components/design-system/PasswordInput';
 import { Button } from '@/components/design-system/Button';
@@ -85,16 +85,18 @@ export default function SignupWithPassword() {
   }
 
   const RightPanel = (
-    <div className="hidden md:flex w-1/2 relative items-center justify-center bg-primary/10 dark:bg-dark">
-      <Image
-        src="/brand/logo.png"
-        alt="GramorX Logo"
-        width={420}
-        height={420}
-        className="object-contain"
-        priority
-      />
-    </div>
+    <AuthSidePanel
+      title="Create your account"
+      description="Use your email & password to get started."
+      footerLink={
+        <>
+          Already have an account?{' '}
+          <Link href="/login" className="text-primaryDark hover:underline">
+            Log in
+          </Link>
+        </>
+      }
+    />
   );
 
   return (

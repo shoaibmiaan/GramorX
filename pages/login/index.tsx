@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useRouter } from 'next/router';
 import AuthLayout from '@/components/layouts/AuthLayout';
+import AuthSidePanel from '@/components/layouts/AuthSidePanel';
 import { Button } from '@/components/design-system/Button';
 import { Alert } from '@/components/design-system/Alert';
 import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser';
@@ -81,62 +81,52 @@ export default function LoginOptions() {
     }
   }
 
-  // Right-side: soft brand panel (no Card), token gradients, light/dark compliant
+  const features = [
+    (
+      <>
+        <i className="fas fa-shield-alt text-success" aria-hidden />
+        Secure OAuth (Apple, Google, Facebook)
+      </>
+    ),
+    (
+      <>
+        <i className="fas fa-mobile-alt" aria-hidden />
+        Phone OTP sign-in
+      </>
+    ),
+    (
+      <>
+        <i className="fas fa-envelope" aria-hidden />
+        Email &amp; Password
+      </>
+    ),
+    (
+      <>
+        <i className="fas fa-chart-line text-electricBlue" aria-hidden />
+        Personalized study plan &amp; analytics
+      </>
+    ),
+  ];
+
   const RightPanel = (
-    <div className="hidden md:flex w-1/2">
-      <div className="h-full flex flex-col justify-between p-8 md:p-12 bg-gradient-to-br from-purpleVibe/10 via-electricBlue/5 to-neonGreen/10 dark:from-dark/50 dark:via-dark/30 dark:to-darker/60">
-      <div>
-        <div className="flex items-center gap-3 mb-6">
-          <Image
-            src="/brand/logo.png"
-            alt="GramorX"
-            width={40}
-            height={40}
-            className="rounded-ds object-contain"
-            priority
-          />
-          <h2 className="font-slab text-h2 text-gradient-primary">Sign in to GramorX</h2>
-        </div>
-        <p className="text-body text-grayish dark:text-gray-300 max-w-md">
-          One account for all IELTS modules — Listening, Reading, Writing, and Speaking — with AI
-          feedback and progress tracking.
-        </p>
-
-        <ul className="mt-6 space-y-3 text-body text-grayish dark:text-gray-300">
-          <li className="flex items-center gap-3">
-            <i className="fas fa-shield-alt text-success" aria-hidden />
-            Secure OAuth (Apple, Google, Facebook)
-          </li>
-          <li className="flex items-center gap-3">
-            <i className="fas fa-mobile-alt" aria-hidden />
-            Phone OTP sign-in
-          </li>
-          <li className="flex items-center gap-3">
-            <i className="fas fa-envelope" aria-hidden />
-            Email &amp; Password
-          </li>
-          <li className="flex items-center gap-3">
-            <i className="fas fa-chart-line text-electricBlue" aria-hidden />
-            Personalized study plan &amp; analytics
-          </li>
-        </ul>
-      </div>
-
-        <div className="pt-8">
-          <div className="text-small text-grayish dark:text-gray-400">
-            By continuing, you agree to our{' '}
-            <Link href="/legal/terms" className="text-primaryDark hover:underline">
-              Terms
-            </Link>{' '}
-            and{' '}
-            <Link href="/legal/privacy" className="text-primaryDark hover:underline">
-              Privacy Policy
-            </Link>
-            .
-          </div>
-        </div>
-      </div>
-    </div>
+    <AuthSidePanel
+      title="Sign in to GramorX"
+      description="One account for all IELTS modules — Listening, Reading, Writing, and Speaking — with AI feedback and progress tracking."
+      features={features}
+      footerLink={
+        <>
+          By continuing, you agree to our{' '}
+          <Link href="/legal/terms" className="text-primaryDark hover:underline">
+            Terms
+          </Link>{' '}
+          and{' '}
+          <Link href="/legal/privacy" className="text-primaryDark hover:underline">
+            Privacy Policy
+          </Link>
+          .
+        </>
+      }
+    />
   );
 
   return (

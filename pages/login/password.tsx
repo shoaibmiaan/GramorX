@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import AuthLayout from '@/components/layouts/AuthLayout';
+import AuthSidePanel from '@/components/layouts/AuthSidePanel';
 import { Input } from '@/components/design-system/Input';
 import { PasswordInput } from '@/components/design-system/PasswordInput';
 import { Button } from '@/components/design-system/Button';
@@ -80,20 +80,18 @@ export default function LoginWithPassword() {
   }
 
   const RightPanel = (
-    <div className="h-full flex flex-col justify-between p-8 md:p-12 bg-gradient-to-br from-purpleVibe/10 via-electricBlue/5 to-neonGreen/10 dark:from-dark/50 dark:via-dark/30 dark:to-darker/60">
-      <div>
-        <div className="flex items-center gap-3 mb-6">
-          <Image src="/brand/logo.png" alt="GramorX" width={40} height={40} className="rounded-ds object-contain" priority />
-          <h2 className="font-slab text-h2 text-gradient-primary">Welcome back</h2>
-        </div>
-        <p className="text-body text-grayish dark:text-gray-300 max-w-md">
-          Continue where you left off across Listening, Reading, Writing & Speaking.
-        </p>
-      </div>
-      <div className="pt-8 text-small text-grayish dark:text-gray-400">
-        Need an account? <Link href="/signup" className="text-primary hover:underline">Sign up</Link>
-      </div>
-    </div>
+    <AuthSidePanel
+      title="Welcome back"
+      description="Continue where you left off across Listening, Reading, Writing & Speaking."
+      footerLink={
+        <>
+          Need an account?{' '}
+          <Link href="/signup" className="text-primary hover:underline">
+            Sign up
+          </Link>
+        </>
+      }
+    />
   );
 
   return (
