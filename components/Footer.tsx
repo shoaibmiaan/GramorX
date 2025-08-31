@@ -3,6 +3,17 @@ import React from 'react';
 import { Container } from '@/components/design-system/Container';
 import { NavLink } from '@/components/design-system/NavLink';
 import { SocialIconLink } from '@/components/design-system/SocialIconLink';
+import {
+  FacebookIcon,
+  TwitterIcon,
+  InstagramIcon,
+  LinkedinIcon,
+  YoutubeIcon,
+  MailIcon,
+  PhoneIcon,
+  MapPinIcon,
+  ClockIcon,
+} from '@/components/design-system/icons';
 
 const RESOURCES = [
   { href: '/learning/strategies', label: 'IELTS Preparation Guide' },
@@ -36,11 +47,11 @@ export const Footer: React.FC = () => {
               teaching methodologies.
             </p>
             <div className="flex gap-3 mt-4">
-              <SocialIconLink href="https://facebook.com" icon="facebook-f" label="Facebook" />
-              <SocialIconLink href="https://twitter.com" icon="twitter" label="Twitter / X" />
-              <SocialIconLink href="https://instagram.com" icon="instagram" label="Instagram" />
-              <SocialIconLink href="https://linkedin.com" icon="linkedin-in" label="LinkedIn" />
-              <SocialIconLink href="https://youtube.com" icon="youtube" label="YouTube" />
+              <SocialIconLink href="https://facebook.com" icon={<FacebookIcon className="h-5 w-5" />} label="Facebook" />
+              <SocialIconLink href="https://twitter.com" icon={<TwitterIcon className="h-5 w-5" />} label="Twitter / X" />
+              <SocialIconLink href="https://instagram.com" icon={<InstagramIcon className="h-5 w-5" />} label="Instagram" />
+              <SocialIconLink href="https://linkedin.com" icon={<LinkedinIcon className="h-5 w-5" />} label="LinkedIn" />
+              <SocialIconLink href="https://youtube.com" icon={<YoutubeIcon className="h-5 w-5" />} label="YouTube" />
             </div>
           </div>
 
@@ -79,22 +90,22 @@ export const Footer: React.FC = () => {
             </h3>
             <ul className="space-y-3 text-gray-600 dark:text-grayish">
               <li>
-                <i className="fas fa-envelope mr-2" />
+                <MailIcon className="mr-2 inline h-4 w-4" />
                 <a href="mailto:info@solvioadvisors.com" className="hover:underline">
                   info@solvioadvisors.com
                 </a>
               </li>
               <li>
-                <i className="fas fa-phone mr-2" />
+                <PhoneIcon className="mr-2 inline h-4 w-4" />
                 <a href="tel:+19722954571" className="hover:underline">
                   +1 (972) 295-4571
                 </a>
               </li>
               <li>
-                <i className="fas fa-map-marker-alt mr-2" /> Houston, USA
+                <MapPinIcon className="mr-2 inline h-4 w-4" /> Houston, USA
               </li>
               <li>
-                <i className="fas fa-clock mr-2" /> Support: 24/7
+                <ClockIcon className="mr-2 inline h-4 w-4" /> Support: 24/7
               </li>
             </ul>
           </div>

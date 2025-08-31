@@ -198,31 +198,7 @@ function InnerApp({ Component, pageProps }: AppProps) {
 
   return (
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
-      <Head>
-        {/* (Optional) Replace these with a package import to avoid the Next lint warning */}
-        <link
-          rel="preload"
-          as="style"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
-        />
-        <link
-          rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
-          media="print"
-          onLoad={(e) => {
-            const el = e.currentTarget as HTMLLinkElement;
-            el.media = 'all';
-          }}
-        />
-        <noscript>
-          <link
-            rel="stylesheet"
-            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
-          />
-        </noscript>
-
-        {isPremium ? <link rel="stylesheet" href="/premium.css" /> : null}
-      </Head>
+      <Head>{isPremium ? <link rel="stylesheet" href="/premium.css" /> : null}</Head>
 
       <div className={`${poppins.variable} ${slab.variable} ${poppins.className} min-h-[100dvh]`}>
         {showLayout ? (

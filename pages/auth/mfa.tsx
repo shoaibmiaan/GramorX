@@ -25,7 +25,7 @@ export default function MfaPage() {
   };
 
   return (
-    <AuthLayout title="Two-factor authentication" subtitle="Enter the 6-digit code from your authenticator app.">
+    <AuthLayout title="Two-factor authentication" subtitle="Enter the 6-digit code from your authenticator app." showRightOnMobile>
       <form onSubmit={submit} className="mt-4 space-y-4 max-w-sm">
         <input
           value={code}

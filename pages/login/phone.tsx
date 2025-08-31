@@ -118,7 +118,7 @@ export default function LoginWithPhone() {
   );
 
   return (
-    <AuthLayout title="Phone Verification" subtitle="Sign in with an SMS code." right={RightPanel}>
+    <AuthLayout title="Phone Verification" subtitle="Sign in with an SMS code." right={RightPanel} showRightOnMobile>
       {err && <Alert variant="error" title="Error" className="mb-4">{err}</Alert>}
 
       {stage === 'request' ? (
@@ -137,7 +137,7 @@ export default function LoginWithPhone() {
             hint="Use E.164 format, e.g. +923001234567"
             error={phoneErr ?? undefined}
           />
-          <Button type="submit" variant="primary" className="w-full rounded-ds-xl" disabled={loading}>
+          <Button type="submit" variant="primary" className="rounded-ds-xl" fullWidth disabled={loading}>
             {loading ? 'Sending…' : 'Send code'}
           </Button>
         </form>
@@ -154,7 +154,8 @@ export default function LoginWithPhone() {
           <Button
             type="submit"
             variant="primary"
-            className="w-full rounded-ds-xl"
+            className="rounded-ds-xl"
+            fullWidth
             disabled={loading && !resending}
           >
             {loading && !resending ? 'Verifying…' : 'Verify & Continue'}
@@ -162,7 +163,8 @@ export default function LoginWithPhone() {
           <Button
             type="button"
             variant="secondary"
-            className="w-full rounded-ds-xl"
+            className="rounded-ds-xl"
+            fullWidth
             onClick={resendOtp}
             disabled={loading || cooldown > 0 || resendAttempts >= MAX_RESENDS}
           >
@@ -184,7 +186,7 @@ export default function LoginWithPhone() {
         </form>
       )}
 
-      <Button asChild variant="secondary" className="mt-6 rounded-ds-xl w-full">
+      <Button asChild variant="secondary" className="mt-6 rounded-ds-xl" fullWidth>
         <Link href="/login">Back to Login Options</Link>
       </Button>
     </AuthLayout>

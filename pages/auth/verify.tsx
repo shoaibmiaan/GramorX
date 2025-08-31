@@ -1,7 +1,7 @@
 // pages/auth/verify.tsx
+import Image from 'next/image';
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
-import Image from 'next/image';
 import AuthLayout from '@/components/layouts/AuthLayout';
 import { Alert } from '@/components/design-system/Alert';
 import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser';
@@ -67,9 +67,9 @@ export default function VerifyPage() {
           <Image
             src="/brand/logo.png"
             alt="GramorX Logo"
-            width={420}
-            height={420}
-            className="object-contain"
+            fill
+            sizes="100vw"
+            className="object-contain p-6"
           />
         </div>
       }

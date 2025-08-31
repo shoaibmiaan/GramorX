@@ -104,6 +104,7 @@ export default function SignupWithPassword() {
       title="Sign up with Email"
       subtitle="Create an account using email & password."
       right={RightPanel}
+      showRightOnMobile
     >
       {err && (
         <Alert variant="error" title="Error" className="mb-4">
@@ -153,7 +154,8 @@ export default function SignupWithPassword() {
         <Button
           type="submit"
           variant="primary"
-          className="w-full rounded-ds-xl"
+          className="rounded-ds-xl"
+          fullWidth
           disabled={loading}
         >
           {loading ? 'Creating…' : 'Create account'}
@@ -161,10 +163,10 @@ export default function SignupWithPassword() {
       </form>
 
       <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <Button asChild variant="secondary" className="rounded-ds-xl w-full">
+        <Button asChild variant="secondary" className="rounded-ds-xl" fullWidth>
           <Link href="/signup">Back to Sign-up Options</Link>
         </Button>
-        <Button asChild variant="ghost" className="rounded-ds-xl w-full">
+        <Button asChild variant="ghost" className="rounded-ds-xl" fullWidth>
           <Link href="/login">Already have an account? Log in</Link>
         </Button>
       </div>

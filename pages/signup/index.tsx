@@ -5,6 +5,15 @@ import AuthLayout from '@/components/layouts/AuthLayout';
 import AuthSidePanel from '@/components/layouts/AuthSidePanel';
 import { Button } from '@/components/design-system/Button';
 import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser';
+import {
+  AppleIcon,
+  GoogleIcon,
+  FacebookIcon,
+  MailIcon,
+  SmsIcon,
+  PhoneIcon,
+  UserCheckIcon,
+} from '@/components/design-system/icons';
 
 export default function SignupOptions() {
   const router = useRouter();
@@ -64,25 +73,25 @@ export default function SignupOptions() {
   );
 
   return (
-    <AuthLayout title="Sign up to GramorX" subtitle="Choose a sign-up method." right={RightPanel}>
+    <AuthLayout title="Sign up to GramorX" subtitle="Choose a sign-up method." right={RightPanel} showRightOnMobile>
       <div className="grid gap-3">
         <Button onClick={() => signUpOAuth('apple')} variant="secondary" className="rounded-ds-xl w-full">
-          <span className="inline-flex items-center gap-3"><i className="fab fa-apple text-xl" aria-hidden /> Sign up with Apple</span>
+          <span className="inline-flex items-center gap-3"><AppleIcon className="h-5 w-5" /> Sign up with Apple</span>
         </Button>
         <Button onClick={() => signUpOAuth('google')} variant="secondary" className="rounded-ds-xl w-full">
-          <span className="inline-flex items-center gap-3"><i className="fab fa-google text-xl" aria-hidden /> Sign up with Google</span>
+          <span className="inline-flex items-center gap-3"><GoogleIcon className="h-5 w-5" /> Sign up with Google</span>
         </Button>
         <Button onClick={() => signUpOAuth('facebook')} variant="secondary" className="rounded-ds-xl w-full">
-          <span className="inline-flex items-center gap-3"><i className="fab fa-facebook-f text-xl" aria-hidden /> Sign up with Facebook</span>
+          <span className="inline-flex items-center gap-3"><FacebookIcon className="h-5 w-5" /> Sign up with Facebook</span>
         </Button>
-        <Button asChild variant="secondary" className="rounded-ds-xl w-full">
+        <Button asChild variant="secondary" className="rounded-ds-xl" fullWidth>
           <Link href={`/signup/password${ref ? `?ref=${ref}` : ''}`}>
-            <span className="inline-flex items-center gap-3"><i className="fas fa-envelope text-xl" aria-hidden /> Sign up with Email</span>
+            <span className="inline-flex items-center gap-3"><MailIcon className="h-5 w-5" /> Sign up with Email</span>
           </Link>
         </Button>
-        <Button asChild variant="secondary" className="rounded-ds-xl w-full">
+        <Button asChild variant="secondary" className="rounded-ds-xl" fullWidth>
           <Link href={`/signup/phone${ref ? `?ref=${ref}` : ''}`}>
-            <span className="inline-flex items-center gap-3"><i className="fas fa-sms text-xl" aria-hidden /> Sign up with Phone</span>
+            <span className="inline-flex items-center gap-3"><SmsIcon className="h-5 w-5" /> Sign up with Phone</span>
           </Link>
         </Button>
       </div>
