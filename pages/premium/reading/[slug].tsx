@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import { supabase } from '@/lib/supabaseClient';
 import { ExamShell } from '@/premium-ui/exam/ExamShell';
 import { PrButton } from '@/premium-ui/components/PrButton';
+import { ExamGate } from '@/premium-ui/access/ExamGate';
 
 // Basic types for reading tests
 export type Question = {
@@ -32,15 +33,24 @@ export default function ReadingExam() {
   const router = useRouter();
   const slug = String(router.query.slug || '');
 
+  const [ready, setReady] = React.useState(false);
   const [test, setTest] = React.useState<ReadingTest | null>(null);
   const [currentQ, setCurrentQ] = React.useState(1);
   const [passageIdx, setPassageIdx] = React.useState(0);
   const [answers, setAnswers] = React.useState<Record<string, string>>({});
   const [review, setReview] = React.useState(false);
 
-  // fetch test from Supabase
+  // ensure pin gate has been completed
   React.useEffect(() => {
-    if (!slug) return;
+    const ok = document.cookie.split('; ').some(c => c.startsWith('pr_pin_ok='));
+    if (!ok) {
+      router.replace(`/premium/pin?next=${encodeURIComponent(router.asPath)}`);
+    }
+  }, [router]);
+
+  // fetch test from Supabase once ready
+  React.useEffect(() => {
+    if (!ready || !slug) return;
     supabase
       .from('lm_reading_tests')
       .select('slug,title,passages,duration_sec')
@@ -56,7 +66,7 @@ export default function ReadingExam() {
           });
         }
       });
-  }, [slug]);
+  }, [slug, ready]);
 
   const totalQuestions = React.useMemo(() => {
     if (!test) return 0;
@@ -118,6 +128,10 @@ export default function ReadingExam() {
     await saveAnswers();
     setReview(true);
   };
+
+  if (!ready) {
+    return <ExamGate onReady={() => setReady(true)} />;
+  }
 
   const currentPassage = test?.passages[passageIdx];
 
