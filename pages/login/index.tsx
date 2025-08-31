@@ -1,12 +1,10 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Head from 'next/head';
 import { useRouter } from 'next/router';
 import AuthLayout from '@/components/layouts/AuthLayout';
 import AuthSidePanel from '@/components/layouts/AuthSidePanel';
 import { Button } from '@/components/design-system/Button';
 import { Alert } from '@/components/design-system/Alert';
-import { Select } from '@/components/design-system/Select';
 import {
   AppleIcon,
   GoogleIcon,
@@ -14,38 +12,69 @@ import {
   MailIcon,
   SmsIcon,
   ShieldIcon,
+  PhoneIcon,
   ChartIcon,
 } from '@/components/design-system/icons';
 import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser';
 
-type Role = 'student' | 'teacher' | 'admin' | '';
-
-export default function LoginIndex() {
-  const router = useRouter();
-  const [err, setErr] = useState<string | null>(null);
-  const [busy, setBusy] = useState<'' | 'apple' | 'google' | 'facebook'>('');
-  const [selectedRole, setSelectedRole] = useState<Role>('');
-
-  // hydrate role from query
-  useEffect(() => {
-    const qRole = (router.query.role as Role) ?? '';
-    if (qRole && qRole !== selectedRole) setSelectedRole(qRole);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [router.query.role]);
-
-  const roleQuery = useMemo(
-    () => (selectedRole ? `?role=${encodeURIComponent(selectedRole)}` : ''),
-    [selectedRole]
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="text-small uppercase tracking-wide text-grayish dark:text-gray-400/90 mb-3">
+      {children}
+    </div>
   );
+}
+
+export default function LoginOptions() {
+  const [err, setErr] = useState<string | null>(null);
+  const [busy, setBusy] = useState<'apple' | 'google' | 'facebook' | null>(null);
+  const [selectedRole, setSelectedRole] = useState<string | null>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!router.isReady) return;
+    const roleQuery = typeof router.query.role === 'string' ? router.query.role : null;
+
+    if (roleQuery) {
+      setSelectedRole(roleQuery);
+      if (typeof window !== 'undefined') localStorage.setItem('selectedRole', roleQuery);
+    } else if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('selectedRole');
+      if (stored) {
+        setSelectedRole(stored);
+        router.replace(
+          { pathname: router.pathname, query: { ...router.query, role: stored } },
+          undefined,
+          { shallow: true }
+        );
+      }
+    }
+  }, [router]);
+
+  function chooseRole(role: string) {
+    setSelectedRole(role);
+    if (typeof window !== 'undefined') localStorage.setItem('selectedRole', role);
+    router.replace(
+      { pathname: router.pathname, query: { ...router.query, role } },
+      undefined,
+      { shallow: true }
+    );
+  }
+
+  function clearRole() {
+    setSelectedRole(null);
+    if (typeof window !== 'undefined') localStorage.removeItem('selectedRole');
+    const { role, ...rest } = router.query;
+    router.replace({ pathname: router.pathname, query: { ...rest } }, undefined, { shallow: true });
+  }
 
   async function oauth(provider: 'apple' | 'google' | 'facebook') {
     try {
       setErr(null);
       setBusy(provider);
 
-      const origin =
-        typeof window !== 'undefined' ? window.location.origin : '';
-      const next = `/dashboard${roleQuery}`;
+      const origin = typeof window !== 'undefined' ? window.location.origin : undefined;
+      const next = `/dashboard${selectedRole ? `?role=${encodeURIComponent(selectedRole)}` : ''}`;
       const redirectTo = origin
         ? `${origin}/auth/callback?next=${encodeURIComponent(next)}`
         : undefined;
@@ -55,145 +84,168 @@ export default function LoginIndex() {
         options: { redirectTo },
       });
       if (error) throw error;
-    } catch (e: any) {
-      setBusy('');
-      setErr(e?.message || 'Could not start sign-in. Try again.');
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : 'Unable to continue.';
+      setErr(message);
+      setBusy(null);
     }
   }
 
-  function onChangeRole(v: string) {
-    setSelectedRole(v as Role);
-    const { pathname, query, ...rest } = router;
-    const nextQuery = { ...query, role: v || undefined };
-    router.replace(
-      { pathname, query: nextQuery as any },
-      undefined,
-      { shallow: true }
-    );
-  }
+  const features = [
+    (
+      <>
+        <i className="fas fa-shield-alt text-success" aria-hidden />
+        Secure OAuth (Apple, Google, Facebook)
+      </>
+    ),
+    (
+      <>
+        <i className="fas fa-mobile-alt" aria-hidden />
+        Phone OTP sign-in
+      </>
+    ),
+    (
+      <>
+        <i className="fas fa-envelope" aria-hidden />
+        Email &amp; Password
+      </>
+    ),
+    (
+      <>
+        <i className="fas fa-chart-line text-electricBlue" aria-hidden />
+        Personalized study plan &amp; analytics
+      </>
+    ),
+  ];
+
+  const RightPanel = (
+    <AuthSidePanel
+      title="Sign in to GramorX"
+      description="One account for all IELTS modules — Listening, Reading, Writing, and Speaking — with AI feedback and progress tracking."
+      features={features}
+      footerLink={
+        <>
+          By continuing, you agree to our{' '}
+          <Link href="/legal/terms" className="text-primaryDark hover:underline">
+            Terms
+          </Link>{' '}
+          and{' '}
+          <Link href="/legal/privacy" className="text-primaryDark hover:underline">
+            Privacy Policy
+          </Link>
+          .
+        </>
+      }
+    />
+  );
 
   return (
     <AuthLayout
       title="Welcome back"
-      description="Sign in to continue your IELTS journey."
-      sidePanel={
-        <AuthSidePanel
-          title="Focus & momentum"
-          items={[
-            { icon: ShieldIcon, label: 'Secure login' },
-            { icon: ChartIcon, label: 'Track progress' },
-          ]}
-        />
-      }
+      subtitle="Choose a sign-in method."
+      right={RightPanel}
+      showRightOnMobile
     >
-      <Head>
-        <title>Login — GramorX</title>
-      </Head>
+      {err && (
+        <Alert variant="error" title="Error" className="mb-4">
+          {err}
+        </Alert>
+      )}
 
-      {err && <Alert variant="error" className="mb-4">{err}</Alert>}
+      {!selectedRole ? (
+        <>
+          <SectionLabel>Sign in as</SectionLabel>
+          <div className="grid gap-3">
+            <Button onClick={() => chooseRole('student')} variant="secondary" className="rounded-ds-xl" fullWidth>
+              Student
+            </Button>
+            <Button onClick={() => chooseRole('teacher')} variant="secondary" className="rounded-ds-xl" fullWidth>
+              Teacher
+            </Button>
+          </div>
+        </>
+      ) : (
+        <>
+          <SectionLabel>Continue with</SectionLabel>
 
-      <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium mb-2">Continue as</label>
-          <Select
-            value={selectedRole}
-            onValueChange={onChangeRole}
-            placeholder="Select your role"
-            options={[
-              { label: 'Student', value: 'student' },
-              { label: 'Teacher', value: 'teacher' },
-              { label: 'Admin', value: 'admin' },
-            ]}
-          />
-        </div>
-
-        <div className="grid gap-3">
-          <Button
-            onClick={() => oauth('apple')}
-            variant="primary"
-            className="rounded-ds-xl"
-            fullWidth
-            disabled={!!busy}
-            aria-label="Sign in with Apple"
-          >
-            <span className="inline-flex items-center gap-3">
-              <AppleIcon className="h-5 w-5" />
-              {busy === 'apple' ? 'Opening Apple…' : 'Continue with Apple'}
-            </span>
-          </Button>
-
-          <Button
-            onClick={() => oauth('google')}
-            variant="secondary"
-            className="rounded-ds-xl"
-            fullWidth
-            disabled={!!busy}
-            aria-label="Sign in with Google"
-          >
-            <span className="inline-flex items-center gap-3">
-              <GoogleIcon className="h-5 w-5" />
-              {busy === 'google' ? 'Opening Google…' : 'Continue with Google'}
-            </span>
-          </Button>
-
-          <Button
-            onClick={() => oauth('facebook')}
-            variant="secondary"
-            className="rounded-ds-xl"
-            fullWidth
-            disabled={!!busy}
-            aria-label="Sign in with Facebook"
-          >
-            <span className="inline-flex items-center gap-3">
-              <FacebookIcon className="h-5 w-5" />
-              {busy === 'facebook' ? 'Opening Facebook…' : 'Continue with Facebook'}
-            </span>
-          </Button>
-
-          <Button asChild variant="ghost" className="rounded-ds-xl" fullWidth>
-            <Link href={`/login/email${roleQuery}`} aria-label="Sign in with Email and Password">
+          <div className="grid gap-3">
+            <Button
+              onClick={() => oauth('apple')}
+              disabled={busy === 'apple'}
+              variant="secondary"
+              className="rounded-ds-xl"
+              fullWidth
+            >
               <span className="inline-flex items-center gap-3">
-                <MailIcon className="h-5 w-5" />
-                Email (Password)
+                <AppleIcon className="h-5 w-5" />
+                {busy === 'apple' ? 'Opening Apple…' : 'Continue with Apple'}
               </span>
-            </Link>
-          </Button>
+            </Button>
 
-          <Button asChild variant="ghost" className="rounded-ds-xl" fullWidth>
-            <Link href={`/login/phone${roleQuery}`} aria-label="Sign in with Phone OTP">
+            <Button
+              onClick={() => oauth('google')}
+              disabled={busy === 'google'}
+              variant="secondary"
+              className="rounded-ds-xl"
+              fullWidth
+            >
               <span className="inline-flex items-center gap-3">
-                <SmsIcon className="h-5 w-5" />
-                Phone (OTP)
+                <GoogleIcon className="h-5 w-5" />
+                {busy === 'google' ? 'Opening Google…' : 'Continue with Google'}
               </span>
-            </Link>
-          </Button>
-        </div>
+            </Button>
 
-        <div className="mt-4 text-sm">
-          <Link
-            href={`/signup${roleQuery}`}
-            className="inline-flex items-center gap-1 underline underline-offset-4 hover:no-underline"
-          >
-            Create an account
-          </Link>
-        </div>
-      </div>
+            <Button
+              onClick={() => oauth('facebook')}
+              disabled={busy === 'facebook'}
+              variant="secondary"
+              className="rounded-ds-xl"
+              fullWidth
+            >
+              <span className="inline-flex items-center gap-3">
+                <FacebookIcon className="h-5 w-5" />
+                {busy === 'facebook' ? 'Opening Facebook…' : 'Continue with Facebook'}
+              </span>
+            </Button>
 
-      <div className="mt-8 text-xs text-muted-foreground">
-        <Link
-          href="/terms"
-          className="inline-flex items-center gap-1 underline underline-offset-4 hover:no-underline"
-        >
-          Terms
-        </Link>
-        <span className="px-2">•</span>
-        <Link
-          href="/privacy"
-          className="inline-flex items-center gap-1 underline underline-offset-4 hover:no-underline"
-        >
-          Privacy
-        </Link>
-      </div>
+            <Button asChild variant="secondary" className="rounded-ds-xl" fullWidth>
+              <Link
+                href={`/login/email${selectedRole ? `?role=${selectedRole}` : ''}`}
+                aria-label="Sign in with Email and Password"
+              >
+                <span className="inline-flex items-center gap-3">
+                  <MailIcon className="h-5 w-5" />
+                  Email (Password)
+                </span>
+              </Link>
+            </Button>
+
+            <Button asChild variant="secondary" className="rounded-ds-xl" fullWidth>
+              <Link
+                href={`/login/phone${selectedRole ? `?role=${selectedRole}` : ''}`}
+                aria-label="Sign in with Phone OTP"
+              >
+                <span className="inline-flex items-center gap-3">
+                  <SmsIcon className="h-5 w-5" />
+                  Phone (OTP)
+                </span>
+              </Link>
+            </Button>
+          </div>
+
+          <div className="mt-6 flex items-center justify-between text-small text-grayish dark:text-gray-400">
+            <div>
+              New here?{' '}
+              <Link href={`/signup${selectedRole ? `?role=${selectedRole}` : ''}`} className="text-primaryDark hover:underline">
+                Create an account
+              </Link>
+            </div>
+            <button className="underline decoration-dotted hover:no-underline" onClick={clearRole}>
+              Change role
+            </button>
+          </div>
+        </>
+      )}
     </AuthLayout>
   );
 }
