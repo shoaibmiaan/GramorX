@@ -51,21 +51,21 @@ export default function SignupOptions() {
   return (
     <AuthLayout title="Sign up to GramorX" subtitle="Choose a sign-up method." right={RightPanel}>
       <div className="grid gap-3">
-        <Button onClick={() => signUpOAuth('apple')} variant="secondary" className="rounded-ds-xl w-full">
+        <Button onClick={() => signUpOAuth('apple')} variant="secondary" className="rounded-ds-xl" fullWidth>
           <span className="inline-flex items-center gap-3"><i className="fab fa-apple text-xl" aria-hidden /> Sign up with Apple</span>
         </Button>
-        <Button onClick={() => signUpOAuth('google')} variant="secondary" className="rounded-ds-xl w-full">
+        <Button onClick={() => signUpOAuth('google')} variant="secondary" className="rounded-ds-xl" fullWidth>
           <span className="inline-flex items-center gap-3"><i className="fab fa-google text-xl" aria-hidden /> Sign up with Google</span>
         </Button>
-        <Button onClick={() => signUpOAuth('facebook')} variant="secondary" className="rounded-ds-xl w-full">
+        <Button onClick={() => signUpOAuth('facebook')} variant="secondary" className="rounded-ds-xl" fullWidth>
           <span className="inline-flex items-center gap-3"><i className="fab fa-facebook-f text-xl" aria-hidden /> Sign up with Facebook</span>
         </Button>
-        <Button asChild variant="secondary" className="rounded-ds-xl w-full">
+        <Button asChild variant="secondary" className="rounded-ds-xl" fullWidth>
           <Link href={`/signup/password${ref ? `?ref=${ref}` : ''}`}>
             <span className="inline-flex items-center gap-3"><i className="fas fa-envelope text-xl" aria-hidden /> Sign up with Email</span>
           </Link>
         </Button>
-        <Button asChild variant="secondary" className="rounded-ds-xl w-full">
+        <Button asChild variant="secondary" className="rounded-ds-xl" fullWidth>
           <Link href={`/signup/phone${ref ? `?ref=${ref}` : ''}`}>
             <span className="inline-flex items-center gap-3"><i className="fas fa-sms text-xl" aria-hidden /> Sign up with Phone</span>
           </Link>
