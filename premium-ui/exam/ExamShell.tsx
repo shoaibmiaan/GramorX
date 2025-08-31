@@ -18,6 +18,10 @@ type Props = {
   onTimeUp?: () => void;
   /** Optional answer sheet rendered beneath the question area */
   answerSheet?: React.ReactNode;
+  /** Optional scratchpad rendered in the side panel */
+  scratchpad?: React.ReactNode;
+  /** Optional media dock rendered in the side panel */
+  mediaDock?: React.ReactNode;
 };
 
 export function ExamShell({
@@ -30,6 +34,8 @@ export function ExamShell({
   seconds,
   onTimeUp,
   answerSheet,
+  scratchpad,
+  mediaDock,
 }: Props) {
   const [timeLeft, setTimeLeft] = React.useState(seconds ?? 0);
 
@@ -92,23 +98,27 @@ export function ExamShell({
             {answerSheet && <div className="mt-4 border-t border-[var(--pr-border)] pt-4">{answerSheet}</div>}
           </section>
 
-          <aside className="hidden md:block p-3 rounded-2xl border border-[var(--pr-border)] bg-[var(--pr-card)]">
-            <div className="text-sm opacity-70 mb-2">Questions</div>
-            <div className="grid grid-cols-5 gap-2">
-              {Array.from({ length: totalQuestions }).map((_, i) => {
-                const q = i + 1;
-                const active = q === currentQuestion;
-                return (
-                  <button
-                    key={q}
-                    onClick={() => onNavigate?.(q)}
-                    className={`aspect-square rounded-lg border border-[var(--pr-border)] text-sm hover:translate-y-[-1px] transition ${active ? 'bg-[var(--pr-primary)] text-white' : ''}`}
-                  >
-                    {q}
-                  </button>
-                );
-              })}
+          <aside className="pr hidden md:flex flex-col gap-4">
+            <div className="p-3 rounded-2xl border border-[var(--pr-border)] bg-[var(--pr-card)]">
+              <div className="text-sm opacity-70 mb-2">Questions</div>
+              <div className="grid grid-cols-5 gap-2">
+                {Array.from({ length: totalQuestions }).map((_, i) => {
+                  const q = i + 1;
+                  const active = q === currentQuestion;
+                  return (
+                    <button
+                      key={q}
+                      onClick={() => onNavigate?.(q)}
+                      className={`aspect-square rounded-lg border border-[var(--pr-border)] text-sm hover:translate-y-[-1px] transition ${active ? 'bg-[var(--pr-primary)] text-white' : ''}`}
+                    >
+                      {q}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
+            {scratchpad}
+            {mediaDock}
           </aside>
         </div>
       </main>
