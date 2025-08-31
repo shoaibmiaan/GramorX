@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import { supabase } from '@/lib/supabaseClient';
 import { ExamShell } from '@/premium-ui/exam/ExamShell';
 import { PrButton } from '@/premium-ui/components/PrButton';
+import { ResultPanel, Criteria } from '@/premium-ui/results/ResultPanel';
 import { ExamGate } from '@/premium-ui/access/ExamGate';
 import { PinGate } from '@/premium-ui/access/PinGate';
 
@@ -35,14 +36,29 @@ export default function ReadingExam() {
   const router = useRouter();
   const slug = String(router.query.slug || '');
 
-  const [ready, setReady] = React.useState(false);       // subscription verified
-  const [unlocked, setUnlocked] = React.useState(false); // pin verified
+  // Gates
+  const [ready, setReady] = React.useState(false);        // subscription verified
+  const [unlocked, setUnlocked] = React.useState(false);  // pin verified
 
+  // Test state
   const [test, setTest] = React.useState<ReadingTest | null>(null);
   const [currentQ, setCurrentQ] = React.useState(1);
   const [passageIdx, setPassageIdx] = React.useState(0);
   const [answers, setAnswers] = React.useState<Record<string, string>>({});
   const [review, setReview] = React.useState(false);
+
+  // Scoring state
+  const [result, setResult] = React.useState<{
+    band: number;
+    criteria: Criteria;
+    feedback: string;
+  } | null>(null);
+
+  const attemptIdRef = React.useRef<string>(
+    typeof crypto !== 'undefined' && 'randomUUID' in crypto
+      ? crypto.randomUUID()
+      : Math.random().toString(36).slice(2)
+  );
 
   // fetch test from Supabase once subscription gate passes
   React.useEffect(() => {
@@ -123,6 +139,27 @@ export default function ReadingExam() {
   const onSubmit = async () => {
     await saveAnswers();
     setReview(true);
+
+    try {
+      const attemptId = attemptIdRef.current;
+      const text = Object.values(answers).join('\n');
+      await fetch(`/api/exam/${attemptId}/submit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text }),
+      });
+      const r = await fetch(`/api/exam/${attemptId}/score`);
+      if (r.ok) {
+        const json = await r.json();
+        setResult({
+          band: json.band ?? json.bandOverall,
+          criteria: json.criteria,
+          feedback: json.feedback,
+        });
+      }
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   // Gate #1: subscription/plan check
@@ -220,6 +257,10 @@ export default function ReadingExam() {
             <div className="pr-flex pr-justify-end">
               <PrButton onClick={onSubmit}>Submit</PrButton>
             </div>
+          )}
+
+          {review && result && (
+            <ResultPanel band={result.band} criteria={result.criteria} feedback={result.feedback} />
           )}
         </div>
       )}
