@@ -1,4 +1,5 @@
 // pages/auth/verify.tsx
+import Image from 'next/image';
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
 import AuthLayout from '@/components/layouts/AuthLayout';
@@ -58,7 +59,22 @@ export default function VerifyPage() {
       : 'Check your inbox for a verification link.';
 
   return (
-    <AuthLayout title="Verify your account" subtitle={subtitle} showRightOnMobile>
+    <AuthLayout
+      title="Verify your account"
+      subtitle={subtitle}
+      right={
+        <div className="relative w-full h-full flex items-center justify-center bg-primary/10 dark:bg-dark">
+          <Image
+            src="/brand/logo.png"
+            alt="GramorX Logo"
+            fill
+            sizes="100vw"
+            className="object-contain p-6"
+          />
+        </div>
+      }
+      showRightOnMobile
+    >
       {error ? (
         <Alert variant="error" title="Verification error" className="mt-4">
           {error}

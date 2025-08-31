@@ -144,7 +144,7 @@ export default function SignupWithPhone() {
   );
 
   return (
-    <AuthLayout title="Phone Verification" subtitle="Sign up with an SMS code." right={RightPanel}>
+    <AuthLayout title="Phone Verification" subtitle="Sign up with an SMS code." right={RightPanel} showRightOnMobile>
       {err && <Alert variant="error" title="Error" className="mb-4">{err}</Alert>}
 
       {stage === 'request' ? (

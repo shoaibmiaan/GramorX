@@ -97,7 +97,7 @@ export default function LoginWithEmail() {
   );
 
   return (
-    <AuthLayout title="Sign in with Email" subtitle="Use your email & password." right={RightPanel}>
+    <AuthLayout title="Sign in with Email" subtitle="Use your email & password." right={RightPanel} showRightOnMobile>
       {(err || mfaErr) && <Alert variant="error" title="Error">{err || mfaErr}</Alert>}
 
       {!otpSent ? (
