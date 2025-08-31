@@ -302,6 +302,12 @@ export default function AdminIndex() {
             ))}
         </div>
 
+        {role === 'admin' && (
+          <Link href="/admin/users" className="font-medium text-primary hover:underline">
+            Manage Users
+          </Link>
+        )}
+
         {/* KPI Cards */}
         <section className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
           {kpis.map((k) => (
