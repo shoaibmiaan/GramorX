@@ -3,5 +3,6 @@
 .turbo/
 *.log
 .env*
+!.env.example
 .env.local
 public/sw.js
