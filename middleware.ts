@@ -50,6 +50,15 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  // Require a verified premium PIN before accessing premium routes
+  const pinOk = req.cookies.get('pr_pin_ok')?.value === '1';
+  if (!pinOk && pathname !== '/premium/pin') {
+    const url = req.nextUrl.clone();
+    url.pathname = '/premium/pin';
+    url.search = `?next=${encodeURIComponent(pathname + (search || ''))}`;
+    return NextResponse.redirect(url);
+  }
+
   try {
     const resp = await fetch(`${origin}/api/premium/status`, {
       headers: { Authorization: `Bearer ${token}` },
