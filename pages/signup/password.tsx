@@ -1,8 +1,8 @@
-// pages/signup/password.tsx
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import AuthLayout from '@/components/layouts/AuthLayout';
+import AuthSidePanel from '@/components/layouts/AuthSidePanel';
 import { Input } from '@/components/design-system/Input';
 import { PasswordInput } from '@/components/design-system/PasswordInput';
 import { Button } from '@/components/design-system/Button';
@@ -84,10 +84,26 @@ export default function SignupWithPassword() {
     }
   }
 
+  const RightPanel = (
+    <AuthSidePanel
+      title="Create your account"
+      description="Use your email & password to get started."
+      footerLink={
+        <>
+          Already have an account?{' '}
+          <Link href="/login" className="text-primaryDark hover:underline">
+            Log in
+          </Link>
+        </>
+      }
+    />
+  );
+
   return (
     <AuthLayout
       title="Sign up with Email"
       subtitle="Create an account using email & password."
+      right={RightPanel}
       showRightOnMobile
     >
       {err && (
