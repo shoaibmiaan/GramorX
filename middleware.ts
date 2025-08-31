@@ -6,7 +6,7 @@ export async function middleware(req: NextRequest) {
   const { pathname, search } = req.nextUrl;
 
   // Only guard premium here; everything else is handled by SSR
-  if (pathname.startsWith('/premium')) {
+  if (pathname.startsWith('/premium') && pathname !== '/premium/pin') {
     const token = req.cookies.get('sb-access-token')?.value ?? null;
     if (!token) {
       const url = req.nextUrl.clone();
