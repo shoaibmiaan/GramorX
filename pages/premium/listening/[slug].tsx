@@ -3,12 +3,14 @@ import { useRouter } from 'next/router';
 import { ExamShell } from '@/premium-ui/exam/ExamShell';
 import { PrAudioPlayer } from '@/premium-ui/components/PrAudioPlayer';
 import { PrButton } from '@/premium-ui/components/PrButton';
+import { PinGate } from '@/premium-ui/access/PinGate';
 
 export default function ListeningExam() {
   const router = useRouter();
   const slug = String(router.query.slug || 'sample-test');
 
   const [part, setPart] = React.useState(1);
+  const [unlocked, setUnlocked] = React.useState(false);
   const total = 4;
 
   const onNext = () => setPart(p => Math.min(total, p + 1));
@@ -27,6 +29,10 @@ export default function ListeningExam() {
       </div>
     </div>
   );
+
+  if (!unlocked) {
+    return <PinGate onSuccess={() => setUnlocked(true)} />;
+  }
 
   return (
     <ExamShell

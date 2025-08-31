@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { ExamShell } from '@/premium-ui/exam/ExamShell';
 import { PrButton } from '@/premium-ui/components/PrButton';
 import { ResultPanel, Criteria } from '@/premium-ui/results/ResultPanel';
+import { PinGate } from '@/premium-ui/access/PinGate';
 
 // Basic types for reading tests
 export type Question = {
@@ -39,7 +40,12 @@ export default function ReadingExam() {
   const [answers, setAnswers] = React.useState<Record<string, string>>({});
   const [review, setReview] = React.useState(false);
   const [result, setResult] = React.useState<{ band: number; criteria: Criteria; feedback: string } | null>(null);
-  const attemptIdRef = React.useRef<string>(typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : Math.random().toString(36).slice(2));
+  const attemptIdRef = React.useRef<string>(
+    typeof crypto !== 'undefined' && 'randomUUID' in crypto
+      ? crypto.randomUUID()
+      : Math.random().toString(36).slice(2)
+  );
+  const [unlocked, setUnlocked] = React.useState(false);
 
   // fetch test from Supabase
   React.useEffect(() => {
@@ -79,8 +85,8 @@ export default function ReadingExam() {
       count += len;
     }
     setTimeout(() => {
-      const el = document.querySelector(`[data-q="${qNo}"]`);
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const el = document.querySelector(`[data-q="${qNo}"]`) as HTMLElement | null;
+      el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 0);
   };
 
@@ -132,7 +138,11 @@ export default function ReadingExam() {
       const r = await fetch(`/api/exam/${attemptId}/score`);
       if (r.ok) {
         const json = await r.json();
-        setResult({ band: json.band ?? json.bandOverall, criteria: json.criteria, feedback: json.feedback });
+        setResult({
+          band: json.band ?? json.bandOverall,
+          criteria: json.criteria,
+          feedback: json.feedback,
+        });
       }
     } catch (e) {
       console.error(e);
@@ -140,6 +150,10 @@ export default function ReadingExam() {
   };
 
   const currentPassage = test?.passages[passageIdx];
+
+  if (!unlocked) {
+    return <PinGate onSuccess={() => setUnlocked(true)} />;
+  }
 
   return (
     <ExamShell
