@@ -1,18 +1,23 @@
+// pages/listening/[slug].tsx
 import * as React from 'react';
 import { useRouter } from 'next/router';
 import { ExamShell } from '@/premium-ui/exam/ExamShell';
 import { PrAudioPlayer } from '@/premium-ui/components/PrAudioPlayer';
 import { PrButton } from '@/premium-ui/components/PrButton';
+import { ExamGate } from '@/premium-ui/access/ExamGate';
+import { PinGate } from '@/premium-ui/access/PinGate';
 
 export default function ListeningExam() {
   const router = useRouter();
   const slug = String(router.query.slug || 'sample-test');
 
+  const [ready, setReady] = React.useState(false);      // subscription verified
+  const [unlocked, setUnlocked] = React.useState(false); // pin verified
   const [part, setPart] = React.useState(1);
   const total = 4;
 
-  const onNext = () => setPart(p => Math.min(total, p + 1));
-  const onPrev = () => setPart(p => Math.max(1, p - 1));
+  const onNext = () => setPart((p) => Math.min(total, p + 1));
+  const onPrev = () => setPart((p) => Math.max(1, p - 1));
 
   const answerSheet = (
     <div className="pr-rounded-xl pr-border pr-border-[var(--pr-border)] pr-p-4 pr-bg-[var(--pr-card)]">
@@ -27,6 +32,12 @@ export default function ListeningExam() {
       </div>
     </div>
   );
+
+  // Gate #1: subscription/plan check
+  if (!ready) return <ExamGate onReady={() => setReady(true)} />;
+
+  // Gate #2: exam PIN check
+  if (!unlocked) return <PinGate onSuccess={() => setUnlocked(true)} />;
 
   return (
     <ExamShell
@@ -60,4 +71,3 @@ export default function ListeningExam() {
     </ExamShell>
   );
 }
-

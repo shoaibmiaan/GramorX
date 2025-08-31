@@ -3,6 +3,7 @@ import { PremiumThemeProvider } from '../theme/PremiumThemeProvider';
 import { ThemeSwitcherPremium } from '../theme/ThemeSwitcher';
 import { QuestionCanvas, type MCQItem } from './QuestionCanvas';
 import { TimerHUD } from './TimerHUD';
+import { AntiCheatSentry } from '../monitoring/AntiCheatSentry';
 
 type Props = {
   attemptId?: string;
@@ -23,6 +24,10 @@ type Props = {
   onAnswer?: (val: string) => void;
   /** Optional answer sheet rendered beneath the question area */
   answerSheet?: React.ReactNode;
+  /** Optional scratchpad rendered in the side panel */
+  scratchpad?: React.ReactNode;
+  /** Optional media dock rendered in the side panel */
+  mediaDock?: React.ReactNode;
 };
 
 export function ExamShell({
@@ -36,9 +41,13 @@ export function ExamShell({
   question,
   onAnswer,
   answerSheet,
+  scratchpad,
+  mediaDock,
 }: Props) {
   return (
     <PremiumThemeProvider>
+      <AntiCheatSentry attemptId={attemptId} />
+
       <header className="pr-sticky pr-top-0 pr-z-40 pr-backdrop-blur pr-bg-[color-mix(in_oklab,var(--pr-bg),transparent_40%)] pr-border-b pr-border-[var(--pr-border)]">
         <div className="pr-container pr-mx-auto pr-grid pr-grid-cols-[1fr_auto_1fr] pr-items-center pr-gap-4 pr-px-4 pr-py-3">
           <div className="pr-flex pr-items-center pr-gap-3">
@@ -48,11 +57,13 @@ export function ExamShell({
               <h1 className="pr-font-semibold">{title}</h1>
             </div>
           </div>
+
           {seconds !== undefined && (
             <div className="pr-justify-self-center">
               <TimerHUD seconds={seconds} onTimeUp={onTimeUp} />
             </div>
           )}
+
           <div className="pr-justify-self-end">
             <ThemeSwitcherPremium />
           </div>
@@ -61,14 +72,18 @@ export function ExamShell({
 
       <main className="pr-container pr-mx-auto pr-px-4 pr-py-6">
         <div className="pr-grid pr-gap-4 md:pr-grid-cols-[1fr_260px]">
-          <section className="pr-p-4 pr-rounded-2xl pr-border pr-border-[var(--pr-border)] pr-bg-[var(--pr-surface, var(--pr-card))] pr-min-h-[60vh] pr-grid pr-grid-rows-[1fr_auto]">
+          <section className="pr-p-4 pr-rounded-2xl pr-border pr-border-[var(--pr-border)] pr-bg-[var(--pr-surface,var(--pr-card))] pr-min-h-[60vh] pr-grid pr-grid-rows-[1fr_auto]">
             <QuestionCanvas
               item={question}
               onAnswer={onAnswer}
               onPrev={currentQuestion > 1 ? () => onNavigate?.(currentQuestion - 1) : undefined}
               onNext={currentQuestion < totalQuestions ? () => onNavigate?.(currentQuestion + 1) : undefined}
             />
-            {answerSheet && <div className="pr-mt-4 pr-border-t pr-border-[var(--pr-border)] pr-pt-4">{answerSheet}</div>}
+            {answerSheet && (
+              <div className="pr-mt-4 pr-border-t pr-border-[var(--pr-border)] pr-pt-4">
+                {answerSheet}
+              </div>
+            )}
           </section>
 
           <aside className="pr-hidden md:pr-block pr-p-3 pr-rounded-2xl pr-border pr-border-[var(--pr-border)] pr-bg-[var(--pr-card)]">
@@ -88,6 +103,9 @@ export function ExamShell({
                 );
               })}
             </div>
+
+            {scratchpad}
+            {mediaDock}
           </aside>
         </div>
       </main>
