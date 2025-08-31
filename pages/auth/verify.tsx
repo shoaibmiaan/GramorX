@@ -67,9 +67,9 @@ export default function VerifyPage() {
           <Image
             src="/brand/logo.png"
             alt="GramorX Logo"
-            width={420}
-            height={420}
-            className="object-contain"
+            fill
+            sizes="100vw"
+            className="object-contain p-6"
           />
         </div>
       }

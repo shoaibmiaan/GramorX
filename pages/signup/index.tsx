@@ -49,7 +49,7 @@ export default function SignupOptions() {
   );
 
   return (
-    <AuthLayout title="Sign up to GramorX" subtitle="Choose a sign-up method." right={RightPanel}>
+    <AuthLayout title="Sign up to GramorX" subtitle="Choose a sign-up method." right={RightPanel} showRightOnMobile>
       <div className="grid gap-3">
         <Button onClick={() => signUpOAuth('apple')} variant="secondary" className="rounded-ds-xl w-full">
           <span className="inline-flex items-center gap-3"><i className="fab fa-apple text-xl" aria-hidden /> Sign up with Apple</span>

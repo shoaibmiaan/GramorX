@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useRouter } from 'next/router';
 import AuthLayout from '@/components/layouts/AuthLayout';
 import { Input } from '@/components/design-system/Input';
@@ -84,24 +83,11 @@ export default function SignupWithPassword() {
     }
   }
 
-  const RightPanel = (
-    <div className="hidden md:flex w-1/2 relative items-center justify-center bg-primary/10 dark:bg-dark">
-      <Image
-        src="/brand/logo.png"
-        alt="GramorX Logo"
-        width={420}
-        height={420}
-        className="object-contain"
-        priority
-      />
-    </div>
-  );
-
   return (
     <AuthLayout
       title="Sign up with Email"
       subtitle="Create an account using email & password."
-      right={RightPanel}
+      showRightOnMobile
     >
       {err && (
         <Alert variant="error" title="Error" className="mb-4">
