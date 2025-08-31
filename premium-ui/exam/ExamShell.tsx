@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { PremiumThemeProvider } from '../theme/PremiumThemeProvider';
 import { ThemeSwitcherPremium } from '../theme/ThemeSwitcher';
+import { AntiCheatSentry } from '../monitoring/AntiCheatSentry';
 
 type Props = {
   children?: React.ReactNode;
@@ -65,6 +66,7 @@ export function ExamShell({
 
   return (
     <PremiumThemeProvider>
+      <AntiCheatSentry attemptId={attemptId} />
       <header className="pr sticky top-0 z-40 backdrop-blur bg-[color-mix(in oklab,var(--pr-bg),transparent 40%)] border-b border-[var(--pr-border)]">
         <div className="pr container mx-auto grid grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 py-3">
           <div className="flex items-center gap-3">
