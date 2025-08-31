@@ -94,11 +94,24 @@ function AdminUsers() {
     setPinMsg(null);
   };
 
-  const generatePin = () => {
-    const len = Math.floor(Math.random() * 3) + 4; // 4-6
-    let s = '';
-    for (let i = 0; i < len; i++) s += Math.floor(Math.random() * 10);
-    setPin(s);
+  const generatePin = async () => {
+    setPinBusy(true);
+    setPinMsg(null);
+    try {
+      const { data } = await supabaseBrowser.auth.getSession();
+      const tok = data?.session?.access_token;
+      if (!tok) throw new Error('No session');
+      const r = await fetch('/api/admin/premium/generate-pin', {
+        headers: { Authorization: `Bearer ${tok}` },
+      });
+      const j = await r.json();
+      if (!r.ok || !j?.pin) throw new Error(j?.error || 'Failed');
+      setPin(j.pin);
+    } catch (e: any) {
+      setPinMsg(e?.message || 'Error generating PIN');
+    } finally {
+      setPinBusy(false);
+    }
   };
 
   const callPinApi = async (path: string, body: any) => {
