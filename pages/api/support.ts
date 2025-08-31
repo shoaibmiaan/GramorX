@@ -1,6 +1,7 @@
 // pages/api/support.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { createSupabaseServerClient } from '@/lib/supabaseServer';
+import { rateLimit } from '@/lib/rateLimit';
 
 /** ========= Types ========= */
 type SupportCategory = 'account' | 'billing' | 'modules' | 'ai' | 'technical' | 'other';
@@ -84,6 +85,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     res.setHeader('Allow', ['POST']);
     return res.status(405).json({ ok: false, message: 'Method Not Allowed' });
   }
+
+  if (!(await rateLimit(req, res))) return;
 
   // Validate body
   const parsed = asSupportRequest(req.body as unknown);

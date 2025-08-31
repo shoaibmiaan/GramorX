@@ -3,6 +3,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { z } from 'zod';
 import Twilio from 'twilio';
 import { env } from '@/lib/env';
+import { rateLimit } from '@/lib/rateLimit';
 
 /** ---- Helpers ---- */
 const isDummy = (v?: string) => !v || /dummy|placeholder/i.test(v);
@@ -43,6 +44,8 @@ export default async function handler(
     res.setHeader('Allow', 'POST');
     throw new Error('Method Not Allowed');
   }
+
+  if (!(await rateLimit(req, res))) return;
 
   const parsed = BodySchema.safeParse(req.body);
   if (!parsed.success) {
