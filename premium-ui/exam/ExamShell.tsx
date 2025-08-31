@@ -1,9 +1,10 @@
 import * as React from 'react';
 import { PremiumThemeProvider } from '../theme/PremiumThemeProvider';
 import { ThemeSwitcherPremium } from '../theme/ThemeSwitcher';
+import { QuestionCanvas, type MCQItem } from './QuestionCanvas';
+import { TimerHUD } from './TimerHUD';
 
 type Props = {
-  children?: React.ReactNode;
   attemptId?: string;
   title?: string;
   /** Total number of questions for the navigation palette */
@@ -16,12 +17,15 @@ type Props = {
   seconds?: number;
   /** Callback when timer hits zero */
   onTimeUp?: () => void;
+  /** Question item to render */
+  question: MCQItem;
+  /** Handle answer selection */
+  onAnswer?: (val: string) => void;
   /** Optional answer sheet rendered beneath the question area */
   answerSheet?: React.ReactNode;
 };
 
 export function ExamShell({
-  children,
   attemptId,
   title = 'Exam Room',
   totalQuestions = 20,
@@ -29,72 +33,47 @@ export function ExamShell({
   onNavigate,
   seconds,
   onTimeUp,
+  question,
+  onAnswer,
   answerSheet,
 }: Props) {
-  const [timeLeft, setTimeLeft] = React.useState(seconds ?? 0);
-
-  React.useEffect(() => {
-    if (seconds === undefined) return;
-    setTimeLeft(seconds);
-    if (seconds <= 0) {
-      onTimeUp?.();
-      return;
-    }
-    const id = setInterval(() => {
-      setTimeLeft(t => {
-        if (t <= 1) {
-          clearInterval(id);
-          onTimeUp?.();
-          return 0;
-        }
-        return t - 1;
-      });
-    }, 1000);
-    return () => clearInterval(id);
-  }, [seconds, onTimeUp]);
-
-  const formatTime = (t: number) => {
-    const m = Math.floor(t / 60)
-      .toString()
-      .padStart(2, '0');
-    const s = Math.floor(t % 60)
-      .toString()
-      .padStart(2, '0');
-    return `${m}:${s}`;
-  };
-
   return (
     <PremiumThemeProvider>
-      <header className="pr sticky top-0 z-40 backdrop-blur bg-[color-mix(in oklab,var(--pr-bg),transparent 40%)] border-b border-[var(--pr-border)]">
-        <div className="pr container mx-auto grid grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 py-3">
-          <div className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded-xl bg-[var(--pr-card)] border border-[var(--pr-border)] grid place-items-center">🏛️</div>
-            <div className="leading-tight">
-              <div className="text-sm opacity-70">{attemptId ? `Attempt ${attemptId}` : 'Premium'}</div>
-              <h1 className="font-semibold">{title}</h1>
+      <header className="pr-sticky pr-top-0 pr-z-40 pr-backdrop-blur pr-bg-[color-mix(in_oklab,var(--pr-bg),transparent_40%)] pr-border-b pr-border-[var(--pr-border)]">
+        <div className="pr-container pr-mx-auto pr-grid pr-grid-cols-[1fr_auto_1fr] pr-items-center pr-gap-4 pr-px-4 pr-py-3">
+          <div className="pr-flex pr-items-center pr-gap-3">
+            <div className="pr-h-8 pr-w-8 pr-rounded-xl pr-bg-[var(--pr-card)] pr-border pr-border-[var(--pr-border)] pr-grid pr-place-items-center">🏛️</div>
+            <div className="pr-leading-tight">
+              <div className="pr-text-sm pr-opacity-70">{attemptId ? `Attempt ${attemptId}` : 'Premium'}</div>
+              <h1 className="pr-font-semibold">{title}</h1>
             </div>
           </div>
           {seconds !== undefined && (
-            <div className="justify-self-center px-3 py-1.5 rounded-xl border border-[var(--pr-border)] bg-[var(--pr-card)] font-mono text-sm">
-              ⏱ {formatTime(timeLeft)}
+            <div className="pr-justify-self-center">
+              <TimerHUD seconds={seconds} onTimeUp={onTimeUp} />
             </div>
           )}
-          <div className="justify-self-end">
+          <div className="pr-justify-self-end">
             <ThemeSwitcherPremium />
           </div>
         </div>
       </header>
 
-      <main className="pr container mx-auto px-4 py-6">
-        <div className="grid gap-4 md:grid-cols-[1fr_260px]">
-          <section className="p-4 rounded-2xl border border-[var(--pr-border)] bg-[var(--pr-surface, var(--pr-card))] min-h-[60vh] grid grid-rows-[1fr_auto]">
-            <div>{children ?? <p className="opacity-80">Drop your module content here.</p>}</div>
-            {answerSheet && <div className="mt-4 border-t border-[var(--pr-border)] pt-4">{answerSheet}</div>}
+      <main className="pr-container pr-mx-auto pr-px-4 pr-py-6">
+        <div className="pr-grid pr-gap-4 md:pr-grid-cols-[1fr_260px]">
+          <section className="pr-p-4 pr-rounded-2xl pr-border pr-border-[var(--pr-border)] pr-bg-[var(--pr-surface, var(--pr-card))] pr-min-h-[60vh] pr-grid pr-grid-rows-[1fr_auto]">
+            <QuestionCanvas
+              item={question}
+              onAnswer={onAnswer}
+              onPrev={currentQuestion > 1 ? () => onNavigate?.(currentQuestion - 1) : undefined}
+              onNext={currentQuestion < totalQuestions ? () => onNavigate?.(currentQuestion + 1) : undefined}
+            />
+            {answerSheet && <div className="pr-mt-4 pr-border-t pr-border-[var(--pr-border)] pr-pt-4">{answerSheet}</div>}
           </section>
 
-          <aside className="hidden md:block p-3 rounded-2xl border border-[var(--pr-border)] bg-[var(--pr-card)]">
-            <div className="text-sm opacity-70 mb-2">Questions</div>
-            <div className="grid grid-cols-5 gap-2">
+          <aside className="pr-hidden md:pr-block pr-p-3 pr-rounded-2xl pr-border pr-border-[var(--pr-border)] pr-bg-[var(--pr-card)]">
+            <div className="pr-text-sm pr-opacity-70 pr-mb-2">Questions</div>
+            <div className="pr-grid pr-grid-cols-5 pr-gap-2">
               {Array.from({ length: totalQuestions }).map((_, i) => {
                 const q = i + 1;
                 const active = q === currentQuestion;
@@ -102,7 +81,7 @@ export function ExamShell({
                   <button
                     key={q}
                     onClick={() => onNavigate?.(q)}
-                    className={`aspect-square rounded-lg border border-[var(--pr-border)] text-sm hover:translate-y-[-1px] transition ${active ? 'bg-[var(--pr-primary)] text-white' : ''}`}
+                    className={`pr-aspect-square pr-rounded-lg pr-border pr-border-[var(--pr-border)] pr-text-sm hover:pr-translate-y-[-1px] pr-transition ${active ? 'pr-bg-[var(--pr-primary)] pr-text-white' : ''}`}
                   >
                     {q}
                   </button>
