@@ -29,18 +29,8 @@ import SidebarAI from '@/components/ai/SidebarAI';
 import AuthAssistant from '@/components/auth/AuthAssistant';
 
 import { Poppins, Roboto_Slab } from 'next/font/google';
-const poppins = Poppins({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-  display: 'swap',
-  variable: '--font-sans',
-});
-const slab = Roboto_Slab({
-  subsets: ['latin'],
-  weight: ['400', '600', '700'],
-  display: 'swap',
-  variable: '--font-display',
-});
+const poppins = Poppins({ subsets: ['latin'], weight: ['400','500','600','700'], display: 'swap', variable: '--font-sans' });
+const slab = Roboto_Slab({ subsets: ['latin'], weight: ['400','600','700'], display: 'swap', variable: '--font-display' });
 
 function GuardSkeleton() {
   return (
@@ -56,20 +46,12 @@ function InnerApp({ Component, pageProps }: AppProps) {
   const pathname = router.pathname;
 
   const isPremium = pathname.startsWith('/premium');
-
   const isAuthPage = useMemo(
-    () =>
-      /^\/(login|signup|register)(\/|$)/.test(pathname) ||
-      /^\/auth\/(login|signup|register|verify)(\/|$)/.test(pathname),
+    () => /^\/(login|signup|register)(\/|$)/.test(pathname) || /^\/auth\/(login|signup|register)(\/|$)/.test(pathname),
     [pathname]
   );
-
   const showAuthAssistant = useMemo(() => /^\/(login|signup)(\/|$)/.test(pathname), [pathname]);
-
-  const isNoChromeRoute = useMemo(() => {
-    return /\/exam(\/|$)|\/exam-room(\/|$)|\/focus-mode(\/|$)/.test(pathname);
-  }, [pathname]);
-
+  const isNoChromeRoute = useMemo(() => /\/exam(\/|$)|\/exam-room(\/|$)|\/focus-mode(\/|$)/.test(pathname), [pathname]);
   const showLayout = !isPremium && !isAuthPage && !isNoChromeRoute;
 
   useEffect(() => {
@@ -77,7 +59,21 @@ function InnerApp({ Component, pageProps }: AppProps) {
     return cleanup;
   }, []);
 
-  // ⬇️ removed: const [role, setRole] = useState<AppRole | null>(null);
+  // ⬇️ NEW: sync client session → HttpOnly cookies for SSR/middleware
+  useEffect(() => {
+    const { data: sub } = supabaseBrowser.auth.onAuthStateChange(async (event, session) => {
+      try {
+        await fetch('/api/auth/set-session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          body: JSON.stringify({ event, session }),
+        });
+      } catch {}
+    });
+    return () => sub?.subscription?.unsubscribe();
+  }, []);
+
   const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
@@ -86,40 +82,29 @@ function InnerApp({ Component, pageProps }: AppProps) {
 
     (async () => {
       try {
-        const {
-          data: { session },
-        } = await supabaseBrowser.auth.getSession();
+        const { data: { session } } = await supabaseBrowser.auth.getSession();
 
         const guestOnlyR = isGuestOnlyRoute(pathname);
         const publicR = isPublicRoute(pathname);
 
-        let currentSession = session;
         const expiresAt = session?.expires_at;
         if (session && expiresAt && expiresAt <= Date.now() / 1000) {
           await supabaseBrowser.auth.signOut();
-          currentSession = null;
           if (!guestOnlyR && !publicR) {
             router.replace('/login');
             return;
           }
         }
 
-        const user = currentSession?.user ?? null;
-        const r: AppRole | null = getUserRole(user);
+        const user = session?.user ?? null;
+        const role: AppRole | null = getUserRole(user);
         if (!active) return;
 
-        if (
-          user &&
-          !user.email_confirmed_at &&
-          !user.phone_confirmed_at &&
-          pathname !== '/auth/verify'
-        ) {
+        if (user && !user.email_confirmed_at && !user.phone_confirmed_at && pathname !== '/auth/verify') {
           await supabaseBrowser.auth.signOut();
           router.replace('/auth/verify');
           return;
         }
-
-        // ⬇️ removed: setRole(r);
 
         if (user) {
           const { data: profile } = await supabaseBrowser
@@ -133,23 +118,15 @@ function InnerApp({ Component, pageProps }: AppProps) {
 
         if (guestOnlyR && user) {
           const nextParam = router.query.next;
-          const next =
-            typeof nextParam === 'string'
-              ? nextParam
-              : Array.isArray(nextParam)
-              ? nextParam[0]
-              : undefined;
+          const next = typeof nextParam === 'string' ? nextParam : Array.isArray(nextParam) ? nextParam[0] : undefined;
           router.replace(next || '/dashboard');
           return;
         }
 
-        if (!canAccess(pathname, r)) {
+        if (!canAccess(pathname, role)) {
           const need = requiredRolesFor(pathname);
-          if (!r) {
-            router.replace({
-              pathname: '/login',
-              query: { next: pathname, need: Array.isArray(need) ? need.join(',') : need },
-            });
+          if (!role) {
+            router.replace({ pathname: '/login', query: { next: pathname, need: Array.isArray(need) ? need.join(',') : need } });
           } else {
             router.replace('/403');
           }
@@ -160,29 +137,22 @@ function InnerApp({ Component, pageProps }: AppProps) {
       }
     })();
 
-    return () => {
-      active = false;
-    };
+    return () => { active = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname, router.isReady]);
 
+  // background token expiry safety
   useEffect(() => {
     const interval = setInterval(async () => {
-      const {
-        data: { session },
-      } = await supabaseBrowser.auth.getSession();
+      const { data: { session } } = await supabaseBrowser.auth.getSession();
       const expiresAt = session?.expires_at;
       if (session && expiresAt && expiresAt <= Date.now() / 1000) {
         await supabaseBrowser.auth.signOut();
-        if (
-          !isGuestOnlyRoute(router.pathname) &&
-          !isPublicRoute(router.pathname)
-        ) {
+        if (!isGuestOnlyRoute(router.pathname) && !isPublicRoute(router.pathname)) {
           router.replace('/login');
         }
       }
     }, 5 * 60 * 1000);
-
     return () => clearInterval(interval);
   }, [router]);
 
@@ -198,7 +168,17 @@ function InnerApp({ Component, pageProps }: AppProps) {
 
   return (
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
-      <Head>{isPremium ? <link rel="stylesheet" href="/premium.css" /> : null}</Head>
+      <Head>
+        <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+        <link
+          rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+          media="print"
+          onLoad={(e) => { (e.currentTarget as HTMLLinkElement).media = 'all'; }}
+        />
+        <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" /></noscript>
+        {isPremium ? <link rel="stylesheet" href="/premium.css" /> : null}
+      </Head>
 
       <div className={`${poppins.variable} ${slab.variable} ${poppins.className} min-h-[100dvh]`}>
         {showLayout ? (
