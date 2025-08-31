@@ -82,7 +82,7 @@ export const QuestionNav: React.FC<{
       </div>
 
       {/* Chips */}
-      <div className="mt-3 grid grid-cols-6 sm:grid-cols-8 lg:grid-cols-4 gap-2">
+      <div className="mt-3 grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2">
         {visible.map(q => {
           const flagged = !!flags[q.id];
           const answered = !(answers[q.id]?.value == null || answers[q.id]?.value === '');
