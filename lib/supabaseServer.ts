@@ -1,52 +1,76 @@
 // lib/supabaseServer.ts
-// Pages Router server-side Supabase helpers (typed).
-// - supabaseServer(): use in API routes / getServerSideProps (anon key + request cookies)
-// - supabaseService(): use ONLY on the server for admin tasks (service role key)
+// Server-side Supabase helpers for Pages Router.
+// - createSupabaseServerClient(opts): general factory (named + default export)
+// - supabaseServer(req?, cookie?): anon-key client that forwards cookies
+// - supabaseService(): service-role client (server-only)
+// - getServerUser(req?): convenience to read the current user on the server
 
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import type { NextApiRequest } from 'next';
 import { env } from '@/lib/env';
-import type { Database } from '@/types/supabase';
+// If you have generated types, you can swap `any` with your Database type.
+// import type { Database } from '@/types/supabase';
+// type DB = Database;
+type DB = any;
 
-type DB = Database;
-type Client = SupabaseClient<DB>;
-
-// Env (validated in lib/env.ts)
+// ---- Env (validated in lib/env.ts) ----
 const URL = env.NEXT_PUBLIC_SUPABASE_URL;
 const ANON_KEY = env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 // Prefer SUPABASE_SERVICE_KEY, fall back to SUPABASE_SERVICE_ROLE_KEY for older setups
 const SERVICE_KEY = (env as any).SUPABASE_SERVICE_KEY ?? env.SUPABASE_SERVICE_ROLE_KEY;
 
-/**
- * Create a server-side Supabase client that forwards incoming cookies.
- * Use this in API routes and getServerSideProps for user-scoped calls.
- */
-export function supabaseServer(req?: NextApiRequest, cookieHeader?: string): Client {
-  const headers: Record<string, string> = { 'X-Client-Info': 'gramorx/pages-router' };
+// ---------- 1) Generic factory (named) ----------
+type Options = {
+  req?: NextApiRequest;
+  serviceRole?: boolean;
+  headers?: Record<string, string>;
+};
 
-  // Forward the session cookie so auth.getSession() works on the server.
-  const cookie = cookieHeader ?? req?.headers?.cookie;
-  if (cookie) headers['Cookie'] = String(cookie);
+export function createSupabaseServerClient<T = any>(
+  opts: Options = {}
+): SupabaseClient<T> {
+  if (!URL || !(ANON_KEY || SERVICE_KEY)) {
+    throw new Error('Supabase env vars are missing');
+  }
 
-  const client = createClient<DB>(URL, ANON_KEY, {
-    auth: {
-      persistSession: false,        // never persist on server
-      autoRefreshToken: false,
-    },
+  const key = opts.serviceRole ? SERVICE_KEY : ANON_KEY;
+  const headers: Record<string, string> = {
+    'X-Client-Info': 'gramorx/pages-router',
+    ...(opts.headers || {}),
+  };
+
+  // Forward auth bearer + cookies when available
+  const authHeader = opts.req?.headers?.authorization;
+  if (authHeader && !headers['Authorization']) headers['Authorization'] = String(authHeader);
+
+  const cookieHeader = opts.req?.headers?.cookie;
+  if (cookieHeader && !headers['Cookie']) headers['Cookie'] = String(cookieHeader);
+
+  return createClient<T>(URL, key, {
+    auth: { persistSession: false, autoRefreshToken: false },
     global: {
       headers,
       fetch: (...args) => fetch(...args),
     },
   });
-
-  return client;
 }
 
-/**
- * Create a Supabase client with the Service Role key.
- * ⚠️ Server-only. Never import this in client components.
- */
-export function supabaseService(): Client {
+// ---------- 2) Convenience helpers ----------
+export function supabaseServer(req?: NextApiRequest, cookieHeader?: string): SupabaseClient<DB> {
+  const headers: Record<string, string> = { 'X-Client-Info': 'gramorx/pages-router' };
+  const cookie = cookieHeader ?? req?.headers?.cookie;
+  if (cookie) headers['Cookie'] = String(cookie);
+
+  return createClient<DB>(URL, ANON_KEY, {
+    auth: { persistSession: false, autoRefreshToken: false },
+    global: {
+      headers,
+      fetch: (...args) => fetch(...args),
+    },
+  });
+}
+
+export function supabaseService(): SupabaseClient<DB> {
   if (typeof window !== 'undefined') {
     throw new Error('supabaseService() can only be used on the server.');
   }
@@ -54,25 +78,20 @@ export function supabaseService(): Client {
     throw new Error('Missing SUPABASE_SERVICE_KEY (or SUPABASE_SERVICE_ROLE_KEY).');
   }
 
-  const client = createClient<DB>(URL, SERVICE_KEY, {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false,
-    },
+  return createClient<DB>(URL, SERVICE_KEY, {
+    auth: { persistSession: false, autoRefreshToken: false },
     global: {
       headers: { 'X-Client-Info': 'gramorx/pages-router-service' },
       fetch: (...args) => fetch(...args),
     },
   });
-
-  return client;
 }
 
-/**
- * Convenience: fetch the current auth user on the server.
- */
 export async function getServerUser(req?: NextApiRequest) {
   const sb = supabaseServer(req);
   const { data } = await sb.auth.getSession();
   return data.session?.user ?? null;
 }
+
+// CJS-style default import support
+export default createSupabaseServerClient;
