@@ -1,6 +1,5 @@
 // lib/analytics/providers/meta.ts
-
-/* Tiny typed wrapper for Meta Pixel (fbq) with SSR safety and no 'arguments' */
+import { env } from '@/lib/env';
 
 type Fbq = {
   (...args: unknown[]): void;
@@ -13,6 +12,7 @@ type Fbq = {
 declare global {
   interface Window {
     fbq?: Fbq;
+    _fbq?: Fbq;
   }
 }
 
@@ -32,30 +32,44 @@ function ensureFbq(): Fbq | null {
     fbq.version = '2.0';
     window.fbq = fbq;
 
-    // Load Meta Pixel
-    const s = document.createElement('script');
-    s.async = true;
-    s.src = 'https://connect.facebook.net/en_US/fbevents.js';
-    document.head.appendChild(s);
+    // Load Meta Pixel exactly once
+    if (!document.getElementById('facebook-pixel')) {
+      const s = document.createElement('script');
+      s.async = true;
+      s.id = 'facebook-pixel';
+      s.src = 'https://connect.facebook.net/en_US/fbevents.js';
+      document.head.appendChild(s);
+    }
   }
   return window.fbq!;
 }
 
-/** Initialize pixel once you have an ID. Safe to call multiple times. */
-export function initMetaPixel(pixelId: string): void {
+/** Initialize pixel using env. Safe to call many times. */
+export function initMeta(): void {
   const fbq = ensureFbq();
   if (!fbq) return;
-  window.fbq?.('init', pixelId);
+
+  const id = env.NEXT_PUBLIC_META_PIXEL_ID;
+  if (!id) return;
+
+  // Avoid duplicate init
+  (window as any).__fb_pixel_inited__ ||= new Set<string>();
+  const inited: Set<string> = (window as any).__fb_pixel_inited__;
+  if (!inited.has(id)) {
+    window.fbq?.('init', id);
+    inited.add(id);
+  }
 }
 
-/** Track a standard Meta event */
-export function metaTrack(event: string, params?: Record<string, unknown>): void {
+/** Track Meta standard or custom event (auto-fallback to custom). */
+export function metaTrack(event: string, params?: Record<string, unknown>) {
   if (!isBrowser) return;
-  window.fbq?.('track', event, params);
-}
+  const fbq = ensureFbq();
+  if (!fbq) return;
 
-/** Track a custom Meta event */
-export function metaTrackCustom(event: string, params?: Record<string, unknown>): void {
-  if (!isBrowser) return;
-  window.fbq?.('trackCustom', event, params);
+  try {
+    window.fbq?.('track', event, params);
+  } catch {
+    window.fbq?.('trackCustom', event, params);
+  }
 }

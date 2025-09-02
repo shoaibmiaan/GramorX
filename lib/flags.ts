@@ -1,3 +1,4 @@
+// lib/flags.ts
 import { env, bool } from './env';
 
 export type FeatureFlag =
