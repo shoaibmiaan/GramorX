@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-const envSchema = z.object({
+export const envSchema = z.object({
   // Public (client) vars
   NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1),
@@ -8,6 +8,14 @@ const envSchema = z.object({
   NEXT_PUBLIC_IDLE_TIMEOUT_MINUTES: z.coerce.number().default(30),
   NEXT_PUBLIC_DEBUG: z.string().optional(),
   NEXT_PUBLIC_SITE_URL: z.string().url().optional(),
+
+  // Feature flags
+  NEXT_PUBLIC_FEATURE_TRIAL: z.string().optional(),
+  NEXT_PUBLIC_FEATURE_PAYWALL: z.string().optional(),
+  NEXT_PUBLIC_FEATURE_REFERRAL: z.string().optional(),
+  NEXT_PUBLIC_FEATURE_PARTNER: z.string().optional(),
+  NEXT_PUBLIC_FEATURE_PREDICTOR: z.string().optional(),
+  NEXT_PUBLIC_FEATURE_CHALLENGE: z.string().optional(),
 
   // ➕ Optional analytics/monitoring (added)
   NEXT_PUBLIC_GA4_ID: z.string().optional(),
@@ -54,6 +62,13 @@ const raw = {
   NEXT_PUBLIC_IDLE_TIMEOUT_MINUTES: process.env.NEXT_PUBLIC_IDLE_TIMEOUT_MINUTES,
   NEXT_PUBLIC_DEBUG: process.env.NEXT_PUBLIC_DEBUG,
   NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
+
+  NEXT_PUBLIC_FEATURE_TRIAL: process.env.NEXT_PUBLIC_FEATURE_TRIAL,
+  NEXT_PUBLIC_FEATURE_PAYWALL: process.env.NEXT_PUBLIC_FEATURE_PAYWALL,
+  NEXT_PUBLIC_FEATURE_REFERRAL: process.env.NEXT_PUBLIC_FEATURE_REFERRAL,
+  NEXT_PUBLIC_FEATURE_PARTNER: process.env.NEXT_PUBLIC_FEATURE_PARTNER,
+  NEXT_PUBLIC_FEATURE_PREDICTOR: process.env.NEXT_PUBLIC_FEATURE_PREDICTOR,
+  NEXT_PUBLIC_FEATURE_CHALLENGE: process.env.NEXT_PUBLIC_FEATURE_CHALLENGE,
 
   // ➕ Added
   NEXT_PUBLIC_GA4_ID: process.env.NEXT_PUBLIC_GA4_ID,
@@ -127,7 +142,9 @@ const defaults = {
   TWILIO_WHATSAPP_FROM: 'whatsapp:+10000000000',
 };
 
-export const env = (parsed.success
+export type Env = z.infer<typeof envSchema>;
+
+export const env: Env = (parsed.success
   ? parsed.data
   : {
       ...defaults,
@@ -135,7 +152,7 @@ export const env = (parsed.success
       NEXT_PUBLIC_IDLE_TIMEOUT_MINUTES: Number(
         raw.NEXT_PUBLIC_IDLE_TIMEOUT_MINUTES ?? 30,
       ),
-    }) as z.infer<typeof envSchema>;
+    });
 
 // ➕ tiny helpers used by analytics/monitoring
 export const isBrowser = typeof window !== 'undefined';
