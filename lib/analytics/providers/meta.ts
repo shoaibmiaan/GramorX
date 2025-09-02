@@ -1,5 +1,7 @@
 // lib/analytics/providers/meta.ts
 
+import { env, isBrowser } from '@/lib/env';
+
 /* Tiny typed wrapper for Meta Pixel (fbq) with SSR safety and no 'arguments' */
 
 type Fbq = {
@@ -15,8 +17,6 @@ declare global {
     fbq?: Fbq;
   }
 }
-
-const isBrowser = typeof window !== 'undefined';
 
 /** Ensure fbq exists; create a queuing stub and inject the script if needed. */
 function ensureFbq(): Fbq | null {
@@ -46,6 +46,12 @@ export function initMetaPixel(pixelId: string): void {
   const fbq = ensureFbq();
   if (!fbq) return;
   window.fbq?.('init', pixelId);
+}
+
+/** Initialize Meta Pixel from environment variable if present */
+export function initMeta(): void {
+  if (!env.NEXT_PUBLIC_META_PIXEL_ID) return;
+  initMetaPixel(env.NEXT_PUBLIC_META_PIXEL_ID);
 }
 
 /** Track a standard Meta event */
