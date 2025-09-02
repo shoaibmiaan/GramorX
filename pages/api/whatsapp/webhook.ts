@@ -15,6 +15,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).end("Method Not Allowed");
   }
 
+  if (!TWILIO_AUTH_TOKEN) {
+    return res.status(501).end("Twilio not configured");
+  }
+
   const signature = req.headers["x-twilio-signature"] as string | undefined;
   const url = `${env.NEXT_PUBLIC_SITE_URL || "https://example.com"}/api/whatsapp/webhook`;
   const valid = Twilio.validateRequest(TWILIO_AUTH_TOKEN, signature || "", url, req.body);

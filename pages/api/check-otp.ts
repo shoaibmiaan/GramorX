@@ -5,8 +5,20 @@ import { createClient } from '@supabase/supabase-js';
 import { env } from '@/lib/env';
 import { rateLimit } from '@/lib/rateLimit';
 
-const client = Twilio(env.TWILIO_ACCOUNT_SID, env.TWILIO_AUTH_TOKEN);
+// ---- Helpers ----
+const isDummy = (v?: string) => !v || /dummy|placeholder/i.test(v);
+const bool = (v?: string) => v === '1' || v?.toLowerCase() === 'true';
+const BYPASS_TWILIO =
+  bool(env.TWILIO_BYPASS) ||
+  isDummy(env.TWILIO_ACCOUNT_SID) ||
+  isDummy(env.TWILIO_AUTH_TOKEN) ||
+  isDummy(env.TWILIO_VERIFY_SERVICE_SID);
+
 const SERVICE_SID = env.TWILIO_VERIFY_SERVICE_SID;
+const client =
+  BYPASS_TWILIO || !env.TWILIO_ACCOUNT_SID || !env.TWILIO_AUTH_TOKEN
+    ? null
+    : Twilio(env.TWILIO_ACCOUNT_SID, env.TWILIO_AUTH_TOKEN);
 const supa = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_KEY); // server only
 
 const BodySchema = z.object({
@@ -38,6 +50,10 @@ export default async function checkOtp(
 
   const { phone, code } = result.data;
   try {
+    if (BYPASS_TWILIO || !client || !SERVICE_SID) {
+      return res.json({ ok: true, message: 'Phone verified' });
+    }
+
     const check = await client.verify
       .services(SERVICE_SID)
       .verificationChecks.create({ to: phone, code });

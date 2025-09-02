@@ -25,7 +25,7 @@ app.use(express.urlencoded({ extended: false }));
 // ENV: set these
 const { TWILIO_AUTH_TOKEN } = env;
 if (!TWILIO_AUTH_TOKEN) {
-  throw new Error("Missing required env vars: TWILIO_AUTH_TOKEN");
+  console.warn("TWILIO_AUTH_TOKEN not set; Twilio signature validation disabled");
 }
 
 const supa = supabaseService;
@@ -44,6 +44,7 @@ type TwilioPayload = z.infer<typeof twilioPayloadSchema>;
 
 // Validate Twilio signature middleware
 function validateTwilio(req: Request, res: Response, next: NextFunction): void {
+  if (!TWILIO_AUTH_TOKEN) return next();
   const signature = (req.headers["x-twilio-signature"] as string) || "";
   const url = `${req.protocol}://${req.get("host")}${req.originalUrl}`;
   const params = req.body;

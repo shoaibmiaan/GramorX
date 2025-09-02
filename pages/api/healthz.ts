@@ -1,5 +1,5 @@
 import type { NextApiHandler } from 'next';
-import { env } from '@/lib/env';
+import { env, bool } from '@/lib/env';
 import { flags } from '@/lib/flags';
 
 type HealthResponse = {
@@ -23,7 +23,12 @@ const handler: NextApiHandler<HealthResponse> = (_req, res) => {
       ga4: Boolean(env.NEXT_PUBLIC_GA4_ID),
       meta: Boolean(env.NEXT_PUBLIC_META_PIXEL_ID),
       sentry: Boolean(env.NEXT_PUBLIC_SENTRY_DSN),
-      twilio: Boolean(env.TWILIO_ACCOUNT_SID && env.TWILIO_AUTH_TOKEN && env.TWILIO_VERIFY_SERVICE_SID),
+      twilio: Boolean(
+        env.TWILIO_ACCOUNT_SID &&
+          env.TWILIO_AUTH_TOKEN &&
+          env.TWILIO_VERIFY_SERVICE_SID &&
+          !bool(env.TWILIO_BYPASS),
+      ),
     },
     flags: flags.snapshot(),
     ts: new Date().toISOString(),

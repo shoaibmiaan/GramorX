@@ -16,10 +16,10 @@ The application relies on the following environment variables. Provide these val
 | `SUPABASE_URL` | Server-side URL of the Supabase instance. | Yes |
 | `SUPABASE_SERVICE_KEY` | Supabase service key for server-side tasks. | Yes |
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key for server-side tasks. | Yes |
-| `TWILIO_ACCOUNT_SID` | Twilio account SID for messaging. | Yes |
-| `TWILIO_AUTH_TOKEN` | Twilio authentication token. | Yes |
-| `TWILIO_VERIFY_SERVICE_SID` | Twilio Verify service SID. | Yes |
-| `TWILIO_WHATSAPP_FROM` | Phone number used for WhatsApp messages. | Yes |
+| `TWILIO_ACCOUNT_SID` | Twilio account SID for messaging (required if using Twilio). | No |
+| `TWILIO_AUTH_TOKEN` | Twilio authentication token (required if using Twilio). | No |
+| `TWILIO_VERIFY_SERVICE_SID` | Twilio Verify service SID (required if using Twilio). | No |
+| `TWILIO_WHATSAPP_FROM` | Phone number used for WhatsApp messages. | No |
 
 ## Optional Variables
 
@@ -47,9 +47,16 @@ The application relies on the following environment variables. Provide these val
 | `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret. | Server | No |
 | `SPEAKING_DAILY_LIMIT` | Daily limit for speaking attempts. | Server | No |
 | `SPEAKING_BUCKET` | Storage bucket name for speaking uploads. | Server | No |
+| `TWILIO_BYPASS` | Skip Twilio verification when set to `1` or `true`. | Server | No |
 | `LOCAL_ADMIN_TOKEN` | Local development admin token. | Server | No |
 | `ADMIN_API_TOKEN` | Token for admin API access. | Server | No |
 | `SITE_URL` | Server-side site URL override. | Server | No |
 | `NODE_ENV` | Node environment (`development`, `production`, or `test`). | Server | No |
 
 These variables are validated at runtime in [`lib/env.ts`](../lib/env.ts).
+
+### Twilio for Local Development
+
+To bypass Twilio during local development, leave the Twilio credentials unset or set
+`TWILIO_BYPASS=1`. The application will skip phone verification calls and health
+checks will report Twilio as disabled.

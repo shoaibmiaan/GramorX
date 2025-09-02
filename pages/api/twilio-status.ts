@@ -9,6 +9,11 @@ const supa = createSupabaseServerClient({ serviceRole: true });
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") return res.status(405).end();
+
+  if (!TWILIO_AUTH_TOKEN) {
+    return res.status(501).end("Twilio not configured");
+  }
+
   const signature = req.headers["x-twilio-signature"] as string | undefined;
   const url = `${env.NEXT_PUBLIC_SITE_URL || "https://yourdomain.com"}/api/twilio-status`;
   const valid = Twilio.validateRequest(TWILIO_AUTH_TOKEN, signature || "", url, req.body);
