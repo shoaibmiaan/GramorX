@@ -1,22 +1,33 @@
 import { env, isBrowser } from '@/lib/env';
 
+declare global {
+  interface Window {
+    __sentry_inited?: boolean;
+  }
+}
+
+type SentryModule = typeof import('@sentry/nextjs');
+
 export function initSentry() {
   if (!isBrowser || !env.NEXT_PUBLIC_SENTRY_DSN) return;
-  if ((window as any).__sentry_inited) return;
+  if (window.__sentry_inited) return;
   try {
-    // @ts-expect-error TODO: add @sentry/nextjs to deps before enabling
-    import('@sentry/nextjs').then((Sentry: any) => {
-      Sentry.init({ dsn: env.NEXT_PUBLIC_SENTRY_DSN });
-      (window as any).__sentry_inited = true;
+    import('@sentry/nextjs').then((Sentry: SentryModule) => {
+      Sentry.init({ dsn: env.NEXT_PUBLIC_SENTRY_DSN! });
+      window.__sentry_inited = true;
     });
-  } catch { /* no-op */ }
+  } catch {
+    /* no-op */
+  }
 }
 
 export function captureException(err: unknown, context?: Record<string, any>) {
+  if (!env.NEXT_PUBLIC_SENTRY_DSN) return;
   try {
-    // @ts-expect-error see above TODO
-    import('@sentry/nextjs').then((Sentry: any) => {
+    import('@sentry/nextjs').then((Sentry: SentryModule) => {
       Sentry.captureException(err, { extra: context || {} });
     });
-  } catch { /* no-op */ }
+  } catch {
+    /* no-op */
+  }
 }

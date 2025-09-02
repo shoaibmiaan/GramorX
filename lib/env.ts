@@ -12,7 +12,7 @@ const envSchema = z.object({
   // ➕ Optional analytics/monitoring (added)
   NEXT_PUBLIC_GA4_ID: z.string().optional(),
   NEXT_PUBLIC_META_PIXEL_ID: z.string().optional(),
-  NEXT_PUBLIC_SENTRY_DSN: z.string().optional(),
+  NEXT_PUBLIC_SENTRY_DSN: z.string().url().optional(),
 
   // Server-only vars
   SUPABASE_URL: z.string().url(),
