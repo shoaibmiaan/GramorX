@@ -20,18 +20,28 @@ export default function SignupOptions() {
   const ref = typeof router.query.ref === 'string' ? router.query.ref : '';
 
   async function signUpOAuth(provider: 'apple' | 'google' | 'facebook') {
-    const { data } = await supabase.auth.signInWithOAuth({
-      provider,
-      options: {
-        redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/welcome` : undefined,
-        skipBrowserRedirect: true,
-      },
-    });
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo:
+            typeof window !== 'undefined' ? `${window.location.origin}/welcome` : undefined,
+          skipBrowserRedirect: true,
+        },
+      });
 
-    if (data?.linked_email) {
-      router.push(`/login?message=${encodeURIComponent('Account exists—use login.')}`);
-    } else if (data?.url) {
-      window.location.href = data.url;
+      if (error) {
+        router.push(`/login?message=${encodeURIComponent(error.message)}`);
+        return;
+      }
+
+      if (data?.linked_email) {
+        router.push(`/login?message=${encodeURIComponent('Account exists—use login.')}`);
+      } else if (data?.url) {
+        window.location.href = data.url;
+      }
+    } catch (err) {
+      console.error('Unexpected error during sign up with OAuth', err);
     }
   }
 
