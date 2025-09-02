@@ -3,7 +3,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Ensure full-height layout */
+/* Full-height layout */
 html, body, #__next { height: 100%; }
 
 /* Light = default; Dark via .dark on <html> (next-themes) */
@@ -11,35 +11,27 @@ body { @apply font-sans text-lightText bg-lightBg overflow-x-hidden relative; }
 .dark body { @apply text-foreground bg-gradient-to-br from-darker to-dark; }
 
 /* =========================
-   Headings → Roboto Slab (no circular apply)
+   Headings → Roboto Slab
    ========================= */
 @layer base {
+  /* font-slab exists because we defined theme.extend.fontFamily.slab */
   h1, h2, h3, .heading { @apply font-slab; }
 }
 
 /* =========================
    Header / Nav (GLOBAL)
    ========================= */
-.header-glass {
-  @apply text-lightText bg-white/90 backdrop-blur-md border-b border-border;
-}
-.dark .header-glass {
-  @apply text-foreground bg-dark/95 border-vibrantPurple/20;
-}
+.header-glass { @apply text-lightText bg-white/90 backdrop-blur-md border-b border-border; }
+.dark .header-glass { @apply text-foreground bg-dark/95 border-purpleVibe/20; }
 
-/* Navigation pill with underline (active & hover) */
+/* Navigation pill with underline */
 .nav-pill{
   @apply relative inline-flex items-center justify-center rounded-full px-4 py-2 transition;
-  /* Light theme text */
   @apply text-lightText/80 hover:text-lightText;
   background: transparent;
 }
-.dark .nav-pill{
-  /* Dark theme text */
-  @apply text-foreground/90 hover:text-foreground;
-}
+.dark .nav-pill{ @apply text-foreground/90 hover:text-foreground; }
 
-/* underline */
 .nav-pill::after{
   content:""; position:absolute; left:50%; transform:translateX(-50%);
   bottom:-6px; height:3px; width:60%;
@@ -47,9 +39,7 @@ body { @apply font-sans text-lightText bg-lightBg overflow-x-hidden relative; }
   border-radius:9999px; opacity:0; transition:opacity .25s ease;
 }
 .nav-pill:hover::after{ opacity:.9; }
-
-/* active pill background (light vs dark) */
-.nav-pill.is-active{ @apply bg-vibrantPurple/10; }
+.nav-pill.is-active{ @apply bg-purpleVibe/10; }
 .dark .nav-pill.is-active{ @apply bg-foreground/5; }
 .nav-pill.is-active::after{ opacity:1; }
 
@@ -57,7 +47,7 @@ body { @apply font-sans text-lightText bg-lightBg overflow-x-hidden relative; }
 .container { @apply max-w-[1200px] mx-auto px-5; }
 
 /* =========================
-   Buttons (GLOBAL pretty hover)
+   Buttons
    ========================= */
 .btn {
   @apply inline-flex items-center justify-center font-semibold rounded-full px-8 py-3
@@ -66,18 +56,13 @@ body { @apply font-sans text-lightText bg-lightBg overflow-x-hidden relative; }
   transition-duration: .35s;
   transition-timing-function: cubic-bezier(.22,.61,.36,1);
 }
-
-/* Shine sweep overlay */
 .btn--fx::after{
   content:""; position:absolute; inset:-2px;
   background: linear-gradient(120deg, transparent 30%, rgba(255,255,255,.22) 50%, transparent 70%);
   transform: translateX(-150%) skewX(-20deg);
-  transition: transform .65s ease;
-  pointer-events: none;
+  transition: transform .65s ease; pointer-events: none;
 }
 .btn--fx:hover::after{ transform: translateX(150%) skewX(-20deg); }
-
-/* Lift + stronger glow on hover; slight press on active */
 .btn--fx:hover{ transform: translateY(-2px) scale(1.02); }
 .btn--fx:active{ transform: translateY(-1px) scale(0.995); }
 
@@ -87,23 +72,15 @@ body { @apply font-sans text-lightText bg-lightBg overflow-x-hidden relative; }
 
 /* Variants */
 .btn-primary  { @apply text-foreground bg-gradient-to-br from-purpleVibe to-electricBlue shadow-glow; }
-.btn-primary:hover {
-  background-image: linear-gradient(135deg,
-    rgb(var(--color-electricBlue)),
-    rgb(var(--color-purpleVibe)));
-  @apply shadow-glowLg;
-}
+.btn-primary:hover { @apply shadow-glowLg; background-image: linear-gradient(135deg,
+  rgb(var(--color-electricBlue)), rgb(var(--color-purpleVibe))); }
 
 .btn-secondary{ @apply border-2 border-primary text-primary bg-transparent; }
 .dark .btn-secondary { @apply border-neonGreen text-neonGreen; }
 
 .btn-accent   { @apply text-foreground bg-gradient-to-br from-sunsetOrange to-sunsetRed shadow-glow; }
-.btn-accent:hover {
-  background-image: linear-gradient(135deg,
-    rgb(var(--color-sunsetRed)),
-    rgb(var(--color-sunsetOrange)));
-  @apply shadow-glowLg;
-}
+.btn-accent:hover { @apply shadow-glowLg; background-image: linear-gradient(135deg,
+  rgb(var(--color-sunsetRed)), rgb(var(--color-sunsetOrange))); }
 
 /* =========================
    Badges / chips
@@ -115,15 +92,15 @@ body { @apply font-sans text-lightText bg-lightBg overflow-x-hidden relative; }
    Card surfaces
    ========================= */
 .card-surface { @apply rounded-ds-2xl border bg-lightCard border-lightBorder text-lightText; }
-.dark .card-surface { @apply border-vibrantPurple/20 backdrop-blur-md bg-purpleVibe/10 text-foreground; }
+.dark .card-surface { @apply border-purpleVibe/20 backdrop-blur-md bg-purpleVibe/10 text-foreground; }
 
-/* Glass card variant (used by waitlist/testimonials etc.) */
+/* Glass card variant */
 .card-glass {
   @apply rounded-ds-2xl backdrop-blur-xl border shadow-glowLg;
   @apply bg-white/70 text-lightText border-lightBorder;
 }
 .dark .card-glass {
-  @apply bg-purpleVibe/10 text-foreground border-vibrantPurple/20;
+  @apply bg-purpleVibe/10 text-foreground border-purpleVibe/20;
 }
 
 /* =========================
@@ -133,49 +110,37 @@ body { @apply font-sans text-lightText bg-lightBg overflow-x-hidden relative; }
 .text-gradient-accent  { @apply bg-clip-text text-transparent bg-gradient-to-r from-neonGreen to-electricBlue; }
 .text-gradient-vertical{ @apply bg-clip-text text-transparent bg-gradient-to-b from-neonGreen to-electricBlue; }
 
-/* Footer link hover: color shift + tiny gradient underline */
-.footer-link{
-  @apply relative inline-flex items-center text-gray-600 dark:text-grayish transition-colors duration-200;
-}
+/* Footer link hover */
+.footer-link{ @apply relative inline-flex items-center text-gray-600 dark:text-grayish transition-colors duration-200; }
 .footer-link::after{
   content:""; position:absolute; left:0; bottom:-2px; height:2px; width:0%;
-  background: linear-gradient(90deg,
-    rgb(var(--color-purpleVibe)),
-    rgb(var(--color-electricBlue)));
+  background: linear-gradient(90deg, rgb(var(--color-purpleVibe)), rgb(var(--color-electricBlue)));
   border-radius:9999px; transition: width .25s ease;
 }
 .footer-link:hover{ @apply text-electricBlue; }
 .footer-link:hover::after{ width:100%; }
 
-/* Neon label for inputs */
+/* Labels */
 .label-neon { @apply text-neonGreen font-medium; }
 
-/* Dark section helper (hero/modules/pricing/waitlist) */
+/* Dark section helper */
 .section-dark { @apply bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90; }
 
-/* AI sidebar helpers (theme aware, token-only) */
+/* AI sidebar helpers */
 .ai-icon-btn{
   @apply h-8 w-8 grid place-items-center rounded-md border border-border bg-card text-card-foreground hover:bg-accent hover:text-card-foreground disabled:opacity-50;
 }
 .ai-tab{
   @apply h-8 px-3 rounded-md border border-border bg-card text-caption text-card-foreground hover:bg-accent hover:text-foreground;
 }
-.ai-tab.is-active{
-  @apply bg-primary text-primary-foreground;
-}
+.ai-tab.is-active{ @apply bg-primary text-primary-foreground; }
 
 /* Code block surface for AI messages */
-.ai-code-block{
-  @apply bg-lightCard border border-lightBorder text-lightText/80;
-}
-.dark .ai-code-block{
-  @apply bg-purpleVibe/10 border-vibrantPurple/20 text-foreground/80;
-}
+.ai-code-block{ @apply bg-lightCard border border-lightBorder text-lightText/80; }
+.dark .ai-code-block{ @apply bg-purpleVibe/10 border-purpleVibe/20 text-foreground/80; }
 
 /* AI sidebar split view */
 :root { --gx-ai-right: 0px; --gx-ai-bottom: 0px; }
-
-/* Push content when AI sidebar is open */
 html.gx-ai-open #__next { padding-right: var(--gx-ai-right); box-sizing: border-box; }
 @media (max-width: 767px) {
   html.gx-ai-open-bottom #__next { padding-bottom: var(--gx-ai-bottom); box-sizing: border-box; }

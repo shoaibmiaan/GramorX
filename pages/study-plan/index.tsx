@@ -1,100 +1,98 @@
-import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
-import { Container } from '@/components/design-system/Container';
-import TargetSummary from '@/components/study-plan/TargetSummary';
-import UpcomingPlan from '@/components/study-plan/UpcomingPlan';
-import { analyzePlan, AttemptCount } from '@/lib/studyPlan';
-import { supabaseBrowser } from '@/lib/supabaseBrowser';
+import React, { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
+import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser';
+
+type Module = 'listening' | 'reading' | 'writing' | 'speaking';
+type Task = { module: Module; minutes: number };
+type PlanDay = { date: string; tasks: Task[] };
+type StudyPlan = { start_date?: string; end_date?: string; plan_json?: { days: PlanDay[] } };
+
+const Shell: React.FC<{ title: string; children: React.ReactNode; right?: React.ReactNode }> = ({ title, children, right }) => (
+  <div className="min-h-screen bg-background text-foreground">
+    <div className="mx-auto max-w-5xl px-4 py-10">
+      <header className="mb-6 flex items-center justify-between">
+        <h1 className="text-3xl font-bold">{title}</h1>
+        {right}
+      </header>
+      <div className="rounded-2xl border border-border bg-background/50 p-5 shadow-sm">{children}</div>
+    </div>
+  </div>
+);
 
 export default function StudyPlanPage() {
-  const router = useRouter();
+  const [plan, setPlan] = useState<StudyPlan | null>(null);
   const [loading, setLoading] = useState(true);
-  const [plan, setPlan] = useState<ReturnType<typeof analyzePlan> | null>(null);
 
   useEffect(() => {
-    let active = true;
     (async () => {
-      const {
-        data: { session },
-      } = await supabaseBrowser.auth.getSession();
-      const uid = session?.user?.id;
-      if (!uid) {
-        router.replace('/login');
-        return;
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user?.id) return setLoading(false);
+        const { data } = await supabase.from('study_plans').select('*').eq('user_id', user.id).single();
+        setPlan((data as unknown as StudyPlan) || null);
+      } catch {
+        setPlan(null);
+      } finally {
+        setLoading(false);
       }
-
-      const since = new Date();
-      since.setDate(since.getDate() - 14);
-      const sinceISO = since.toISOString();
-
-      const [readAll, listenAll, readRecent, listenRecent] = await Promise.all([
-        supabaseBrowser
-          .from('reading_attempts')
-          .select('id', { count: 'exact', head: true })
-          .eq('user_id', uid),
-        supabaseBrowser
-          .from('listening_attempts')
-          .select('id', { count: 'exact', head: true })
-          .eq('user_id', uid),
-        supabaseBrowser
-          .from('reading_attempts')
-          .select('created_at')
-          .eq('user_id', uid)
-          .gte('created_at', sinceISO),
-        supabaseBrowser
-          .from('listening_attempts')
-          .select('created_at')
-          .eq('user_id', uid)
-          .gte('created_at', sinceISO),
-      ]);
-
-      if (!active) return;
-
-      const totalAttempts = (readAll.count ?? 0) + (listenAll.count ?? 0);
-      const attempts = [
-        ...((readRecent.data as { created_at: string }[]) || []),
-        ...((listenRecent.data as { created_at: string }[]) || []),
-      ];
-
-      const counts: Record<string, number> = {};
-      attempts.forEach((a) => {
-        const key = a.created_at.slice(0, 10);
-        counts[key] = (counts[key] ?? 0) + 1;
-      });
-
-      const history: AttemptCount[] = [];
-      for (let i = 6; i >= 0; i--) {
-        const d = new Date();
-        d.setDate(d.getDate() - i);
-        const key = d.toISOString().slice(0, 10);
-        history.push({ date: key, count: counts[key] ?? 0 });
-      }
-
-      const result = analyzePlan(history, 2, 100, totalAttempts);
-      setPlan(result);
-      setLoading(false);
     })();
-    return () => {
-      active = false;
-    };
-  }, [router]);
+  }, []);
+
+  const days = useMemo<PlanDay[]>(() => {
+    const all = plan?.plan_json?.days ?? [];
+    // show next 7 days starting today
+    const todayISO = new Date().toISOString().slice(0, 10);
+    const idx = all.findIndex((d) => d.date >= todayISO);
+    const start = Math.max(0, idx);
+    return all.slice(start, start + 7);
+  }, [plan]);
+
+  const none = !loading && (!plan || !plan.plan_json?.days?.length);
 
   return (
-    <section className="py-24 bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90">
-      <Container>
-        <h1 className="font-slab text-display text-gradient-primary mb-6">Study Plan</h1>
-        {loading && <p>Loading...</p>}
-        {!loading && plan && (
-          <div className="grid gap-6 md:grid-cols-2">
-            <TargetSummary
-              daily={plan.dailyTarget}
-              weekly={plan.weeklyTarget}
-              eta={plan.eta}
-            />
-            <UpcomingPlan days={plan.next7} />
+    <Shell
+      title="Your Study Plan"
+      right={<Link href="/progress" className="text-sm underline underline-offset-4">Progress</Link>}
+    >
+      {loading ? (
+        <div className="rounded-xl border border-border p-4 text-sm text-foreground/70">Loading your plan…</div>
+      ) : none ? (
+        <div className="grid gap-3">
+          <div className="rounded-xl border border-border p-4 text-sm">
+            No active plan found. Complete <Link href="/onboarding/goal" className="underline underline-offset-4">Onboarding</Link> to generate a plan.
           </div>
-        )}
-      </Container>
-    </section>
+          <div className="flex justify-end">
+            <Link href="/onboarding/goal" className="rounded-xl bg-primary px-4 py-2 font-medium text-background hover:opacity-90">Start onboarding</Link>
+          </div>
+        </div>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {days.map((d) => (
+            <article key={d.date} className="rounded-xl border border-border p-4">
+              <div className="mb-2 text-sm font-medium">{formatHuman(d.date)}</div>
+              <ul className="text-sm text-foreground/80">
+                {d.tasks.map((t, i) => (
+                  <li key={i} className="flex items-center justify-between">
+                    <span className="capitalize">{t.module}</span>
+                    <span className="text-foreground/70">{t.minutes} min</span>
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-3 flex gap-2">
+                {d.tasks.some(t => t.module === 'listening') && <Link href="/listening" className="rounded-lg border border-border px-3 py-1 text-sm hover:border-primary">Listening</Link>}
+                {d.tasks.some(t => t.module === 'reading')   && <Link href="/reading" className="rounded-lg border border-border px-3 py-1 text-sm hover:border-primary">Reading</Link>}
+                {d.tasks.some(t => t.module === 'writing')   && <Link href="/writing" className="rounded-lg border border-border px-3 py-1 text-sm hover:border-primary">Writing</Link>}
+                {d.tasks.some(t => t.module === 'speaking')  && <Link href="/speaking/simulator" className="rounded-lg border border-border px-3 py-1 text-sm hover:border-primary">Speaking</Link>}
+              </div>
+            </article>
+          ))}
+        </div>
+      )}
+    </Shell>
   );
+}
+
+function formatHuman(iso: string) {
+  const d = new Date(iso + 'T00:00:00');
+  return d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
 }

@@ -1,3 +1,5 @@
+// lib/analytics/events.ts
+
 export type AnalyticsEventName =
   | 'signup'
   | 'onboarding_completed'
@@ -14,4 +16,7 @@ export type AnalyticsEventName =
   | 'challenge_joined'
   | 'certificate_shared';
 
-export type AnalyticsProps = Record<string, string | number | boolean | null | undefined>;
+export type AnalyticsProps = Record<
+  string,
+  string | number | boolean | null | undefined
+>;

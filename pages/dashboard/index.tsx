@@ -96,7 +96,7 @@ export default function Dashboard() {
           return;
         }
 
-        if (!data || data.draft) {
+        if (!data || (data as any).draft) {
           router.replace('/profile/setup');
           return;
         }
@@ -153,7 +153,7 @@ export default function Dashboard() {
     );
   }
 
-  const ai: AIPlan = profile?.ai_recommendation ?? {};
+  const ai: AIPlan = (profile?.ai_recommendation ?? {}) as AIPlan;
   const prefs = profile?.study_prefs ?? [];
   const earnedBadges = [...badges.streaks, ...badges.milestones, ...badges.community];
 
@@ -168,7 +168,7 @@ export default function Dashboard() {
             <p className="text-grayish">Let’s hit your target band with a personalized plan.</p>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-3 md:gap-4">
             <HeaderStreakChip />
             <StreakIndicator value={streak} />
             {earnedBadges.map((b) => (
@@ -266,7 +266,7 @@ export default function Dashboard() {
             <div className="grid gap-6 md:grid-cols-3">
               {(ai.sequence ?? []).slice(0, 3).map((s) => (
                 <Card key={s} className="p-6 rounded-ds-2xl flex flex-col">
-                  <h3 className="font-slab text-h3 mb-2">{s}</h3>
+                  <h3 className="font-slab text-h3 mb-2 capitalize">{s}</h3>
                   <Button
                     as="a"
                     href={`/learning/skills/${s.toLowerCase()}`}

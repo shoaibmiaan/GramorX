@@ -1,6 +1,7 @@
+// pages/listening/index.tsx
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { supabase } from '@/lib/supabaseClient';
+import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser';
 import { Container } from '@/components/design-system/Container';
 import { Card } from '@/components/design-system/Card';
 import { Button } from '@/components/design-system/Button';
@@ -59,10 +60,12 @@ export default function ListeningIndexPage() {
       setErr(null);
       try {
         const [tRes, sRes] = await Promise.all([
-          supabase.from('lm_listening_tests')
+          supabase
+            .from('lm_listening_tests')
             .select('slug,title,master_audio_url')
             .order('created_at', { ascending: false }),
-          supabase.from('lm_listening_sections')
+          supabase
+            .from('lm_listening_sections')
             .select('test_slug,order_no,start_ms,end_ms')
             .order('order_no', { ascending: true }),
         ]);
@@ -94,20 +97,25 @@ export default function ListeningIndexPage() {
         const lastByTest = attempts.reduce<Record<string, string | null>>((acc, r) => {
           const prev = acc[r.test_slug];
           acc[r.test_slug] =
-            prev && r.updated_at ? (new Date(prev) > new Date(r.updated_at) ? prev : r.updated_at) : (prev ?? r.updated_at);
+            prev && r.updated_at
+              ? new Date(prev) > new Date(r.updated_at)
+                ? prev
+                : r.updated_at
+              : prev ?? r.updated_at;
           return acc;
         }, {});
 
         const list: ListItem[] = tests.map((t) => {
           const span = byTest[t.slug];
           const durationSec = span ? Math.max(0, Math.round((span.max - span.min) / 1000)) : 0;
-          const hasDraft = typeof window !== 'undefined' && !!localStorage.getItem(DRAFT_KEY(t.slug));
+          const hasDraft =
+            typeof window !== 'undefined' && !!localStorage.getItem(DRAFT_KEY(t.slug));
           return {
             slug: t.slug,
             title: t.title,
             durationSec,
             hasDraft,
-            lastActivityAt: userId ? (lastByTest[t.slug] ?? null) : undefined,
+            lastActivityAt: userId ? lastByTest[t.slug] ?? null : undefined,
           };
         });
 
@@ -119,7 +127,9 @@ export default function ListeningIndexPage() {
       }
     })();
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [userId]);
 
   // keep hasDraft reactive if localStorage changes elsewhere
@@ -127,7 +137,9 @@ export default function ListeningIndexPage() {
     const onStorage = (e: StorageEvent) => {
       if (!e.key?.startsWith('listen:')) return;
       setItems((prev) =>
-        prev.map((it) => (e.key === DRAFT_KEY(it.slug) ? { ...it, hasDraft: !!localStorage.getItem(e.key) } : it))
+        prev.map((it) =>
+          e.key === DRAFT_KEY(it.slug) ? { ...it, hasDraft: !!localStorage.getItem(e.key) } : it,
+        ),
       );
     };
     window.addEventListener('storage', onStorage);
@@ -147,7 +159,8 @@ export default function ListeningIndexPage() {
           <div>
             <h1 className="font-slab text-4xl text-gradient-primary">Listening Tests</h1>
             <p className="text-grayish max-w-2xl">
-              Pick a paper to start or resume where you left off. Auto‑play per section & answer review are built in.
+              Pick a paper to start or resume where you left off. Auto-play per section & answer
+              review are built in.
             </p>
           </div>
           <div className="flex gap-2">
@@ -156,7 +169,11 @@ export default function ListeningIndexPage() {
           </div>
         </div>
 
-        {err && <Alert className="mt-6" variant="error" title="Couldn’t load tests">{err}</Alert>}
+        {err && (
+          <Alert className="mt-6" variant="error" title="Couldn’t load tests">
+            {err}
+          </Alert>
+        )}
 
         {loading ? (
           <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -176,7 +193,9 @@ export default function ListeningIndexPage() {
             <div className="flex items-center justify-between">
               <div>
                 <div className="font-semibold mb-1">No tests available yet</div>
-                <p className="opacity-80">Add rows to <code>lm_listening_tests</code> and <code>lm_listening_sections</code>.</p>
+                <p className="opacity-80">
+                  Add rows to <code>lm_listening_tests</code> and <code>lm_listening_sections</code>.
+                </p>
               </div>
             </div>
           </Card>
@@ -191,7 +210,9 @@ export default function ListeningIndexPage() {
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <h3 className="font-semibold">{it.title}</h3>
-                      <div className="text-small opacity-80 mt-1">Slug: <code>{it.slug}</code></div>
+                      <div className="text-small opacity-80 mt-1">
+                        Slug: <code>{it.slug}</code>
+                      </div>
                       <div className="text-small opacity-80 mt-1">Duration: {durationStr}</div>
                       {it.lastActivityAt && (
                         <div className="text-small opacity-80 mt-1">
@@ -201,9 +222,13 @@ export default function ListeningIndexPage() {
                     </div>
                     <div className="shrink-0">
                       {it.hasDraft ? (
-                        <Badge variant="warning" size="sm">Draft</Badge>
+                        <Badge variant="warning" size="sm">
+                          Draft
+                        </Badge>
                       ) : (
-                        <Badge variant="neutral" size="sm">New</Badge>
+                        <Badge variant="neutral" size="sm">
+                          New
+                        </Badge>
                       )}
                     </div>
                   </div>
@@ -220,7 +245,9 @@ export default function ListeningIndexPage() {
                             localStorage.removeItem(DRAFT_KEY(it.slug));
                             // update state immediately
                             setItems((prev) =>
-                              prev.map((x) => (x.slug === it.slug ? { ...x, hasDraft: false } : x))
+                              prev.map((x) =>
+                                x.slug === it.slug ? { ...x, hasDraft: false } : x,
+                              ),
                             );
                           }}
                         >
