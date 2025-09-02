@@ -2,8 +2,22 @@
 import express, { Request, Response, NextFunction } from "express";
 import Twilio from "twilio";
 import { z } from "zod";
+import { randomUUID } from "crypto";
 import { env } from "./lib/env";
+import { captureException } from "./lib/monitoring/sentry";
 import { supabaseService } from "./lib/supabaseService";
+
+type LogLevel = "info" | "error";
+function log(level: LogLevel, message: string, meta?: Record<string, any>) {
+  const entry = { level, message, ...(meta || {}) };
+  if (env.NODE_ENV === "development") {
+    const fn = level === "error" ? console.error : console.log;
+    fn(message, meta);
+  } else {
+    const fn = level === "error" ? console.error : console.log;
+    fn(JSON.stringify(entry));
+  }
+}
 
 const app = express();
 app.use(express.urlencoded({ extended: false }));
@@ -50,12 +64,15 @@ app.post(
   "/twilio/sms-status",
   validateTwilio,
   async (req: Request<{}, {}, TwilioPayload>, res: Response) => {
+    const requestId = (req.headers["x-request-id"] as string) || randomUUID();
     try {
       const parseResult = twilioPayloadSchema.safeParse(req.body);
       if (!parseResult.success) {
+        log("error", "Invalid payload", { requestId, issues: parseResult.error.issues });
         return res.status(400).json({
           error: "Invalid payload",
           details: parseResult.error.issues,
+          requestId,
         });
       }
 
@@ -77,20 +94,29 @@ app.post(
         .upsert(payload, { onConflict: "message_sid" });
 
       if (error) {
-        console.error("Supabase error:", error);
+        log("error", "Supabase error", { requestId, messageSid: MessageSid, error: error.message });
+        captureException(error, { requestId, messageSid: MessageSid });
         return res.status(500).json({
           error: "Error storing message status",
           details: error.message,
+          requestId,
         });
       }
 
+      log("info", "Message status stored", { requestId, messageSid: MessageSid });
       res.status(200).send("OK");
     } catch (err) {
-      console.error("Webhook error:", err);
-      res.status(500).json({ error: "Server error" });
+      log("error", "Webhook error", {
+        requestId,
+        error: err instanceof Error ? err.message : String(err),
+      });
+      captureException(err, { requestId });
+      res.status(500).json({ error: "Server error", requestId });
     }
   }
 );
 
 const port = env.PORT ?? 4000;
-app.listen(port, () => console.log(`Twilio webhook listening on :${port}`));
+app.listen(port, () =>
+  log("info", `Twilio webhook listening on :${port}`, { port })
+);
