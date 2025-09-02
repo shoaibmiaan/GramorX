@@ -1,6 +1,6 @@
-Got it. I’ve converted your checklist into tables with three columns: **Item**, **Development summary**, and **Updated**. I left the last two columns blank for you to fill in.
-
 # 📋 IELTS Platform Implementation Tracker
+
+This markdown file tracks feature progress for the platform. The previous HTML tracker has been removed.
 
 ## ✅ Legend
 
