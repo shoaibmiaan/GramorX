@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
-const envSchema = z.object({
+const envSchema = z
+  .object({
   // Public (client) vars
   NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1),
@@ -9,9 +10,10 @@ const envSchema = z.object({
   NEXT_PUBLIC_DEBUG: z.string().optional(),
   NEXT_PUBLIC_SITE_URL: z.string().url().optional(),
 
-  // ➕ Optional analytics/monitoring (added)
+  // Optional analytics/monitoring
   NEXT_PUBLIC_GA4_ID: z.string().optional(),
   NEXT_PUBLIC_META_PIXEL_ID: z.string().optional(),
+  NEXT_PUBLIC_SENTRY_DISABLED: z.string().optional(),
   NEXT_PUBLIC_SENTRY_DSN: z.string().url().optional(),
 
   // Server-only vars
@@ -45,7 +47,14 @@ const envSchema = z.object({
   SITE_URL: z.string().url().optional(),
   PORT: z.coerce.number().optional(),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
-});
+  })
+  .refine(
+    (data) => data.NEXT_PUBLIC_SENTRY_DISABLED || data.NEXT_PUBLIC_SENTRY_DSN,
+    {
+      message: 'NEXT_PUBLIC_SENTRY_DSN is required when Sentry is enabled',
+      path: ['NEXT_PUBLIC_SENTRY_DSN'],
+    },
+  );
 
 const raw = {
   NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -55,9 +64,9 @@ const raw = {
   NEXT_PUBLIC_DEBUG: process.env.NEXT_PUBLIC_DEBUG,
   NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
 
-  // ➕ Added
   NEXT_PUBLIC_GA4_ID: process.env.NEXT_PUBLIC_GA4_ID,
   NEXT_PUBLIC_META_PIXEL_ID: process.env.NEXT_PUBLIC_META_PIXEL_ID,
+  NEXT_PUBLIC_SENTRY_DISABLED: process.env.NEXT_PUBLIC_SENTRY_DISABLED,
   NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN,
 
   SUPABASE_URL: process.env.SUPABASE_URL,
@@ -137,10 +146,10 @@ export const env = (parsed.success
       ),
     }) as z.infer<typeof envSchema>;
 
-// ➕ tiny helpers used by analytics/monitoring
 export const isBrowser = typeof window !== 'undefined';
 export const isServer = !isBrowser;
 export function bool(val?: string, fallback = false) {
   if (val == null) return fallback;
   return ['1', 'true', 'yes', 'on'].includes(String(val).toLowerCase());
 }
+
