@@ -1,6 +1,6 @@
 // pages/api/auth/login-event.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { createSupabaseServerClient } from '@/lib/supabaseServer';
+import { supabaseServer, supabaseService } from '@/lib/supabaseServer';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'OPTIONS') {
@@ -12,14 +12,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
-  const supabase = createSupabaseServerClient({ req });
-
-  // Allow tests to bypass auth (CI sets TWILIO_BYPASS=1)
-  const isTestBypass =
-    process.env.NODE_ENV === 'test' || process.env.TWILIO_BYPASS === '1' || req.headers['x-test-bypass'] === '1';
-
-  const { data: userRes } = await supabase.auth.getUser();
+  // Use anon client for user info
+  const sb = supabaseServer(req);
+  const { data: userRes } = await sb.auth.getUser();
   const userId: string | null = userRes?.user?.id ?? null;
+
+  const isTestBypass =
+    process.env.NODE_ENV === 'test' ||
+    process.env.TWILIO_BYPASS === '1' ||
+    req.headers['x-test-bypass'] === '1';
 
   if (!userId && !isTestBypass) {
     return res.status(401).json({ error: 'Unauthorized' });
@@ -31,12 +32,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     null;
   const ua = (req.headers['user-agent'] as string) || null;
 
-  const { error: insertErr } = await supabase.from('login_events').insert([
+  // Service client for inserting row
+  const admin = supabaseService();
+  const { error: insertErr } = await admin.from('login_events').insert([
     {
-      user_id: userId, // may be null in tests
+      user_id: userId,
       ip_address: ip,
       user_agent: ua,
-      // created_at defaults to now()
     },
   ]);
 
@@ -44,6 +46,5 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(500).json({ error: 'Failed to record login event', details: insertErr.message });
   }
 
-  // ✅ Ensure test assertion sees true
   return res.status(200).json({ ok: true });
 }
