@@ -7,6 +7,7 @@ import { Card } from '@/components/design-system/Card';
 import { Button } from '@/components/design-system/Button';
 import { Badge } from '@/components/design-system/Badge';
 import { Alert } from '@/components/design-system/Alert';
+import { Skeleton } from '@/components/design-system/Skeleton';
 
 type TestRow = {
   slug: string;
@@ -179,11 +180,11 @@ export default function ListeningIndexPage() {
           <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 6 }).map((_, i) => (
               <Card key={i} className="card-surface p-6 rounded-ds-2xl">
-                <div className="animate-pulse h-6 w-2/3 bg-gray-200 dark:bg-white/10 rounded mb-3" />
-                <div className="animate-pulse h-4 w-1/3 bg-gray-200 dark:bg-white/10 rounded mb-6" />
+                <Skeleton className="h-6 w-2/3 mb-3" />
+                <Skeleton className="h-4 w-1/3 mb-6" />
                 <div className="flex gap-2">
-                  <div className="animate-pulse h-9 w-24 bg-gray-200 dark:bg-white/10 rounded" />
-                  <div className="animate-pulse h-9 w-24 bg-gray-200 dark:bg-white/10 rounded" />
+                  <Skeleton className="h-9 w-24" />
+                  <Skeleton className="h-9 w-24" />
                 </div>
               </Card>
             ))}

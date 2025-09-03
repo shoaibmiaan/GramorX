@@ -21,6 +21,7 @@ components/
     Card.tsx
     Container.tsx
     GradientText.tsx
+    Skeleton.tsx
     StreakIndicator.tsx
   sections/
     Header.tsx
@@ -105,6 +106,7 @@ module.exports = {
 - **Button** — variants: `primary`, `secondary`, `accent`.
 - **GradientText** — brand gradient title text.
 - **StreakIndicator** — example chip (pattern for badges/pills).
+- **Skeleton** — loading placeholder component for content.
 
 **Extending Button (example):**
 
@@ -184,7 +186,7 @@ export default function Page() {
 
 ```tsx
 <Card className="p-6">
-  <div className="animate-pulse h-6 w-40 bg-gray-200 dark:bg-white/10 rounded" />
+  <Skeleton className="h-6 w-40" />
 </Card>
 ```
 
