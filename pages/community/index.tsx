@@ -5,6 +5,7 @@ import { Input } from '@/components/design-system/Input';
 import { Textarea } from '@/components/design-system/Textarea';
 import { Button } from '@/components/design-system/Button';
 import { useToast } from '@/components/design-system/Toaster';
+import { Section } from '@/components/design-system/Section';
 import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser';
 
 interface Thread {
@@ -49,7 +50,7 @@ export default function CommunityThreadsPage() {
   }
 
   return (
-    <section className="py-12">
+    <Section>
       <Container>
         <Card className="p-6 mb-6 space-y-2">
           <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Thread title" />
@@ -69,6 +70,6 @@ export default function CommunityThreadsPage() {
           </Card>
         ))}
       </Container>
-    </section>
+    </Section>
   );
 }

@@ -2,6 +2,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/design-system/Button';
+import { Section } from '@/components/design-system/Section';
 
 type SyllabusItem = {
   title: string;
@@ -18,7 +19,7 @@ const syllabus: SyllabusItem[] = [
 
 export const Syllabus: React.FC = () => {
   return (
-    <section className="py-12">
+    <Section>
       <h2 className="text-2xl font-bold mb-6">Your IELTS Syllabus</h2>
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
         {syllabus.map(({ title, href, unlocked }) => (
@@ -38,6 +39,6 @@ export const Syllabus: React.FC = () => {
           </Link>
         ))}
       </div>
-    </section>
+    </Section>
   );
 };

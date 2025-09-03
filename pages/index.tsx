@@ -1,5 +1,5 @@
 // pages/index.tsx
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import Head from 'next/head';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
@@ -22,8 +22,6 @@ import Waitlist from '@/components/sections/Waitlist';
 
 export default function HomePage() {
   const { t } = useLocale();
-  const [streak, setStreak] = useState(0);
-  const onStreakChange = useCallback((n: number) => setStreak(n), []);
 
   // Smooth scroll for same-page anchors (safe & small)
   useEffect(() => {
@@ -45,7 +43,7 @@ export default function HomePage() {
         <title>{t('home.title')}</title>
       </Head>
 
-      <Hero onStreakChange={onStreakChange} />
+      <Hero />
 
       {/* Phase-3: Quick Command Center (go anywhere, from anywhere) */}
       <Section id="command-center" Container className="py-12">
@@ -89,7 +87,11 @@ export default function HomePage() {
             { h: 'Shareable Certificate', p: 'Finish a challenge to generate a branded cert.', href: '/cert/sample', icon: 'fa-certificate' },
             { h: 'Teacher Pilot', p: 'Assign tasks and track students (beta).', href: '/teacher', icon: 'fa-chalkboard-teacher' },
           ].map((c) => (
-            <Link key={c.href} href={c.href} className="rounded-ds-2xl border border-purpleVibe/20 p-6 hover:border-purpleVibe/40 hover:-translate-y-1 transition block">
+            <Link
+              key={c.href}
+              href={c.href}
+              className="rounded-ds-2xl border border-purpleVibe/20 p-6 hover:border-purpleVibe/40 hover:-translate-y-1 transition block"
+            >
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 rounded-full grid place-items-center text-white bg-gradient-to-br from-purpleVibe to-electricBlue">
                   <i className={`fas ${c.icon}`} aria-hidden="true" />
