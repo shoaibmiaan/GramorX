@@ -1,5 +1,6 @@
 import React from 'react';
 import { Container } from '@/components/design-system/Container';
+import { Section } from '@/components/design-system/Section';
 import { Card } from '@/components/design-system/Card';
 import { Button } from '@/components/design-system/Button';
 import { Badge } from '@/components/design-system/Badge';
@@ -7,7 +8,7 @@ import { NavLink } from '@/components/design-system/NavLink';
 
 export default function ExamStrategy() {
   return (
-    <section className="py-24 bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90">
+    <Section>
       <Container>
         <div className="flex items-end justify-between gap-4">
           <div>
@@ -85,6 +86,6 @@ export default function ExamStrategy() {
           ))}
         </div>
       </Container>
-    </section>
+    </Section>
   );
 }

@@ -2,6 +2,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
 import { Container } from '@/components/design-system/Container';
+import { Section } from '@/components/design-system/Section';
 import { Card } from '@/components/design-system/Card';
 import { Input } from '@/components/design-system/Input';
 import { Alert } from '@/components/design-system/Alert';
@@ -133,7 +134,7 @@ export default function WaitlistSection() {
   };
 
   return (
-    <section id="waitlist" className="py-24 bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90">
+    <Section id="waitlist">
       <Container>
         <div className="text-center max-w-3xl mx-auto mb-10">
           <h2 className="font-slab text-h2 md:text-display tracking-tight uppercase text-gradient-primary">
@@ -209,6 +210,6 @@ export default function WaitlistSection() {
         <p className="text-small text-grayish mt-5 text-center">Have a referral code? Add <code>?ref=YOURCODE</code> to the URL.</p>
         <p className="text-small text-grayish mt-1 text-center">By joining, you agree to receive early-access emails.</p>
       </Container>
-    </section>
+    </Section>
   );
 }

@@ -1,6 +1,8 @@
 // components/sections/Testimonials.tsx
 import * as React from 'react';
+import Link from 'next/link';
 import { Container } from '@/components/design-system/Container';
+import { Section } from '@/components/design-system/Section';
 import { Card } from '@/components/design-system/Card';
 
 export type Testimonial = {
@@ -43,53 +45,55 @@ const items: readonly Testimonial[] = [
 
 export const Testimonials: React.FC = () => {
   return (
-    <Container>
-      <div className="text-center mb-12">
-        <h2 className="font-slab text-h2 tracking-tight text-gradient-primary">Learners Who Leveled Up</h2>
-        <p className="text-grayish mt-2">Real prep. Real gains. Repeatable process.</p>
-      </div>
+    <Section id="testimonials">
+      <Container>
+        <div className="text-center mb-12">
+          <h2 className="font-slab text-h2 tracking-tight text-gradient-primary">Learners Who Leveled Up</h2>
+          <p className="text-grayish mt-2">Real prep. Real gains. Repeatable process.</p>
+        </div>
 
-      <div className="grid gap-6 md:grid-cols-3">
-        {items.map((t) => (
-          <Card
-            key={t.id}
-            className="p-6 rounded-ds-2xl border border-purpleVibe/20 hover:border-purpleVibe/40 transition bg-card/70"
-          >
-            <div className="flex items-center justify-between">
-              <div className="font-semibold">{t.name}</div>
-              <div className="text-electricBlue font-bold" aria-label={`Band score ${t.band}`}>
-                Band {t.band}
+        <div className="grid gap-6 md:grid-cols-3">
+          {items.map((t) => (
+            <Card
+              key={t.id}
+              className="p-6 rounded-ds-2xl border border-purpleVibe/20 hover:border-purpleVibe/40 transition bg-card/70"
+            >
+              <div className="flex items-center justify-between">
+                <div className="font-semibold">{t.name}</div>
+                <div className="text-electricBlue font-bold" aria-label={`Band score ${t.band}`}>
+                  Band {t.band}
+                </div>
               </div>
-            </div>
-            <div className="text-small text-muted-foreground mt-0.5">
-              {t.context}
-              {t.location ? ` • ${t.location}` : ''}
-            </div>
+              <div className="text-small text-muted-foreground mt-0.5">
+                {t.context}
+                {t.location ? ` • ${t.location}` : ''}
+              </div>
 
-            <blockquote className="mt-4 relative pl-4 border-l-4 border-border text-mutedText">
-              “{t.quote}”
-            </blockquote>
+              <blockquote className="mt-4 relative pl-4 border-l-4 border-border text-mutedText">
+                “{t.quote}”
+              </blockquote>
 
-            <div className="mt-5 flex items-center gap-1 text-warning/90" aria-hidden="true">
-              <i className="fas fa-star" aria-hidden="true" />
-              <i className="fas fa-star" aria-hidden="true" />
-              <i className="fas fa-star" aria-hidden="true" />
-              <i className="fas fa-star" aria-hidden="true" />
-              <i className="fas fa-star-half-alt" aria-hidden="true" />
-            </div>
-          </Card>
-        ))}
-      </div>
+              <div className="mt-5 flex items-center gap-1 text-warning/90" aria-hidden="true">
+                <i className="fas fa-star" aria-hidden="true" />
+                <i className="fas fa-star" aria-hidden="true" />
+                <i className="fas fa-star" aria-hidden="true" />
+                <i className="fas fa-star" aria-hidden="true" />
+                <i className="fas fa-star-half-alt" aria-hidden="true" />
+              </div>
+            </Card>
+          ))}
+        </div>
 
-      <div className="text-center mt-8">
-        <a
-          href="/reviews"
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-ds border border-border hover:bg-electricBlue/5 transition"
-        >
-          Read more reviews <i className="fas fa-arrow-right" aria-hidden="true" />
-        </a>
-      </div>
-    </Container>
+        <div className="text-center mt-8">
+          <Link
+            href="/reviews"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-ds border border-border hover:bg-electricBlue/5 transition"
+          >
+            Read more reviews <i className="fas fa-arrow-right" aria-hidden="true" />
+          </Link>
+        </div>
+      </Container>
+    </Section>
   );
 };
 

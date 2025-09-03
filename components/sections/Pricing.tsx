@@ -2,6 +2,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { Container } from '@/components/design-system/Container';
+import { Section } from '@/components/design-system/Section';
 import { Card } from '@/components/design-system/Card';
 import { Ribbon } from '@/components/design-system/Ribbon';
 import { Button } from '@/components/design-system/Button';
@@ -63,7 +64,7 @@ const planSlug = (name: Tier['name']) => name.toLowerCase();
 
 export const Pricing: React.FC = () => {
   return (
-    <section id="pricing" className="py-24 bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90">
+    <Section id="pricing">
       <Container>
         <div className="text-center mb-16">
           <h2 className="font-slab text-4xl mb-3 text-gradient-primary">FLEXIBLE PRICING PLANS</h2>
@@ -102,6 +103,6 @@ export const Pricing: React.FC = () => {
           ))}
         </div>
       </Container>
-    </section>
+    </Section>
   );
 };
