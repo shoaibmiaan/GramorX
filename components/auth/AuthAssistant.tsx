@@ -19,7 +19,9 @@ export default function AuthAssistant() {
   const router = useRouter();
 
   useEffect(() => {
-    const isLogin = router.pathname.startsWith('/login');
+    const path = router.pathname;
+    const isLogin = path.startsWith('/login');
+    const isSignup = path.startsWith('/signup');
     setMessages([
       {
         role: 'assistant',
@@ -37,7 +39,7 @@ export default function AuthAssistant() {
                 </Link>
                 .
               </>
-            ) : (
+            ) : isSignup ? (
               <>
                 Need help creating an account? Check our{' '}
                 <Link href="/faq" className="underline">
@@ -48,6 +50,14 @@ export default function AuthAssistant() {
                   sign in
                 </Link>{' '}
                 if you already have one.
+              </>
+            ) : (
+              <>
+                Need help with something on this page? You can{' '}
+                <Link href="/faq" className="underline">
+                  browse our FAQ
+                </Link>{' '}
+                or ask a question below.
               </>
             )}
           </>
