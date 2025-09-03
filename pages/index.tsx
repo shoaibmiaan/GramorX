@@ -4,7 +4,6 @@ import { NavLink } from '@/components/design-system/NavLink';
 import { SocialIconLink } from '@/components/design-system/SocialIconLink';
 import { MailIcon, PhoneIcon, MapPinIcon, ClockIcon } from '@/components/design-system/icons';
 import { FooterGrid } from '@/components/design-system/FooterGrid';
-import { FooterSection } from './FooterSection';
 import { useLocale } from '@/lib/locale';
 
 import {
