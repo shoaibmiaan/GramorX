@@ -27,15 +27,26 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
   // Streak (prop wins; otherwise fetch)
   const [streakState, setStreakState] = useState<number>(streak ?? 0);
   useEffect(() => { if (typeof streak === 'number') setStreakState(streak); }, [streak]);
-  const fetchStreak = useCallback(async () => {
-    if (typeof streak === 'number') return;
-    const { data: session } = await supabaseBrowser.auth.getSession();
-    const token = session?.session?.access_token;
-    if (!token) return;
-    const res = await fetch('/api/words/today', { headers: { Authorization: `Bearer ${token}` } });
-    if (res.ok) { const j = await res.json(); if (typeof j?.streakDays === 'number') setStreakState(j.streakDays); }
+  const fetchStreak = useCallback(() => {
+    const controller = new AbortController();
+    (async () => {
+      if (typeof streak === 'number') return;
+      const { data: session } = await supabaseBrowser.auth.getSession();
+      const token = session?.session?.access_token;
+      if (!token) return;
+      try {
+        const res = await fetch('/api/words/today', { headers: { Authorization: `Bearer ${token}` }, signal: controller.signal });
+        if (res.ok) { const j = await res.json(); if (typeof j?.streakDays === 'number') setStreakState(j.streakDays); }
+      } catch (e: any) {
+        if (e?.name !== 'AbortError') setStreakState(0);
+      }
+    })();
+    return controller;
   }, [streak]);
-  useEffect(() => { fetchStreak(); }, [fetchStreak]);
+  useEffect(() => {
+    const controller = fetchStreak();
+    return () => controller.abort();
+  }, [fetchStreak]);
   useEffect(() => {
     const onChanged = (e: Event) => {
       const ce = e as CustomEvent<{ value?: number }>;
