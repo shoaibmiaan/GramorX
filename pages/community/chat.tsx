@@ -3,6 +3,7 @@ import { Container } from '@/components/design-system/Container';
 import { Card } from '@/components/design-system/Card';
 import { Input } from '@/components/design-system/Input';
 import { Button } from '@/components/design-system/Button';
+import { Section } from '@/components/design-system/Section';
 import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser';
 
 interface Message {
@@ -40,7 +41,7 @@ export default function CommunityChat() {
   }
 
   return (
-    <section className="py-12">
+    <Section>
       <Container>
         <Card className="p-6 space-y-4">
           <div className="h-96 overflow-y-auto space-y-2">
@@ -57,6 +58,6 @@ export default function CommunityChat() {
           </div>
         </Card>
       </Container>
-    </section>
+    </Section>
   );
 }

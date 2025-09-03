@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useLocale } from '@/lib/locale';
 import { Container } from '@/components/design-system/Container';
+import { Section } from '@/components/design-system/Section';
 
 // Hero is heavy → hydrate client only
 const Hero = dynamic(
@@ -46,7 +47,7 @@ export default function HomePage() {
       <Hero />
 
       {/* Phase-3: Quick Command Center (go anywhere, from anywhere) */}
-      <section id="command-center" className="py-12">
+      <Section id="command-center">
         <Container>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
             {[
@@ -70,7 +71,7 @@ export default function HomePage() {
             ))}
           </div>
         </Container>
-      </section>
+      </Section>
 
       {/* Partners */}
       <CertificationBadges />
@@ -82,7 +83,7 @@ export default function HomePage() {
       <Modules />
 
       {/* Phase-3 retention strip */}
-      <section id="scale-retention" className="py-16">
+      <Section id="scale-retention">
         <Container>
           <div className="grid gap-4 md:grid-cols-3">
             {[
@@ -104,7 +105,7 @@ export default function HomePage() {
             ))}
           </div>
         </Container>
-      </section>
+      </Section>
 
       {/* Social proof */}
       <Testimonials />
