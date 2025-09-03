@@ -75,17 +75,13 @@ export default function HomePage() {
       </section>
 
       {/* Partners */}
-      <section id="partners" className="py-24 bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90">
-        <CertificationBadges />
-      </section>
+      <CertificationBadges />
 
       {/* Strategy → Practise → Review (clear path) */}
       <ExamStrategy />
 
       {/* Core modules */}
-      <section id="modules" className="py-24 bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90">
-        <Modules />
-      </section>
+      <Modules />
 
       {/* Phase-3 retention strip */}
       <section id="scale-retention" className="py-16">
@@ -113,19 +109,13 @@ export default function HomePage() {
       </section>
 
       {/* Social proof */}
-      <section id="testimonials" className="py-24 bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90">
-        <Testimonials />
-      </section>
+      <Testimonials />
 
       {/* Monetization always one click away */}
-      <section id="pricing" className="py-24 bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90">
-        <Pricing />
-      </section>
+      <Pricing />
 
       {/* Capture demand */}
-      <section id="waitlist" className="py-24 bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90">
-        <Waitlist />
-      </section>
+      <Waitlist />
     </>
   );
 }

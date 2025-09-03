@@ -2,6 +2,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { Container } from '@/components/design-system/Container';
+import { Section } from '@/components/design-system/Section';
 import { Card } from '@/components/design-system/Card';
 import { Badge } from '@/components/design-system/Badge';
 
@@ -102,7 +103,7 @@ const items: Item[] = [
 
 export const Modules: React.FC = () => {
   return (
-    <section id="modules" className="py-24 bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90">
+    <Section id="modules">
       <Container>
         <div className="text-center mb-16">
           <h2 className="font-slab text-4xl mb-3 text-gradient-primary">COMPREHENSIVE IELTS MODULES</h2>
@@ -147,6 +148,6 @@ export const Modules: React.FC = () => {
           })}
         </div>
       </Container>
-    </section>
+    </Section>
   );
 };
