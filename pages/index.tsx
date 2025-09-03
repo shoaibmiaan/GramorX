@@ -19,6 +19,7 @@ import { CertificationBadges } from '@/components/sections/CertificationBadges';
 import { Testimonials } from '@/components/sections/Testimonials';
 import { Pricing } from '@/components/sections/Pricing';
 import Waitlist from '@/components/sections/Waitlist';
+import { TileGrid } from '@/components/design-system/TileGrid';
 
 export default function HomePage() {
   const { t } = useLocale();
@@ -47,7 +48,7 @@ export default function HomePage() {
 
       {/* Phase-3: Quick Command Center (go anywhere, from anywhere) */}
       <Section id="command-center" Container className="py-12">
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        <TileGrid gap="gap-3" cols="sm:grid-cols-2 lg:grid-cols-5">
           {[
             { label: t('home.commandCenter.listening'), href: '/listening', icon: 'fa-headphones' },
             { label: t('home.commandCenter.reading'), href: '/reading', icon: 'fa-book-open' },
@@ -67,7 +68,7 @@ export default function HomePage() {
               <i className={`fas ${x.icon} text-grayish`} aria-hidden="true" />
             </Link>
           ))}
-        </div>
+        </TileGrid>
       </Section>
 
       {/* Partners */}
@@ -81,7 +82,7 @@ export default function HomePage() {
 
       {/* Phase-3 retention strip */}
       <Section id="scale-retention" Container className="py-16">
-        <div className="grid gap-4 md:grid-cols-3">
+        <TileGrid cols="md:grid-cols-3">
           {[
             {
               h: t('home.retentionStrip.challenge.heading'),
@@ -111,14 +112,14 @@ export default function HomePage() {
                 <div className="w-12 h-12 rounded-full grid place-items-center text-white bg-gradient-to-br from-purpleVibe to-electricBlue">
                   <i className={`fas ${c.icon}`} aria-hidden="true" />
                 </div>
-                <div>
+              <div>
                   <h3 className="text-h3 mb-1">{c.h}</h3>
                   <p className="text-grayish">{c.p}</p>
                 </div>
               </div>
             </Link>
           ))}
-        </div>
+        </TileGrid>
       </Section>
 
       {/* Social proof */}

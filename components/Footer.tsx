@@ -15,6 +15,7 @@ import {
 } from '@/components/design-system/icons';
 import { resources, quickLinks, contactInfo } from '@/data/footerLinks';
 import { useLocale } from '@/lib/locale';
+import { FooterGrid } from '@/components/design-system/FooterGrid';
 
 export const Footer: React.FC = () => {
   const { t } = useLocale();
@@ -22,7 +23,7 @@ export const Footer: React.FC = () => {
     <footer className="py-24 border-t border-border">
       <Container>
         {/* 1 col on mobile -> 2 on small -> 4 on md */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10 mb-10">
+        <FooterGrid className="gap-10 mb-10">
           {/* Brand + Socials */}
           <div>
             <h3 className="text-xl font-semibold mb-4">GramorX</h3>
@@ -92,7 +93,7 @@ export const Footer: React.FC = () => {
               </li>
             </ul>
           </div>
-        </div>
+        </FooterGrid>
 
         <div className="text-center pt-8 border-t border-border text-sm text-muted-foreground">
           &copy; {new Date().getFullYear()} GramorX. All rights reserved.
