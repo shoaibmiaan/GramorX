@@ -1,0 +1,23 @@
+{
+  "commandCenter": {
+    "listening": "Listening",
+    "reading": "Reading",
+    "writing": "Writing",
+    "speaking": "Speaking",
+    "progress": "Progress"
+  },
+  "retentionStrip": {
+    "challenge": {
+      "heading": "14-Day Challenge",
+      "description": "Join cohorts, finish daily tasks, climb leaderboard."
+    },
+    "certificate": {
+      "heading": "Shareable Certificate",
+      "description": "Finish a challenge to generate a branded cert."
+    },
+    "teacherPilot": {
+      "heading": "Teacher Pilot",
+      "description": "Assign tasks and track students (beta)."
+    }
+  }
+}

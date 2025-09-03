@@ -49,11 +49,11 @@ export default function HomePage() {
       <Section id="command-center" Container className="py-12">
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           {[
-            { label: 'Listening', href: '/listening', icon: 'fa-headphones' },
-            { label: 'Reading', href: '/reading', icon: 'fa-book-open' },
-            { label: 'Writing', href: '/writing', icon: 'fa-pen-nib' },
-            { label: 'Speaking', href: '/speaking', icon: 'fa-microphone' },
-            { label: 'Progress', href: '/progress', icon: 'fa-chart-line' },
+            { label: t('home.commandCenter.listening'), href: '/listening', icon: 'fa-headphones' },
+            { label: t('home.commandCenter.reading'), href: '/reading', icon: 'fa-book-open' },
+            { label: t('home.commandCenter.writing'), href: '/writing', icon: 'fa-pen-nib' },
+            { label: t('home.commandCenter.speaking'), href: '/speaking', icon: 'fa-microphone' },
+            { label: t('home.commandCenter.progress'), href: '/progress', icon: 'fa-chart-line' },
           ].map((x) => (
             <Link
               key={x.href}
@@ -83,9 +83,24 @@ export default function HomePage() {
       <Section id="scale-retention" Container className="py-16">
         <div className="grid gap-4 md:grid-cols-3">
           {[
-            { h: '14-Day Challenge', p: 'Join cohorts, finish daily tasks, climb leaderboard.', href: '/challenge', icon: 'fa-trophy' },
-            { h: 'Shareable Certificate', p: 'Finish a challenge to generate a branded cert.', href: '/cert/sample', icon: 'fa-certificate' },
-            { h: 'Teacher Pilot', p: 'Assign tasks and track students (beta).', href: '/teacher', icon: 'fa-chalkboard-teacher' },
+            {
+              h: t('home.retentionStrip.challenge.heading'),
+              p: t('home.retentionStrip.challenge.description'),
+              href: '/challenge',
+              icon: 'fa-trophy',
+            },
+            {
+              h: t('home.retentionStrip.certificate.heading'),
+              p: t('home.retentionStrip.certificate.description'),
+              href: '/cert/sample',
+              icon: 'fa-certificate',
+            },
+            {
+              h: t('home.retentionStrip.teacherPilot.heading'),
+              p: t('home.retentionStrip.teacherPilot.description'),
+              href: '/teacher',
+              icon: 'fa-chalkboard-teacher',
+            },
           ].map((c) => (
             <Link
               key={c.href}
