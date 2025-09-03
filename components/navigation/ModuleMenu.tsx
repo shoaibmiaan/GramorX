@@ -12,9 +12,59 @@ interface ModuleMenuProps {
 }
 
 export function ModuleMenu({ open, setOpen, modulesRef }: ModuleMenuProps) {
+  const buttonRef = React.useRef<HTMLButtonElement>(null);
+  const menuRef = React.useRef<HTMLDivElement>(null);
+
+  const closeMenu = React.useCallback(() => setOpen(false), [setOpen]);
+
+  React.useEffect(() => {
+    if (open) {
+      const first = menuRef.current?.querySelector<HTMLElement>('a, button');
+      first?.focus();
+    }
+  }, [open]);
+
+  const wasOpen = React.useRef(open);
+  React.useEffect(() => {
+    if (wasOpen.current && !open) {
+      buttonRef.current?.focus();
+    }
+    wasOpen.current = open;
+  }, [open]);
+
+  React.useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        closeMenu();
+      } else if (e.key === 'Tab' && menuRef.current) {
+        const focusable = menuRef.current.querySelectorAll<HTMLElement>('a, button');
+        if (!focusable.length) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        const active = document.activeElement as HTMLElement | null;
+        if (!menuRef.current.contains(active)) {
+          e.preventDefault();
+          first.focus();
+        } else if (!e.shiftKey && active === last) {
+          e.preventDefault();
+          first.focus();
+        } else if (e.shiftKey && active === first) {
+          e.preventDefault();
+          last.focus();
+        }
+      }
+    }
+    if (open) {
+      document.addEventListener('keydown', handleKeyDown);
+      return () => document.removeEventListener('keydown', handleKeyDown);
+    }
+  }, [open, closeMenu]);
+
   return (
     <li className="relative" ref={modulesRef}>
       <button
+        ref={buttonRef}
         onClick={() => setOpen(!open)}
         aria-expanded={open}
         aria-haspopup="menu"
@@ -31,6 +81,7 @@ export function ModuleMenu({ open, setOpen, modulesRef }: ModuleMenuProps) {
         <div
           id="desktop-modules-menu"
           role="menu"
+          ref={menuRef}
           className="absolute left-1/2 -translate-x-1/2 top-full mt-3 w-96 max-w-[90vw] bg-background border border-border rounded-2xl shadow-lg overflow-hidden"
         >
           <div className="grid grid-cols-12">
@@ -45,7 +96,7 @@ export function ModuleMenu({ open, setOpen, modulesRef }: ModuleMenuProps) {
                     key={m.href}
                     href={m.href}
                     className="group rounded-lg border border-transparent hover:border-border p-4 flex items-start gap-3 hover:bg-muted"
-                    onClick={() => setOpen(false)}
+                    onClick={closeMenu}
                     role="menuitem"
                   >
                     <div className="mt-1">
@@ -70,7 +121,7 @@ export function ModuleMenu({ open, setOpen, modulesRef }: ModuleMenuProps) {
               <Link
                 href="/placement"
                 className="mt-4 inline-flex items-center justify-center rounded-xl px-4 py-2 font-semibold text-primary-foreground bg-primary hover:opacity-90"
-                onClick={() => setOpen(false)}
+                onClick={closeMenu}
                 role="menuitem"
               >
                 Start placement
