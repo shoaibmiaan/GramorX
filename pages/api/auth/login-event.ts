@@ -2,14 +2,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { supabaseServer, supabaseService } from '@/lib/supabaseServer';
 
-type RespBody =
-  | { ok: true }
-  | { error: string; details?: string | null };
+type RespBody = { ok?: true } | { error: string; details?: string };
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse<RespBody>
-) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse<RespBody>) {
   if (req.method === 'OPTIONS') {
     res.setHeader('Allow', 'POST, OPTIONS');
     return res.status(204).end();
@@ -20,12 +15,9 @@ export default async function handler(
   }
 
   try {
-    // Use anon client to read current user info from header/cookies
     const sb = supabaseServer(req);
     const { data: userRes, error: userErr } = await sb.auth.getUser();
-    if (userErr) {
-      console.error('supabaseServer.auth.getUser error', userErr);
-    }
+    if (userErr) console.error('supabaseServer.auth.getUser error', userErr);
     const userId: string | null = (userRes?.user?.id as string) ?? null;
 
     const isTestBypass =
@@ -42,9 +34,7 @@ export default async function handler(
       (req.socket?.remoteAddress ?? null);
     const ua = (req.headers['user-agent'] as string) || null;
 
-    // Service client for inserting row
     const admin = supabaseService();
-
     if (!admin || typeof (admin as any).from !== 'function') {
       console.error('supabaseService() did not return a client with .from()', { admin });
       return res.status(500).json({ error: 'Supabase service client unavailable' });
