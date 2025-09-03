@@ -13,25 +13,11 @@ import {
   MapPinIcon,
   ClockIcon,
 } from '@/components/design-system/icons';
-
-const RESOURCES = [
-  { href: '/predictor', label: 'Band Score Predictor' },
-  { href: '/listening', label: 'Listening Practice' },
-  { href: '/reading', label: 'Reading Practice' },
-  { href: '/writing', label: 'Writing Task Samples' },
-  { href: '/speaking', label: 'Speaking Questions' },
-] as const;
-
-const QUICK = [
-  { href: '/pricing', label: 'Pricing & Plans' },
-  { href: '/account/referrals', label: 'Referral Rewards' },
-  { href: '/partners', label: 'Partner Program' },
-  { href: '/support', label: 'Support' },
-  { href: '/blog', label: 'Blog' },
-  { href: '/faq', label: 'FAQ' },
-] as const;
+import { resources, quickLinks, contactInfo } from '@/data/footerLinks';
+import { useLocale } from '@/lib/locale';
 
 export const Footer: React.FC = () => {
+  const { t } = useLocale();
   return (
     <footer className="py-24 border-t border-border">
       <Container>
@@ -58,9 +44,9 @@ export const Footer: React.FC = () => {
               IELTS Resources
             </h3>
             <ul className="space-y-2">
-              {RESOURCES.map((x) => (
+              {resources.map((x) => (
                 <li key={x.label} className="text-muted-foreground">
-                  <NavLink href={x.href} label={x.label} className="!px-0 !py-1" />
+                  <NavLink href={x.href} label={t(x.label)} className="!px-0 !py-1" />
                 </li>
               ))}
             </ul>
@@ -72,9 +58,9 @@ export const Footer: React.FC = () => {
               Quick Links
             </h3>
             <ul className="space-y-2">
-              {QUICK.map((x) => (
+              {quickLinks.map((x) => (
                 <li key={x.label} className="text-muted-foreground">
-                  <NavLink href={x.href} label={x.label} className="!px-0 !py-1" />
+                  <NavLink href={x.href} label={t(x.label)} className="!px-0 !py-1" />
                 </li>
               ))}
             </ul>
@@ -88,21 +74,21 @@ export const Footer: React.FC = () => {
             <ul className="space-y-3 text-muted-foreground">
               <li>
                 <MailIcon className="mr-2 inline h-4 w-4" />
-                <a href="mailto:info@solvioadvisors.com" className="hover:underline">
-                  info@solvioadvisors.com
+                <a href={`mailto:${t(contactInfo.email)}`} className="hover:underline">
+                  {t(contactInfo.email)}
                 </a>
               </li>
               <li>
                 <PhoneIcon className="mr-2 inline h-4 w-4" />
-                <a href="tel:+19722954571" className="hover:underline">
-                  +1 (972) 295-4571
+                <a href={`tel:${t(contactInfo.phone)}`} className="hover:underline">
+                  {t(contactInfo.phone)}
                 </a>
               </li>
               <li>
-                <MapPinIcon className="mr-2 inline h-4 w-4" /> Houston, USA
+                <MapPinIcon className="mr-2 inline h-4 w-4" /> {t(contactInfo.location)}
               </li>
               <li>
-                <ClockIcon className="mr-2 inline h-4 w-4" /> Support: 24/7
+                <ClockIcon className="mr-2 inline h-4 w-4" /> {t(contactInfo.support)}
               </li>
             </ul>
           </div>

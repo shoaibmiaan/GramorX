@@ -7,5 +7,28 @@
   "Error": "Error",
   "Preview (English)": "Preview (English)",
   "Preview (Urdu)": "Preview (Urdu)",
-  "Current locale": "Current locale"
+  "Current locale": "Current locale",
+  "footer": {
+    "resources": {
+      "bandScorePredictor": "Band Score Predictor",
+      "listeningPractice": "Listening Practice",
+      "readingPractice": "Reading Practice",
+      "writingTaskSamples": "Writing Task Samples",
+      "speakingQuestions": "Speaking Questions"
+    },
+    "quickLinks": {
+      "pricingPlans": "Pricing & Plans",
+      "referralRewards": "Referral Rewards",
+      "partnerProgram": "Partner Program",
+      "support": "Support",
+      "blog": "Blog",
+      "faq": "FAQ"
+    },
+    "contact": {
+      "email": "info@solvioadvisors.com",
+      "phone": "+1 (972) 295-4571",
+      "location": "Houston, USA",
+      "supportHours": "Support: 24/7"
+    }
+  }
 }
