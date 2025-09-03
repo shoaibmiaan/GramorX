@@ -10,6 +10,24 @@ html, body, #__next { height: 100%; }
 body { @apply font-sans text-lightText bg-lightBg overflow-x-hidden relative; }
 .dark body { @apply text-foreground bg-gradient-to-br from-darker to-dark; }
 
+/* Background corner glow overlay */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  background:
+    radial-gradient(circle at top left, rgba(var(--color-purpleVibe), 0.6), transparent 60%),
+    radial-gradient(circle at top right, rgba(var(--color-electricBlue), 0.6), transparent 60%),
+    radial-gradient(circle at bottom left, rgba(var(--color-sunsetOrange), 0.6), transparent 60%),
+    radial-gradient(circle at bottom right, rgba(var(--color-goldenYellow), 0.6), transparent 60%);
+  background-repeat: no-repeat;
+  opacity: 0.3;
+}
+
+.dark body::before { opacity: 0.6; }
+
 /* =========================
    Headings → Roboto Slab
    ========================= */
