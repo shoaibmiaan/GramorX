@@ -178,9 +178,9 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
               className="h-11 w-11 rounded-lg object-contain"
               priority
             />
-            <span className="font-slab font-bold text-3xl">
+            <p className="font-slab font-bold text-3xl" role="heading" aria-level={1}>
               <span className="text-gradient-primary group-hover:opacity-90 transition">GramorX</span>
-            </span>
+            </p>
           </Link>
 
           <DesktopNav
