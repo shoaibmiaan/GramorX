@@ -75,9 +75,7 @@ export default function HomePage() {
       </section>
 
       {/* Partners */}
-      <section id="partners" className="py-24 bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90">
-        <CertificationBadges />
-      </section>
+      <CertificationBadges />
 
       {/* Strategy → Practise → Review (clear path) */}
       <ExamStrategy />
@@ -111,9 +109,7 @@ export default function HomePage() {
       </section>
 
       {/* Social proof */}
-      <section id="testimonials" className="py-24 bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90">
-        <Testimonials />
-      </section>
+      <Testimonials />
 
       {/* Monetization always one click away */}
       <Pricing />
