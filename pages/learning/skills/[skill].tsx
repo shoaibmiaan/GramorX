@@ -9,6 +9,7 @@ import { Button } from '@/components/design-system/Button';
 import { Badge } from '@/components/design-system/Badge';
 import { Alert } from '@/components/design-system/Alert';
 import { StreakIndicator } from '@/components/design-system/StreakIndicator';
+import { Skeleton } from '@/components/design-system/Skeleton';
 import type { Profile, AIPlan } from '@/types/profile';
 
 const supabase = createClient(
@@ -86,8 +87,8 @@ export default function Dashboard() {
           <div className="grid gap-6 md:grid-cols-3">
             {[...Array(3)].map((_, i) => (
               <Card key={i} className="p-6 rounded-ds-2xl">
-                <div className="animate-pulse h-6 w-40 bg-gray-200 dark:bg-white/10 rounded" />
-                <div className="mt-4 animate-pulse h-24 bg-gray-200 dark:bg-white/10 rounded" />
+                <Skeleton className="h-6 w-40" />
+                <Skeleton className="mt-4 h-24" />
               </Card>
             ))}
           </div>
