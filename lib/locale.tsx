@@ -17,13 +17,20 @@ const LocaleContext = createContext<LocaleContextValue>({
 });
 
 async function loadMessages(locale: string) {
-  try {
-    const res = await fetch(`/locales/${locale}/common.json`);
-    if (!res.ok) throw new Error('Failed to load');
-    return (await res.json()) as Record<string, any>;
-  } catch {
-    return {} as Record<string, any>;
-  }
+  const fetchJson = async (path: string) => {
+    try {
+      const res = await fetch(path);
+      if (!res.ok) throw new Error('Failed to load');
+      return (await res.json()) as Record<string, any>;
+    } catch {
+      return {} as Record<string, any>;
+    }
+  };
+  const [common, home] = await Promise.all([
+    fetchJson(`/locales/${locale}/common.json`),
+    fetchJson(`/locales/${locale}/home.json`),
+  ]);
+  return { ...common, home } as Record<string, any>;
 }
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {

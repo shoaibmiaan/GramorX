@@ -1,0 +1,23 @@
+{
+  "commandCenter": {
+    "listening": "سننا",
+    "reading": "پڑھنا",
+    "writing": "لکھنا",
+    "speaking": "بولنا",
+    "progress": "پیش رفت"
+  },
+  "retentionStrip": {
+    "challenge": {
+      "heading": "14 روزہ چیلنج",
+      "description": "ساتھیوں میں شامل ہوں، روزانہ کے کام مکمل کریں، اور لیڈر بورڈ پر اوپر جائیں۔"
+    },
+    "certificate": {
+      "heading": "قابلِ اشتراک سرٹیفیکیٹ",
+      "description": "چیلنج مکمل کریں اور برانڈڈ سرٹیفیکیٹ حاصل کریں۔"
+    },
+    "teacherPilot": {
+      "heading": "اساتذہ کے لیے پائلٹ",
+      "description": "کام تفویض کریں اور طلبہ کی نگرانی کریں (بیٹا)۔"
+    }
+  }
+}
