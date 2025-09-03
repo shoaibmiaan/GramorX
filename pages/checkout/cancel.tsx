@@ -23,7 +23,7 @@ const CancelPage: NextPage = () => {
       <Head><title>Checkout Canceled</title></Head>
       <main className="min-h-screen bg-background text-foreground">
         <Section>
-          <Container className="max-w-3xl px-4 text-center">
+          <Container className="max-w-3xl text-center">
             <h1 className="mb-2 text-3xl font-semibold">Checkout canceled</h1>
             <p className="text-muted-foreground">
               No worries — your card hasn’t been charged.
