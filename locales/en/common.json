@@ -9,6 +9,9 @@
   "Preview (Urdu)": "Preview (Urdu)",
   "Current locale": "Current locale",
   "footer": {
+    "brand": {
+      "description": "The most advanced IELTS preparation platform powered by AI and expert teaching."
+    },
     "resources": {
       "bandScorePredictor": "Band Score Predictor",
       "listeningPractice": "Listening Practice",
