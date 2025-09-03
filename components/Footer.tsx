@@ -1,8 +1,13 @@
+// components/Footer.tsx
 import React from 'react';
 import { Container } from '@/components/design-system/Container';
 import { NavLink } from '@/components/design-system/NavLink';
 import { SocialIconLink } from '@/components/design-system/SocialIconLink';
 import { MailIcon, PhoneIcon, MapPinIcon, ClockIcon } from '@/components/design-system/icons';
+import { FooterGrid } from '@/components/design-system/FooterGrid';
+import { FooterSection } from './FooterSection';
+import { useLocale } from '@/lib/locale';
+
 import {
   resources,
   quickLinks,
@@ -10,23 +15,27 @@ import {
   socialLinks,
   brandInfo,
 } from '@/data/footerLinks';
-import { FooterSection } from './FooterSection';
-import { useLocale } from '@/lib/locale';
 
 export const Footer: React.FC = () => {
   const { t } = useLocale();
+
   return (
-    <footer className="py-24 border-t border-border">
+    <footer className="py-24 border-t border-border bg-background">
       <Container>
-        {/* 1 col on mobile -> 2 on small -> 4 on md */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10 mb-10">
+        {/* 1 col on mobile → 2 on sm → 4 on md+ */}
+        <FooterGrid className="gap-10 mb-10">
           {/* Brand + Socials */}
           <div>
             <h3 className="text-xl font-semibold mb-4">{brandInfo.name}</h3>
             <p className="text-muted-foreground">{t(brandInfo.description)}</p>
             <div className="flex gap-3 mt-4">
               {socialLinks.map(({ href, label, icon: Icon }) => (
-                <SocialIconLink key={label} href={href} icon={<Icon className="h-5 w-5" />} label={label} />
+                <SocialIconLink
+                  key={label}
+                  href={href}
+                  icon={<Icon className="h-5 w-5" />}
+                  label={label}
+                />
               ))}
             </div>
           </div>
@@ -70,7 +79,7 @@ export const Footer: React.FC = () => {
               <ClockIcon className="mr-2 inline h-4 w-4" /> {t(contactInfo.support)}
             </li>
           </FooterSection>
-        </div>
+        </FooterGrid>
 
         <div className="text-center pt-8 border-t border-border text-sm text-muted-foreground">
           &copy; {new Date().getFullYear()} GramorX. All rights reserved.
