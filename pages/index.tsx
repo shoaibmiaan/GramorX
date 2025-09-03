@@ -2,96 +2,41 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import Head from 'next/head';
 import dynamic from 'next/dynamic';
+import Link from 'next/link';
 import { useLocale } from '@/lib/locale';
 import { Container } from '@/components/design-system/Container';
 
-// Robust dynamic import for Hero: supports default OR named export
+// Hero is heavy → hydrate client only
 const Hero = dynamic(
   () =>
-    import('@/components/sections/Hero')
-      .then((mod) =>
-        Promise.resolve(mod as typeof import('@/components/sections/Hero'))
-      )
-      .then((mod) => mod.Hero ?? mod.default),
+    import('@/components/sections/Hero').then((m) => m.Hero ?? m.default),
   { ssr: false, loading: () => <div className="min-h-[60vh]" /> }
 );
 
-// Static imports (support default OR named)
-import * as ModulesMod from '@/components/sections/Modules';
-import * as CertificationBadgesMod from '@/components/sections/CertificationBadges';
-import * as TestimonialsMod from '@/components/sections/Testimonials';
-import * as PricingMod from '@/components/sections/Pricing';
-import * as WaitlistMod from '@/components/sections/Waitlist';
-
-// Keep both sides from the conflict
-import { HeaderStreakChip } from '@/components/feature/HeaderStreakChip';
-import * as SpecialtiesMod from '@/components/sections/Specialties';
-import * as DrillGeneratorMod from '@/components/sections/Learning/DrillGenerator';
-import * as TipsGridMod from '@/components/sections/Learning/TipsGrid';
-import * as CourseCatalogMod from '@/components/sections/Learning/CourseCatalog';
-
-type ModulesModule = typeof import('@/components/sections/Modules');
-type CertificationBadgesModule = typeof import('@/components/sections/CertificationBadges');
-type TestimonialsModule = typeof import('@/components/sections/Testimonials');
-type PricingModule = typeof import('@/components/sections/Pricing');
-type WaitlistModule = typeof import('@/components/sections/Waitlist') & {
-  Waitlist?: typeof import('@/components/sections/Waitlist').default;
-};
-type SpecialtiesModule = typeof import('@/components/sections/Specialties');
-type DrillGeneratorModule = typeof import('@/components/sections/Learning/DrillGenerator');
-type TipsGridModule = typeof import('@/components/sections/Learning/TipsGrid');
-type CourseCatalogModule = typeof import('@/components/sections/Learning/CourseCatalog');
-
-const ModulesModTyped = ModulesMod as ModulesModule;
-const CertificationBadgesModTyped = CertificationBadgesMod as CertificationBadgesModule;
-const TestimonialsModTyped = TestimonialsMod as TestimonialsModule;
-const PricingModTyped = PricingMod as PricingModule;
-const WaitlistModTyped = WaitlistMod as WaitlistModule;
-const SpecialtiesModTyped = SpecialtiesMod as SpecialtiesModule;
-const DrillGeneratorModTyped = DrillGeneratorMod as DrillGeneratorModule;
-const TipsGridModTyped = TipsGridMod as TipsGridModule;
-const CourseCatalogModTyped = CourseCatalogMod as CourseCatalogModule;
-
-const Modules = ModulesModTyped.Modules ?? ModulesModTyped.default;
-const CertificationBadges =
-  CertificationBadgesModTyped.CertificationBadges ?? CertificationBadgesModTyped.default;
-const Testimonials =
-  TestimonialsModTyped.Testimonials ?? TestimonialsModTyped.default;
-const Pricing = PricingModTyped.Pricing ?? PricingModTyped.default;
-const Waitlist = WaitlistModTyped.Waitlist ?? WaitlistModTyped.default;
-const Specialties = SpecialtiesModTyped.Specialties ?? SpecialtiesModTyped.default;
-const DrillGenerator = DrillGeneratorModTyped.DrillGenerator ?? DrillGeneratorModTyped.default;
-const TipsGrid = TipsGridModTyped.TipsGrid ?? TipsGridModTyped.default;
-const CourseCatalog = CourseCatalogModTyped.CourseCatalog ?? CourseCatalogModTyped.default;
+import ExamStrategy from '@/components/sections/ExamStrategy';
+import { Modules } from '@/components/sections/Modules';
+import { CertificationBadges } from '@/components/sections/CertificationBadges';
+import { Testimonials } from '@/components/sections/Testimonials';
+import { Pricing } from '@/components/sections/Pricing';
+import Waitlist from '@/components/sections/Waitlist';
 
 export default function HomePage() {
   const { t } = useLocale();
-
-  // Streak state (kept intact)
   const [streak, setStreak] = useState(0);
   const onStreakChange = useCallback((n: number) => setStreak(n), []);
 
-  // Smooth scroll for same-page anchors
+  // Smooth scroll for same-page anchors (safe & small)
   useEffect(() => {
-    const clickHandler = (ev: MouseEvent) => {
-      const target = ev.target as HTMLElement | null;
-      const a = target?.closest<HTMLAnchorElement>('a[href^="#"]');
-      if (!a) return;
-
-      const href = a.getAttribute('href');
-      if (!href || href.length < 2) return;
-
-      const id = href.slice(1);
-      const el = document.getElementById(id);
+    const onClick = (ev: MouseEvent) => {
+      const el = (ev.target as HTMLElement)?.closest('a[href^="#"]') as HTMLAnchorElement | null;
       if (!el) return;
-
       ev.preventDefault();
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      history.pushState(null, '', href);
+      const id = el.getAttribute('href')!.slice(1);
+      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      history.pushState(null, '', `#${id}`);
     };
-
-    document.addEventListener('click', clickHandler);
-    return () => document.removeEventListener('click', clickHandler);
+    document.addEventListener('click', onClick);
+    return () => document.removeEventListener('click', onClick);
   }, []);
 
   return (
@@ -100,62 +45,85 @@ export default function HomePage() {
         <title>{t('home.title')}</title>
       </Head>
 
-      <Hero streak={streak} onStreakChange={onStreakChange} />
+      <Hero onStreakChange={onStreakChange} />
 
-      <div className="mt-6 flex justify-center">
-        <HeaderStreakChip />
-      </div>
-
-      <section
-        id="partners"
-        className="py-24 bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90"
-      >
-        <CertificationBadges />
-      </section>
-
-      <section
-        id="modules"
-        className="py-24 bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90"
-      >
-        <Modules />
-      </section>
-
-      <Specialties />
-
-      <section
-        id="drills"
-        className="py-24 bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90"
-      >
+      {/* Phase-3: Quick Command Center (go anywhere, from anywhere) */}
+      <section id="command-center" className="py-12">
         <Container>
-          <h2 className="font-slab text-h2">AI Drill Generator</h2>
-          <p className="text-grayish mb-8">
-            Generate quick practice on any IELTS topic.
-          </p>
-          <DrillGenerator />
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+            {[
+              { label: 'Listening', href: '/listening', icon: 'fa-headphones' },
+              { label: 'Reading', href: '/reading', icon: 'fa-book-open' },
+              { label: 'Writing', href: '/writing', icon: 'fa-pen-nib' },
+              { label: 'Speaking', href: '/speaking', icon: 'fa-microphone' },
+              { label: 'Progress', href: '/progress', icon: 'fa-chart-line' },
+            ].map((x) => (
+              <Link
+                key={x.href}
+                href={x.href}
+                className="
+                  rounded-ds-xl border border-border px-4 py-3 text-sm font-medium
+                  hover:bg-electricBlue/5 transition flex items-center justify-between
+                "
+              >
+                <span>{x.label}</span>
+                <i className={`fas ${x.icon} text-grayish`} aria-hidden />
+              </Link>
+            ))}
+          </div>
         </Container>
       </section>
 
-      <TipsGrid />
-      <CourseCatalog />
+      {/* Partners */}
+      <section id="partners" className="py-24 bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90">
+        <CertificationBadges />
+      </section>
 
-      <section
-        id="testimonials"
-        className="py-24 bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90"
-      >
+      {/* Strategy → Practise → Review (clear path) */}
+      <ExamStrategy />
+
+      {/* Core modules */}
+      <section id="modules" className="py-24 bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90">
+        <Modules />
+      </section>
+
+      {/* Phase-3 retention strip */}
+      <section id="scale-retention" className="py-16">
+        <Container>
+          <div className="grid gap-4 md:grid-cols-3">
+            {[
+              { h: '14-Day Challenge', p: 'Join cohorts, finish daily tasks, climb leaderboard.', href: '/challenge', icon: 'fa-trophy' },
+              { h: 'Shareable Certificate', p: 'Finish a challenge to generate a branded cert.', href: '/cert/sample', icon: 'fa-certificate' },
+              { h: 'Teacher Pilot', p: 'Assign tasks and track students (beta).', href: '/teacher', icon: 'fa-chalkboard-teacher' },
+            ].map((c) => (
+              <Link key={c.href} href={c.href} className="rounded-ds-2xl border border-purpleVibe/20 p-6 hover:border-purpleVibe/40 hover:-translate-y-1 transition block">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-full grid place-items-center text-white bg-gradient-to-br from-purpleVibe to-electricBlue">
+                    <i className={`fas ${c.icon}`} />
+                  </div>
+                  <div>
+                    <h3 className="text-h3 mb-1">{c.h}</h3>
+                    <p className="text-grayish">{c.p}</p>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </Container>
+      </section>
+
+      {/* Social proof */}
+      <section id="testimonials" className="py-24 bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90">
         <Testimonials />
       </section>
 
-      <section
-        id="pricing"
-        className="py-24 bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90"
-      >
+      {/* Monetization always one click away */}
+      <section id="pricing" className="py-24 bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90">
         <Pricing />
       </section>
 
-      <section
-        id="waitlist"
-        className="py-24 bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90"
-      >
+      {/* Capture demand */}
+      <section id="waitlist" className="py-24 bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90">
         <Waitlist />
       </section>
     </>
