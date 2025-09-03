@@ -1,4 +1,3 @@
-// components/sections/Header.tsx
 'use client';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
@@ -21,16 +20,16 @@ const MODULE_LINKS: ModuleLink[] = [
   { label: 'Speaking', href: '/speaking', desc: 'Pronunciation & fluency' },
 ];
 
-const NAV: { href: string; label: string }[] = [
-  { href: '/waitlist', label: 'Join Waitlist' },
-  { href: '#pricing', label: 'Pricing' },
+const NAV: ReadonlyArray<{ href: string; label: string }> = [
+  { href: '/predictor', label: 'Band Predictor' },
+  { href: '/pricing', label: 'Pricing' },
 ];
 
-// 🔥 Fire streak pill (icon + value)
+// 🔥 Fire streak pill (token colors)
 function FireStreak({ value }: { value: number }) {
   return (
     <span
-      className="inline-flex items-center gap-1.5 rounded-full bg-orange-500/15 text-orange-300 px-2.5 py-1 text-sm font-semibold"
+      className="inline-flex items-center gap-1.5 rounded-full bg-primary/15 text-primary px-2.5 py-1 text-sm font-semibold"
       title="Daily streak"
     >
       <span aria-hidden>🔥</span>
@@ -39,7 +38,7 @@ function FireStreak({ value }: { value: number }) {
   );
 }
 
-// Icon-only theme toggle (no Light/Dark text)
+// Icon-only theme toggle
 function IconOnlyThemeToggle() {
   const { theme, setTheme, resolvedTheme } = useTheme();
   const isDark = (theme ?? resolvedTheme) === 'dark';
@@ -48,16 +47,13 @@ function IconOnlyThemeToggle() {
       type="button"
       aria-label="Toggle theme"
       onClick={() => setTheme(isDark ? 'light' : 'dark')}
-      className="inline-flex h-10 w-10 items-center justify-center rounded-lg hover:bg-purpleVibe/10"
+      className="inline-flex h-10 w-10 items-center justify-center rounded-lg hover:bg-muted"
     >
-      {/* Moon / Sun icons (inline SVG, no text) */}
       {isDark ? (
-        // Show sun icon when in dark mode
         <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor" aria-hidden="true">
           <path d="M6.76 4.84 5.34 3.42 3.92 4.84 5.34 6.26 6.76 4.84zM1 13h3v-2H1v2zm10 10h2v-3h-2v3zm9-10v-2h-3v2h3zm-2.76 7.16 1.42 1.42 1.42-1.42-1.42-1.42-1.42 1.42zM12 5a7 7 0 1 0 0 14 7 7 0 0 0 0-14zm7-1.58 1.42-1.42L19 0.58l-1.42 1.42L19 3.42zM4.84 17.24 3.42 18.66l1.42 1.42 1.42-1.42-1.42-1.42z" />
         </svg>
       ) : (
-        // Show moon icon when in light mode
         <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor" aria-hidden="true">
           <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
         </svg>
@@ -80,7 +76,7 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
     id: null, email: null, name: null, avatarUrl: null,
   });
 
-  // Streak (kept from your last version, now rendered with FireStreak)
+  // Streak (prop wins; otherwise fetch)
   const [streakState, setStreakState] = useState<number>(streak ?? 0);
   useEffect(() => { if (typeof streak === 'number') setStreakState(streak); }, [streak]);
   const fetchStreak = useCallback(async () => {
@@ -102,7 +98,7 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
     return () => window.removeEventListener('streak:changed', onChanged as EventListener);
   }, [fetchStreak]);
 
-  // Solid header when scrolled or any menu open (fixes the “looks not right” overlay)
+  // Solid header when scrolled or any menu open
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 4);
     onScroll();
@@ -154,7 +150,7 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
         });
         const r = await computeRole(s?.id ?? null, s?.app_metadata, userMeta);
         setRole(r);
-        if (!s) setStreakState(0); // reset on sign-out
+        if (!s) setStreakState(0);
       }
     );
 
@@ -215,12 +211,12 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
     <header
       className={[
         'sticky top-0 z-50 transition-colors',
-        solidHeader ? 'bg-lightBg dark:bg-dark border-b border-purpleVibe/20 shadow-sm' : 'header-glass',
+        solidHeader ? 'bg-background border-b border-border shadow-sm' : 'header-glass',
       ].join(' ')}
     >
       <Container>
         <div className="flex items-center justify-between py-4 md:py-5">
-          {/* Brand — bigger logo + name */}
+          {/* Brand */}
           <Link
             href={user.id ? '/dashboard' : '/'}
             className="flex items-center gap-3 group"
@@ -243,13 +239,15 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
           <nav className="hidden md:block" aria-label="Primary">
             <ul className="flex items-center gap-3 relative">
               {user.id && <li><NavLink href="/dashboard" label="Dashboard" /></li>}
+
+              {/* Modules */}
               <li className="relative" ref={modulesRef}>
                 <button
                   onClick={() => setOpenDesktopModules(v => !v)}
                   aria-expanded={openDesktopModules}
                   aria-haspopup="menu"
                   aria-controls="desktop-modules-menu"
-                  className="px-3 py-2 rounded hover:bg-purpleVibe/10 flex items-center gap-2"
+                  className="px-3 py-2 rounded hover:bg-muted flex items-center gap-2"
                 >
                   <span>Modules</span>
                   <svg className="w-3.5 h-3.5 opacity-80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
@@ -261,20 +259,20 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
                   <div
                     id="desktop-modules-menu"
                     role="menu"
-                    className="absolute left-1/2 -translate-x-1/2 top-full mt-3 w-220 max-w-[90vw] bg-lightBg dark:bg-dark border border-purpleVibe/20 rounded-2xl shadow-lg overflow-hidden"
+                    className="absolute left-1/2 -translate-x-1/2 top-full mt-3 w-96 max-w-[90vw] bg-background border border-border rounded-2xl shadow-lg overflow-hidden"
                   >
                     <div className="grid grid-cols-12">
                       <div className="col-span-8 p-6 sm:p-7">
                         <div className="mb-3">
-                          <h3 className="font-slab text-h3">Skill Modules</h3>
-                          <p className="text-grayish text-small">Build the core exam skills with focused practice.</p>
+                          <h3 className="font-slab text-lg">Skill Modules</h3>
+                          <p className="text-muted-foreground text-sm">Build the core exam skills with focused practice.</p>
                         </div>
                         <div className="grid sm:grid-cols-2 gap-3">
                           {MODULE_LINKS.map((m) => (
                             <NavLink
                               key={m.href}
                               href={m.href}
-                              className="group rounded-ds border border-transparent hover:border-purpleVibe/20 p-4 flex items-start gap-3 hover:bg-purpleVibe/10"
+                              className="group rounded-lg border border-transparent hover:border-border p-4 flex items-start gap-3 hover:bg-muted"
                               onClick={() => setOpenDesktopModules(false)}
                               role="menuitem"
                             >
@@ -285,21 +283,21 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
                               </div>
                               <div>
                                 <div className="font-medium">{m.label}</div>
-                                {m.desc && <div className="text-small text-grayish">{m.desc}</div>}
+                                {m.desc && <div className="text-sm text-muted-foreground">{m.desc}</div>}
                               </div>
                             </NavLink>
                           ))}
                         </div>
                       </div>
 
-                      <div className="col-span-4 bg-purpleVibe/5 dark:bg-purpleVibe/10 p-6 sm:p-7 flex flex-col justify-between">
+                      <div className="col-span-4 bg-muted p-6 sm:p-7 flex flex-col justify-between">
                         <div>
-                          <div className="mb-2 font-slab text-h3">New here?</div>
-                          <p className="text-small opacity-80">Take a quick placement to get a personalized start.</p>
+                          <div className="mb-2 font-slab text-lg">New here?</div>
+                          <p className="text-sm text-muted-foreground">Take a quick placement to get a personalized start.</p>
                         </div>
                         <Link
                           href="/placement"
-                          className="mt-4 inline-flex items-center justify-center rounded-ds-xl px-4 py-2 font-semibold text-white bg-gradient-to-r from-purpleVibe to-electricBlue hover:opacity-90"
+                          className="mt-4 inline-flex items-center justify-center rounded-xl px-4 py-2 font-semibold text-primary-foreground bg-primary hover:opacity-90"
                           onClick={() => setOpenDesktopModules(false)}
                           role="menuitem"
                         >
@@ -317,8 +315,14 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
               </li>
 
               <li><NavLink href="/learning" label="Learning" /></li>
+
               {NAV.map((n) => (<li key={n.href}><NavLink href={n.href} label={n.label} /></li>))}
-              <li><NavLink href="/premium/pin" label="premium" /></li>
+
+              {/* Partners/Admin shortcuts based on role */}
+              {role === 'partner' || role === 'admin' ? (
+                <li><NavLink href="/partners" label="Partners" /></li>
+              ) : null}
+              {role === 'admin' ? <li><NavLink href="/admin/partners" label="Admin" /></li> : null}
 
               {ready ? (
                 user.id ? (
@@ -328,24 +332,29 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
                       email={user.email}
                       name={user.name}
                       avatarUrl={user.avatarUrl}
-                      onSignOut={async () => { await supabaseBrowser.auth.signOut(); setStreakState(0); router.replace('/login'); }}
+                      onSignOut={signOut}
+                      // helpful quick links inside user menu if your DS supports it:
+                      links={[
+                        { href: '/account/billing', label: 'Billing' },
+                        { href: '/account/referrals', label: 'Referrals' },
+                      ]}
                     />
                   </li>
                 ) : (
                   <li>
                     <Link
                       href="/login"
-                      className="px-4 py-2 rounded-full bg-gradient-to-r from-purpleVibe to-electricBlue text-white font-semibold hover:opacity-90 transition"
+                      className="px-4 py-2 rounded-full bg-primary text-primary-foreground font-semibold hover:opacity-90 transition"
                     >
                       Sign in
                     </Link>
                   </li>
                 )
               ) : (
-                <li><div className="h-9 w-24 rounded-full bg-gray-200 dark:bg-white/10 animate-pulse" /></li>
+                <li><div className="h-9 w-24 rounded-full bg-muted animate-pulse" /></li>
               )}
 
-              {/* 🔥 Fire streak + icon-only theme */}
+              {/* Streak + theme + notifications */}
               <li><FireStreak value={streakState} /></li>
               <li><NotificationBell /></li>
               <li><IconOnlyThemeToggle /></li>
@@ -360,7 +369,7 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
               aria-label="Toggle menu"
               aria-expanded={mobileOpen}
               onClick={() => setMobileOpen(v => !v)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-lg hover:bg-purpleVibe/10"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-lg hover:bg-muted"
             >
               {mobileOpen ? (
                 <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
@@ -382,17 +391,17 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
         onClick={() => setMobileOpen(false)}
       />
 
-      {/* Mobile panel (solid background; no transparency when open) */}
+      {/* Mobile panel */}
       {mobileOpen && (
-        <div className="relative z-50 md:hidden border-t border-purpleVibe/20 bg-lightBg dark:bg-dark shadow-lg">
+        <div className="relative z-50 md:hidden border-t border-border bg-background shadow-lg">
           <Container>
             <div className="py-3 flex items-center justify-between">
               <FireStreak value={streakState} />
               {ready && user.id ? (
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={async () => { await supabaseBrowser.auth.signOut(); setStreakState(0); router.replace('/login'); }}
-                    className="px-4 py-2 rounded-full bg-gradient-to-r from-purpleVibe to-electricBlue text-white font-semibold hover:opacity-90 transition"
+                    onClick={signOut}
+                    className="px-4 py-2 rounded-full bg-primary text-primary-foreground font-semibold hover:opacity-90 transition"
                   >
                     Sign out
                   </button>
@@ -400,13 +409,13 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
               ) : ready ? (
                 <Link
                   href="/login"
-                  className="px-4 py-2 rounded-full bg-gradient-to-r from-purpleVibe to-electricBlue text-white font-semibold hover:opacity-90 transition"
+                  className="px-4 py-2 rounded-full bg-primary text-primary-foreground font-semibold hover:opacity-90 transition"
                   onClick={() => setMobileOpen(false)}
                 >
                   Sign in
                 </Link>
               ) : (
-                <div className="h-9 w-24 rounded-full bg-gray-200 dark:bg-white/10 animate-pulse" />
+                <div className="h-9 w-24 rounded-full bg-muted animate-pulse" />
               )}
             </div>
 
@@ -416,7 +425,7 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
                   <li>
                     <NavLink
                       href="/dashboard"
-                      className="block px-3 py-3 rounded-lg hover:bg-purpleVibe/10"
+                      className="block px-3 py-3 rounded-lg hover:bg-muted"
                       onClick={() => setMobileOpen(false)}
                     >
                       Dashboard
@@ -426,7 +435,7 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
                 <li>
                   <NavLink
                     href="/learning"
-                    className="block px-3 py-3 rounded-lg hover:bg-purpleVibe/10"
+                    className="block px-3 py-3 rounded-lg hover:bg-muted"
                     onClick={() => setMobileOpen(false)}
                   >
                     Learning
@@ -436,7 +445,7 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
                 {/* Modules accordion */}
                 <li>
                   <button
-                    className="w-full flex items-center justify-between px-3 py-3 rounded-lg hover:bg-purpleVibe/10"
+                    className="w-full flex items-center justify-between px-3 py-3 rounded-lg hover:bg-muted"
                     onClick={() => setMobileModulesOpen(v => !v)}
                     aria-expanded={mobileModulesOpen}
                     aria-controls="mobile-modules-list"
@@ -447,12 +456,12 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
                     </svg>
                   </button>
                   {mobileModulesOpen && (
-                    <ul id="mobile-modules-list" className="mt-1 ml-2 rounded-lg border border-purpleVibe/20 overflow-hidden">
+                    <ul id="mobile-modules-list" className="mt-1 ml-2 rounded-lg border border-border overflow-hidden">
                       {MODULE_LINKS.map((m) => (
                         <li key={m.href}>
                           <NavLink
                             href={m.href}
-                            className="block px-4 py-3 hover:bg-purpleVibe/10"
+                            className="block px-4 py-3 hover:bg-muted"
                             onClick={() => setMobileOpen(false)}
                           >
                             {m.label}
@@ -463,27 +472,66 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
                   )}
                 </li>
 
-                {/* Pricing (waitlist removed) */}
+                {/* Key destinations */}
                 {NAV.map((n) => (
                   <li key={n.href}>
                     <NavLink
                       href={n.href}
-                      className="block px-3 py-3 rounded-lg hover:bg-purpleVibe/10"
+                      className="block px-3 py-3 rounded-lg hover:bg-muted"
                       onClick={() => setMobileOpen(false)}
                     >
                       {n.label}
                     </NavLink>
                   </li>
                 ))}
-                <li>
-                  <NavLink
-                    href="/premium"
-                    className="block px-3 py-3 rounded-lg hover:bg-purpleVibe/10"
-                    onClick={() => setMobileOpen(false)}
-                  >
-                    premium
-                  </NavLink>
-                </li>
+
+                {/* Partner/Admin context links */}
+                {role === 'partner' || role === 'admin' ? (
+                  <li>
+                    <NavLink
+                      href="/partners"
+                      className="block px-3 py-3 rounded-lg hover:bg-muted"
+                      onClick={() => setMobileOpen(false)}
+                    >
+                      Partners
+                    </NavLink>
+                  </li>
+                ) : null}
+                {role === 'admin' ? (
+                  <li>
+                    <NavLink
+                      href="/admin/partners"
+                      className="block px-3 py-3 rounded-lg hover:bg-muted"
+                      onClick={() => setMobileOpen(false)}
+                    >
+                      Admin
+                    </NavLink>
+                  </li>
+                ) : null}
+
+                {/* Useful account links */}
+                {user.id ? (
+                  <>
+                    <li>
+                      <NavLink
+                        href="/account/billing"
+                        className="block px-3 py-3 rounded-lg hover:bg-muted"
+                        onClick={() => setMobileOpen(false)}
+                      >
+                        Billing
+                      </NavLink>
+                    </li>
+                    <li>
+                      <NavLink
+                        href="/account/referrals"
+                        className="block px-3 py-3 rounded-lg hover:bg-muted"
+                        onClick={() => setMobileOpen(false)}
+                      >
+                        Referrals
+                      </NavLink>
+                    </li>
+                  </>
+                ) : null}
               </ul>
             </nav>
           </Container>

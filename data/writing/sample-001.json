@@ -1,0 +1,35 @@
+{
+  "id": "writing-sample-001",
+  "module": "writing",
+  "version": 1,
+  "task1": {
+    "type": "academic",
+    "title": "Summarize the chart",
+    "prompt": "The bar chart shows the percentage of households with internet access in five countries between 2010 and 2020. Summarize the information by selecting and reporting the main features, and make comparisons where relevant.",
+    "minWords": 150,
+    "maxTimeMinutes": 20,
+    "hints": [
+      "Group countries with similar trends.",
+      "Compare highest vs lowest years.",
+      "Mention notable increases or plateaus."
+    ],
+    "assessment": {
+      "criteria": ["Task Achievement", "Coherence and Cohesion", "Lexical Resource", "Grammatical Range and Accuracy"]
+    }
+  },
+  "task2": {
+    "title": "Opinion essay — Technology in education",
+    "prompt": "Some people believe that technology has made it easier for students to learn. Others think that technology distracts students from studying. Discuss both views and give your own opinion.",
+    "minWords": 250,
+    "maxTimeMinutes": 40,
+    "outline": [
+      "Intro: paraphrase topic + thesis",
+      "Body 1: benefits with examples",
+      "Body 2: drawbacks with examples",
+      "Conclusion: restate opinion + recommendation"
+    ],
+    "assessment": {
+      "criteria": ["Task Response", "Coherence and Cohesion", "Lexical Resource", "Grammatical Range and Accuracy"]
+    }
+  }
+}

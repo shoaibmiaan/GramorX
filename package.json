@@ -13,7 +13,12 @@
     "diagnose": "powershell -ExecutionPolicy Bypass -File .\\\\tools\\\\report-build-issues.ps1",
     "test": "TWILIO_BYPASS=1 tsx tools/run-tests.ts",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "seed:challenge": "tsx scripts/seed_challenge.ts",
+    "gen:cert-template": "tsx scripts/generate_certificate_template.ts",
+    "l10n:extract": "tsx scripts/l10n_extract.ts",
+    "test:a11y": "vitest run tests/a11y/wcag-axe.test.ts",
+    "test:phase3": "vitest run tests/**/*.test.ts*"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
@@ -60,11 +65,14 @@
     "@tailwindcss/aspect-ratio": "^0.4.2",
     "@tailwindcss/forms": "^0.5.10",
     "@tailwindcss/typography": "^0.5.16",
+    "@testing-library/jest-dom": "^6.8.0",
+    "@testing-library/react": "^16.3.0",
     "@types/node": "^20.19.10",
     "@types/react": "18.2.66",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
     "autoprefixer": "^10.4.20",
+    "axe-core": "^4.10.3",
     "concurrently": "^9.2.1",
     "eslint": "8.57.0",
     "eslint-config-next": "14.2.31",
@@ -72,7 +80,8 @@
     "tailwindcss": "^3.4.10",
     "ts-node": "^10.9.2",
     "tsx": "^4.20.5",
-    "typescript": "5.6.2"
+    "typescript": "5.6.2",
+    "vitest": "^3.2.4"
   },
   "engines": {
     "node": ">=20 <21",

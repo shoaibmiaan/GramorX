@@ -1,116 +1,150 @@
-import React, { useEffect, useState } from 'react';
-import Head from 'next/head';
-import Link from 'next/link';
-import { RoleGuard } from '@/components/auth/RoleGuard';
-import { Container } from '@/components/design-system/Container';
-import { supabaseBrowser } from '@/lib/supabaseBrowser';
+// pages/teacher/index.tsx
+import * as React from "react";
+import Head from "next/head";
+import Link from "next/link";
+import { Container } from "@/components/design-system/Container";
+import { supabaseBrowser } from "@/lib/supabaseBrowser";
 
-type Student = { id: string; full_name: string | null; email: string | null; created_at: string | null };
+type Cohort = {
+  id: string;
+  teacher_id: string;
+  name: string;
+  created_at: string;
+};
 
 export default function TeacherHome() {
-  const [students, setStudents] = useState<Student[]>([]);
-  const [q, setQ] = useState('');
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
+  const [cohorts, setCohorts] = React.useState<Cohort[]>([]);
+  const [newName, setNewName] = React.useState("");
 
-  useEffect(() => {
+  React.useEffect(() => {
     (async () => {
-      // Teachers can read students only (RLS enforces)
-      let query = supabaseBrowser
-        .from('profiles')
-        .select('id, full_name, email, created_at')
-        .eq('role', 'student')
-        .order('created_at', { ascending: false })
-        .limit(100);
-      if (q.trim()) {
-        query = query.ilike('full_name', `%${q}%`);
+      try {
+        setLoading(true);
+        setError(null);
+
+        const res = await fetch("/api/teacher/cohorts");
+        if (!res.ok) throw new Error("Failed to load cohorts");
+        const j = (await res.json()) as { ok: boolean; cohorts?: Cohort[]; error?: string };
+        if (!j.ok || !j.cohorts) throw new Error(j.error || "Unknown error");
+        setCohorts(j.cohorts);
+      } catch (e: any) {
+        setError(e.message ?? "Error");
+      } finally {
+        setLoading(false);
       }
-      const { data } = await query;
-      setStudents((data ?? []) as Student[]);
     })();
-  }, [q]);
+  }, []);
+
+  const createCohort = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newName.trim()) return;
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      // RLS lets teacher create their own cohorts
+      const { data, error } = await supabaseBrowser
+        .from("teacher_cohorts")
+        .insert({ name: newName.trim() })
+        .select("*")
+        .single();
+
+      if (error) throw new Error(error.message);
+
+      setCohorts((prev) => [data as Cohort, ...prev]);
+      setNewName("");
+    } catch (e: any) {
+      setError(e.message ?? "Error");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <RoleGuard allow={['teacher']}>
-      <Head><title>Teacher · Dashboard</title></Head>
-      <Container className="py-8">
-        <header className="flex items-center justify-between gap-3">
-          <h1 className="text-2xl font-semibold">Teacher Dashboard</h1>
-          <div className="flex gap-2">
-            <Link href="/admin" className="rounded-xl border px-3 py-2 hover:shadow-sm">Admin (if allowed)</Link>
-          </div>
-        </header>
+    <>
+      <Head>
+        <title>Teacher · GramorX</title>
+        <meta name="description" content="Assign tasks, manage cohorts, and nudge students." />
+      </Head>
 
-        <section className="mt-6 grid gap-4 sm:grid-cols-3">
-          <Card title="Active Students" value="—" sub="RLS-scoped">
-            {/* Replace later with real count via RPC */}
-          </Card>
-          <Card title="Attempts (7d)" value="—" sub="Demo" />
-          <Card title="Avg Score" value="—" sub="Demo" />
-        </section>
+      <div className="py-6">
+        <Container>
+          <header className="mb-4 flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">Teacher Dashboard</h1>
+              <p className="text-sm text-muted-foreground">
+                Create cohorts, assign tasks, and track progress.
+              </p>
+            </div>
+            <nav className="flex items-center gap-3">
+              <Link
+                href="/challenge"
+                className="rounded-md border border-border bg-background px-3 py-1.5 text-sm text-foreground hover:bg-border/30"
+              >
+                Challenges
+              </Link>
+            </nav>
+          </header>
 
-        <section className="mt-8">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="font-medium">Students</h2>
-            <input
-              className="rounded-xl border px-3 py-2 bg-transparent w-64"
-              placeholder="Search by name…"
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-            />
-          </div>
-          <div className="rounded-2xl border overflow-hidden">
-            <table className="w-full text-sm">
-              <thead className="bg-black/5 dark:bg-white/5">
-                <tr>
-                  <th className="text-left p-3">Name</th>
-                  <th className="text-left p-3">Email</th>
-                  <th className="text-left p-3">Joined</th>
-                </tr>
-              </thead>
-              <tbody>
-                {students.map(s => (
-                  <tr key={s.id} className="border-t">
-                    <td className="p-3">{s.full_name ?? '—'}</td>
-                    <td className="p-3">{s.email ?? '—'}</td>
-                    <td className="p-3">{s.created_at ? new Date(s.created_at).toLocaleDateString() : '—'}</td>
-                  </tr>
-                ))}
-                {students.length === 0 && (
-                  <tr><td colSpan={3} className="p-6 text-center opacity-70">No students yet.</td></tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </section>
+          <section className="mb-6 rounded-xl border border-border bg-card p-4">
+            <form onSubmit={createCohort} className="flex flex-col gap-3 sm:flex-row">
+              <input
+                type="text"
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                placeholder="e.g. Alpha Academy — Batch A"
+                className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
+              />
+              <button
+                type="submit"
+                className="shrink-0 rounded-md border border-border bg-primary px-3 py-2 text-sm text-background hover:opacity-90"
+              >
+                Create cohort
+              </button>
+            </form>
+            {error && (
+              <p className="mt-2 text-xs text-red-400">
+                {error}
+              </p>
+            )}
+          </section>
 
-        <section className="mt-8">
-          <h2 className="font-medium mb-3">Quick Actions</h2>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <Q href="/speaking/simulator" title="Open Speaking Simulator" desc="Demo session" />
-            <Q href="/reading" title="Assign Reading Set" desc="Pick any test" />
-            <Q href="/teacher" title="Create Cohort (soon)" desc="Group students" />
-            <Q href="/teacher" title="Review Attempts (soon)" desc="Moderation queue" />
-          </div>
-        </section>
-      </Container>
-    </RoleGuard>
-  );
-}
-
-function Card({ title, value, sub, children }: { title: string; value: string; sub?: string; children?: React.ReactNode }) {
-  return (
-    <div className="rounded-2xl border bg-white/50 dark:bg-white/5 p-5">
-      <div className="text-sm opacity-70">{title}</div>
-      <div className="text-3xl font-bold mt-1">{value}</div>
-      {sub && <div className="text-xs opacity-60 mt-1">{sub}</div>}
-      {children}
-    </div>
-  );
-}
-function Q({ href, title, desc }: { href: string; title: string; desc: string }) {
-  return (
-    <Link href={href} className="rounded-2xl border p-4 hover:shadow-sm transition block">
-      <div className="font-medium">{title}</div>
-      <div className="text-sm opacity-70">{desc}</div>
-    </Link>
+          <section className="space-y-2">
+            <h2 className="text-sm font-medium text-foreground">Your Cohorts</h2>
+            <ul className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
+              {loading && !cohorts.length ? (
+                Array.from({ length: 4 }).map((_, i) => (
+                  <li key={i} className="px-3 py-3">
+                    <div className="h-4 w-48 animate-pulse rounded bg-border" />
+                  </li>
+                ))
+              ) : cohorts.length ? (
+                cohorts.map((c) => (
+                  <li key={c.id} className="flex items-center justify-between px-3 py-3">
+                    <div>
+                      <div className="text-sm text-foreground">{c.name}</div>
+                      <div className="text-xs text-muted-foreground">
+                        Created {new Date(c.created_at).toLocaleDateString()}
+                      </div>
+                    </div>
+                    <Link
+                      href={`/teacher/cohorts/${c.id}`}
+                      className="rounded-md border border-border bg-background px-3 py-1.5 text-sm text-foreground hover:bg-border/30"
+                    >
+                      Open
+                    </Link>
+                  </li>
+                ))
+              ) : (
+                <li className="px-3 py-4 text-sm text-muted-foreground">No cohorts yet.</li>
+              )}
+            </ul>
+          </section>
+        </Container>
+      </div>
+    </>
   );
 }

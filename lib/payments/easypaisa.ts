@@ -1,22 +1,15 @@
-import crypto from 'node:crypto';
+// lib/payments/easypaisa.ts
+import { env } from '@/lib/env';
+import type { Cycle, PlanKey } from './index';
 
-const STORE_ID = process.env.EASYPAISA_STORE_ID ?? 'demo_store';
-const SECRET = process.env.EASYPAISA_SECRET ?? 'demo_secret';
+export type EasypaisaSession = Readonly<{ url: string; sessionId: string }>;
 
-export async function initiateEasypaisa(orderId: string, amount: number) {
-  const res = await fetch('https://sandbox.easypaisa.com/pay', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ orderId, amount, storeId: STORE_ID }),
-  });
-  const data = await res.json();
-  return data.redirectUrl as string;
+export function isEasypaisaConfigured(): boolean {
+  // Fill in with real keys when wiring live gateway
+  return Boolean(env.EASYPASA_MERCHANT_ID && env.EASYPASA_SECRET);
 }
 
-export function verifyEasypaisa(payload: { orderId: string; amount: number; signature: string }) {
-  const check = crypto
-    .createHmac('sha256', SECRET)
-    .update(`${payload.orderId}${payload.amount}`)
-    .digest('hex');
-  return check === payload.signature;
+export function devEasypaisaSession(origin: string, plan: PlanKey, _cycle: Cycle): EasypaisaSession {
+  const sid = `ep_dev_${Date.now()}`;
+  return { url: `${origin}/checkout/success?session_id=${sid}&plan=${plan}`, sessionId: sid };
 }

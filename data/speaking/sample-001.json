@@ -1,0 +1,26 @@
+{
+  "id": "speaking-sample-001",
+  "module": "speaking",
+  "version": 1,
+  "part1": {
+    "introSeconds": 10,
+    "questions": [
+      "Do you work or are you a student?",
+      "What do you enjoy most about your typical day?",
+      "How often do you meet your friends?",
+      "Do you prefer mornings or evenings? Why?"
+    ]
+  },
+  "part2": {
+    "prepSeconds": 60,
+    "speakSeconds": 120,
+    "cueCard": "Describe a place in your city that you like to visit. You should say: where it is, what you do there, who you go with, and explain why you like it."
+  },
+  "part3": {
+    "questions": [
+      "Do you think public spaces are important for communities?",
+      "How can cities encourage people to spend more time outdoors?",
+      "What role does tourism play in the development of public places?"
+    ]
+  }
+}

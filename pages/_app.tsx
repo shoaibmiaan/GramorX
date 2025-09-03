@@ -47,19 +47,27 @@ function InnerApp({ Component, pageProps }: AppProps) {
 
   const isPremium = pathname.startsWith('/premium');
   const isAuthPage = useMemo(
-    () => /^\/(login|signup|register)(\/|$)/.test(pathname) || /^\/auth\/(login|signup|register)(\/|$)/.test(pathname),
+    () =>
+      /^\/(login|signup|register)(\/|$)/.test(pathname) ||
+      /^\/auth\/(login|signup|register)(\/|$)/.test(pathname),
     [pathname]
   );
   const showAuthAssistant = useMemo(() => /^\/(login|signup)(\/|$)/.test(pathname), [pathname]);
-  const isNoChromeRoute = useMemo(() => /\/exam(\/|$)|\/exam-room(\/|$)|\/focus-mode(\/|$)/.test(pathname), [pathname]);
+  const isNoChromeRoute = useMemo(
+    () => /\/exam(\/|$)|\/exam-room(\/|$)|\/focus-mode(\/|$)/.test(pathname),
+    [pathname]
+  );
   const showLayout = !isPremium && !isAuthPage && !isNoChromeRoute;
+
+  // NEW: treat /pricing as public even if routeAccess hasn't been updated yet
+  const isPricingRoute = useMemo(() => /^\/pricing(\/|$)/.test(pathname), [pathname]);
 
   useEffect(() => {
     const cleanup = initIdleTimeout(env.NEXT_PUBLIC_IDLE_TIMEOUT_MINUTES);
     return cleanup;
   }, []);
 
-  // ⬇️ NEW: sync client session → HttpOnly cookies for SSR/middleware
+  // Sync client session → HttpOnly cookies for SSR/middleware
   useEffect(() => {
     const { data: sub } = supabaseBrowser.auth.onAuthStateChange(async (event, session) => {
       try {
@@ -85,8 +93,9 @@ function InnerApp({ Component, pageProps }: AppProps) {
         const { data: { session } } = await supabaseBrowser.auth.getSession();
 
         const guestOnlyR = isGuestOnlyRoute(pathname);
-        const publicR = isPublicRoute(pathname);
+        const publicR = isPublicRoute(pathname) || isPricingRoute; // NEW: pricing forced public
 
+        // Expired session → sign out, but don't block /pricing
         const expiresAt = session?.expires_at;
         if (session && expiresAt && expiresAt <= Date.now() / 1000) {
           await supabaseBrowser.auth.signOut();
@@ -100,7 +109,8 @@ function InnerApp({ Component, pageProps }: AppProps) {
         const role: AppRole | null = getUserRole(user);
         if (!active) return;
 
-        if (user && !user.email_confirmed_at && !user.phone_confirmed_at && pathname !== '/auth/verify') {
+        // If unverified, previously forced /auth/verify; allow /pricing to remain open
+        if (user && !user.email_confirmed_at && !user.phone_confirmed_at && !isPricingRoute && pathname !== '/auth/verify') {
           await supabaseBrowser.auth.signOut();
           router.replace('/auth/verify');
           return;
@@ -123,10 +133,14 @@ function InnerApp({ Component, pageProps }: AppProps) {
           return;
         }
 
-        if (!canAccess(pathname, role)) {
+        // Role/guard check — skip for /pricing
+        if (!isPricingRoute && !canAccess(pathname, role)) {
           const need = requiredRolesFor(pathname);
           if (!role) {
-            router.replace({ pathname: '/login', query: { next: pathname, need: Array.isArray(need) ? need.join(',') : need } });
+            router.replace({
+              pathname: '/login',
+              query: { next: pathname, need: Array.isArray(need) ? need.join(',') : need },
+            });
           } else {
             router.replace('/403');
           }
@@ -137,18 +151,20 @@ function InnerApp({ Component, pageProps }: AppProps) {
       }
     })();
 
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname, router.isReady]);
+  }, [pathname, router.isReady, isPricingRoute]);
 
-  // background token expiry safety
+  // Background token expiry safety — don't force-login on /pricing
   useEffect(() => {
     const interval = setInterval(async () => {
       const { data: { session } } = await supabaseBrowser.auth.getSession();
       const expiresAt = session?.expires_at;
       if (session && expiresAt && expiresAt <= Date.now() / 1000) {
         await supabaseBrowser.auth.signOut();
-        if (!isGuestOnlyRoute(router.pathname) && !isPublicRoute(router.pathname)) {
+        if (!isGuestOnlyRoute(router.pathname) && !isPublicRoute(router.pathname) && !/^\/pricing(\/|$)/.test(router.pathname)) {
           router.replace('/login');
         }
       }

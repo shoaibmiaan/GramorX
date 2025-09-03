@@ -1,64 +1,99 @@
-import React, { useMemo } from 'react';
+// pages/checkout/index.tsx
+import * as React from 'react';
+import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import type { NextPage } from 'next';
+import PlanPicker, { type PlanPickerProps } from '@/components/payments/PlanPicker';
+import CheckoutForm from '@/components/payments/CheckoutForm';
+import RedeemBox from '@/components/referrals/RedeemBox';
+import SocialProofStrip from '@/components/marketing/SocialProofStrip';
 
-type PlanId = 'starter' | 'booster' | 'master';
-const PLAN_META: Record<PlanId, { name: string; priceMonthly: number; perks: string[] }> = {
-  starter: { name: 'Starter 🌱', priceMonthly: 9, perks: ['2 mocks/mo', 'Basic AI feedback'] },
-  booster: { name: 'Booster 🚀', priceMonthly: 19, perks: ['All mocks', 'Full AI feedback', 'Analytics'] },
-  master:  { name: 'Master 👑',  priceMonthly: 29, perks: ['Everything in Booster', 'Priority support', 'Coach reviews'] },
+type PlanKey = 'starter' | 'booster' | 'master';
+type Cycle = 'monthly' | 'annual';
+
+const PLAN_LABEL: Record<PlanKey, string> = {
+  starter: 'Seedling 🌱',
+  booster: 'Rocket 🚀',
+  master: 'Owl 👑',
 };
 
-const Shell: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
-  <div className="min-h-screen bg-background text-foreground">
-    <div className="mx-auto max-w-3xl px-4 py-10">
-      <h1 className="mb-6 text-3xl font-bold">{title}</h1>
-      <div className="rounded-2xl border border-border bg-background/50 p-5 shadow-sm">{children}</div>
-    </div>
-  </div>
-);
-
-export default function CheckoutPage() {
+const CheckoutPage: NextPage = () => {
   const router = useRouter();
-  const planParam = (router.query.plan as string) || 'booster';
+  const planParam = String(router.query.plan ?? '');
+  const codeParam = router.query.code ? String(router.query.code) : undefined;
+  const cycleParam = (String(router.query.billingCycle ?? 'monthly') as Cycle);
 
-  const plan = useMemo(() => {
-    if (['starter', 'booster', 'master'].includes(planParam)) return PLAN_META[planParam as PlanId];
-    return PLAN_META.booster;
-  }, [planParam]);
+  const hasPlan = (['starter', 'booster', 'master'] as PlanKey[]).includes(planParam as PlanKey);
+  const plan = (hasPlan ? (planParam as PlanKey) : undefined);
+
+  const handleSelect: NonNullable<PlanPickerProps['onSelect']> = (p, c) => {
+    const qs = new URLSearchParams();
+    qs.set('plan', p);
+    qs.set('billingCycle', c);
+    if (codeParam) qs.set('code', codeParam);
+    router.push(`/checkout?${qs.toString()}`);
+  };
 
   return (
-    <Shell title="Checkout">
-      <div className="grid gap-5">
-        <div className="rounded-xl border border-border p-4">
-          <div className="text-lg font-semibold">{plan.name}</div>
-          <div className="mt-1 text-4xl font-bold">
-            ${plan.priceMonthly}
-            <span className="ml-1 align-middle text-sm font-normal text-foreground/70">/mo</span>
+    <>
+      <Head><title>Checkout — GramorX</title></Head>
+      <main className="min-h-screen bg-background text-foreground">
+        <div className="mx-auto max-w-6xl px-4 py-8">
+          <div className="mb-6 flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-semibold">{plan ? 'Checkout' : 'Choose your plan'}</h1>
+              {plan ? (
+                <p className="text-sm text-muted-foreground">
+                  Plan selected: <span className="font-medium">{PLAN_LABEL[plan]}</span>
+                  {codeParam ? <> · Referral code: <span className="font-mono">{codeParam}</span></> : null}
+                </p>
+              ) : (
+                <p className="text-sm text-muted-foreground">Pick a plan, then complete payment below.</p>
+              )}
+            </div>
+            <Link href="/pricing" className="rounded-lg border border-border px-3 py-2 text-sm hover:bg-muted">
+              Back to pricing
+            </Link>
           </div>
-          <ul className="mt-3 list-inside list-disc text-sm text-foreground/80">
-            {plan.perks.map((p) => <li key={p}>{p}</li>)}
-          </ul>
-        </div>
 
-        <div className="rounded-xl border border-border p-4">
-          <div className="mb-2 text-base font-semibold">Payment</div>
-          <p className="text-sm text-foreground/80">
-            Payment UI coming next. For now, continue to finish setup and you can manage billing in{' '}
-            <Link href="/settings/billing" className="underline underline-offset-4">Billing</Link>.
-          </p>
-        </div>
+          {!plan ? (
+            <>
+              <PlanPicker onSelect={handleSelect} defaultCycle={cycleParam} className="mt-2" />
+              <SocialProofStrip className="mt-8" />
+            </>
+          ) : (
+            <>
+              <section className="rounded-xl border border-border p-4">
+                <h2 className="mb-1 text-lg font-medium">Payment methods</h2>
+                <p className="mb-4 text-sm text-muted-foreground">
+                  Complete payment to unlock full IELTS modules, AI feedback, and analytics.
+                </p>
+                <CheckoutForm
+                  plan={plan}
+                  billingCycle={cycleParam}
+                  referralCode={codeParam}
+                  className="mt-2"
+                />
+              </section>
 
-        <div className="flex items-center justify-between">
-          <Link href="/pricing" className="text-sm underline underline-offset-4">Change plan</Link>
-          <Link
-            href={`/settings/billing?activated=1&plan=${encodeURIComponent(planParam)}`}
-            className="rounded-xl bg-primary px-4 py-2 font-medium text-background hover:opacity-90"
-          >
-            Continue
-          </Link>
+              <RedeemBox className="mt-6" />
+
+              <div className="mt-8 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+                <Link href="/account/referrals" className="underline-offset-4 hover:underline">
+                  Don’t have a code? Generate yours
+                </Link>
+                <span>•</span>
+                <Link href="/partners" className="underline-offset-4 hover:underline">
+                  Become a partner
+                </Link>
+              </div>
+            </>
+          )}
         </div>
-      </div>
-    </Shell>
+      </main>
+    </>
   );
-}
+};
+
+export default CheckoutPage;

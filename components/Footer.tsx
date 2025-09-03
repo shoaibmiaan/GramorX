@@ -1,4 +1,3 @@
-// components/Footer.tsx
 import React from 'react';
 import { Container } from '@/components/design-system/Container';
 import { NavLink } from '@/components/design-system/NavLink';
@@ -16,35 +15,33 @@ import {
 } from '@/components/design-system/icons';
 
 const RESOURCES = [
-  { href: '/learning/strategies', label: 'IELTS Preparation Guide' },
-  { href: '/reading', label: 'Band Score Calculator' }, // temporary: calculator page later
+  { href: '/predictor', label: 'Band Score Predictor' },
+  { href: '/listening', label: 'Listening Practice' },
+  { href: '/reading', label: 'Reading Practice' },
   { href: '/writing', label: 'Writing Task Samples' },
-  { href: '/speaking', label: 'Speaking Practice Questions' },
-  { href: '/learning', label: 'Vocabulary Builder' },
+  { href: '/speaking', label: 'Speaking Questions' },
 ] as const;
 
 const QUICK = [
-  { href: '/learning/strategies', label: 'Tips & Strategies' },
-  { href: '/ai', label: 'AI Assistant' }, // deep link: docked sidebar AI
-  { href: '/signup', label: 'Pricing & Plans' },
+  { href: '/pricing', label: 'Pricing & Plans' },
+  { href: '/account/referrals', label: 'Referral Rewards' },
+  { href: '/partners', label: 'Partner Program' },
   { href: '/support', label: 'Support' },
   { href: '/blog', label: 'Blog' },
   { href: '/faq', label: 'FAQ' },
 ] as const;
 
-// Named export to match Layout import style
 export const Footer: React.FC = () => {
   return (
-    <footer className="py-16 border-t border-gray-200 dark:border-purpleVibe/20">
+    <footer className="py-16 border-t border-border">
       <Container>
-        {/* 1 col on mobile -> 2 on small -> 4 on md (mobile-friendly, nothing else changed) */}
+        {/* 1 col on mobile -> 2 on small -> 4 on md */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10 mb-10">
           {/* Brand + Socials */}
           <div>
-            <h3 className="text-xl font-semibold mb-4">IELTS MasterPortal</h3>
-            <p className="text-lightText dark:text-white">
-              The most advanced IELTS preparation platform powered by AI technology and expert
-              teaching methodologies.
+            <h3 className="text-xl font-semibold mb-4">GramorX</h3>
+            <p className="text-muted-foreground">
+              The most advanced IELTS preparation platform powered by AI and expert teaching.
             </p>
             <div className="flex gap-3 mt-4">
               <SocialIconLink href="https://facebook.com" icon={<FacebookIcon className="h-5 w-5" />} label="Facebook" />
@@ -57,38 +54,38 @@ export const Footer: React.FC = () => {
 
           {/* Resources */}
           <div>
-            <h3 className="text-xl font-semibold mb-4 relative after:absolute after:-bottom-2 after:left-0 after:w-12 after:h-[3px] after:bg-primary dark:after:bg-neonGreen">
+            <h3 className="text-xl font-semibold mb-4 relative after:absolute after:-bottom-2 after:left-0 after:w-12 after:h-[3px] after:bg-primary">
               IELTS Resources
             </h3>
             <ul className="space-y-2">
               {RESOURCES.map((x) => (
-                <li key={x.label} className="text-gray-600 dark:text-grayish">
+                <li key={x.label} className="text-muted-foreground">
                   <NavLink href={x.href} label={x.label} className="!px-0 !py-1" />
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Quick links (deep routes, no hashes) */}
+          {/* Quick links */}
           <div>
-            <h3 className="text-xl font-semibold mb-4 relative after:absolute after:-bottom-2 after:left-0 after:w-12 after:h-[3px] after:bg-primary dark:after:bg-neonGreen">
+            <h3 className="text-xl font-semibold mb-4 relative after:absolute after:-bottom-2 after:left-0 after:w-12 after:h-[3px] after:bg-primary">
               Quick Links
             </h3>
             <ul className="space-y-2">
               {QUICK.map((x) => (
-                <li key={x.label} className="text-gray-600 dark:text-grayish">
+                <li key={x.label} className="text-muted-foreground">
                   <NavLink href={x.href} label={x.label} className="!px-0 !py-1" />
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Contact (kept exactly) */}
+          {/* Contact */}
           <div>
-            <h3 className="text-xl font-semibold mb-4 relative after:absolute after:-bottom-2 after:left-0 after:w-12 after:h-[3px] after:bg-primary dark:after:bg-neonGreen">
+            <h3 className="text-xl font-semibold mb-4 relative after:absolute after:-bottom-2 after:left-0 after:w-12 after:h-[3px] after:bg-primary">
               Contact Us
             </h3>
-            <ul className="space-y-3 text-gray-600 dark:text-grayish">
+            <ul className="space-y-3 text-muted-foreground">
               <li>
                 <MailIcon className="mr-2 inline h-4 w-4" />
                 <a href="mailto:info@solvioadvisors.com" className="hover:underline">
@@ -111,8 +108,8 @@ export const Footer: React.FC = () => {
           </div>
         </div>
 
-        <div className="text-center pt-8 border-t border-gray-200 dark:border-purpleVibe/20 text-sm text-gray-600 dark:text-grayish">
-          &copy; {new Date().getFullYear()} IELTS MasterPortal. All rights reserved. Launching soon!
+        <div className="text-center pt-8 border-t border-border text-sm text-muted-foreground">
+          &copy; {new Date().getFullYear()} GramorX. All rights reserved.
         </div>
       </Container>
     </footer>
