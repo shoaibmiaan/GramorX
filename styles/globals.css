@@ -21,7 +21,7 @@ body { @apply font-sans text-lightText bg-lightBg overflow-x-hidden relative; }
 /* =========================
    Header / Nav (GLOBAL)
    ========================= */
-.header-glass { @apply text-lightText bg-white/90 backdrop-blur-md border-b border-border; }
+.header-glass { @apply text-lightText bg-lightCard/90 backdrop-blur-md border-b border-border; }
 .dark .header-glass { @apply text-foreground bg-dark/95 border-purpleVibe/20; }
 
 /* Navigation pill with underline */
