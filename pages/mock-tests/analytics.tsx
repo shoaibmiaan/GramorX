@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Container } from '@/components/design-system/Container';
 import { Card } from '@/components/design-system/Card';
 import { supabaseBrowser } from '@/lib/supabaseBrowser';
+import palette from '@/design-system/tokens/colors.js';
 
 interface ResultRow {
   created_at: string;
@@ -111,11 +112,13 @@ function computeSectionStats(rows: ResultRow[]): SectionStat[] {
 
 function BandChart({ data }: { data: any[] }) {
   const sections = ['listening', 'reading', 'writing', 'speaking'];
+  // Section → design token mapping keeps chart colors consistent across components
+  // listening → neonGreen, reading → electricBlue, writing → sunsetOrange, speaking → vibrantPurple
   const colors: Record<string, string> = {
-    listening: '#10b981',
-    reading: '#3b82f6',
-    writing: '#f97316',
-    speaking: '#8b5cf6',
+    listening: palette.neonGreen, // green line for listening
+    reading: palette.electricBlue, // blue line for reading
+    writing: palette.sunsetOrange, // orange line for writing
+    speaking: palette.vibrantPurple, // purple line for speaking
   };
   const width = 600;
   const height = 200;
@@ -135,10 +138,18 @@ function BandChart({ data }: { data: any[] }) {
             return `${x},${y}`;
           })
           .join(' ');
-        return <polyline key={s} fill="none" stroke={colors[s]} strokeWidth={2} points={points} />;
+        return (
+          <polyline
+            key={s}
+            fill="none"
+            stroke={colors[s]}
+            strokeWidth={2}
+            points={points}
+          />
+        );
       })}
-      <line x1={0} y1={height} x2={width} y2={height} stroke="#ccc" strokeWidth={1} />
-      <line x1={0} y1={0} x2={0} y2={height} stroke="#ccc" strokeWidth={1} />
+      <line x1={0} y1={height} x2={width} y2={height} className="stroke-border" strokeWidth={1} />
+      <line x1={0} y1={0} x2={0} y2={height} className="stroke-border" strokeWidth={1} />
     </svg>
   );
 }
@@ -160,7 +171,13 @@ function TimeChart({ data }: { data: SectionStat[] }) {
         const y = i * rowHeight;
         return (
           <g key={d.section}>
-            <rect x={0} y={y + 5} width={barWidth} height={20} fill="#10b981" />
+            <rect
+              x={0}
+              y={y + 5}
+              width={barWidth}
+              height={20}
+              fill={palette.neonGreen}
+            />
             <text x={barWidth + 5} y={y + 20} fontSize={12} fill="currentColor">
               {`${d.section} (${Math.round(d.totalTime)}s)`}
             </text>
