@@ -697,5 +697,5 @@ function StatusDot({ state }: { state: ProviderStatus['state'] }) {
       : state === 'degraded'
       ? 'bg-amber-500'
       : 'bg-red-500';
-  return <span className={`inline-block w-2.5 h-2.5 rounded-full ${cls}`} aria-hidden />;
+  return <span className={`inline-block w-2.5 h-2.5 rounded-full ${cls}`} aria-hidden="true" />;
 }

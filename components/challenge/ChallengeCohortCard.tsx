@@ -64,7 +64,7 @@ export function ChallengeCohortCard({
           <div
             className="absolute left-0 top-0 h-full bg-primary"
             style={{ width: `${Math.min(Math.max(progressPct, 0), 100)}%` }}
-            aria-hidden
+            aria-hidden="true"
           />
         </div>
         <span className="text-xs tabular-nums text-muted-foreground">

@@ -71,11 +71,11 @@ export const Testimonials: React.FC = () => {
             </blockquote>
 
             <div className="mt-5 flex items-center gap-1 text-warning/90" aria-hidden="true">
-              <i className="fas fa-star" />
-              <i className="fas fa-star" />
-              <i className="fas fa-star" />
-              <i className="fas fa-star" />
-              <i className="fas fa-star-half-alt" />
+              <i className="fas fa-star" aria-hidden="true" />
+              <i className="fas fa-star" aria-hidden="true" />
+              <i className="fas fa-star" aria-hidden="true" />
+              <i className="fas fa-star" aria-hidden="true" />
+              <i className="fas fa-star-half-alt" aria-hidden="true" />
             </div>
           </Card>
         ))}
@@ -86,7 +86,7 @@ export const Testimonials: React.FC = () => {
           href="/reviews"
           className="inline-flex items-center gap-2 px-4 py-2 rounded-ds border border-border hover:bg-electricBlue/5 transition"
         >
-          Read more reviews <i className="fas fa-arrow-right" aria-hidden />
+          Read more reviews <i className="fas fa-arrow-right" aria-hidden="true" />
         </a>
       </div>
     </Container>

@@ -67,7 +67,7 @@ export default function FAQPage() {
                 placeholder="Try “reset password”, “AI scoring”, “mic recording”…"
                 value={term}
                 onChange={e => setTerm(e.currentTarget.value)}
-                iconLeft={<i className="fas fa-search" aria-hidden />}
+                iconLeft={<i className="fas fa-search" aria-hidden="true" />}
               />
               <label className="block">
                 <span className="mb-1.5 inline-block text-small text-grayish">Category</span>

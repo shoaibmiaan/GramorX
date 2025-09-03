@@ -197,10 +197,10 @@ export default function WaitlistSection() {
 
             <div className="md:col-span-2 pt-1">
               <Button type="submit" variant="primary" disabled={!canSubmit} className="w-full rounded-full py-5 text-h3 font-semibold">
-                <i className="fas fa-lock mr-2" aria-hidden /> {loading ? 'Securing…' : 'Secure Your Early Access'}
+                <i className="fas fa-lock mr-2" aria-hidden="true" /> {loading ? 'Securing…' : 'Secure Your Early Access'}
               </Button>
               <div className="text-center text-small mt-3 text-electricBlue">
-                <i className="fas fa-gift mr-2" aria-hidden /> First 500 get 30% off for 3 months
+                <i className="fas fa-gift mr-2" aria-hidden="true" /> First 500 get 30% off for 3 months
               </div>
             </div>
           </form>

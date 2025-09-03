@@ -63,7 +63,7 @@ export function ModulesMenu() {
         aria-haspopup="menu"
         aria-expanded={open}
       >
-        Modules <span aria-hidden>▾</span>
+        Modules <span aria-hidden="true">▾</span>
       </button>
 
       {mounted && open && rect &&

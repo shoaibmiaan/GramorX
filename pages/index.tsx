@@ -67,7 +67,7 @@ export default function HomePage() {
                 "
               >
                 <span>{x.label}</span>
-                <i className={`fas ${x.icon} text-grayish`} aria-hidden />
+                <i className={`fas ${x.icon} text-grayish`} aria-hidden="true" />
               </Link>
             ))}
           </div>
@@ -99,7 +99,7 @@ export default function HomePage() {
               <Link key={c.href} href={c.href} className="rounded-ds-2xl border border-purpleVibe/20 p-6 hover:border-purpleVibe/40 hover:-translate-y-1 transition block">
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 rounded-full grid place-items-center text-white bg-gradient-to-br from-purpleVibe to-electricBlue">
-                    <i className={`fas ${c.icon}`} />
+                    <i className={`fas ${c.icon}`} aria-hidden="true" />
                   </div>
                   <div>
                     <h3 className="text-h3 mb-1">{c.h}</h3>

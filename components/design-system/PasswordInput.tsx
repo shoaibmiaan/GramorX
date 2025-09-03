@@ -15,7 +15,7 @@ export const PasswordInput: React.FC<InputProps> = (props) => {
           aria-label={show ? 'Hide password' : 'Show password'}
           className="focus:outline-none"
         >
-          <i className={`fas ${show ? 'fa-eye-slash' : 'fa-eye'}`} />
+          <i className={`fas ${show ? 'fa-eye-slash' : 'fa-eye'}`} aria-hidden="true" />
         </button>
       }
     />

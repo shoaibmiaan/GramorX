@@ -414,9 +414,11 @@ export default function ListeningTestPage() {
                             className={`w-full text-left p-3.5 rounded-ds border ${cls}`}
                           >
                             <span className="mr-2">{opt}</span>
-                            {checked && correct && <i className="fas fa-check-circle text-success" aria-hidden />}
+                            {checked && correct && (
+                              <i className="fas fa-check-circle text-success" aria-label="Correct" />
+                            )}
                             {checked && !correct && chosen && (
-                              <i className="fas fa-times-circle text-sunsetOrange" aria-hidden />
+                              <i className="fas fa-times-circle text-sunsetOrange" aria-label="Incorrect" />
                             )}
                           </button>
                         </li>

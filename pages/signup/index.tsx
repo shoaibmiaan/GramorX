@@ -48,19 +48,19 @@ export default function SignupOptions() {
   const features = [
     (
       <>
-        <i className="fas fa-user-check" aria-hidden />
+        <i className="fas fa-user-check" aria-hidden="true" />
         Apple / Google / Facebook
       </>
     ),
     (
       <>
-        <i className="fas fa-envelope" aria-hidden />
+        <i className="fas fa-envelope" aria-hidden="true" />
         Email &amp; password
       </>
     ),
     (
       <>
-        <i className="fas fa-mobile-alt" aria-hidden />
+        <i className="fas fa-mobile-alt" aria-hidden="true" />
         Phone (OTP)
       </>
     ),

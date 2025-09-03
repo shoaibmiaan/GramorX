@@ -131,7 +131,7 @@ export const Hero: React.FC<HeroProps> = ({ onStreakChange }) => {
           {/* Word of the Day + streak */}
           <Card className="mt-6 max-w-md p-6 rounded-2xl mx-auto">
             <h3 className="text-primary font-semibold text-xl mb-4">
-              <i className="fas fa-book mr-2" /> Word of the Day
+              <i className="fas fa-book mr-2" aria-hidden="true" /> Word of the Day
             </h3>
 
             {auth === 'guest' && (
@@ -149,13 +149,13 @@ export const Hero: React.FC<HeroProps> = ({ onStreakChange }) => {
                 </div>
 
                 <Button variant={data.learnedToday ? 'secondary' : 'accent'} onClick={markLearned} disabled={busy || data.learnedToday}>
-                  <i className="fas fa-check-circle mr-2" />
+                  <i className="fas fa-check-circle mr-2" aria-hidden="true" />
                   {data.learnedToday ? 'Learned today' : 'Mark as Learned'}
                 </Button>
 
                 <div className="mt-4 rounded-xl p-4 bg-card border border-border text-left">
                   <div className="flex items-center gap-4">
-                    <div className="text-2xl" aria-hidden><i className="fas fa-fire" /></div>
+                    <div className="text-2xl" aria-hidden="true"><i className="fas fa-fire" aria-hidden="true" /></div>
                     <div>
                       <h4 className="font-semibold">Your Learning Streak</h4>
                       <div className="text-muted-foreground">Current streak: <span className="font-bold">{data.streakDays} {data.streakDays === 1 ? 'day' : 'days'}</span></div>

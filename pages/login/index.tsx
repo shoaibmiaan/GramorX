@@ -94,25 +94,25 @@ export default function LoginOptions() {
   const features = [
     (
       <>
-        <i className="fas fa-shield-alt text-success" aria-hidden />
+        <i className="fas fa-shield-alt text-success" aria-hidden="true" />
         Secure OAuth (Apple, Google, Facebook)
       </>
     ),
     (
       <>
-        <i className="fas fa-mobile-alt" aria-hidden />
+        <i className="fas fa-mobile-alt" aria-hidden="true" />
         Phone OTP sign-in
       </>
     ),
     (
       <>
-        <i className="fas fa-envelope" aria-hidden />
+        <i className="fas fa-envelope" aria-hidden="true" />
         Email &amp; Password
       </>
     ),
     (
       <>
-        <i className="fas fa-chart-line text-electricBlue" aria-hidden />
+        <i className="fas fa-chart-line text-electricBlue" aria-hidden="true" />
         Personalized study plan &amp; analytics
       </>
     ),

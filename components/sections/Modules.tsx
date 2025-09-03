@@ -118,11 +118,11 @@ export const Modules: React.FC = () => {
                 </Badge>
 
                 <div className="w-17.5 h-17.5 rounded-full flex items-center justify-center mb-6 text-white text-2xl bg-gradient-to-br from-purpleVibe to-electricBlue">
-                  <i className={`fas ${m.icon}`} />
+                  <i className={`fas ${m.icon}`} aria-hidden="true" />
                 </div>
 
                 <h3 className="text-xl font-semibold mb-3 flex items-center gap-2">
-                  <i className="fas fa-circle-check text-neonGreen" />
+                  <i className="fas fa-circle-check text-neonGreen" aria-hidden="true" />
                   {m.title}
                 </h3>
 
@@ -138,7 +138,7 @@ export const Modules: React.FC = () => {
                 {m.href && (
                   <div className="mt-4">
                     <Link href={m.href} className="inline-flex items-center gap-2 text-electricBlue hover:underline">
-                      Open <i className="fas fa-arrow-right" aria-hidden />
+                      Open <i className="fas fa-arrow-right" aria-hidden="true" />
                     </Link>
                   </div>
                 )}

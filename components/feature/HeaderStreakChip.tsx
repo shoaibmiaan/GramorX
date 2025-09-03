@@ -37,7 +37,7 @@ export function HeaderStreakChip() {
 
   return (
     <div className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-sm bg-background/70 backdrop-blur">
-      <span aria-hidden>🔥</span>
+      <span aria-hidden="true">🔥</span>
       <span className="font-medium">{days}</span>
       <span className="text-muted-foreground">day streak</span>
     </div>

@@ -57,7 +57,7 @@ export const SaveItemButton: React.FC<Props> = ({ resourceId, type = '', categor
       onClick={toggle}
       disabled={loading}
       className="rounded-ds"
-      leadingIcon={<i className={`${saved ? 'fas' : 'far'} fa-bookmark`} />}
+      leadingIcon={<i className={`${saved ? 'fas' : 'far'} fa-bookmark`} aria-hidden="true" />}
     >
       {saved ? 'Saved' : 'Save'}
     </Button>
