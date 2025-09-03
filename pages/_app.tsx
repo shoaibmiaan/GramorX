@@ -52,7 +52,6 @@ function InnerApp({ Component, pageProps }: AppProps) {
       /^\/auth\/(login|signup|register)(\/|$)/.test(pathname),
     [pathname]
   );
-  const showAuthAssistant = useMemo(() => /^\/(login|signup)(\/|$)/.test(pathname), [pathname]);
   const isNoChromeRoute = useMemo(
     () => /\/exam(\/|$)|\/exam-room(\/|$)|\/focus-mode(\/|$)/.test(pathname),
     [pathname]
@@ -208,7 +207,7 @@ function InnerApp({ Component, pageProps }: AppProps) {
             {pageBody}
           </>
         )}
-        {showAuthAssistant && <AuthAssistant />}
+        <AuthAssistant />
         <SidebarAI />
       </div>
     </ThemeProvider>
