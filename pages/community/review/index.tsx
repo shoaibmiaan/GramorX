@@ -5,6 +5,7 @@ import { Input } from '@/components/design-system/Input';
 import { Textarea } from '@/components/design-system/Textarea';
 import { Button } from '@/components/design-system/Button';
 import { useToast } from '@/components/design-system/Toaster';
+import { Section } from '@/components/design-system/Section';
 import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser';
 
 interface Review {
@@ -50,7 +51,7 @@ export default function PeerReviewPage() {
   }
 
   return (
-    <section className="py-12">
+    <Section>
       <Container>
         <Card className="p-6 mb-6 space-y-2">
           <Textarea value={newReview} onChange={(e) => setNewReview(e.target.value)} placeholder="Share your work for review" />
@@ -83,6 +84,6 @@ export default function PeerReviewPage() {
           </Card>
         ))}
       </Container>
-    </section>
+    </Section>
   );
 }

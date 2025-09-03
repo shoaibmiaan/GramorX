@@ -3,6 +3,7 @@ import { Container } from '@/components/design-system/Container';
 import { Card } from '@/components/design-system/Card';
 import { Input } from '@/components/design-system/Input';
 import { Button } from '@/components/design-system/Button';
+import { Section } from '@/components/design-system/Section';
 import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser';
 
 interface QA {
@@ -46,7 +47,7 @@ export default function QuestionsPage() {
   }
 
   return (
-    <section className="py-12">
+    <Section>
       <Container>
         <Card className="p-6 mb-6 space-y-2">
           <Input value={question} onChange={(e) => setQuestion(e.target.value)} placeholder="Ask a question" />
@@ -64,6 +65,6 @@ export default function QuestionsPage() {
           </Card>
         ))}
       </Container>
-    </section>
+    </Section>
   );
 }
