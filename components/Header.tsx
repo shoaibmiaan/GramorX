@@ -7,13 +7,13 @@ import { DesktopNav } from '@/components/navigation/DesktopNav';
 import { MobileNav } from '@/components/navigation/MobileNav';
 import { useHeaderState } from '@/components/hooks/useHeaderState';
 
-
 export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
   const [openDesktopModules, setOpenDesktopModules] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileModulesOpen, setMobileModulesOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
+  // Canonical source of truth for auth/role/streak/signOut
   const { user, role, streak: streakState, ready, signOut } = useHeaderState(streak);
 
   // Solid header when scrolled or any menu open
@@ -27,6 +27,7 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
 
   const modulesRef = useRef<HTMLLIElement>(null);
 
+  // Click/Esc outside to close menus
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
       const t = e.target as Node;
@@ -47,6 +48,7 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
     };
   }, []);
 
+  // Prevent background scroll when mobile menu is open
   useEffect(() => {
     const preventTouch = (e: TouchEvent) => e.preventDefault();
     if (mobileOpen) {
@@ -61,6 +63,7 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
       document.removeEventListener('touchmove', preventTouch);
     };
   }, [mobileOpen]);
+
   return (
     <header
       className={[
@@ -72,7 +75,7 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
         <div className="flex items-center justify-between py-4 md:py-5">
           {/* Brand */}
           <Link
-            href={user.id ? '/dashboard' : '/'}
+            href={user?.id ? '/dashboard' : '/'}
             className="flex items-center gap-3 group"
             aria-label="Go to home"
           >
@@ -89,6 +92,7 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
             </p>
           </Link>
 
+          {/* Desktop Navigation (with Modules mega menu + Streak chip) */}
           <DesktopNav
             user={user}
             role={role}
@@ -98,7 +102,12 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
             setOpenModules={setOpenDesktopModules}
             modulesRef={modulesRef}
             signOut={signOut}
+            // Hide Admin button regardless of role (implement inside DesktopNav)
+            // @ts-expect-error TODO: add `showAdmin` prop to DesktopNav types
+            showAdmin={false}
           />
+
+          {/* Mobile Navigation (hamburger + overlay + Modules sheet) */}
           <MobileNav
             user={user}
             role={role}
@@ -109,6 +118,8 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
             mobileModulesOpen={mobileModulesOpen}
             setMobileModulesOpen={setMobileModulesOpen}
             signOut={signOut}
+            // @ts-expect-error TODO: add `showAdmin` prop to MobileNav types
+            showAdmin={false}
           />
         </div>
       </Container>
