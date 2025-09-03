@@ -1,135 +1,89 @@
-// pages/index.tsx
-import React, { useEffect } from 'react';
-import Head from 'next/head';
-import dynamic from 'next/dynamic';
-import Link from 'next/link';
+import React from 'react';
+import { Container } from '@/components/design-system/Container';
+import { NavLink } from '@/components/design-system/NavLink';
+import { SocialIconLink } from '@/components/design-system/SocialIconLink';
+import { MailIcon, PhoneIcon, MapPinIcon, ClockIcon } from '@/components/design-system/icons';
+import { FooterGrid } from '@/components/design-system/FooterGrid';
+import { FooterSection } from './FooterSection';
 import { useLocale } from '@/lib/locale';
-import { Section } from '@/components/design-system/Section';
 
-// Hero is heavy → hydrate client only
-const Hero = dynamic(
-  () =>
-    import('@/components/sections/Hero').then((m) => m.Hero ?? m.default),
-  { ssr: false, loading: () => <div className="min-h-[60vh]" /> }
-);
+import {
+  resources,
+  quickLinks,
+  contactInfo,
+  socialLinks,
+  brandInfo,
+} from '@/data/footerLinks';
 
-import ExamStrategy from '@/components/sections/ExamStrategy';
-import { Modules } from '@/components/sections/Modules';
-import { CertificationBadges } from '@/components/sections/CertificationBadges';
-import { Testimonials } from '@/components/sections/Testimonials';
-import { Pricing } from '@/components/sections/Pricing';
-import Waitlist from '@/components/sections/Waitlist';
-import { TileGrid } from '@/components/design-system/TileGrid';
-
-export default function HomePage() {
+export const Footer: React.FC = () => {
   const { t } = useLocale();
 
-  // Smooth scroll for same-page anchors (safe & small)
-  useEffect(() => {
-    const onClick = (ev: MouseEvent) => {
-      const el = (ev.target as HTMLElement)?.closest('a[href^="#"]') as HTMLAnchorElement | null;
-      if (!el) return;
-      ev.preventDefault();
-      const id = el.getAttribute('href')!.slice(1);
-      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      history.pushState(null, '', `#${id}`);
-    };
-    document.addEventListener('click', onClick);
-    return () => document.removeEventListener('click', onClick);
-  }, []);
-
   return (
-    <>
-      <Head>
-        <title>{t('home.title')}</title>
-      </Head>
+    <footer className="py-24 border-t border-border bg-background">
+      <Container>
+        {/* Responsive 1 → 2 → 4 column grid */}
+        <FooterGrid className="gap-10 mb-10">
+          {/* Brand + Socials */}
+          <div>
+            <h3 className="text-xl font-semibold mb-4">{brandInfo.name}</h3>
+            <p className="text-muted-foreground">{t(brandInfo.description)}</p>
+            <div className="flex gap-3 mt-4">
+              {socialLinks.map(({ href, label, icon: Icon }) => (
+                <SocialIconLink
+                  key={label}
+                  href={href}
+                  icon={<Icon className="h-5 w-5" />}
+                  label={label}
+                />
+              ))}
+            </div>
+          </div>
 
-      <Hero />
+          {/* Resources */}
+          <FooterSection title="IELTS Resources">
+            {resources.map((x) => (
+              <li key={x.label} className="text-muted-foreground">
+                <NavLink href={x.href} label={t(x.label)} className="!px-0 !py-1" />
+              </li>
+            ))}
+          </FooterSection>
 
-      {/* Phase-3: Quick Command Center (go anywhere, from anywhere) */}
-      <Section id="command-center" Container className="py-12">
-        <TileGrid gap="gap-3" cols="sm:grid-cols-2 lg:grid-cols-5">
-          {[
-            { label: t('home.commandCenter.listening'), href: '/listening', icon: 'fa-headphones' },
-            { label: t('home.commandCenter.reading'), href: '/reading', icon: 'fa-book-open' },
-            { label: t('home.commandCenter.writing'), href: '/writing', icon: 'fa-pen-nib' },
-            { label: t('home.commandCenter.speaking'), href: '/speaking', icon: 'fa-microphone' },
-            { label: t('home.commandCenter.progress'), href: '/progress', icon: 'fa-chart-line' },
-          ].map((x) => (
-            <Link
-              key={x.href}
-              href={x.href}
-              className="
-                rounded-ds-xl border border-border px-4 py-3 text-sm font-medium
-                hover:bg-electricBlue/5 transition flex items-center justify-between
-              "
-            >
-              <span>{x.label}</span>
-              <i className={`fas ${x.icon} text-grayish`} aria-hidden="true" />
-            </Link>
-          ))}
-        </TileGrid>
-      </Section>
+          {/* Quick links */}
+          <FooterSection title="Quick Links">
+            {quickLinks.map((x) => (
+              <li key={x.label} className="text-muted-foreground">
+                <NavLink href={x.href} label={t(x.label)} className="!px-0 !py-1" />
+              </li>
+            ))}
+          </FooterSection>
 
-      {/* Partners */}
-      <CertificationBadges />
+          {/* Contact */}
+          <FooterSection title="Contact Us" listClassName="space-y-3 text-muted-foreground">
+            <li>
+              <MailIcon className="mr-2 inline h-4 w-4" />
+              <a href={`mailto:${t(contactInfo.email)}`} className="hover:underline">
+                {t(contactInfo.email)}
+              </a>
+            </li>
+            <li>
+              <PhoneIcon className="mr-2 inline h-4 w-4" />
+              <a href={`tel:${t(contactInfo.phone)}`} className="hover:underline">
+                {t(contactInfo.phone)}
+              </a>
+            </li>
+            <li>
+              <MapPinIcon className="mr-2 inline h-4 w-4" /> {t(contactInfo.location)}
+            </li>
+            <li>
+              <ClockIcon className="mr-2 inline h-4 w-4" /> {t(contactInfo.support)}
+            </li>
+          </FooterSection>
+        </FooterGrid>
 
-      {/* Strategy → Practise → Review (clear path) */}
-      <ExamStrategy />
-
-      {/* Core modules */}
-      <Modules />
-
-      {/* Phase-3 retention strip */}
-      <Section id="scale-retention" Container className="py-16">
-        <TileGrid cols="md:grid-cols-3">
-          {[
-            {
-              h: t('home.retentionStrip.challenge.heading'),
-              p: t('home.retentionStrip.challenge.description'),
-              href: '/challenge',
-              icon: 'fa-trophy',
-            },
-            {
-              h: t('home.retentionStrip.certificate.heading'),
-              p: t('home.retentionStrip.certificate.description'),
-              href: '/cert/sample',
-              icon: 'fa-certificate',
-            },
-            {
-              h: t('home.retentionStrip.teacherPilot.heading'),
-              p: t('home.retentionStrip.teacherPilot.description'),
-              href: '/teacher',
-              icon: 'fa-chalkboard-teacher',
-            },
-          ].map((c) => (
-            <Link
-              key={c.href}
-              href={c.href}
-              className="rounded-ds-2xl border border-purpleVibe/20 p-6 hover:border-purpleVibe/40 hover:-translate-y-1 transition block"
-            >
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-full grid place-items-center text-white bg-gradient-to-br from-purpleVibe to-electricBlue">
-                  <i className={`fas ${c.icon}`} aria-hidden="true" />
-                </div>
-              <div>
-                  <h3 className="text-h3 mb-1">{c.h}</h3>
-                  <p className="text-grayish">{c.p}</p>
-                </div>
-              </div>
-            </Link>
-          ))}
-        </TileGrid>
-      </Section>
-
-      {/* Social proof */}
-      <Testimonials />
-
-      {/* Monetization always one click away */}
-      <Pricing />
-
-      {/* Capture demand */}
-      <Waitlist />
-    </>
+        <div className="text-center pt-8 border-t border-border text-sm text-muted-foreground">
+          &copy; {new Date().getFullYear()} GramorX. All rights reserved.
+        </div>
+      </Container>
+    </footer>
   );
-}
+};

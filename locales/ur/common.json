@@ -9,6 +9,9 @@
   "Preview (Urdu)": "پیش منظر (اردو)",
   "Current locale": "موجودہ زبان",
   "footer": {
+    "brand": {
+      "description": "AI اور ماہر تدریس سے چلنے والا جدید ترین IELTS تیاری پلیٹ فارم۔"
+    },
     "resources": {
       "bandScorePredictor": "بینڈ اسکور پیش گو",
       "listeningPractice": "سننے کی مشق",
