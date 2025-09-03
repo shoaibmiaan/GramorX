@@ -2,9 +2,11 @@
 import React, { useEffect } from 'react';
 import Head from 'next/head';
 import dynamic from 'next/dynamic';
-import Link from 'next/link';
 import { useLocale } from '@/lib/locale';
 import { Section } from '@/components/design-system/Section';
+import { commandCenter, scaleRetention } from '@/data/home';
+import { CommandCenterTile } from '@/components/sections/CommandCenterTile';
+import { RetentionCard } from '@/components/sections/RetentionCard';
 
 // Hero is heavy → hydrate client only
 const Hero = dynamic(
@@ -48,24 +50,13 @@ export default function HomePage() {
       {/* Phase-3: Quick Command Center (go anywhere, from anywhere) */}
       <Section id="command-center" Container className="py-12">
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-          {[
-            { label: t('home.commandCenter.listening'), href: '/listening', icon: 'fa-headphones' },
-            { label: t('home.commandCenter.reading'), href: '/reading', icon: 'fa-book-open' },
-            { label: t('home.commandCenter.writing'), href: '/writing', icon: 'fa-pen-nib' },
-            { label: t('home.commandCenter.speaking'), href: '/speaking', icon: 'fa-microphone' },
-            { label: t('home.commandCenter.progress'), href: '/progress', icon: 'fa-chart-line' },
-          ].map((x) => (
-            <Link
+          {commandCenter.map((x) => (
+            <CommandCenterTile
               key={x.href}
+              label={t(x.label)}
               href={x.href}
-              className="
-                rounded-ds-xl border border-border px-4 py-3 text-sm font-medium
-                hover:bg-electricBlue/5 transition flex items-center justify-between
-              "
-            >
-              <span>{x.label}</span>
-              <i className={`fas ${x.icon} text-grayish`} aria-hidden="true" />
-            </Link>
+              icon={x.icon}
+            />
           ))}
         </div>
       </Section>
@@ -82,41 +73,14 @@ export default function HomePage() {
       {/* Phase-3 retention strip */}
       <Section id="scale-retention" Container className="py-16">
         <div className="grid gap-4 md:grid-cols-3">
-          {[
-            {
-              h: t('home.retentionStrip.challenge.heading'),
-              p: t('home.retentionStrip.challenge.description'),
-              href: '/challenge',
-              icon: 'fa-trophy',
-            },
-            {
-              h: t('home.retentionStrip.certificate.heading'),
-              p: t('home.retentionStrip.certificate.description'),
-              href: '/cert/sample',
-              icon: 'fa-certificate',
-            },
-            {
-              h: t('home.retentionStrip.teacherPilot.heading'),
-              p: t('home.retentionStrip.teacherPilot.description'),
-              href: '/teacher',
-              icon: 'fa-chalkboard-teacher',
-            },
-          ].map((c) => (
-            <Link
+          {scaleRetention.map((c) => (
+            <RetentionCard
               key={c.href}
+              heading={t(c.h)}
+              description={t(c.p)}
               href={c.href}
-              className="rounded-ds-2xl border border-purpleVibe/20 p-6 hover:border-purpleVibe/40 hover:-translate-y-1 transition block"
-            >
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-full grid place-items-center text-white bg-gradient-to-br from-purpleVibe to-electricBlue">
-                  <i className={`fas ${c.icon}`} aria-hidden="true" />
-                </div>
-                <div>
-                  <h3 className="text-h3 mb-1">{c.h}</h3>
-                  <p className="text-grayish">{c.p}</p>
-                </div>
-              </div>
-            </Link>
+              icon={c.icon}
+            />
           ))}
         </div>
       </Section>
