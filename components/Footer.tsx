@@ -33,7 +33,7 @@ const QUICK = [
 
 export const Footer: React.FC = () => {
   return (
-    <footer className="py-16 border-t border-border">
+    <footer className="py-24 border-t border-border">
       <Container>
         {/* 1 col on mobile -> 2 on small -> 4 on md */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10 mb-10">
