@@ -1,5 +1,5 @@
 // pages/index.tsx
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import Head from 'next/head';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
@@ -22,8 +22,6 @@ import Waitlist from '@/components/sections/Waitlist';
 
 export default function HomePage() {
   const { t } = useLocale();
-  const [streak, setStreak] = useState(0);
-  const onStreakChange = useCallback((n: number) => setStreak(n), []);
 
   // Smooth scroll for same-page anchors (safe & small)
   useEffect(() => {
@@ -45,7 +43,7 @@ export default function HomePage() {
         <title>{t('home.title')}</title>
       </Head>
 
-      <Hero onStreakChange={onStreakChange} />
+      <Hero />
 
       {/* Phase-3: Quick Command Center (go anywhere, from anywhere) */}
       <section id="command-center" className="py-12">
