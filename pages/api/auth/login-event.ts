@@ -1,8 +1,22 @@
 // pages/api/auth/login-event.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { supabaseServer, supabaseService } from '@/lib/supabaseServer';
+import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
-type RespBody = { ok?: true } | { error: string; details?: string };
+type RespBody = { ok?: true } | { error: string; details?: string | null };
+
+function resolveAdminClient(candidate: any) {
+  // Candidate may be:
+  // - a supabase client (has .from)
+  // - an object like { admin: client } (test artifact)
+  // - undefined/null
+  if (!candidate) return null;
+  if (typeof candidate.from === 'function') return candidate;
+  if (candidate.admin && typeof candidate.admin.from === 'function') return candidate.admin;
+  // sometimes libs export default / named shapes, check deeper:
+  if (candidate.supabaseAdmin && typeof candidate.supabaseAdmin.from === 'function') return candidate.supabaseAdmin;
+  return null;
+}
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse<RespBody>) {
   if (req.method === 'OPTIONS') {
@@ -15,6 +29,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   }
 
   try {
+    // Read user using anon/server client
     const sb = supabaseServer(req);
     const { data: userRes, error: userErr } = await sb.auth.getUser();
     if (userErr) console.error('supabaseServer.auth.getUser error', userErr);
@@ -34,13 +49,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       (req.socket?.remoteAddress ?? null);
     const ua = (req.headers['user-agent'] as string) || null;
 
-    const admin = supabaseService();
-    if (!admin || typeof (admin as any).from !== 'function') {
-      console.error('supabaseService() did not return a client with .from()', { admin });
+    // Get admin client with fallbacks
+    const candidate = supabaseService();
+    let adminClient = resolveAdminClient(candidate) ?? resolveAdminClient(supabaseAdmin);
+
+    // Last-ditch: if supabaseAdmin module default-exported a wrapper, try that
+    if (!adminClient && (supabaseAdmin as any)?.default && typeof (supabaseAdmin as any).default.from === 'function') {
+      adminClient = (supabaseAdmin as any).default;
+    }
+
+    if (!adminClient) {
+      // log the candidate shapes to help CI debugging
+      console.error('supabaseService() did not return a usable client with .from()', {
+        candidate,
+        supabaseAdmin,
+      });
       return res.status(500).json({ error: 'Supabase service client unavailable' });
     }
 
-    const { error: insertErr } = await (admin as any).from('login_events').insert([
+    const { error: insertErr } = await adminClient.from('login_events').insert([
       {
         user_id: userId,
         ip_address: ip,
@@ -52,7 +79,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       console.error('Failed to insert login event', insertErr);
       return res
         .status(500)
-        .json({ error: 'Failed to record login event', details: insertErr.message ?? String(insertErr) });
+        .json({ error: 'Failed to record login event', details: insertErr?.message ?? String(insertErr) });
     }
 
     return res.status(200).json({ ok: true });
