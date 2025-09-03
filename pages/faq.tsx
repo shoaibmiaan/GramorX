@@ -72,7 +72,7 @@ export default function FAQPage() {
               <label className="block">
                 <span className="mb-1.5 inline-block text-small text-grayish">Category</span>
                 <select
-                  className="w-full rounded-ds border bg-white text-lightText dark:bg-dark/50 dark:text-white
+                  className="w-full rounded-ds border bg-lightCard text-lightText dark:bg-dark/50 dark:text-white
                              dark:border-purpleVibe/30 focus:outline-none focus:ring-2 focus:ring-primary py-3 px-3"
                   value={cat}
                   onChange={e => setCat(e.target.value as Cat | 'all')}
@@ -88,7 +88,7 @@ export default function FAQPage() {
                 <details key={i} className="group">
                   <summary
                     className="cursor-pointer select-none font-medium py-3 px-4 rounded-ds card-surface
-                               hover:bg-purpleVibe/10 dark:hover:bg-white/5 focus:outline-none focus:ring-2 focus:ring-primary"
+                               hover:bg-purpleVibe/10 dark:hover:bg-lightCard/5 focus:outline-none focus:ring-2 focus:ring-primary"
                   >
                     {f.q}
                   </summary>

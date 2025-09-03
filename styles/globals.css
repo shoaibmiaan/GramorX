@@ -10,6 +10,24 @@ html, body, #__next { height: 100%; }
 body { @apply font-sans text-lightText bg-lightBg overflow-x-hidden relative; }
 .dark body { @apply text-foreground bg-gradient-to-br from-darker to-dark; }
 
+/* Background corner glow overlay */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  background:
+    radial-gradient(circle at top left, rgba(var(--color-purpleVibe), 0.6), transparent 60%),
+    radial-gradient(circle at top right, rgba(var(--color-electricBlue), 0.6), transparent 60%),
+    radial-gradient(circle at bottom left, rgba(var(--color-sunsetOrange), 0.6), transparent 60%),
+    radial-gradient(circle at bottom right, rgba(var(--color-goldenYellow), 0.6), transparent 60%);
+  background-repeat: no-repeat;
+  opacity: 0.3;
+}
+
+.dark body::before { opacity: 0.6; }
+
 /* =========================
    Headings → Roboto Slab
    ========================= */
@@ -21,7 +39,7 @@ body { @apply font-sans text-lightText bg-lightBg overflow-x-hidden relative; }
 /* =========================
    Header / Nav (GLOBAL)
    ========================= */
-.header-glass { @apply text-lightText bg-white/90 backdrop-blur-md border-b border-border; }
+.header-glass { @apply text-lightText bg-lightCard/90 backdrop-blur-md border-b border-border; }
 .dark .header-glass { @apply text-foreground bg-dark/95 border-purpleVibe/20; }
 
 /* Navigation pill with underline */
@@ -93,6 +111,11 @@ body { @apply font-sans text-lightText bg-lightBg overflow-x-hidden relative; }
    ========================= */
 .card-surface { @apply rounded-ds-2xl border bg-lightCard border-lightBorder text-lightText; }
 .dark .card-surface { @apply border-purpleVibe/20 backdrop-blur-md bg-purpleVibe/10 text-foreground; }
+
+/* =========================
+   Skeleton placeholder
+   ========================= */
+.skeleton { @apply animate-pulse bg-border dark:bg-border/10; }
 
 /* Glass card variant */
 .card-glass {
