@@ -23,7 +23,7 @@ const SuccessPage: NextPage = () => {
       <Head><title>Payment Successful</title></Head>
       <main className="min-h-screen bg-background text-foreground">
         <Section>
-          <Container className="max-w-3xl px-4 text-center">
+          <Container className="max-w-3xl text-center">
             <h1 className="mb-2 text-3xl font-semibold">You’re upgraded! 🎉</h1>
             <p className="text-muted-foreground">
               Your subscription is active. You can now access full IELTS modules, AI feedback, and analytics.

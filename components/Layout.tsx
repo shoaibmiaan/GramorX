@@ -6,6 +6,7 @@ import { Footer } from '@/components/Footer';
 import { useStreak } from '@/hooks/useStreak';
 import { Breadcrumbs, type Crumb } from '@/components/design-system/Breadcrumbs';
 import { BottomNav } from '@/components/navigation/BottomNav';
+import { Container } from '@/components/design-system/Container';
 
 export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { current } = useStreak();
@@ -21,12 +22,12 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   return (
     <>
       <Header streak={current} />
-      <main>
+      <Container>
         {segments.length > 0 && (
-          <Breadcrumbs items={breadcrumbItems} className="p-4" />
+          <Breadcrumbs items={breadcrumbItems} className="py-4" />
         )}
-        {children}
-      </main>
+        <main>{children}</main>
+      </Container>
       <Footer />
       <BottomNav />
     </>
