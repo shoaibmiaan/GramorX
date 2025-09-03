@@ -94,6 +94,11 @@ body { @apply font-sans text-lightText bg-lightBg overflow-x-hidden relative; }
 .card-surface { @apply rounded-ds-2xl border bg-lightCard border-lightBorder text-lightText; }
 .dark .card-surface { @apply border-purpleVibe/20 backdrop-blur-md bg-purpleVibe/10 text-foreground; }
 
+/* =========================
+   Skeleton placeholder
+   ========================= */
+.skeleton { @apply animate-pulse bg-border dark:bg-border/10; }
+
 /* Glass card variant */
 .card-glass {
   @apply rounded-ds-2xl backdrop-blur-xl border shadow-glowLg;
