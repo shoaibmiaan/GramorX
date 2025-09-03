@@ -7,5 +7,28 @@
   "Error": "خرابی",
   "Preview (English)": "پیش منظر (انگریزی)",
   "Preview (Urdu)": "پیش منظر (اردو)",
-  "Current locale": "موجودہ زبان"
+  "Current locale": "موجودہ زبان",
+  "footer": {
+    "resources": {
+      "bandScorePredictor": "بینڈ اسکور پیش گو",
+      "listeningPractice": "سننے کی مشق",
+      "readingPractice": "پڑھنے کی مشق",
+      "writingTaskSamples": "لکھنے کے ٹاسک نمونے",
+      "speakingQuestions": "بولنے کے سوالات"
+    },
+    "quickLinks": {
+      "pricingPlans": "قیمتیں اور پلانز",
+      "referralRewards": "ریفریل انعامات",
+      "partnerProgram": "پارٹنر پروگرام",
+      "support": "مدد",
+      "blog": "بلاگ",
+      "faq": "عمومی سوالات"
+    },
+    "contact": {
+      "email": "info@solvioadvisors.com",
+      "phone": "+1 (972) 295-4571",
+      "location": "ہیوسٹن، امریکہ",
+      "supportHours": "سپورٹ: 24/7"
+    }
+  }
 }
