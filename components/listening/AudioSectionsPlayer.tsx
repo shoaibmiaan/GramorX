@@ -288,7 +288,7 @@ export const AudioSectionsPlayer: React.FC<AudioSectionsPlayerProps> = ({
             className="px-3 py-2 rounded-ds border border-gray-200 dark:border-white/10 hover:bg-white/5"
             aria-label="Previous section"
           >
-            <i className="fas fa-step-backward" />
+            <i className="fas fa-step-backward" aria-hidden="true" />
           </button>
           {playing ? (
             <button
@@ -297,7 +297,7 @@ export const AudioSectionsPlayer: React.FC<AudioSectionsPlayerProps> = ({
               className="px-4 py-2 rounded-ds-xl bg-primary text-white hover:opacity-90"
               aria-label="Pause"
             >
-              <i className="fas fa-pause" /> <span className="ml-2">Pause</span>
+              <i className="fas fa-pause" aria-hidden="true" /> <span className="ml-2">Pause</span>
             </button>
           ) : (
             <button
@@ -307,7 +307,7 @@ export const AudioSectionsPlayer: React.FC<AudioSectionsPlayerProps> = ({
               className="px-4 py-2 rounded-ds-xl bg-primary text-white disabled:opacity-50 hover:opacity-90"
               aria-label="Play"
             >
-              <i className="fas fa-play" /> <span className="ml-2">Play</span>
+              <i className="fas fa-play" aria-hidden="true" /> <span className="ml-2">Play</span>
             </button>
           )}
           <button
@@ -316,7 +316,7 @@ export const AudioSectionsPlayer: React.FC<AudioSectionsPlayerProps> = ({
             className="px-3 py-2 rounded-ds border border-gray-200 dark:border-white/10 hover:bg-white/5"
             aria-label="Next section"
           >
-            <i className="fas fa-step-forward" />
+            <i className="fas fa-step-forward" aria-hidden="true" />
           </button>
         </div>
       </div>

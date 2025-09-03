@@ -17,9 +17,9 @@ export function ThemeToggle() {
       title="Toggle theme"
     >
       {isDark ? (
-        <MoonIcon className="h-4 w-4" aria-hidden />
+        <MoonIcon className="h-4 w-4" aria-hidden="true" />
       ) : (
-        <SunIcon className="h-4 w-4" aria-hidden />
+        <SunIcon className="h-4 w-4" aria-hidden="true" />
       )}
       <span className="opacity-80">{isDark ? 'Dark' : 'Light'}</span>
     </button>

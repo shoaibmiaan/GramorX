@@ -120,7 +120,7 @@ export default function BlogIndex() {
                 placeholder="Try “t/f/ng”, “cue card”, “study plan”…"
                 value={q}
                 onChange={e => { setQ(e.currentTarget.value); setPage(1); }}
-                iconLeft={<i className="fas fa-search" aria-hidden />}
+                iconLeft={<i className="fas fa-search" aria-hidden="true" />}
               />
               <label className="block">
                 <span className="mb-1.5 inline-block text-small text-grayish">Category</span>

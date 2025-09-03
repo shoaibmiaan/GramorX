@@ -1,5 +1,6 @@
 // components/sections/Testimonials.tsx
 import * as React from 'react';
+import Link from 'next/link';
 import { Container } from '@/components/design-system/Container';
 import { Section } from '@/components/design-system/Section';
 import { Card } from '@/components/design-system/Card';
@@ -73,23 +74,23 @@ export const Testimonials: React.FC = () => {
               </blockquote>
 
               <div className="mt-5 flex items-center gap-1 text-warning/90" aria-hidden="true">
-                <i className="fas fa-star" />
-                <i className="fas fa-star" />
-                <i className="fas fa-star" />
-                <i className="fas fa-star" />
-                <i className="fas fa-star-half-alt" />
+                <i className="fas fa-star" aria-hidden="true" />
+                <i className="fas fa-star" aria-hidden="true" />
+                <i className="fas fa-star" aria-hidden="true" />
+                <i className="fas fa-star" aria-hidden="true" />
+                <i className="fas fa-star-half-alt" aria-hidden="true" />
               </div>
             </Card>
           ))}
         </div>
 
         <div className="text-center mt-8">
-          <a
+          <Link
             href="/reviews"
             className="inline-flex items-center gap-2 px-4 py-2 rounded-ds border border-border hover:bg-electricBlue/5 transition"
           >
-            Read more reviews <i className="fas fa-arrow-right" aria-hidden />
-          </a>
+            Read more reviews <i className="fas fa-arrow-right" aria-hidden="true" />
+          </Link>
         </div>
       </Container>
     </Section>

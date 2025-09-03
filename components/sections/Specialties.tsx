@@ -58,7 +58,7 @@ export const Specialties: React.FC = () => {
             <Card key={s.title} className="p-6 rounded-ds-2xl border border-purpleVibe/20 hover:border-purpleVibe/40 transition">
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 rounded-full grid place-items-center text-white bg-gradient-to-br from-purpleVibe to-electricBlue">
-                  <i className={`fas ${s.icon}`} aria-hidden />
+                  <i className={`fas ${s.icon}`} aria-hidden="true" />
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
@@ -68,7 +68,7 @@ export const Specialties: React.FC = () => {
                   <p className="text-muted-foreground mt-1">{s.desc}</p>
                   <div className="mt-3">
                     <Link href={s.href} className="text-electricBlue hover:underline inline-flex items-center gap-2">
-                      Explore <i className="fas fa-arrow-right" aria-hidden />
+                      Explore <i className="fas fa-arrow-right" aria-hidden="true" />
                     </Link>
                   </div>
                 </div>

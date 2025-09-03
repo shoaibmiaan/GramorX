@@ -39,7 +39,7 @@ export const BottomNav: React.FC = () => {
               className="flex flex-col items-center gap-1 py-2 text-xs text-gray-600 dark:text-grayish [&.is-active]:text-vibrantPurple"
               onClick={handleClick(href)}
             >
-              <i className={`fas ${icon} text-lg`} aria-hidden />
+              <i className={`fas ${icon} text-lg`} aria-hidden="true" />
               <span>{label}</span>
             </NavLink>
           </li>

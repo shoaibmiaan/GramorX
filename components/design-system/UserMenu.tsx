@@ -44,10 +44,10 @@ export const UserMenu: React.FC<{
 
   const defaultItems: MenuItem[] = useMemo(() => {
     const base: MenuItem[] = [
-      { label: 'Profile', href: '/profile', icon: <i className="fas fa-id-badge" aria-hidden /> },
-      { label: 'Account', href: '/account', icon: <i className="fas fa-user" aria-hidden /> },
+      { label: 'Profile', href: '/profile', icon: <i className="fas fa-id-badge" aria-hidden="true" /> },
+      { label: 'Account', href: '/account', icon: <i className="fas fa-user" aria-hidden="true" /> },
     ];
-    if (onSignOut) base.push({ label: 'Sign out', onClick: onSignOut, icon: <i className="fas fa-sign-out-alt" aria-hidden /> });
+    if (onSignOut) base.push({ label: 'Sign out', onClick: onSignOut, icon: <i className="fas fa-sign-out-alt" aria-hidden="true" /> });
     return base;
   }, [onSignOut]);
 

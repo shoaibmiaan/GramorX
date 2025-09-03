@@ -20,10 +20,10 @@ export const Alert: React.FC<{
       <div className="flex items-start gap-3">
         <div className="mt-0.5">
           {icon ?? (
-            variant === 'success' ? <i className="fas fa-check-circle" /> :
-            variant === 'warning' ? <i className="fas fa-exclamation-triangle" /> :
-            variant === 'error' ? <i className="fas fa-times-circle" /> :
-            <i className="fas fa-info-circle" />
+            variant === 'success' ? <i className="fas fa-check-circle" aria-hidden="true" /> :
+            variant === 'warning' ? <i className="fas fa-exclamation-triangle" aria-hidden="true" /> :
+            variant === 'error' ? <i className="fas fa-times-circle" aria-hidden="true" /> :
+            <i className="fas fa-info-circle" aria-hidden="true" />
           )}
         </div>
         <div>
