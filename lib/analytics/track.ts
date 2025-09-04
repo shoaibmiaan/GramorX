@@ -1,50 +1,26 @@
 // lib/analytics/track.ts
-import { isBrowser } from '@/lib/env';
-import type { AnalyticsEventName, AnalyticsProps } from './events';
-import { ga4Track, initGA } from './providers/ga4';
-import { metaTrack, initMeta } from './providers/meta';
-
-type TrackOptions = {
-  skipMeta?: boolean;
-  skipGA?: boolean;
-};
-
-let bootstrapped = false;
-function ensureInit() {
-  if (bootstrapped || !isBrowser) return;
-  // Reads IDs from env internally; no-ops if not set
-  initGA();
-  initMeta();
-  bootstrapped = true;
-}
 
 /**
- * Track a business event to GA4 + Meta.
- * Safe on SSR (no-ops), safe if no IDs configured.
+ * Safe analytics wrapper for both Node (tests) and Browser.
+ * Always resolves to a boolean, never undefined.
  */
-export function track(
-  event: AnalyticsEventName,
-  props: AnalyticsProps = {},
-  opts: TrackOptions = {},
-) {
-  if (!isBrowser) return; // server no-op
-  ensureInit();
-
-  if (!opts.skipGA) ga4Track(event, props);
-  if (!opts.skipMeta) {
-    // Map a couple of business events to Meta “standard” ones; rest as custom.
-    switch (event) {
-      case 'subscribe_clicked':
-        metaTrack('InitiateCheckout', props);
-        break;
-      case 'plan_purchased':
-        metaTrack('Purchase', props);
-        break;
-      case 'signup':
-        metaTrack('CompleteRegistration', props);
-        break;
-      default:
-        metaTrack(event, props);
+export async function track(
+  event: string,
+  props: Record<string, unknown> = {}
+): Promise<boolean> {
+  try {
+    if (typeof window !== 'undefined') {
+      (window as any).gtag?.('event', event, props);
+      (window as any).fbq?.('trackCustom', event, props);
+    } else {
+      // Node/tests: no-op (keeps tests stable)
+      // eslint-disable-next-line no-console
+      console.log(`[track:${event}]`, props);
     }
+    return true;
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error('[track] failed', err);
+    return false;
   }
 }
