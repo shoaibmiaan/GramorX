@@ -28,23 +28,55 @@ interface DesktopNavProps {
   signOut: () => Promise<void>;
 }
 
-export function DesktopNav({ user, role, ready, streak, openModules, setOpenModules, modulesRef, signOut }: DesktopNavProps) {
+export function DesktopNav({
+  user, role, ready, streak, openModules, setOpenModules, modulesRef, signOut,
+}: DesktopNavProps) {
   return (
     <nav className="hidden md:block" aria-label="Primary">
-      <ul className="flex items-center gap-3 relative">
-        {user.id && <li><NavLink href="/dashboard" label="Dashboard" /></li>}
+      <ul className="relative flex items-center gap-2">
+        {user.id && (
+          <li>
+            <NavLink href="/dashboard" className="px-3 py-2 rounded-lg hover:bg-muted" label="Dashboard" />
+          </li>
+        )}
+
         <ModuleMenu open={openModules} setOpen={setOpenModules} modulesRef={modulesRef} />
-        <li><NavLink href="/learning" label="Learning" /></li>
+
+        <li>
+          <NavLink href="/learning" className="px-3 py-2 rounded-lg hover:bg-muted" label="Learning" />
+        </li>
+
         {NAV.map((n) => (
-          <li key={n.href}><NavLink href={n.href} label={n.label} /></li>
+          <li key={n.href}>
+            <NavLink href={n.href} className="px-3 py-2 rounded-lg hover:bg-muted" label={n.label} />
+          </li>
         ))}
-        {role === 'partner' || role === 'admin' ? (
-          <li><NavLink href="/partners" label="Partners" /></li>
-        ) : null}
-        {role === 'admin' ? <li><NavLink href="/admin/partners" label="Admin" /></li> : null}
-        {ready ? (
-          user.id ? (
-            <li>
+
+        {(role === 'partner' || role === 'admin') && (
+          <li>
+            <NavLink href="/partners" className="px-3 py-2 rounded-lg hover:bg-muted" label="Partners" />
+          </li>
+        )}
+        {role === 'admin' && (
+          <li>
+            <NavLink href="/admin/partners" className="px-3 py-2 rounded-lg hover:bg-muted" label="Admin" />
+          </li>
+        )}
+
+        {/* Right cluster */}
+        <li className="ml-2">
+          <FireStreak value={streak} />
+        </li>
+        <li>
+          <NotificationBell />
+        </li>
+        <li>
+          <IconOnlyThemeToggle />
+        </li>
+
+        <li className="ml-1">
+          {ready ? (
+            user.id ? (
               <UserMenu
                 userId={user.id}
                 email={user.email}
@@ -56,23 +88,23 @@ export function DesktopNav({ user, role, ready, streak, openModules, setOpenModu
                   { href: '/account/referrals', label: 'Referrals' },
                 ]}
               />
-            </li>
-          ) : (
-            <li>
+            ) : (
               <Link
                 href="/login"
-                className="px-4 py-2 rounded-full bg-primary text-primary-foreground font-semibold hover:opacity-90 transition"
+                className="
+                  inline-flex items-center justify-center rounded-full
+                  px-4 py-2 font-semibold
+                  bg-primary text-primary-foreground
+                  hover:opacity-90 transition
+                "
               >
                 Sign in
               </Link>
-            </li>
-          )
-        ) : (
-          <li><div className="h-9 w-24 rounded-full bg-muted animate-pulse" /></li>
-        )}
-        <li><FireStreak value={streak} /></li>
-        <li><NotificationBell /></li>
-        <li><IconOnlyThemeToggle /></li>
+            )
+          ) : (
+            <div className="h-9 w-24 animate-pulse rounded-full bg-muted" />
+          )}
+        </li>
       </ul>
     </nav>
   );

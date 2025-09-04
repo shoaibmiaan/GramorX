@@ -1,55 +1,74 @@
-@import './tokens.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Full-height layout */
+/* Ensure full-height layout */
 html, body, #__next { height: 100%; }
+
+/* =========================
+   Color tokens → RGB triplets
+   (must match design-system/tokens/colors.js)
+   ========================= */
+:root{
+  --color-primary:        67 97 238;   /* #4361ee */
+  --color-primaryDark:    58 86 212;   /* #3a56d4 */
+  --color-secondary:     247 37 133;   /* #f72585 */
+  --color-accent:         76 201 240;  /* #4cc9f0 */
+  --color-success:        46 196 182;  /* #2ec4b6 */
+
+  --color-purpleVibe:    157 78 221;   /* #9d4edd */
+  --color-vibrantPurple: 157 78 221;   /* alias */
+  --color-electricBlue:    0 187 249;  /* #00bbf9 */
+  --color-neonGreen:     128 255 219;  /* #80ffdb */
+  --color-sunsetOrange:  255 107 107;  /* #ff6b6b */
+  --color-sunsetRed:     255  77  77;  /* #ff4d4d */
+  --color-goldenYellow:  255 209 102;  /* #ffd166 */
+
+  --color-dark:           15  15  27;  /* #0f0f1b */
+  --color-darker:          7   7  16;  /* #070710 */
+  --color-lightBg:       240 242 245;  /* #f0f2f5 */
+  --color-lightText:      26  26  46;  /* #1a1a2e */
+  --color-grayish:       138 138 156;  /* #8a8a9c */
+
+  --color-lightCard:     255 255 255;  /* #ffffff */
+  --color-lightBorder:   224 224 224;  /* #e0e0e0 */
+  --color-mutedText:     208 208 224;  /* #d0d0e0 */
+}
 
 /* Light = default; Dark via .dark on <html> (next-themes) */
 body { @apply font-sans text-lightText bg-lightBg overflow-x-hidden relative; }
-.dark body { @apply text-foreground bg-gradient-to-br from-darker to-dark; }
-
-/* Background corner glow overlay */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: -1;
-  background:
-    radial-gradient(circle at top left, rgba(var(--color-purpleVibe), 0.6), transparent 60%),
-    radial-gradient(circle at top right, rgba(var(--color-electricBlue), 0.6), transparent 60%),
-    radial-gradient(circle at bottom left, rgba(var(--color-sunsetOrange), 0.6), transparent 60%),
-    radial-gradient(circle at bottom right, rgba(var(--color-goldenYellow), 0.6), transparent 60%);
-  background-repeat: no-repeat;
-  opacity: 0.3;
-}
-
-.dark body::before { opacity: 0.6; }
+.dark body { @apply text-white bg-gradient-to-br from-darker to-dark; }
 
 /* =========================
-   Headings → Roboto Slab
+   Headings → Roboto Slab (no circular apply)
    ========================= */
 @layer base {
-  /* font-slab exists because we defined theme.extend.fontFamily.slab */
   h1, h2, h3, .heading { @apply font-slab; }
 }
 
 /* =========================
    Header / Nav (GLOBAL)
    ========================= */
-.header-glass { @apply text-lightText bg-lightCard/90 backdrop-blur-md border-b border-border; }
-.dark .header-glass { @apply text-foreground bg-dark/95 border-purpleVibe/20; }
+.header-glass {
+  @apply text-lightText bg-white/90 backdrop-blur-md border-b border-gray-200;
+}
+.dark .header-glass {
+  @apply text-white bg-dark/95 border-vibrantPurple/20;
+}
 
-/* Navigation pill with underline */
+/* Navigation pill with underline (active & hover) */
 .nav-pill{
   @apply relative inline-flex items-center justify-center rounded-full px-4 py-2 transition;
+  /* Light theme text */
   @apply text-lightText/80 hover:text-lightText;
   background: transparent;
 }
-.dark .nav-pill{ @apply text-foreground/90 hover:text-foreground; }
+.dark .nav-pill{
+  /* Dark theme text */
+  @apply text-white/90 hover:text-white;
+}
 
+/* underline */
 .nav-pill::after{
   content:""; position:absolute; left:50%; transform:translateX(-50%);
   bottom:-6px; height:3px; width:60%;
@@ -57,15 +76,17 @@ body::before {
   border-radius:9999px; opacity:0; transition:opacity .25s ease;
 }
 .nav-pill:hover::after{ opacity:.9; }
-.nav-pill.is-active{ @apply bg-purpleVibe/10; }
-.dark .nav-pill.is-active{ @apply bg-foreground/5; }
+
+/* active pill background (light vs dark) */
+.nav-pill.is-active{ @apply bg-vibrantPurple/10; }
+.dark .nav-pill.is-active{ @apply bg-white/5; }
 .nav-pill.is-active::after{ opacity:1; }
 
 /* Container utility */
 .container { @apply max-w-[1200px] mx-auto px-5; }
 
 /* =========================
-   Buttons
+   Buttons (GLOBAL pretty hover)
    ========================= */
 .btn {
   @apply inline-flex items-center justify-center font-semibold rounded-full px-8 py-3
@@ -74,13 +95,18 @@ body::before {
   transition-duration: .35s;
   transition-timing-function: cubic-bezier(.22,.61,.36,1);
 }
+
+/* Shine sweep overlay */
 .btn--fx::after{
   content:""; position:absolute; inset:-2px;
   background: linear-gradient(120deg, transparent 30%, rgba(255,255,255,.22) 50%, transparent 70%);
   transform: translateX(-150%) skewX(-20deg);
-  transition: transform .65s ease; pointer-events: none;
+  transition: transform .65s ease;
+  pointer-events: none;
 }
 .btn--fx:hover::after{ transform: translateX(150%) skewX(-20deg); }
+
+/* Lift + stronger glow on hover; slight press on active */
 .btn--fx:hover{ transform: translateY(-2px) scale(1.02); }
 .btn--fx:active{ transform: translateY(-1px) scale(0.995); }
 
@@ -89,16 +115,24 @@ body::before {
 .btn-primary:hover, .btn-accent:hover { background-position: 100% 50%; }
 
 /* Variants */
-.btn-primary  { @apply text-foreground bg-gradient-to-br from-purpleVibe to-electricBlue shadow-glow; }
-.btn-primary:hover { @apply shadow-glowLg; background-image: linear-gradient(135deg,
-  rgb(var(--color-electricBlue)), rgb(var(--color-purpleVibe))); }
+.btn-primary  { @apply text-white bg-gradient-to-br from-purpleVibe to-electricBlue shadow-glow; }
+.btn-primary:hover {
+  background-image: linear-gradient(135deg,
+    rgb(var(--color-electricBlue)),
+    rgb(var(--color-purpleVibe)));
+  @apply shadow-glowLg;
+}
 
 .btn-secondary{ @apply border-2 border-primary text-primary bg-transparent; }
 .dark .btn-secondary { @apply border-neonGreen text-neonGreen; }
 
-.btn-accent   { @apply text-foreground bg-gradient-to-br from-sunsetOrange to-sunsetRed shadow-glow; }
-.btn-accent:hover { @apply shadow-glowLg; background-image: linear-gradient(135deg,
-  rgb(var(--color-sunsetRed)), rgb(var(--color-sunsetOrange))); }
+.btn-accent   { @apply text-white bg-gradient-to-br from-sunsetOrange to-sunsetRed shadow-glow; }
+.btn-accent:hover {
+  background-image: linear-gradient(135deg,
+    rgb(var(--color-sunsetRed)),
+    rgb(var(--color-sunsetOrange)));
+  @apply shadow-glowLg;
+}
 
 /* =========================
    Badges / chips
@@ -110,20 +144,15 @@ body::before {
    Card surfaces
    ========================= */
 .card-surface { @apply rounded-ds-2xl border bg-lightCard border-lightBorder text-lightText; }
-.dark .card-surface { @apply border-purpleVibe/20 backdrop-blur-md bg-purpleVibe/10 text-foreground; }
+.dark .card-surface { @apply border-vibrantPurple/20 backdrop-blur-md bg-purpleVibe/10 text-white; }
 
-/* =========================
-   Skeleton placeholder
-   ========================= */
-.skeleton { @apply animate-pulse bg-border dark:bg-border/10; }
-
-/* Glass card variant */
+/* Glass card variant (used by waitlist/testimonials etc.) */
 .card-glass {
   @apply rounded-ds-2xl backdrop-blur-xl border shadow-glowLg;
   @apply bg-white/70 text-lightText border-lightBorder;
 }
 .dark .card-glass {
-  @apply bg-purpleVibe/10 text-foreground border-purpleVibe/20;
+  @apply bg-purpleVibe/10 text-white border-vibrantPurple/20;
 }
 
 /* =========================
@@ -133,37 +162,41 @@ body::before {
 .text-gradient-accent  { @apply bg-clip-text text-transparent bg-gradient-to-r from-neonGreen to-electricBlue; }
 .text-gradient-vertical{ @apply bg-clip-text text-transparent bg-gradient-to-b from-neonGreen to-electricBlue; }
 
-/* Footer link hover */
-.footer-link{ @apply relative inline-flex items-center text-gray-600 dark:text-grayish transition-colors duration-200; }
+/* Footer link hover: color shift + tiny gradient underline */
+.footer-link{
+  @apply relative inline-flex items-center text-gray-600 dark:text-grayish transition-colors duration-200;
+}
 .footer-link::after{
   content:""; position:absolute; left:0; bottom:-2px; height:2px; width:0%;
-  background: linear-gradient(90deg, rgb(var(--color-purpleVibe)), rgb(var(--color-electricBlue)));
+  background: linear-gradient(90deg,
+    rgb(var(--color-purpleVibe)),
+    rgb(var(--color-electricBlue)));
   border-radius:9999px; transition: width .25s ease;
 }
 .footer-link:hover{ @apply text-electricBlue; }
 .footer-link:hover::after{ width:100%; }
 
-/* Labels */
+/* Neon label for inputs */
 .label-neon { @apply text-neonGreen font-medium; }
 
-/* Dark section helper */
+/* Dark section helper (hero/modules/pricing/waitlist) */
 .section-dark { @apply bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90; }
 
-/* AI sidebar helpers */
+/* AI sidebar helpers (theme aware, token-only) */
 .ai-icon-btn{
-  @apply h-8 w-8 grid place-items-center rounded-md border border-border bg-card text-card-foreground hover:bg-accent hover:text-card-foreground disabled:opacity-50;
+  @apply h-9 w-9 grid place-items-center rounded-lg hover:bg-vibrantPurple/10 text-lightText dark:text-white;
 }
 .ai-tab{
-  @apply h-8 px-3 rounded-md border border-border bg-card text-caption text-card-foreground hover:bg-accent hover:text-foreground;
+  @apply px-3 py-1.5 rounded-full text-lightText/80 dark:text-white/80 hover:text-lightText dark:hover:text-white;
 }
-.ai-tab.is-active{ @apply bg-primary text-primary-foreground; }
-
-/* Code block surface for AI messages */
-.ai-code-block{ @apply bg-lightCard border border-lightBorder text-lightText/80; }
-.dark .ai-code-block{ @apply bg-purpleVibe/10 border-purpleVibe/20 text-foreground/80; }
+.ai-tab.is-active{
+  @apply bg-vibrantPurple/10 text-lightText dark:text-white;
+}
 
 /* AI sidebar split view */
 :root { --gx-ai-right: 0px; --gx-ai-bottom: 0px; }
+
+/* Push content when AI sidebar is open */
 html.gx-ai-open #__next { padding-right: var(--gx-ai-right); box-sizing: border-box; }
 @media (max-width: 767px) {
   html.gx-ai-open-bottom #__next { padding-bottom: var(--gx-ai-bottom); box-sizing: border-box; }

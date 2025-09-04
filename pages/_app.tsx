@@ -4,10 +4,11 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import React, { useEffect, useMemo } from 'react';
 import { ThemeProvider } from 'next-themes';
+
 import '@/styles/globals.css';
 import '@/styles/themes/index.css';
 
-import { Layout } from '@/components/Layout';
+import Layout from '@/components/Layout'; // ⬅️ default import (matches the Layout I gave you)
 import { ToastProvider } from '@/components/design-system/Toaster';
 import { NotificationProvider } from '@/components/notifications/NotificationProvider';
 import { supabaseBrowser } from '@/lib/supabaseBrowser';
@@ -23,13 +24,23 @@ import SidebarAI from '@/components/ai/SidebarAI';
 import AuthAssistant from '@/components/auth/AuthAssistant';
 
 import { Poppins, Roboto_Slab } from 'next/font/google';
-const poppins = Poppins({ subsets: ['latin'], weight: ['400','500','600','700'], display: 'swap', variable: '--font-sans' });
-const slab = Roboto_Slab({ subsets: ['latin'], weight: ['400','600','700'], display: 'swap', variable: '--font-display' });
+const poppins = Poppins({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  display: 'swap',
+  variable: '--font-sans',
+});
+const slab = Roboto_Slab({
+  subsets: ['latin'],
+  weight: ['400', '600', '700'],
+  display: 'swap',
+  variable: '--font-display',
+});
 
 function GuardSkeleton() {
   return (
-    <div className="min-h-[100dvh] grid place-items-center">
-      <div className="animate-pulse h-6 w-40 bg-gray-200 dark:bg-white/10 rounded" />
+    <div className="grid min-h-[100dvh] place-items-center">
+      <div className="h-6 w-40 animate-pulse rounded bg-muted" />
     </div>
   );
 }
@@ -51,6 +62,7 @@ function InnerApp({ Component, pageProps }: AppProps) {
   );
   const showLayout = !isPremium && !isAuthPage && !isNoChromeRoute;
 
+  // Idle timeout (auto sign-out UX)
   useEffect(() => {
     const cleanup = initIdleTimeout(env.NEXT_PUBLIC_IDLE_TIMEOUT_MINUTES);
     return cleanup;
@@ -66,7 +78,9 @@ function InnerApp({ Component, pageProps }: AppProps) {
           credentials: 'same-origin',
           body: JSON.stringify({ event, session }),
         });
-      } catch {}
+      } catch {
+        // no-op
+      }
     });
     return () => sub?.subscription?.unsubscribe();
   }, []);
@@ -76,11 +90,17 @@ function InnerApp({ Component, pageProps }: AppProps) {
   // Background token expiry safety — don't force-login on /pricing
   useEffect(() => {
     const interval = setInterval(async () => {
-      const { data: { session } } = await supabaseBrowser.auth.getSession();
+      const {
+        data: { session },
+      } = await supabaseBrowser.auth.getSession();
       const expiresAt = session?.expires_at;
       if (session && expiresAt && expiresAt <= Date.now() / 1000) {
         await supabaseBrowser.auth.signOut();
-        if (!isGuestOnlyRoute(router.pathname) && !isPublicRoute(router.pathname) && !/^\/pricing(\/|$)/.test(router.pathname)) {
+        if (
+          !isGuestOnlyRoute(router.pathname) &&
+          !isPublicRoute(router.pathname) &&
+          !/^\/pricing(\/|$)/.test(router.pathname)
+        ) {
           router.replace('/login');
         }
       }
@@ -101,15 +121,10 @@ function InnerApp({ Component, pageProps }: AppProps) {
   return (
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
       <Head>
-        <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-        <link
-          rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
-          media="print"
-          onLoad={(e) => { (e.currentTarget as HTMLLinkElement).media = 'all'; }}
-        />
-        <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" /></noscript>
+        {/* We use lucide-react + DS icons now; Font Awesome removed for performance. */}
         {isPremium ? <link rel="stylesheet" href="/premium.css" /> : null}
+        {/* Optional: PWA/theme color could be set here using tokens */}
+        {/* <meta name="theme-color" content="#000000" /> */}
       </Head>
 
       <div className={`${poppins.variable} ${slab.variable} ${poppins.className} min-h-[100dvh]`}>

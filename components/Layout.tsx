@@ -1,35 +1,41 @@
 // components/Layout.tsx
+'use client';
+
 import React from 'react';
 import { useRouter } from 'next/router';
 import { Header } from '@/components/Header';
-import { Footer } from '@/components/Footer';
-import { useStreak } from '@/hooks/useStreak';
-import { Breadcrumbs, type Crumb } from '@/components/design-system/Breadcrumbs';
-import { BottomNav } from '@/components/navigation/BottomNav';
-import { Container } from '@/components/design-system/Container';
+import Footer from '@/components/Footer';
+import FooterMini from '@/components/navigation/FooterMini';
+import dynamic from 'next/dynamic';
 
-export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { current } = useStreak();
-  const router = useRouter();
+// Load BottomNav only on client (mobile)
+const BottomNav = dynamic(() => import('@/components/navigation/BottomNav'), { ssr: false });
 
-  const segments = router.asPath.split('?')[0].split('/').filter(Boolean);
-  const crumbs: Crumb[] = segments.map((seg, i) => ({
-    label: seg.replace(/[-_]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
-    href: '/' + segments.slice(0, i + 1).join('/'),
-  }));
-  const breadcrumbItems = [{ label: 'Home', href: '/' }, ...crumbs];
+type Props = { children: React.ReactNode };
+
+const MINI_ROUTE_PATTERNS = [
+  /^\/(login|signup|verify|reset|onboarding)/,
+  /^\/(dashboard|account|speaking|listening|reading|writing|ai|partners|admin)(\/|$)/,
+];
+
+const HIDE_BOTTOM_NAV_PATTERNS = [
+  /^\/(login|signup|verify|reset|admin)(\/|$)/,
+];
+
+const matches = (patterns: RegExp[], path: string) => patterns.some((re) => re.test(path));
+
+export default function Layout({ children }: Props) {
+  const { pathname } = useRouter();
+  const useMiniFooter = matches(MINI_ROUTE_PATTERNS, pathname);
+  const showBottomNav = !matches(HIDE_BOTTOM_NAV_PATTERNS, pathname);
 
   return (
     <>
-      <Header streak={current} />
-      <Container>
-        {segments.length > 0 && (
-          <Breadcrumbs items={breadcrumbItems} className="py-4" />
-        )}
-        <main>{children}</main>
-      </Container>
-      <Footer />
-      <BottomNav />
+      <a id="top" aria-hidden="true" />
+      <Header />
+      <main className="min-h-[60vh]">{children}</main>
+      {useMiniFooter ? <FooterMini /> : <Footer />}
+      {showBottomNav && <BottomNav />}
     </>
   );
-};
+}

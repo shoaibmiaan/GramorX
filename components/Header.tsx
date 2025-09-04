@@ -1,4 +1,5 @@
 'use client';
+
 import React, { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -7,6 +8,13 @@ import { DesktopNav } from '@/components/navigation/DesktopNav';
 import { MobileNav } from '@/components/navigation/MobileNav';
 import { useHeaderState } from '@/components/hooks/useHeaderState';
 
+/**
+ * Header
+ * - Sticky glass surface with gradient underline and soft glow on scroll
+ * - Uses DS tokens/classes only (no inline hex)
+ * - DesktopNav/MobileNav receive `showAdmin={false}`
+ * - Preserves mega menu & streak chip (rendered inside DesktopNav/MobileNav)
+ */
 export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
   const [openDesktopModules, setOpenDesktopModules] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -16,22 +24,23 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
   // Canonical source of truth for auth/role/streak/signOut
   const { user, role, streak: streakState, ready, signOut } = useHeaderState(streak);
 
-  // Solid header when scrolled or any menu open
+  // Solidify header when scrolled or any menu is open
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 4);
+    const onScroll = () => setScrolled(window.scrollY > 6);
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
   const solidHeader = scrolled || openDesktopModules || mobileOpen;
 
+  // Refs & global handlers (click-outside / escape to close)
   const modulesRef = useRef<HTMLLIElement>(null);
-
-  // Click/Esc outside to close menus
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
       const t = e.target as Node;
-      if (modulesRef.current && !modulesRef.current.contains(t)) setOpenDesktopModules(false);
+      if (modulesRef.current && !modulesRef.current.contains(t)) {
+        setOpenDesktopModules(false);
+      }
     };
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -48,7 +57,7 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
     };
   }, []);
 
-  // Prevent background scroll when mobile menu is open
+  // Prevent background scroll when mobile menu is open (UX nicety)
   useEffect(() => {
     const preventTouch = (e: TouchEvent) => e.preventDefault();
     if (mobileOpen) {
@@ -66,33 +75,53 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
 
   return (
     <header
+      role="banner"
       className={[
-        'sticky top-0 z-50 transition-colors',
-        solidHeader ? 'bg-background border-b border-border shadow-sm' : 'header-glass',
+        // Base layout
+        'sticky top-0 z-50 transition-all duration-300',
+        // Glass vs solid surface
+        solidHeader
+          ? 'bg-background/95 border-b border-border shadow-sm'
+          : 'header-glass',
+        // Gradient underline (subtle brand bar at the bottom)
+        'before:content-[""] before:absolute before:inset-x-0 before:bottom-0 before:h-[2px]',
+        'before:bg-gradient-to-r before:from-vibrantPurple/70 before:via-electricBlue/70 before:to-neonGreen/70',
+        // Soft glow when scrolled
+        solidHeader ? 'shadow-glow' : '',
       ].join(' ')}
     >
       <Container>
-        <div className="flex items-center justify-between py-4 md:py-5">
+        <div className="relative flex items-center justify-between py-3 md:py-4">
           {/* Brand */}
           <Link
             href={user?.id ? '/dashboard' : '/'}
-            className="flex items-center gap-3 group"
+            className="flex items-center gap-3 group focus:outline-none focus:ring-2 focus:ring-border rounded-ds"
             aria-label="Go to home"
           >
-            <Image
-              src="/brand/logo.png"
-              alt="GramorX logo"
-              width={44}
-              height={44}
-              className="h-11 w-11 rounded-lg object-contain"
-              priority
-            />
-            <p className="font-slab font-bold text-3xl" role="heading" aria-level={1}>
-              <span className="text-gradient-primary group-hover:opacity-90 transition">GramorX</span>
+            <span className="relative inline-flex items-center justify-center rounded-xl bg-card p-1.5 shadow-sm ring-1 ring-border">
+              <Image
+                src="/brand/logo.png"
+                alt="GramorX logo"
+                width={44}
+                height={44}
+                className="h-10 w-10 md:h-11 md:w-11 rounded-lg object-contain"
+                priority
+              />
+              {/* Tiny brand accent dot */}
+              <span className="absolute -right-1 -bottom-1 h-2.5 w-2.5 rounded-full bg-accent/90 ring-2 ring-card" />
+            </span>
+            <p
+              className="font-slab font-bold text-2xl md:text-3xl leading-none"
+              role="heading"
+              aria-level={1}
+            >
+              <span className="text-gradient-primary transition-opacity group-hover:opacity-90">
+                GramorX
+              </span>
             </p>
           </Link>
 
-          {/* Desktop Navigation (with Modules mega menu + Streak chip) */}
+          {/* Desktop Navigation (includes Modules mega menu + Streak chip) */}
           <DesktopNav
             user={user}
             role={role}
@@ -102,9 +131,12 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
             setOpenModules={setOpenDesktopModules}
             modulesRef={modulesRef}
             signOut={signOut}
-            // Hide Admin button regardless of role (implement inside DesktopNav)
+            // Hide Admin regardless of role
             // @ts-expect-error TODO: add `showAdmin` prop to DesktopNav types
             showAdmin={false}
+            // Subtle entrance when header becomes solid
+            className="hidden lg:flex items-center gap-2 will-change-transform transition-[opacity,transform] duration-200 data-[solid=true]:opacity-100 data-[solid=false]:opacity-95"
+            data-solid={solidHeader}
           />
 
           {/* Mobile Navigation (hamburger + overlay + Modules sheet) */}
@@ -120,9 +152,15 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
             signOut={signOut}
             // @ts-expect-error TODO: add `showAdmin` prop to MobileNav types
             showAdmin={false}
+            className="lg:hidden"
           />
         </div>
       </Container>
+
+      {/* Streak live region for screen readers */}
+      <span className="sr-only" aria-live="polite">
+        {typeof streakState === 'number' ? `Current streak ${streakState} days` : ''}
+      </span>
     </header>
   );
 };
