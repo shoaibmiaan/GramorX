@@ -14,6 +14,19 @@ import {
   brandInfo,
 } from '@/data/footerLinks';
 
+type FooterSectionProps = {
+  title: string;
+  children: React.ReactNode;
+  listClassName?: string;
+};
+
+const FooterSection: React.FC<FooterSectionProps> = ({ title, children, listClassName }) => (
+  <div>
+    <h4 className="text-lg font-semibold mb-4">{title}</h4>
+    <ul className={listClassName ?? 'space-y-2'}>{children}</ul>
+  </div>
+);
+
 export const Footer: React.FC = () => {
   const { t } = useLocale();
 
