@@ -13,3 +13,14 @@ export function devJazzCashSession(origin: string, plan: PlanKey, _cycle: Cycle)
   const sid = `jc_dev_${Date.now()}`;
   return { url: `${origin}/checkout/success?session_id=${sid}&plan=${plan}`, sessionId: sid };
 }
+
+// Placeholder implementations for API handlers
+export async function initiateJazzCash(_orderId: string, _amount: number): Promise<string> {
+  // TODO: integrate with JazzCash gateway
+  return '#';
+}
+
+export function verifyJazzCash(_payload: any): boolean {
+  // TODO: verify JazzCash webhook payload
+  return true;
+}

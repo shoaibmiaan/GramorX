@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
 
 import { supabaseBrowser } from '@/lib/supabaseBrowser';
-import { useLocale } from '@/lib/locale';
+import { useLocale } from '@/lib/localeProvider';
 import {
   isGuestOnlyRoute,
   isPublicRoute,
