@@ -3,12 +3,10 @@ export type Env = {
   NEXT_PUBLIC_SUPABASE_URL: string;
   NEXT_PUBLIC_SUPABASE_ANON_KEY: string;
 
-  // Server-side (optional)
   SUPABASE_URL?: string;
   SUPABASE_SERVICE_ROLE_KEY?: string;
   SUPABASE_SERVICE_KEY?: string;
 
-  // Local payment env (optional – used by your payments files)
   EASYPASA_MERCHANT_ID?: string;
   EASYPASA_SECRET?: string;
   JAZZCASH_MERCHANT_ID?: string;
@@ -17,8 +15,7 @@ export type Env = {
   NODE_ENV: 'development' | 'test' | 'production';
 };
 
-const read = (key: string, fallback?: string): string =>
-  (process.env[key] ?? fallback ?? '') as string;
+const read = (k: string, fallback?: string) => (process.env[k] ?? fallback ?? '') as string;
 
 export const env: Env = {
   NEXT_PUBLIC_SUPABASE_URL: read('NEXT_PUBLIC_SUPABASE_URL', 'http://localhost:54321'),
@@ -37,3 +34,7 @@ export const env: Env = {
 };
 
 export const isTest = env.NODE_ENV === 'test';
+
+// ✅ used by lib/flags.ts
+export const bool = (v?: string | null) =>
+  v === '1' || v === 'true' || v === 'TRUE' || v === 'yes' || v === 'on';
