@@ -1,3 +1,174 @@
+# Design System (DS) Guide — Quick README
+
+This document explains how the DS is wired, what tokens/utilities exist, and how to consume them in UI code.
+
+---
+
+## 1) Architecture at a glance
+
+* **Tailwind + CSS variables (tokens)**
+  Tailwind is extended to read colors, typography, radii, and spacing from our token files. Colors resolve via CSS variables (so `/opacity` works and theming is easy).&#x20;
+* **Global styles & utilities**
+  `globals.css` pulls in `tokens.css` and defines app-wide utilities (buttons, cards, nav pills, text gradients, etc.).&#x20;
+* **Design tokens (raw)**
+  Color hexes live in `design-system/tokens/colors.js`; type scale, radii, and spacing live in `design-system/tokens/scale.js`. Tailwind consumes these to generate classes. &#x20;
+
+```
+design-system/
+  tokens/
+    colors.js     # brand + surfaces
+    scale.js      # type scale, radii, spacing
+styles/
+  globals.css     # global utilities, themes, primitives
+tailwind.config.js
+```
+
+---
+
+## 2) Tokens you can use (no hardcoded values!)
+
+### Colors
+
+Color utilities are backed by CSS vars and support opacity: `bg-…/10`, `text-…/80`, etc. Key tokens:
+
+* **Surfaces:** `bg-background`, `text-foreground`, `border-border`.&#x20;
+* **Brand:** `primary`, `secondary`, `accent` (+ `*-foreground`).&#x20;
+* **Extended:** `purpleVibe`, `electricBlue`, `neonGreen`, `sunsetOrange`, `sunsetRed`, `goldenYellow`. &#x20;
+* **Component compound:** `bg-card`, `text-card-foreground`.&#x20;
+
+> Dynamic classes like `bg-primary/10` are safelisted to survive Purge. If you add new dynamic color utilities, extend the `safelist` in `tailwind.config.js`.&#x20;
+
+### Typography
+
+Custom font sizes are exposed as Tailwind classes:
+
+* `text-displayLg`, `text-display`, `text-h1`, `text-h2`, `text-h3`, `text-h4`, `text-body`, `text-small`, `text-caption`, `text-tiny`, `text-micro`.&#x20;
+* Headings use the slab display font by default via base layer (`h1, h2, h3 { @apply font-slab }`). Use `font-slab` manually when needed.&#x20;
+
+### Radius & Spacing
+
+* Radii: `rounded-ds`, `rounded-ds-xl`, `rounded-ds-2xl` (+ native `sm/md/lg/xl/2xl`).&#x20;
+* Spacing: additional steps `3.5`, `17.5`, `18`, `22`, `30`, `220`.&#x20;
+
+---
+
+## 3) Theming (light/dark)
+
+* **Mode switch:** `.dark` on `<html>` toggles themes (works great with `next-themes`).&#x20;
+* **Defaults:** Light uses `text-lightText` on `bg-lightBg`; dark uses a gradient background and flips foregrounds.&#x20;
+* Use `dark:` variants with any token class, e.g. `dark:bg-purpleVibe/10`.&#x20;
+
+---
+
+## 4) DS utilities (ready-made building blocks)
+
+These classes live in `globals.css`:
+
+* **Buttons:**
+  `btn` + `btn--fx` (hover sheen effect) + variant
+
+  * Primary: `btn btn--fx btn-primary` (purple→blue gradient)
+  * Secondary: `btn btn-secondary` (tokenized border)
+  * Accent: `btn btn--fx btn-accent` (orange→red gradient)&#x20;
+
+* **Cards:**
+
+  * Solid surface: `card-surface`
+  * Glassy: `card-glass`&#x20;
+
+* **Chips & badges:** `streak-chip` (with dark-mode alt).&#x20;
+
+* **Text gradients:** `text-gradient-primary`, `text-gradient-accent`, `text-gradient-vertical`.&#x20;
+
+* **Nav:** `header-glass`, `nav-pill` (+ `.is-active`).&#x20;
+
+* **Skeletons:** `skeleton`.&#x20;
+
+* **Container:** `.container` (max width + padding).&#x20;
+
+---
+
+## 5) Usage examples
+
+### Hero heading with gradient & slab
+
+```tsx
+<h1 className="text-displayLg font-slab text-gradient-primary">
+  Master IELTS with Confidence
+</h1>
+```
+
+Uses the custom type scale and gradient utility. &#x20;
+
+### Primary button
+
+```tsx
+<button className="btn btn--fx btn-primary">
+  Get Started
+</button>
+```
+
+Pre-styled gradient, hover sheen, tokenized shadows.&#x20;
+
+### Card surface
+
+```tsx
+<div className="card-surface p-6">
+  <h3 className="text-h3 font-slab">Plan</h3>
+  <p className="text-body text-foreground/80">Everything you need.</p>
+</div>
+```
+
+Surface, border, and typography via tokens. &#x20;
+
+### Sticky nav pill
+
+```tsx
+<a className="nav-pill is-active" href="#features">Features</a>
+```
+
+Automatic underline + active state; dark-mode aware.&#x20;
+
+---
+
+## 6) Do / Don’t (quick rules)
+
+**Do**
+
+* Use token classes for **all** colors, radii, spacing, and type (`bg-purpleVibe`, `border-border`, `rounded-ds`).&#x20;
+* Use DS utilities for common UI (buttons, cards, chips, gradients).&#x20;
+* Use `dark:` variants instead of manual color swaps.&#x20;
+
+**Don’t**
+
+* Don’t hardcode hex values or pixel sizes when a token exists. Use `colors.js`/`scale.js` via Tailwind. &#x20;
+* Don’t copy ad-hoc gradient strings—use `text-gradient-*` or DS button variants.&#x20;
+
+---
+
+## 7) Adding or changing tokens
+
+1. **Edit token source** (`colors.js` or `scale.js`). &#x20;
+2. If introducing new CSS vars, map them in `tailwind.config.js` under `theme.extend.colors` (or `fontSize`, `borderRadius`, `spacing`).&#x20;
+3. Optionally add utility shortcuts in `globals.css` (e.g., a new `text-gradient-*`).&#x20;
+4. If you’ll use **dynamic** class names (computed strings), add a `safelist` regex entry.&#x20;
+
+---
+
+## 8) Integration checklist (per page / component)
+
+* [ ] No raw hex or arbitrary values where tokens exist.
+* [ ] Uses DS utilities (`btn-*`, `card-*`, `text-gradient-*`, `.container`).&#x20;
+* [ ] Typography from the type scale (`text-h*`, `text-body`, etc.).&#x20;
+* [ ] Light/dark supported with `dark:` variants only.&#x20;
+* [ ] Borders and rings use `border-border` / default ring color.&#x20;
+
+---
+
+
+
+
+
 # Design System Implementation Guide (Pages Router)
 
 This is the single source of truth for how we build pages and components in this project. Follow it and your pages will match the system automatically.
