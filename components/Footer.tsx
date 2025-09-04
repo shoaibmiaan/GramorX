@@ -1,120 +1,134 @@
-// components/Footer.tsx
+'use client';
+
 import React from 'react';
 import { Container } from '@/components/design-system/Container';
 import { NavLink } from '@/components/design-system/NavLink';
 import { SocialIconLink } from '@/components/design-system/SocialIconLink';
+import { MailIcon, PhoneIcon, MapPinIcon, ClockIcon } from '@/components/design-system/icons';
+import { FooterGrid } from '@/components/design-system/FooterGrid';
+import { useLocale } from '@/lib/locale';
+
 import {
-  FacebookIcon,
-  TwitterIcon,
-  InstagramIcon,
-  LinkedinIcon,
-  YoutubeIcon,
-  MailIcon,
-  PhoneIcon,
-  MapPinIcon,
-  ClockIcon,
-} from '@/components/design-system/icons';
+  resources,
+  quickLinks,
+  contactInfo,
+  socialLinks,
+  brandInfo,
+} from '@/data/footerLinks';
 
-const RESOURCES = [
-  { href: '/learning/strategies', label: 'IELTS Preparation Guide' },
-  { href: '/reading', label: 'Band Score Calculator' }, // temporary: calculator page later
-  { href: '/writing', label: 'Writing Task Samples' },
-  { href: '/speaking', label: 'Speaking Practice Questions' },
-  { href: '/learning', label: 'Vocabulary Builder' },
-] as const;
+type SectionProps = {
+  title: string;
+  children: React.ReactNode;
+  listClassName?: string;
+};
 
-const QUICK = [
-  { href: '/learning/strategies', label: 'Tips & Strategies' },
-  { href: '/ai', label: 'AI Assistant' }, // deep link: docked sidebar AI
-  { href: '/signup', label: 'Pricing & Plans' },
-  { href: '/support', label: 'Support' },
-  { href: '/blog', label: 'Blog' },
-  { href: '/faq', label: 'FAQ' },
-] as const;
+const FooterSection: React.FC<SectionProps> = ({
+  title,
+  children,
+  listClassName = 'space-y-2',
+}) => (
+  <section aria-labelledby={`footer-${title.replace(/\s+/g, '-').toLowerCase()}`}>
+    <h3
+      id={`footer-${title.replace(/\s+/g, '-').toLowerCase()}`}
+      className="text-xl font-semibold mb-4 relative after:absolute after:-bottom-2 after:left-0 after:w-12 after:h-[3px] after:bg-primary"
+    >
+      {title}
+    </h3>
+    <ul className={listClassName}>{children}</ul>
+  </section>
+);
 
-// Named export to match Layout import style
 export const Footer: React.FC = () => {
+  const { t } = useLocale();
+  const year = new Date().getFullYear();
+
   return (
-    <footer className="py-16 border-t border-gray-200 dark:border-purpleVibe/20">
+    <footer className="py-24 border-t border-border bg-background">
       <Container>
-        {/* 1 col on mobile -> 2 on small -> 4 on md (mobile-friendly, nothing else changed) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10 mb-10">
+        {/* Responsive 1 → 2 → 4 column grid */}
+        <FooterGrid className="gap-10 mb-10">
           {/* Brand + Socials */}
-          <div>
-            <h3 className="text-xl font-semibold mb-4">IELTS MasterPortal</h3>
-            <p className="text-lightText dark:text-white">
-              The most advanced IELTS preparation platform powered by AI technology and expert
-              teaching methodologies.
-            </p>
+          <section aria-labelledby="footer-brand">
+            <h3 id="footer-brand" className="text-xl font-semibold mb-4">
+              {brandInfo.name}
+            </h3>
+            <p className="text-muted-foreground">{t(brandInfo.description)}</p>
             <div className="flex gap-3 mt-4">
-              <SocialIconLink href="https://facebook.com" icon={<FacebookIcon className="h-5 w-5" />} label="Facebook" />
-              <SocialIconLink href="https://twitter.com" icon={<TwitterIcon className="h-5 w-5" />} label="Twitter / X" />
-              <SocialIconLink href="https://instagram.com" icon={<InstagramIcon className="h-5 w-5" />} label="Instagram" />
-              <SocialIconLink href="https://linkedin.com" icon={<LinkedinIcon className="h-5 w-5" />} label="LinkedIn" />
-              <SocialIconLink href="https://youtube.com" icon={<YoutubeIcon className="h-5 w-5" />} label="YouTube" />
+              {socialLinks.map(({ href, label, icon: Icon }) => (
+                <SocialIconLink
+                  key={label}
+                  href={href}
+                  icon={<Icon className="h-5 w-5" />}
+                  label={label}
+                />
+              ))}
             </div>
-          </div>
+          </section>
 
           {/* Resources */}
-          <div>
-            <h3 className="text-xl font-semibold mb-4 relative after:absolute after:-bottom-2 after:left-0 after:w-12 after:h-[3px] after:bg-primary dark:after:bg-neonGreen">
-              IELTS Resources
-            </h3>
-            <ul className="space-y-2">
-              {RESOURCES.map((x) => (
-                <li key={x.label} className="text-gray-600 dark:text-grayish">
-                  <NavLink href={x.href} label={x.label} className="!px-0 !py-1" />
-                </li>
-              ))}
-            </ul>
-          </div>
+          <FooterSection title={t('IELTS Resources')}>
+            {resources.map((x) => (
+              <li key={x.label} className="text-muted-foreground">
+                <NavLink href={x.href} label={t(x.label)} className="!px-0 !py-1" />
+              </li>
+            ))}
+          </FooterSection>
 
-          {/* Quick links (deep routes, no hashes) */}
-          <div>
-            <h3 className="text-xl font-semibold mb-4 relative after:absolute after:-bottom-2 after:left-0 after:w-12 after:h-[3px] after:bg-primary dark:after:bg-neonGreen">
-              Quick Links
-            </h3>
-            <ul className="space-y-2">
-              {QUICK.map((x) => (
-                <li key={x.label} className="text-gray-600 dark:text-grayish">
-                  <NavLink href={x.href} label={x.label} className="!px-0 !py-1" />
-                </li>
-              ))}
-            </ul>
-          </div>
+          {/* Quick links */}
+          <FooterSection title={t('Quick Links')}>
+            {quickLinks.map((x) => (
+              <li key={x.label} className="text-muted-foreground">
+                <NavLink href={x.href} label={t(x.label)} className="!px-0 !py-1" />
+              </li>
+            ))}
+          </FooterSection>
 
-          {/* Contact (kept exactly) */}
-          <div>
-            <h3 className="text-xl font-semibold mb-4 relative after:absolute after:-bottom-2 after:left-0 after:w-12 after:h-[3px] after:bg-primary dark:after:bg-neonGreen">
-              Contact Us
-            </h3>
-            <ul className="space-y-3 text-gray-600 dark:text-grayish">
+          {/* Contact */}
+          <FooterSection title={t('Contact Us')} listClassName="space-y-3 text-muted-foreground">
+            <li>
+              <MailIcon className="mr-2 inline h-4 w-4" aria-hidden />
+              <a href={`mailto:${t(contactInfo.email)}`} className="hover:underline" aria-label={t('Email us')}>
+                {t(contactInfo.email)}
+              </a>
+            </li>
+            <li>
+              <PhoneIcon className="mr-2 inline h-4 w-4" aria-hidden />
+              <a href={`tel:${t(contactInfo.phone)}`} className="hover:underline" aria-label={t('Call us')}>
+                {t(contactInfo.phone)}
+              </a>
+            </li>
+            <li>
+              <MapPinIcon className="mr-2 inline h-4 w-4" aria-hidden /> <span>{t(contactInfo.location)}</span>
+            </li>
+            <li>
+              <ClockIcon className="mr-2 inline h-4 w-4" aria-hidden /> <span>{t(contactInfo.support)}</span>
+            </li>
+          </FooterSection>
+        </FooterGrid>
+
+        {/* Bottom bar */}
+        <div className="flex flex-col items-center gap-4 pt-8 border-t border-border md:flex-row md:justify-between">
+          <p className="text-sm text-muted-foreground">
+            &copy; {year} GramorX. {t('All rights reserved.')}
+          </p>
+
+          <nav aria-label={t('Legal')}>
+            <ul className="flex items-center gap-6 text-sm">
               <li>
-                <MailIcon className="mr-2 inline h-4 w-4" />
-                <a href="mailto:info@solvioadvisors.com" className="hover:underline">
-                  info@solvioadvisors.com
-                </a>
+                <NavLink href="/legal/privacy" label={t('Privacy')} className="!px-0 !py-0" />
               </li>
               <li>
-                <PhoneIcon className="mr-2 inline h-4 w-4" />
-                <a href="tel:+19722954571" className="hover:underline">
-                  +1 (972) 295-4571
-                </a>
+                <NavLink href="/legal/terms" label={t('Terms')} className="!px-0 !py-0" />
               </li>
               <li>
-                <MapPinIcon className="mr-2 inline h-4 w-4" /> Houston, USA
-              </li>
-              <li>
-                <ClockIcon className="mr-2 inline h-4 w-4" /> Support: 24/7
+                <NavLink href="/sitemap" label={t('Sitemap')} className="!px-0 !py-0" />
               </li>
             </ul>
-          </div>
-        </div>
-
-        <div className="text-center pt-8 border-t border-gray-200 dark:border-purpleVibe/20 text-sm text-gray-600 dark:text-grayish">
-          &copy; {new Date().getFullYear()} IELTS MasterPortal. All rights reserved. Launching soon!
+          </nav>
         </div>
       </Container>
     </footer>
   );
 };
+
+export default Footer;

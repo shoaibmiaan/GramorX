@@ -1,4 +1,3 @@
-// pages/index.tsx
 import React, { useCallback, useEffect, useState } from 'react';
 import Head from 'next/head';
 import dynamic from 'next/dynamic';
@@ -24,11 +23,10 @@ const Waitlist = (WaitlistMod as any).Waitlist ?? (WaitlistMod as any).default;
 
 export default function HomePage() {
   const { t } = useLocale();
-  // keep your streak logic intact
   const [streak, setStreak] = useState(0);
   const onStreakChange = useCallback((n: number) => setStreak(n), []);
 
-  // Smooth scroll for same-page anchors (unchanged, tightened)
+  // Smooth scroll for same-page anchors
   useEffect(() => {
     const clickHandler = (ev: MouseEvent) => {
       const target = ev.target as HTMLElement | null;
@@ -56,33 +54,22 @@ export default function HomePage() {
       <Head>
         <title>{t('home.title')}</title>
       </Head>
+
       <Hero streak={streak} onStreakChange={onStreakChange} />
 
-      <section
-        id="modules"
-        className="py-24 bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90"
-      >
+      <section id="modules" className="py-24 section-dark">
         <Modules />
       </section>
 
-      <section
-        id="testimonials"
-        className="py-24 bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90"
-      >
+      <section id="testimonials" className="py-24 section-dark">
         <Testimonials />
       </section>
 
-      <section
-        id="pricing"
-        className="py-24 bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90"
-      >
+      <section id="pricing" className="py-24 section-dark">
         <Pricing />
       </section>
 
-      <section
-        id="waitlist"
-        className="py-24 bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90"
-      >
+      <section id="waitlist" className="py-24 section-dark">
         <Waitlist />
       </section>
     </>

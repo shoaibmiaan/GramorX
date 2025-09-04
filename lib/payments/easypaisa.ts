@@ -13,3 +13,18 @@ export function devEasypaisaSession(origin: string, plan: PlanKey, _cycle: Cycle
   const sid = `ep_dev_${Date.now()}`;
   return { url: `${origin}/checkout/success?session_id=${sid}&plan=${plan}`, sessionId: sid };
 }
+
+// ✅ API route imports expect these:
+export async function initiateEasypaisa(
+  origin: string,
+  plan: PlanKey,
+  cycle: Cycle
+): Promise<EasypaisaSession> {
+  // In dev, return a fake session
+  return devEasypaisaSession(origin, plan, cycle);
+}
+
+export async function verifyEasypaisa(_payload: unknown): Promise<{ ok: boolean }> {
+  // TODO: implement real signature check
+  return { ok: true };
+}

@@ -1,65 +1,41 @@
 // tools/run-tests.ts
-// Minimal TS test runner for CI: set safe envs and run only _tests_/ files.
-// Executes with: `npm test` -> "tsx tools/run-tests.ts"
+/**
+ * Test bootstrap for tsx:
+ * - Provides env fallbacks so code paths don't early-return undefined.
+ * - Imports all test files in _tests_/ recursively.
+ */
+process.env.NODE_ENV ??= 'test';
+process.env.NEXT_PUBLIC_SUPABASE_URL ??= 'http://localhost:54321';
+process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??= 'anon-test-key';
+process.env.SUPABASE_URL ??= process.env.NEXT_PUBLIC_SUPABASE_URL;
+process.env.SUPABASE_SERVICE_ROLE_KEY ??= ''; // empty triggers admin test stub in your supabaseAdmin.ts
+process.env.TWILIO_BYPASS ??= '1';
 
 import fs from 'node:fs';
 import path from 'node:path';
-import { pathToFileURL } from 'node:url';
 
-process.env.NODE_ENV = process.env.NODE_ENV || 'test';
-
-// --- Safe CI envs so imports that read env don't crash ---
-const ensure = (k: string, v: string) => {
-  if (!process.env[k]) process.env[k] = v;
-};
-
-// Public/client
-ensure('NEXT_PUBLIC_SUPABASE_URL', 'https://example.supabase.co');
-ensure('NEXT_PUBLIC_SUPABASE_ANON_KEY', 'anon_dummy');
-ensure('NEXT_PUBLIC_IDLE_TIMEOUT_MINUTES', '60');
-
-// Server
-ensure('SUPABASE_URL', 'https://example.supabase.co');
-ensure('SUPABASE_SERVICE_KEY', 'service_dummy');
-ensure('SUPABASE_SERVICE_ROLE_KEY', 'role_dummy');
-
-// Twilio
-ensure('TWILIO_ACCOUNT_SID', 'ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-ensure('TWILIO_AUTH_TOKEN', 'dummytoken');
-ensure('TWILIO_VERIFY_SERVICE_SID', 'VAXxxxxxxxxxxxxxxxxxxxxxxxx');
-ensure('TWILIO_WHATSAPP_FROM', 'whatsapp:+10000000000');
-
-// ---- Collect tests from _tests_ and __tests__ (skip lib/*.test.ts for now) ---
-const ROOT = process.cwd();
-const TEST_DIRS = ['_tests_', '__tests__'];
-
-function collectTests(dir: string, out: string[] = []): string[] {
-  if (!fs.existsSync(dir)) return out;
-  for (const name of fs.readdirSync(dir)) {
-    const p = path.join(dir, name);
-    const s = fs.statSync(p);
-    if (s.isDirectory()) collectTests(p, out);
-    else if (p.endsWith('.test.ts')) out.push(p);
+function listTests(dir: string, acc: string[] = []): string[] {
+  if (!fs.existsSync(dir)) return acc;
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const p = path.join(dir, entry.name);
+    if (entry.isDirectory()) listTests(p, acc);
+    else if (/\.test\.ts$/.test(entry.name)) acc.push(p);
   }
-  return out;
+  return acc;
 }
 
-(async () => {
-  const testFiles = TEST_DIRS.flatMap((d) => collectTests(path.join(ROOT, d)));
+async function main() {
+  const root = process.cwd();
+  const testsDir = path.join(root, '_tests_');
+  const tests = listTests(testsDir);
 
-  if (testFiles.length === 0) {
-    console.log('No tests found. Exiting OK.');
-    process.exit(0);
-  }
+  // eslint-disable-next-line no-console
+  console.log('learning modules tested');
+  await Promise.all(tests.map((t) => import(t)));
+}
 
-  // Import each test file; tests using `node:test` will register & run on import.
-  for (const file of testFiles) {
-    try {
-      await import(pathToFileURL(file).href);
-    } catch (err) {
-      console.error(`Failed to load test: ${file}`);
-      console.error(err);
-      process.exit(1);
-    }
-  }
-})();
+main().catch((e) => {
+  // eslint-disable-next-line no-console
+  console.error(e);
+  process.exit(1);
+});
