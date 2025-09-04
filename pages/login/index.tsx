@@ -102,11 +102,17 @@ export default function LoginOptions() {
       footerLink={
         <>
           By continuing, you agree to our{' '}
-          <Link href="/legal/terms" className="text-primaryDark hover:underline">
+          <Link
+            href="/legal/terms"
+            className="text-primary hover:underline hover:text-primary/80 transition"
+          >
             Terms
           </Link>{' '}
           and{' '}
-          <Link href="/legal/privacy" className="text-primaryDark hover:underline">
+          <Link
+            href="/legal/privacy"
+            className="text-primary hover:underline hover:text-primary/80 transition"
+          >
             Privacy Policy
           </Link>
           .
@@ -132,10 +138,20 @@ export default function LoginOptions() {
         <>
           <SectionLabel>Sign in as</SectionLabel>
           <div className="grid gap-3">
-            <Button onClick={() => chooseRole('student')} variant="secondary" className="rounded-ds-xl" fullWidth>
+            <Button
+              onClick={() => chooseRole('student')}
+              variant="secondary"
+              className="rounded-ds-xl"
+              fullWidth
+            >
               Student
             </Button>
-            <Button onClick={() => chooseRole('teacher')} variant="secondary" className="rounded-ds-xl" fullWidth>
+            <Button
+              onClick={() => chooseRole('teacher')}
+              variant="secondary"
+              className="rounded-ds-xl"
+              fullWidth
+            >
               Teacher
             </Button>
           </div>
@@ -149,16 +165,20 @@ export default function LoginOptions() {
               disabled
               aria-disabled="true"
               variant="secondary"
-              className="rounded-ds-xl opacity-75"
+              className="relative rounded-ds-xl opacity-75"
               fullWidth
             >
               <span className="inline-flex items-center gap-3">
                 <AppleIcon className="h-5 w-5" />
                 Continue with Apple
-                <Badge variant="info" size="sm">
-                  Coming Soon
-                </Badge>
               </span>
+              <Badge
+                variant="info"
+                size="sm"
+                className="absolute right-3 top-2 animate-pulse"
+              >
+                Coming Soon
+              </Badge>
             </Button>
 
             <Button
@@ -202,7 +222,7 @@ export default function LoginOptions() {
             {/* Phone (Coming Soon) */}
             <Button
               variant="secondary"
-              className="rounded-ds-xl"
+              className="relative rounded-ds-xl opacity-75"
               fullWidth
               disabled
               aria-disabled="true"
@@ -210,21 +230,31 @@ export default function LoginOptions() {
               <span className="inline-flex items-center gap-3">
                 <SmsIcon className="h-5 w-5" />
                 Phone (OTP)
-                <Badge variant="info" size="sm">
-                  Coming Soon
-                </Badge>
               </span>
+              <Badge
+                variant="info"
+                size="sm"
+                className="absolute right-3 top-2 animate-pulse"
+              >
+                Coming Soon
+              </Badge>
             </Button>
           </div>
 
           <div className="mt-6 flex items-center justify-between text-small text-grayish dark:text-gray-400">
             <div>
               New here?{' '}
-              <Link href={`/signup${selectedRole ? `?role=${selectedRole}` : ''}`} className="text-primaryDark hover:underline">
+              <Link
+                href={`/signup${selectedRole ? `?role=${selectedRole}` : ''}`}
+                className="text-primary hover:underline hover:text-primary/80 transition"
+              >
                 Create an account
               </Link>
             </div>
-            <button className="underline decoration-dotted hover:no-underline" onClick={clearRole}>
+            <button
+              className="text-primary underline decoration-dotted hover:no-underline hover:text-primary/80 hover:drop-shadow transition"
+              onClick={clearRole}
+            >
               Change role
             </button>
           </div>
