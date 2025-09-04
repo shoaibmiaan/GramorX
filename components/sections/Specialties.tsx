@@ -1,76 +1,44 @@
 // components/sections/Specialties.tsx
-import * as React from 'react';
-import Link from 'next/link';
+import React from 'react';
 import { Container } from '@/components/design-system/Container';
 import { Card } from '@/components/design-system/Card';
-import { Badge } from '@/components/design-system/Badge';
 
-type Specialty = {
-  title: string;
-  desc: string;
-  icon: string; // font-awesome class
-  href: string;
-  label?: string;
-};
+type Item = { icon: string; title: string; desc: string };
 
-const specialties: readonly Specialty[] = [
-  {
-    title: 'Adaptive Paths',
-    desc: 'Route practice based on weak skills, pace, and target band.',
-    icon: 'fa-route',
-    href: '/learning',
-    label: 'AI',
-  },
-  {
-    title: 'Realistic Mocks',
-    desc: 'Exam-like timer, auto-save, tab-switch detection, and review.',
-    icon: 'fa-clipboard-list',
-    href: '/mock',
-    label: 'Exam Room',
-  },
-  {
-    title: 'Instant Feedback',
-    desc: 'Writing band estimates, speaking transcription, and next steps.',
-    icon: 'fa-robot',
-    href: '/ai',
-    label: 'Evaluation',
-  },
-  {
-    title: 'Progress Reports',
-    desc: 'Band trajectory trends, accuracy per type, pace vs accuracy.',
-    icon: 'fa-chart-line',
-    href: '/progress',
-    label: 'Analytics',
-  },
+const ITEMS: Item[] = [
+  { icon: '🤖', title: 'AI IELTS Coach', desc: 'Instant, actionable feedback for Writing & Speaking with band estimates and next steps.' },
+  { icon: '🧪', title: 'Exam-exact Mock Tests', desc: 'Full IELTS format with timing, autosave, and section-wise review that feels like test day.' },
+  { icon: '🧭', title: 'Adaptive Study Paths', desc: 'Personalized roadmap to your target band—what to study, in what order, and why.' },
+  { icon: '⚡', title: 'Micro-Drills + Streaks', desc: 'Daily vocab and quick grammar drills with gamified streaks to build habits fast.' },
+  { icon: '🎧', title: 'Listening Lab', desc: 'Auto-play per section, transcript toggle, and per-question review with answer highlights.' },
+  { icon: '🎯', title: 'Strategy Tips Library', desc: 'Bite-sized tactics for Listening, Reading, Writing, and Speaking—use the same day.' },
+  { icon: '📊', title: 'Progress & Analytics', desc: 'Band trajectory, weak-area detection, and smart nudges in a clean dashboard.' },
+  { icon: '✨', title: 'Fast, Polished UX', desc: 'Modern, mobile-first UI with light/dark modes powered by our design system.' },
+  { icon: '🔐', title: 'Trust & Access', desc: 'One-tap phone/email sign-in with privacy-minded, reliable infrastructure.' },
+  { icon: '🧭', title: 'Friendly Free Tier', desc: '“Explorer” gives daily value; premium unlocks deep AI reviews and advanced analytics.' },
 ];
 
-export const Specialties: React.FC = () => {
+export const Specialties: React.FC<{ id?: string; className?: string }> = ({ id = 'features', className = '' }) => {
   return (
-    <section className="py-24">
+    <section id={id} className={`py-24 bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90 ${className}`}>
       <Container>
-        <div className="text-center mb-12">
-          <h2 className="font-slab text-h2 tracking-tight text-gradient-primary">What Makes Us Different</h2>
-          <p className="text-grayish mt-2">Deep focus on IELTS outcomes with maximum AI involvement.</p>
-        </div>
+        <h2 className="font-slab text-h2 md:text-display text-gradient-primary">
+          What makes GramorX different
+        </h2>
+        <p className="text-grayish max-w-2xl mt-2">
+          Ten standout specialties you can market today.
+        </p>
 
-        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
-          {specialties.map((s) => (
-            <Card key={s.title} className="p-6 rounded-ds-2xl border border-purpleVibe/20 hover:border-purpleVibe/40 transition">
+        <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {ITEMS.map((it) => (
+            <Card key={it.title} className="card-surface p-6 rounded-ds-2xl">
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-full grid place-items-center text-white bg-gradient-to-br from-purpleVibe to-electricBlue">
-                  <i className={`fas ${s.icon}`} aria-hidden="true" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-h4">{s.title}</h3>
-                    {s.label && <Badge variant="info" size="xs">{s.label}</Badge>}
-                  </div>
-                  <p className="text-muted-foreground mt-1">{s.desc}</p>
-                  <div className="mt-3">
-                    <Link href={s.href} className="text-electricBlue hover:underline inline-flex items-center gap-2">
-                      Explore <i className="fas fa-arrow-right" aria-hidden="true" />
-                    </Link>
-                  </div>
+                <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-ds bg-purpleVibe/10 text-2xl">
+                  <span aria-hidden="true">{it.icon}</span>
+                </span>
+                <div>
+                  <h3 className="text-h3 font-semibold mb-1">{it.title}</h3>
+                  <p className="text-body text-gray-600 dark:text-grayish">{it.desc}</p>
                 </div>
               </div>
             </Card>
