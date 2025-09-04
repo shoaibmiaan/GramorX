@@ -5,6 +5,7 @@ import AuthLayout from '@/components/layouts/AuthLayout';
 import AuthSidePanel from '@/components/layouts/AuthSidePanel';
 import { Button } from '@/components/design-system/Button';
 import { Alert } from '@/components/design-system/Alert';
+import { Badge } from '@/components/design-system/Badge';
 import {
   AppleIcon,
   GoogleIcon,
@@ -220,16 +221,20 @@ export default function LoginOptions() {
               </Link>
             </Button>
 
-            <Button asChild variant="secondary" className="rounded-ds-xl" fullWidth>
-              <Link
-                href={`/login/phone${selectedRole ? `?role=${selectedRole}` : ''}`}
-                aria-label="Sign in with Phone OTP"
-              >
-                <span className="inline-flex items-center gap-3">
-                  <SmsIcon className="h-5 w-5" />
-                  Phone (OTP)
-                </span>
-              </Link>
+            <Button
+              variant="secondary"
+              className="rounded-ds-xl"
+              fullWidth
+              disabled
+              aria-disabled="true"
+            >
+              <span className="inline-flex items-center gap-3">
+                <SmsIcon className="h-5 w-5" />
+                Phone (OTP)
+                <Badge variant="info" size="sm">
+                  Coming Soon
+                </Badge>
+              </span>
             </Button>
           </div>
 
