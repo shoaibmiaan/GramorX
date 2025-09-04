@@ -13,3 +13,14 @@ export function devEasypaisaSession(origin: string, plan: PlanKey, _cycle: Cycle
   const sid = `ep_dev_${Date.now()}`;
   return { url: `${origin}/checkout/success?session_id=${sid}&plan=${plan}`, sessionId: sid };
 }
+
+// Placeholder implementations for API handlers
+export async function initiateEasypaisa(_orderId: string, _amount: number): Promise<string> {
+  // TODO: integrate with Easypaisa gateway
+  return '#';
+}
+
+export function verifyEasypaisa(_payload: any): boolean {
+  // TODO: verify Easypaisa webhook payload
+  return true;
+}

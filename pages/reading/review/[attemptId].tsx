@@ -5,7 +5,7 @@ import { Card } from '@/components/design-system/Card';
 import { Badge } from '@/components/design-system/Badge';
 import { Button } from '@/components/design-system/Button';
 import { Alert } from '@/components/design-system/Alert';
-import { useLocale } from '@/lib/locale';
+import { useLocale } from '@/lib/localeProvider';
 import { translateExplanation } from '@/lib/explanations';
 
 type ReviewItem = {

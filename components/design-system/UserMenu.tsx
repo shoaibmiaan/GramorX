@@ -2,7 +2,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { supabaseBrowser } from '@/lib/supabaseBrowser';
-import { useLocale } from '@/lib/locale';
+import { useLocale } from '@/lib/localeProvider';
 
 type MenuItem = {
   label: string;
