@@ -12,9 +12,6 @@ import {
   FacebookIcon,
   MailIcon,
   SmsIcon,
-  ShieldIcon,
-  PhoneIcon,
-  ChartIcon,
 } from '@/components/design-system/icons';
 import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser';
 
@@ -92,38 +89,16 @@ export default function LoginOptions() {
     }
   }
 
-  const features = [
-    (
-      <>
-        <i className="fas fa-shield-alt text-success" aria-hidden="true" />
-        Secure OAuth (Apple, Google, Facebook)
-      </>
-    ),
-    (
-      <>
-        <i className="fas fa-mobile-alt" aria-hidden="true" />
-        Phone OTP sign-in
-      </>
-    ),
-    (
-      <>
-        <i className="fas fa-envelope" aria-hidden="true" />
-        Email &amp; Password
-      </>
-    ),
-    (
-      <>
-        <i className="fas fa-chart-line text-electricBlue" aria-hidden="true" />
-        Personalized study plan &amp; analytics
-      </>
-    ),
-  ];
-
   const RightPanel = (
     <AuthSidePanel
       title="Sign in to GramorX"
       description="One account for all IELTS modules — Listening, Reading, Writing, and Speaking — with AI feedback and progress tracking."
-      features={features}
+      features={[
+        <>🔒 Secure OAuth (Apple, Google, Facebook)</>,
+        <>📱 Phone OTP sign-in</>,
+        <>📧 Email &amp; Password</>,
+        <>📊 Personalized study plan &amp; analytics</>,
+      ]}
       footerLink={
         <>
           By continuing, you agree to our{' '}
@@ -168,18 +143,21 @@ export default function LoginOptions() {
       ) : (
         <>
           <SectionLabel>Continue with</SectionLabel>
-
           <div className="grid gap-3">
+            {/* Apple (Coming Soon) */}
             <Button
-              onClick={() => oauth('apple')}
-              disabled={busy === 'apple'}
+              disabled
+              aria-disabled="true"
               variant="secondary"
-              className="rounded-ds-xl"
+              className="rounded-ds-xl opacity-75"
               fullWidth
             >
               <span className="inline-flex items-center gap-3">
                 <AppleIcon className="h-5 w-5" />
-                {busy === 'apple' ? 'Opening Apple…' : 'Continue with Apple'}
+                Continue with Apple
+                <Badge variant="info" size="sm">
+                  Coming Soon
+                </Badge>
               </span>
             </Button>
 
@@ -221,6 +199,7 @@ export default function LoginOptions() {
               </Link>
             </Button>
 
+            {/* Phone (Coming Soon) */}
             <Button
               variant="secondary"
               className="rounded-ds-xl"
