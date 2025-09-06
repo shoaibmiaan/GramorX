@@ -4,13 +4,11 @@
 import React from 'react';
 import Link from 'next/link';
 import { createPortal } from 'react-dom';
-import { NavLink } from '@/components/design-system/NavLink';
 import { MODULE_LINKS } from './constants';
 
 interface ModuleMenuProps {
   open: boolean;
   setOpen: (open: boolean) => void;
-  // Container li from parent; we use it for outside-click detection
   modulesRef: React.RefObject<HTMLLIElement>;
 }
 
@@ -22,52 +20,41 @@ export function ModuleMenu({ open, setOpen, modulesRef }: ModuleMenuProps) {
   const TRIGGER_ID = 'desktop-modules-trigger';
   const MENU_ID = 'desktop-modules-menu';
 
-  // Focus first item on open
+  // Focus first item on open; restore to trigger on close
   React.useEffect(() => {
-    if (!open) return;
-    menuRef.current?.querySelector<HTMLElement>('a, button')?.focus();
+    if (open) menuRef.current?.querySelector<HTMLElement>('a,button')?.focus();
   }, [open]);
-
-  // Return focus to trigger when menu closes
   const wasOpen = React.useRef(open);
   React.useEffect(() => {
     if (wasOpen.current && !open) buttonRef.current?.focus();
     wasOpen.current = open;
   }, [open]);
 
-  // Close on outside click
+  // Outside click + ESC + simple focus trap
   React.useEffect(() => {
     if (!open) return;
-    function onDown(e: MouseEvent) {
+
+    const onDown = (e: MouseEvent) => {
       const t = e.target as Node;
-      const inModuleWrap = modulesRef.current?.contains(t);
-      const inMenu = menuRef.current?.contains(t);
-      const inTrigger = buttonRef.current?.contains(t);
-      if (!inMenu && !inTrigger && !inModuleWrap) {
+      if (
+        !menuRef.current?.contains(t) &&
+        !buttonRef.current?.contains(t) &&
+        !modulesRef.current?.contains(t)
+      ) {
         close();
       }
-    }
-    document.addEventListener('mousedown', onDown);
-    return () => document.removeEventListener('mousedown', onDown);
-  }, [open, close, modulesRef]);
+    };
 
-  // ESC + focus trap
-  React.useEffect(() => {
-    if (!open) return;
-
-    function onKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        close();
-        return;
-      }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') close();
       if (e.key !== 'Tab' || !menuRef.current) return;
 
-      const focusable = menuRef.current.querySelectorAll<HTMLElement>('a, button,[tabindex]:not([tabindex="-1"])');
-      if (!focusable.length) return;
-
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
+      const focusables = menuRef.current.querySelectorAll<HTMLElement>(
+        'a,button,[tabindex]:not([tabindex="-1"])'
+      );
+      if (!focusables.length) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
       const active = document.activeElement as HTMLElement | null;
 
       if (!menuRef.current.contains(active)) {
@@ -80,14 +67,18 @@ export function ModuleMenu({ open, setOpen, modulesRef }: ModuleMenuProps) {
         e.preventDefault();
         last.focus();
       }
-    }
+    };
 
+    document.addEventListener('mousedown', onDown);
     document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [open, close]);
+    return () => {
+      document.removeEventListener('mousedown', onDown);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open, close, modulesRef]);
 
-  // Overlay (prevents clicks on hero + adds separation). Desktop only.
-  const overlay =
+  // Desktop overlay (prevents clicks through)
+  const desktopOverlay =
     typeof document !== 'undefined' && open
       ? createPortal(
           <div
@@ -101,6 +92,7 @@ export function ModuleMenu({ open, setOpen, modulesRef }: ModuleMenuProps) {
 
   return (
     <li className="relative" ref={modulesRef}>
+      {/* Trigger */}
       <button
         id={TRIGGER_ID}
         ref={buttonRef}
@@ -108,11 +100,7 @@ export function ModuleMenu({ open, setOpen, modulesRef }: ModuleMenuProps) {
         aria-expanded={open}
         aria-haspopup="menu"
         aria-controls={MENU_ID}
-        className="
-          inline-flex items-center gap-2 rounded-lg px-3 py-2
-          hover:bg-muted transition
-          focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border
-        "
+        className="inline-flex items-center gap-2 rounded-lg px-3 py-2 hover:bg-muted transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border"
       >
         <span>Modules</span>
         <svg
@@ -127,6 +115,7 @@ export function ModuleMenu({ open, setOpen, modulesRef }: ModuleMenuProps) {
         </svg>
       </button>
 
+      {/* ===================== Desktop dropdown ===================== */}
       {open && (
         <div
           id={MENU_ID}
@@ -134,102 +123,233 @@ export function ModuleMenu({ open, setOpen, modulesRef }: ModuleMenuProps) {
           aria-labelledby={TRIGGER_ID}
           ref={menuRef}
           className="
-            absolute left-1/2 top-full z-50 mt-3 w-[520px] max-w-[92vw] -translate-x-1/2
-            overflow-hidden rounded-2xl border border-border bg-background shadow-lg
-            ring-1 ring-black/5
+            absolute left-1/2 top-full z-50 mt-4 hidden md:block
+            -translate-x-1/2 overflow-hidden rounded-2xl border border-border shadow-2xl ring-1 ring-black/5
+            bg-lightCard dark:bg-dark
+            w-[720px] lg:w-[860px] xl:w-[960px] max-w-[98vw]
           "
         >
-          <div className="grid grid-cols-12">
-            {/* Skill grid */}
-            <div className="col-span-8 p-6 sm:p-7">
-              <div className="mb-3">
-                <h3 className="font-slab text-lg">Skill Modules</h3>
-                <p className="text-sm text-muted-foreground">
+          {/* scroll guard */}
+          <div className="max-h-[70vh] overflow-y-auto">
+            <div className="grid grid-cols-12">
+              {/* Left: modules list on deeper panel */}
+              <div className="col-span-8 p-6 lg:p-7 bg-lightCard dark:bg-darker">
+                <h3 className="font-slab text-lg mb-2">Skill Modules</h3>
+                <p className="text-sm text-muted-foreground mb-4">
                   Build the core exam skills with focused practice.
                 </p>
-              </div>
-              <div className="grid gap-3 sm:grid-cols-2">
-                {MODULE_LINKS.map(({ href, label, desc, Icon }) => (
-                  <NavLink
-                    key={href}
-                    href={href}
-                    role="menuitem"
-                    onClick={close}
-                    className="
-                      group flex items-start gap-3 rounded-xl border border-transparent p-4
-                      transition hover:border-border hover:bg-muted
-                    "
-                  >
-                    <span
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {MODULE_LINKS.map(({ href, label, desc, Icon }) => (
+                    <Link
+                      key={href}
+                      href={href}
+                      role="menuitem"
+                      onClick={close}
                       className="
-                        mt-0.5 inline-flex h-9 w-9 items-center justify-center rounded-lg
-                        bg-primary/10 text-primary
+                        group relative flex items-start gap-3 rounded-xl border border-transparent p-4
+                        transition
+                        hover:bg-primary/10 dark:hover:bg-purpleVibe/20 hover:shadow-glow
                       "
                     >
-                      {Icon ? (
-                        <Icon className="h-4.5 w-4.5" />
-                      ) : (
-                        <svg
-                          viewBox="0 0 24 24"
-                          className="h-4.5 w-4.5"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          aria-hidden="true"
-                        >
-                          <path d="M5 12h14M13 5l7 7-7 7" />
-                        </svg>
-                      )}
-                    </span>
-                    <span>
-                      <span className="block font-medium">{label}</span>
-                      {desc && (
-                        <span className="text-sm text-muted-foreground">{desc}</span>
-                      )}
-                    </span>
-                  </NavLink>
-                ))}
-              </div>
-            </div>
+                      {/* Icon chip with lift + glow on hover */}
+                      <span
+                        className="
+                          mt-0.5 inline-flex h-9 w-9 items-center justify-center rounded-lg
+                          bg-primary/10 text-primary ring-2 ring-primary/15
+                          transition
+                          group-hover:-translate-y-0.5 group-hover:scale-[1.03]
+                          group-hover:bg-primary group-hover:text-primary-foreground
+                          group-hover:ring-primary/40
+                        "
+                        aria-hidden="true"
+                      >
+                        {Icon ? <Icon className="h-5 w-5" /> : null}
+                      </span>
 
-            {/* CTA rail */}
-            <div className="col-span-4 bg-muted p-6 sm:p-7">
-              <div>
-                <div className="mb-1 font-slab text-lg">New here?</div>
-                <p className="text-sm text-muted-foreground">
-                  Take a quick placement to get a personalized start.
-                </p>
+                      <span className="min-w-0">
+                        <span className="block font-medium">{label}</span>
+                        {desc && (
+                          <span className="text-sm text-muted-foreground">{desc}</span>
+                        )}
+                      </span>
+
+                      {/* underline accent that slides in on hover (like your SS) */}
+                      <span
+                        aria-hidden="true"
+                        className="
+                          absolute left-4 right-4 bottom-2 h-[3px] rounded-full
+                          bg-electricBlue/70 dark:bg-neonGreen/70
+                          opacity-0 translate-y-1
+                          transition
+                          group-hover:opacity-100 group-hover:translate-y-0
+                        "
+                      />
+                    </Link>
+                  ))}
+                </div>
               </div>
 
-              <Link
-                href="/placement"
-                role="menuitem"
-                onClick={close}
-                className="
-                  mt-4 inline-flex w-full items-center justify-center gap-2
-                  rounded-xl bg-primary px-4 py-2 font-semibold text-primary-foreground
-                  transition hover:opacity-90
-                "
-              >
-                Start placement
-                <svg
-                  viewBox="0 0 24 24"
-                  className="h-4 w-4"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  aria-hidden="true"
+              {/* Right: CTA rail with gentle contrast */}
+              <div className="col-span-4 p-6 lg:p-7 bg-muted/60 dark:bg-purpleVibe/20">
+                <div>
+                  <h4 className="font-slab text-lg mb-1">New here?</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Take a quick placement to get a personalized start.
+                  </p>
+                </div>
+
+                <Link
+                  href="/placement"
+                  role="menuitem"
+                  onClick={close}
+                  className="
+                    mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl
+                    btn btn-primary btn--fx px-4 py-2
+                  "
                 >
-                  <path d="M5 12h14M13 5l7 7-7 7" />
-                </svg>
-              </Link>
+                  Start placement
+                  <svg
+                    className="h-4 w-4"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    aria-hidden="true"
+                  >
+                    <path d="M5 12h14M13 5l7 7-7 7" />
+                  </svg>
+                </Link>
+              </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Render overlay when open */}
-      {overlay}
+      {/* ===================== Mobile sheet ===================== */}
+      {open &&
+        typeof document !== 'undefined' &&
+        createPortal(
+          <div
+            className="
+              fixed inset-x-0 top-0 z-50 md:hidden
+              border-b border-border bg-card dark:bg-dark
+              shadow-xl
+              animate-in slide-in-from-top-2 duration-150
+            "
+            role="dialog"
+            aria-modal="true"
+            aria-label="Modules"
+            ref={menuRef}
+          >
+            {/* header */}
+            <div className="flex items-center justify-between px-4 py-3">
+              <h3 className="font-slab text-lg">Modules</h3>
+              <button
+                onClick={close}
+                aria-label="Close"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-lg hover:bg-muted"
+              >
+                <svg
+                  className="h-5 w-5"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path d="M6 6l12 12M6 18L18 6" />
+                </svg>
+              </button>
+            </div>
+
+            {/* scrollable content */}
+            <div className="max-h-[80vh] overflow-y-auto px-4 pb-4">
+              <div className="rounded-xl border border-border bg-lightCard dark:bg-darker p-3">
+                <div className="mb-2">
+                  <div className="font-medium">Skill Modules</div>
+                  <div className="text-sm text-muted-foreground">
+                    Build the core exam skills with focused practice.
+                  </div>
+                </div>
+
+                <ul className="space-y-1">
+                  {MODULE_LINKS.map(({ href, label, desc, Icon }) => (
+                    <li key={href}>
+                      <Link
+                        href={href}
+                        onClick={close}
+                        className="
+                          group relative flex items-start gap-3 rounded-lg px-3 py-3
+                          transition
+                          hover:bg-primary/10 dark:hover:bg-purpleVibe/20 hover:shadow-glow
+                        "
+                      >
+                        <span
+                          className="
+                            mt-0.5 inline-flex h-9 w-9 items-center justify-center rounded-lg
+                            bg-primary/10 text-primary ring-2 ring-primary/15
+                            transition
+                            group-hover:-translate-y-0.5 group-hover:scale-[1.03]
+                            group-hover:bg-primary group-hover:text-primary-foreground
+                            group-hover:ring-primary/40
+                          "
+                          aria-hidden="true"
+                        >
+                          {Icon ? <Icon className="h-5 w-5" /> : null}
+                        </span>
+                        <span className="min-w-0">
+                          <span className="block font-medium">{label}</span>
+                          {desc && (
+                            <span className="text-sm text-muted-foreground">{desc}</span>
+                          )}
+                        </span>
+                        <span
+                          aria-hidden="true"
+                          className="
+                            absolute left-4 right-4 bottom-1.5 h-[3px] rounded-full
+                            bg-electricBlue/70 dark:bg-neonGreen/70
+                            opacity-0 translate-y-1
+                            transition
+                            group-hover:opacity-100 group-hover:translate-y-0
+                          "
+                        />
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* CTA */}
+              <div className="mt-3 rounded-xl border border-border bg-muted/60 dark:bg-purpleVibe/20 p-3">
+                <div className="mb-2">
+                  <div className="font-slab text-lg">New here?</div>
+                  <div className="text-sm text-muted-foreground">
+                    Take a quick placement to get a personalized start.
+                  </div>
+                </div>
+                <Link
+                  href="/placement"
+                  onClick={close}
+                  className="w-full btn btn-primary btn--fx rounded-xl px-4 py-3 inline-flex items-center justify-center gap-2"
+                >
+                  Start placement
+                  <svg
+                    className="h-4 w-4"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <path d="M5 12h14M13 5l7 7-7 7" />
+                  </svg>
+                </Link>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
+
+      {desktopOverlay}
     </li>
   );
 }

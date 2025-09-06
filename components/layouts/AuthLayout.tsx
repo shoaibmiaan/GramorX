@@ -1,4 +1,6 @@
 // components/layouts/AuthLayout.tsx
+'use client';
+
 import React from 'react';
 import Image from 'next/image';
 import { Container } from '@/components/design-system/Container';
@@ -8,26 +10,20 @@ type Props = {
   title: string;
   subtitle?: string;
   children: React.ReactNode;
-  /**
-   * Optional element rendered on the right side of the layout.
-   * `rightIllustration` is kept for backwards compatibility.
-   */
   right?: React.ReactNode;
   rightIllustration?: React.ReactNode;
-  /**
-   * Render a condensed brand panel on mobile screens. Hidden by default.
-   */
   showRightOnMobile?: boolean;
 };
 
 const DefaultRight = () => (
-  <div className="relative w-full h-full flex items-center justify-center bg-primary/10 dark:bg-dark">
+  <div className="relative h-full w-full grid place-items-center bg-primary/10 dark:bg-darker">
     <Image
       src="/brand/logo.png"
       alt="GramorX Logo"
-      fill
-      sizes="100vw"
-      className="object-contain p-6"
+      width={180}
+      height={180}
+      className="h-24 w-24 md:h-32 md:w-32 object-contain"
+      priority
     />
   </div>
 );
@@ -41,31 +37,83 @@ export default function AuthLayout({
   showRightOnMobile = false,
 }: Props) {
   const rightContent = right ?? rightIllustration ?? <DefaultRight />;
-  const rightWrapperClass = showRightOnMobile
-    ? 'flex h-24 sm:h-32 md:h-auto w-full md:w-1/2 lg:w-2/5 xl:w-1/3'
-    : 'hidden md:flex md:w-1/2 lg:w-2/5 xl:w-1/3';
-  return (
-    <div className="min-h-[100dvh] flex flex-col md:flex-row bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90">
-      {/* Left: content */}
-      <div className="flex flex-col justify-center w-full md:w-1/2 lg:w-3/5 xl:w-2/3 px-6 py-8 sm:px-8 sm:py-12 lg:px-12 lg:py-16">
-        <div className="flex justify-between items-center mb-6 sm:mb-8">
-          <span className="font-slab text-h3 sm:text-h2 md:text-display text-gradient-primary">GramorX</span>
-          <span className="text-xs sm:text-small text-grayish dark:text-gray-400">IELTS Portal</span>
-        </div>
 
-        <Container className="w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl">
-          <h1 className="font-slab text-h3 sm:text-h2 lg:text-display text-gradient-primary">{title}</h1>
-          {subtitle && <p className="mt-1 text-sm sm:text-base text-grayish">{subtitle}</p>}
-          <div className="mt-4 sm:mt-6">{children}</div>
-        </Container>
+  // Mobile-only segmented toggle
+  const [mobileView, setMobileView] = React.useState<'left' | 'right'>('left');
+
+  return (
+    <div className="relative min-h-[100dvh] bg-lightBg text-lightText dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90 dark:text-foreground">
+      {/* Theme toggle */}
+      <div className="absolute right-2 top-2 sm:right-4 sm:top-4 z-40">
+        <ThemeToggle />
       </div>
 
-      {/* Right: illustration */}
-      <div className={rightWrapperClass}>{rightContent}</div>
+      {/* Brand underline bar */}
+      <div className="h-[2px] w-full bg-gradient-to-r from-vibrantPurple via-electricBlue to-neonGreen opacity-80" aria-hidden="true" />
 
-      {/* Theme toggle */}
-      <div className="absolute top-2 right-2 sm:top-4 sm:right-4">
-        <ThemeToggle />
+      {/* Mobile segmented control */}
+      {showRightOnMobile && (
+        <div className="md:hidden sticky top-0 z-30 bg-background/95 backdrop-blur border-b border-border">
+          <div className="mx-auto w-full max-w-lg px-4 py-2">
+            <div role="tablist" aria-label="Auth panels" className="grid grid-cols-2 rounded-xl border border-border bg-card">
+              <button
+                role="tab"
+                aria-selected={mobileView === 'left'}
+                className={`px-3 py-2 text-sm font-medium rounded-xl transition ${mobileView === 'left' ? 'bg-primary text-primary-foreground' : 'hover:bg-accent/50'}`}
+                onClick={() => setMobileView('left')}
+              >
+                Sign in
+              </button>
+              <button
+                role="tab"
+                aria-selected={mobileView === 'right'}
+                className={`px-3 py-2 text-sm font-medium rounded-xl transition ${mobileView === 'right' ? 'bg-primary text-primary-foreground' : 'hover:bg-accent/50'}`}
+                onClick={() => setMobileView('right')}
+              >
+                About
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Split grid */}
+      <div className="mx-auto grid min-h-[calc(100dvh-2px)] w-full md:max-w-[1200px] md:grid-cols-2">
+        {/* LEFT / form */}
+        {(mobileView === 'left' || !showRightOnMobile) && (
+          <section className="order-1 flex w-full items-center px-6 py-8 sm:px-8 sm:py-12 lg:px-12 lg:py-16">
+            <div className="w-full">
+              <div className="mb-6 flex items-center justify-between sm:mb-8">
+                <span className="font-slab text-h3 sm:text-h2 md:text-display text-gradient-primary">GramorX</span>
+                <span className="text-xs sm:text-small text-grayish dark:text-gray-400">IELTS Portal</span>
+              </div>
+
+              <Container className="w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl">
+                <h1 className="font-slab text-h3 sm:text-h2 lg:text-display text-gradient-primary">{title}</h1>
+                {subtitle && <p className="mt-1 text-sm sm:text-base text-grayish dark:text-gray-400">{subtitle}</p>}
+                <div className="mt-4 sm:mt-6">{children}</div>
+              </Container>
+            </div>
+          </section>
+        )}
+
+        {/* RIGHT / desktop: always visible; mobile: hidden */}
+        <aside
+          className="
+            order-2 relative hidden md:block
+            border-l border-border
+            bg-card text-card-foreground dark:bg-darker
+          "
+        >
+          <div className="sticky top-0 h-[100dvh] overflow-hidden">{rightContent}</div>
+        </aside>
+
+        {/* RIGHT / mobile sheet: visible only when toggled */}
+        {showRightOnMobile && mobileView === 'right' && (
+          <aside className="order-2 block md:hidden border-t border-border bg-card dark:bg-darker">
+            {rightContent}
+          </aside>
+        )}
       </div>
     </div>
   );

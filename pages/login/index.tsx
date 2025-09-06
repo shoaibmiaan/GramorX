@@ -1,3 +1,6 @@
+// pages/login/index.tsx
+'use client';
+
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -17,7 +20,7 @@ import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser';
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <div className="text-small uppercase tracking-wide text-grayish dark:text-gray-400/90 mb-3">
+    <div className="mb-3 text-small uppercase tracking-wide text-grayish dark:text-gray-400/90">
       {children}
     </div>
   );
@@ -102,17 +105,11 @@ export default function LoginOptions() {
       footerLink={
         <>
           By continuing, you agree to our{' '}
-          <Link
-            href="/legal/terms"
-            className="text-primary hover:underline hover:text-primary/80 transition"
-          >
+          <Link href="/legal/terms" className="text-primary hover:underline hover:text-primary/80 transition">
             Terms
           </Link>{' '}
           and{' '}
-          <Link
-            href="/legal/privacy"
-            className="text-primary hover:underline hover:text-primary/80 transition"
-          >
+          <Link href="/legal/privacy" className="text-primary hover:underline hover:text-primary/80 transition">
             Privacy Policy
           </Link>
           .
@@ -172,11 +169,7 @@ export default function LoginOptions() {
                 <AppleIcon className="h-5 w-5" />
                 Continue with Apple
               </span>
-              <Badge
-                variant="info"
-                size="sm"
-                className="absolute right-3 top-2 animate-pulse"
-              >
+              <Badge variant="info" size="sm" className="absolute right-3 top-2 animate-pulse">
                 Coming Soon
               </Badge>
             </Button>
@@ -231,11 +224,7 @@ export default function LoginOptions() {
                 <SmsIcon className="h-5 w-5" />
                 Phone (OTP)
               </span>
-              <Badge
-                variant="info"
-                size="sm"
-                className="absolute right-3 top-2 animate-pulse"
-              >
+              <Badge variant="info" size="sm" className="absolute right-3 top-2 animate-pulse">
                 Coming Soon
               </Badge>
             </Button>
