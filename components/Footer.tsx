@@ -26,8 +26,8 @@ const QUICK_LINKS = [
 const RESOURCES = [
   { label: 'Help Center', href: '/help' },
   { label: 'Community', href: '/community' },
-  { label: 'Terms', href: '/terms' },
-  { label: 'Privacy', href: '/privacy' },
+  { label: 'Terms', href: '/legal/terms' },
+  { label: 'Privacy', href: '/legal/privacy' },
 ] as const;
 
 export const Footer: React.FC = () => {

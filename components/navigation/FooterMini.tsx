@@ -36,12 +36,12 @@ export const FooterMini: React.FC<{
           <nav aria-label="Mini footer navigation" className="order-last w-full sm:order-none sm:w-auto">
             <ul className="flex flex-wrap items-center gap-x-4 gap-y-2">
               <li>
-                <NavLink href="/terms" className="hover:text-foreground">
+                <NavLink href="/legal/terms" className="hover:text-foreground">
                   Terms
                 </NavLink>
               </li>
               <li>
-                <NavLink href="/privacy" className="hover:text-foreground">
+                <NavLink href="/legal/privacy" className="hover:text-foreground">
                   Privacy
                 </NavLink>
               </li>
