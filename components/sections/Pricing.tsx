@@ -6,6 +6,7 @@ import { Section } from '@/components/design-system/Section';
 import { Card } from '@/components/design-system/Card';
 import { Ribbon } from '@/components/design-system/Ribbon';
 import { Button } from '@/components/design-system/Button';
+import { Badge } from '@/components/design-system/Badge';
 
 type Tier = {
   name: 'Compass' | 'Seedling' | 'Rocket';
@@ -62,6 +63,17 @@ const tiers: readonly Tier[] = [
 
 const planSlug = (name: Tier['name']) => name.toLowerCase();
 
+const tierIcon = (name: Tier['name']) => {
+  switch (name) {
+    case 'Compass':
+      return 'fa-compass';
+    case 'Seedling':
+      return 'fa-seedling';
+    case 'Rocket':
+      return 'fa-rocket';
+  }
+};
+
 export const Pricing: React.FC = () => {
   return (
     <Section id="pricing">
@@ -71,31 +83,62 @@ export const Pricing: React.FC = () => {
           <p className="text-grayish text-lg">Choose the plan that fits your preparation needs</p>
         </div>
 
-        <div className="grid gap-6 grid-cols-1 md:grid-cols-3">
+        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {tiers.map((t) => (
-            <Card key={t.name} className={`p-8 rounded-2xl text-center relative ${t.featured ? 'scale-105 shadow-glow' : ''}`}>
+            <Card
+              key={t.name}
+              className={`p-7 rounded-2xl relative hover:-translate-y-2 transition hover:shadow-glow ${t.featured ? 'ring-1 ring-accent/40' : ''}`}
+            >
+              {/* Match Modules.tsx: corner badge */}
+              <Badge
+                variant={t.featured ? 'accent' : 'info'}
+                size="sm"
+                className="absolute top-4 right-4"
+              >
+                {t.featured ? 'FEATURED' : 'STANDARD'}
+              </Badge>
+
+              {/* Optional ribbon for “MOST POPULAR” */}
               {t.featured && <Ribbon label="MOST POPULAR" variant="accent" position="top-right" />}
 
-              <div className="mb-6">
-                <h3 className="text-xl font-semibold mb-1">{t.name}</h3>
-                <div className="font-slab text-5xl text-gradient-primary mb-1">{t.price}</div>
-                <div className="text-grayish">{t.period}</div>
+              {/* Gradient icon blob like Modules */}
+              <div className="w-17.5 h-17.5 rounded-full flex items-center justify-center mb-6 text-white text-2xl bg-gradient-to-br from-purpleVibe to-electricBlue">
+                <i className={`fas ${tierIcon(t.name)}`} aria-hidden="true" />
               </div>
 
-              <ul className="mb-6">
+              {/* Title + price block, echoing Modules heading rhythm */}
+              <h3 className="text-xl font-semibold mb-2 flex items-center gap-2">
+                <i className="fas fa-circle-check text-neonGreen" aria-hidden="true" />
+                {t.name}
+              </h3>
+              <div className="mb-4">
+                <div className="font-slab text-5xl text-gradient-primary leading-none">{t.price}</div>
+                <div className="text-grayish mt-1">{t.period}</div>
+              </div>
+
+              {/* Feature list styled exactly like Modules bullets */}
+              <ul className="mt-2">
                 {t.features.map((f) => (
-                  <li key={f} className="py-2 border-b border-dashed border-purpleVibe/20 text-mutedText dark:text-mutedText">
+                  <li
+                    key={f}
+                    className="py-2 pl-6 border-b border-dashed border-purpleVibe/20 relative text-mutedText dark:text-mutedText"
+                  >
+                    <span className="absolute left-0 top-2 text-neonGreen font-bold">✓</span>
                     {f}
                   </li>
                 ))}
               </ul>
 
-              {/* Publicly accessible (no auth) */}
-              <div className="grid gap-3">
-                <Button href={`/checkout?plan=${planSlug(t.name)}`} variant={t.featured ? 'primary' : 'secondary'} className="w-full justify-center">
+              {/* Actions — keep spacing consistent with Modules */}
+              <div className="mt-4 grid gap-3">
+                <Button
+                  href={`/checkout?plan=${planSlug(t.name)}`}
+                  variant={t.featured ? 'primary' : 'secondary'}
+                  className="w-full justify-center"
+                >
                   Choose {t.name}
                 </Button>
-                <Link href="/waitlist" className="text-electricBlue hover:underline text-sm">
+                <Link href="/waitlist" className="text-electricBlue hover:underline text-sm text-center">
                   Not ready? Join the pre-launch list
                 </Link>
               </div>
