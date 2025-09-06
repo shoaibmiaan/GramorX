@@ -1,4 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
+'use client';
+
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
 
 import { supabaseBrowser } from '@/lib/supabaseBrowser';
@@ -12,59 +14,46 @@ import {
   type AppRole,
 } from '@/lib/routeAccess';
 
+function safeNext(next?: string | string[] | null) {
+  const n = typeof next === 'string' ? next : Array.isArray(next) ? next[0] : '';
+  if (!n) return '';
+  if (n.startsWith('http')) return '';      // block open redirects
+  if (n === '/login') return '';            // avoid loops
+  return n;
+}
+
 export function useRouteGuard() {
   const router = useRouter();
   const { setLocale } = useLocale();
   const pathname = router.pathname;
 
-  // NEW: treat /pricing as public even if routeAccess hasn't been updated yet
+  // Keep /pricing public even if routeAccess hasn’t been updated elsewhere
   const isPricingRoute = useMemo(() => /^\/pricing(\/|$)/.test(pathname), [pathname]);
 
   const [isChecking, setIsChecking] = useState(true);
+  const hasRedirected = useRef(false); // prevent double redirects in StrictMode/dev
 
   useEffect(() => {
     if (!router.isReady) return;
-    let active = true;
+    let mounted = true;
 
     (async () => {
       try {
-        const {
-          data: { session },
-        } = await supabaseBrowser.auth.getSession();
+        const { data: { session }, error } = await supabaseBrowser.auth.getSession();
+        if (!mounted) return;
 
-        const guestOnlyR = isGuestOnlyRoute(pathname);
-        const publicR = isPublicRoute(pathname) || isPricingRoute; // NEW: pricing forced public
-
-        // Expired session → sign out, but don't block /pricing
-        const expiresAt = session?.expires_at;
-        if (session && expiresAt && expiresAt <= Date.now() / 1000) {
-          await supabaseBrowser.auth.signOut();
-          if (!guestOnlyR && !publicR) {
-            router.replace('/login');
-            return;
-          }
-        }
-
+        const authed = !!session && !error;
         const user = session?.user ?? null;
         const role: AppRole | null = getUserRole(user);
-        if (!active) return;
 
-        // If unverified, previously forced /auth/verify; allow /pricing to remain open
-        if (
-          user &&
-          !user.email_confirmed_at &&
-          !user.phone_confirmed_at &&
-          !isPricingRoute &&
-          pathname !== '/auth/verify'
-        ) {
-          await supabaseBrowser.auth.signOut();
-          router.replace('/auth/verify');
-          return;
-        }
+        // Public routes never redirect (but we can still hydrate locale)
+        const publicR = isPublicRoute(pathname) || isPricingRoute;
+        const guestOnlyR = isGuestOnlyRoute(pathname);
 
-        if (user) {
+        // hydrate locale if logged in
+        if (authed && user) {
           const { data: profile } = await supabaseBrowser
-            .from('user_profiles')
+            .from('user_profiles') // keep your table name
             .select('preferred_language')
             .eq('user_id', user.id)
             .maybeSingle();
@@ -72,47 +61,60 @@ export function useRouteGuard() {
           setLocale(lang);
         }
 
-        if (guestOnlyR && user) {
-          const nextParam = router.query.next;
-          const next =
-            typeof nextParam === 'string'
-              ? nextParam
-              : Array.isArray(nextParam)
-                ? nextParam[0]
-                : undefined;
-          router.replace(next || '/dashboard');
+        // Prevent duplicate redirects
+        if (hasRedirected.current) return;
+
+        // Guest-only routes (e.g., /login, /signup): if authed, go away
+        if (guestOnlyR) {
+          if (authed) {
+            hasRedirected.current = true;
+            const target = safeNext(router.query.next) || '/welcome';
+            await router.replace(target);
+          }
           return;
         }
 
-        // Role/guard check — skip for /pricing
-        if (!isPricingRoute && !canAccess(pathname, role)) {
+        // Public routes (e.g., /, /pricing, /community)
+        if (publicR) {
+          return;
+        }
+
+        // Protected routes begin here
+        if (!authed) {
+          hasRedirected.current = true;
+          const next = encodeURIComponent(router.asPath);
+          await router.replace(`/login?next=${next}`);
+          return;
+        }
+
+        // Role-guarded routes
+        if (!canAccess(pathname, role)) {
           const need = requiredRolesFor(pathname);
+          hasRedirected.current = true;
           if (!role) {
-            router.replace({
+            await router.replace({
               pathname: '/login',
               query: {
-                next: pathname,
-                need: Array.isArray(need) ? need.join(',') : need,
+                next: router.asPath,
+                need: Array.isArray(need) ? need.join(',') : need ?? '',
               },
-            });
+            } as any);
           } else {
-            router.replace('/403');
+            await router.replace('/403');
           }
           return;
         }
       } finally {
-        if (active) setIsChecking(false);
+        if (mounted) setIsChecking(false);
       }
     })();
 
     return () => {
-      active = false;
+      mounted = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname, router.isReady, isPricingRoute]);
+  }, [router.isReady, router.pathname, router.asPath, pathname, setLocale, isPricingRoute]);
 
   return { isChecking };
 }
 
 export default useRouteGuard;
-

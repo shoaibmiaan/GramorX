@@ -1,4 +1,3 @@
-// pages/login/index.tsx
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -17,10 +16,11 @@ import {
   SmsIcon,
 } from '@/components/design-system/icons';
 import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser';
+import { destinationByRole } from '@/lib/routeAccess';
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mb-3 text-small uppercase tracking-wide text-grayish dark:text-gray-400/90">
+    <div className="mb-3 text-small uppercase tracking-wide text-mutedText">
       {children}
     </div>
   );
@@ -30,7 +30,34 @@ export default function LoginOptions() {
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState<'apple' | 'google' | 'facebook' | null>(null);
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
+  const [ready, setReady] = useState(false);
   const router = useRouter();
+
+  // Only redirect away from /login if we DEFINITELY have a session
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (!mounted) return;
+
+      if (session) {
+        const rawNext = typeof router.query.next === 'string' ? router.query.next : '';
+        const safe =
+          rawNext && !rawNext.startsWith('http') && rawNext !== '/login'
+            ? rawNext
+            : destinationByRole(session.user);
+        if (router.asPath !== safe) {
+          await router.replace(safe);
+          return;
+        }
+      }
+
+      setReady(true);
+    })();
+
+    return () => { mounted = false; };
+  }, [router.query.next, router.asPath, router.replace]);
 
   useEffect(() => {
     if (!router.isReady) return;
@@ -65,7 +92,7 @@ export default function LoginOptions() {
   function clearRole() {
     setSelectedRole(null);
     if (typeof window !== 'undefined') localStorage.removeItem('selectedRole');
-    const { role, ...rest } = router.query;
+    const { role, ...rest } = router.query as Record<string, any>;
     router.replace({ pathname: router.pathname, query: { ...rest } }, undefined, { shallow: true });
   }
 
@@ -118,6 +145,14 @@ export default function LoginOptions() {
     />
   );
 
+  if (!ready) {
+    return (
+      <AuthLayout title="Checking session…" subtitle="" right={RightPanel} showRightOnMobile>
+        <div className="p-6 text-mutedText" aria-live="polite">Please wait…</div>
+      </AuthLayout>
+    );
+  }
+
   return (
     <AuthLayout
       title="Welcome back"
@@ -126,7 +161,7 @@ export default function LoginOptions() {
       showRightOnMobile
     >
       {err && (
-        <Alert variant="error" title="Error" className="mb-4">
+        <Alert variant="error" title="Error" className="mb-4" role="status">
           {err}
         </Alert>
       )}
@@ -134,41 +169,55 @@ export default function LoginOptions() {
       {!selectedRole ? (
         <>
           <SectionLabel>Sign in as</SectionLabel>
+
+          {/* Role chooser: soft chips with selected state */}
           <div className="grid gap-3">
             <Button
               onClick={() => chooseRole('student')}
-              variant="secondary"
-              className="rounded-ds-xl"
+              variant="soft"
+              tone="primary"
+              size="lg"
+              shape="rounded"
               fullWidth
+              elevateOnHover
+              className="justify-between"
+              trailingIcon={<span className="text-mutedText">→</span>}
             >
-              Student
+              <span className="font-medium">Student</span>
             </Button>
+
             <Button
               onClick={() => chooseRole('teacher')}
-              variant="secondary"
-              className="rounded-ds-xl"
+              variant="soft"
+              tone="accent"
+              size="lg"
+              shape="rounded"
               fullWidth
+              elevateOnHover
+              className="justify-between"
+              trailingIcon={<span className="text-mutedText">→</span>}
             >
-              Teacher
+              <span className="font-medium">Teacher</span>
             </Button>
           </div>
         </>
       ) : (
         <>
           <SectionLabel>Continue with</SectionLabel>
+
           <div className="grid gap-3">
             {/* Apple (Coming Soon) */}
             <Button
               disabled
-              aria-disabled="true"
-              variant="secondary"
-              className="relative rounded-ds-xl opacity-75"
+              variant="soft"
+              tone="secondary"
+              size="lg"
+              shape="rounded"
               fullWidth
+              className="relative opacity-75"
+              leadingIcon={<AppleIcon className="h-5 w-5" />}
             >
-              <span className="inline-flex items-center gap-3">
-                <AppleIcon className="h-5 w-5" />
-                Continue with Apple
-              </span>
+              Continue with Apple
               <Badge variant="info" size="sm" className="absolute right-3 top-2 animate-pulse">
                 Coming Soon
               </Badge>
@@ -176,61 +225,61 @@ export default function LoginOptions() {
 
             <Button
               onClick={() => oauth('google')}
-              disabled={busy === 'google'}
+              loading={busy === 'google'}
+              loadingText="Opening Google…"
               variant="secondary"
-              className="rounded-ds-xl"
+              size="lg"
+              shape="rounded"
               fullWidth
+              leadingIcon={<GoogleIcon className="h-5 w-5" />}
             >
-              <span className="inline-flex items-center gap-3">
-                <GoogleIcon className="h-5 w-5" />
-                {busy === 'google' ? 'Opening Google…' : 'Continue with Google'}
-              </span>
+              Continue with Google
             </Button>
 
             <Button
               onClick={() => oauth('facebook')}
-              disabled={busy === 'facebook'}
+              loading={busy === 'facebook'}
+              loadingText="Opening Facebook…"
               variant="secondary"
-              className="rounded-ds-xl"
+              size="lg"
+              shape="rounded"
               fullWidth
+              leadingIcon={<FacebookIcon className="h-5 w-5" />}
             >
-              <span className="inline-flex items-center gap-3">
-                <FacebookIcon className="h-5 w-5" />
-                {busy === 'facebook' ? 'Opening Facebook…' : 'Continue with Facebook'}
-              </span>
+              Continue with Facebook
             </Button>
 
-            <Button asChild variant="secondary" className="rounded-ds-xl" fullWidth>
-              <Link
-                href={`/login/email${selectedRole ? `?role=${selectedRole}` : ''}`}
-                aria-label="Sign in with Email and Password"
-              >
-                <span className="inline-flex items-center gap-3">
-                  <MailIcon className="h-5 w-5" />
-                  Email (Password)
-                </span>
-              </Link>
+            {/* Email (uses Button href instead of asChild) */}
+            <Button
+              href={`/login/email${selectedRole ? `?role=${selectedRole}` : ''}`}
+              variant="secondary"
+              size="lg"
+              shape="rounded"
+              fullWidth
+              leadingIcon={<MailIcon className="h-5 w-5" />}
+            >
+              Email (Password)
             </Button>
 
             {/* Phone (Coming Soon) */}
             <Button
-              variant="secondary"
-              className="relative rounded-ds-xl opacity-75"
-              fullWidth
               disabled
-              aria-disabled="true"
+              variant="soft"
+              tone="secondary"
+              size="lg"
+              shape="rounded"
+              fullWidth
+              className="relative opacity-75"
+              leadingIcon={<SmsIcon className="h-5 w-5" />}
             >
-              <span className="inline-flex items-center gap-3">
-                <SmsIcon className="h-5 w-5" />
-                Phone (OTP)
-              </span>
+              Phone (OTP)
               <Badge variant="info" size="sm" className="absolute right-3 top-2 animate-pulse">
                 Coming Soon
               </Badge>
             </Button>
           </div>
 
-          <div className="mt-6 flex items-center justify-between text-small text-grayish dark:text-gray-400">
+          <div className="mt-6 flex items-center justify-between text-small text-mutedText">
             <div>
               New here?{' '}
               <Link
@@ -240,12 +289,9 @@ export default function LoginOptions() {
                 Create an account
               </Link>
             </div>
-            <button
-              className="text-primary underline decoration-dotted hover:no-underline hover:text-primary/80 hover:drop-shadow transition"
-              onClick={clearRole}
-            >
+            <Button variant="link" onClick={clearRole} aria-label="Change selected role">
               Change role
-            </button>
+            </Button>
           </div>
         </>
       )}

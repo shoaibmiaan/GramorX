@@ -1,45 +1,31 @@
-// lib/routeAccess.ts
 import type { User } from '@supabase/supabase-js';
 import { extractRole, type AppRole } from './roles';
-import { supabaseBrowser as supabase } from './supabaseBrowser';
 export type { AppRole } from './roles';
 
-// Extract role from user/app metadata (null if none)
+/** Public and guest-only allowlists
+ * Everything NOT in PUBLIC is considered protected.
+ */
+const PUBLIC: string[] = [
+  '/', '/pricing', '/community', '/about', '/contact',
+  '/auth/verify', '/403', // keep these public to avoid loops
+];
+
+const GUEST_ONLY: string[] = [
+  '/login', '/signup', '/forgot-password',
+];
+
+export const isPublicRoute = (path: string) => PUBLIC.includes(path);
+export const isGuestOnlyRoute = (path: string) =>
+  GUEST_ONLY.includes(path) ||
+  path.startsWith('/login/') ||
+  path.startsWith('/signup/');
+
+/** Role extraction */
 export const getUserRole = (user: User | null | undefined): AppRole | null =>
   extractRole(user);
 
-export const isPublicRoute = (path: string) => {
-  // Allow-list public pages. Adjust as needed.
-  if (path === '/') return true;
-  if (path === '/pricing') return true;
-  if (path === '/community') return true;
-  if (path === '/about') return true;
-  if (path === '/contact') return true;
-
-  // Verification page remains accessible without an active session
-  if (path === '/auth/verify') return true;
-
-  // Access-denied page must be public to avoid redirect loops.
-  if (path === '/403') return true;
-
-  // Auth pages should stay public:
-  if (path === '/login' || path.startsWith('/login/')) return true;
-  if (path === '/signup' || path.startsWith('/signup/')) return true;
-
-  return false; // everything else is protected
-};
-
-export const isGuestOnlyRoute = (path: string) =>
-  path === '/login' ||
-  path.startsWith('/login/') ||
-  path === '/signup' ||
-  path.startsWith('/signup/');
-
-// ---- Role gates -------------------------------------------------------------
-
+/** Role gates */
 type Gate = { pattern: RegExp; roles: AppRole[] };
-
-// Add more gates as needed (e.g., /^\/staff/)
 const ROLE_GATES: Gate[] = [
   { pattern: /^\/admin(\/.*)?$/i, roles: ['admin'] },
   { pattern: /^\/teacher(\/.*)?$/i, roles: ['teacher', 'admin'] },
@@ -56,36 +42,34 @@ export const canAccess = (path: string, role: AppRole | null | undefined): boole
   const needed = requiredRolesFor(path);
   if (needed) return !!role && needed.includes(role);
 
-  // Protected route with no specific gate still requires some valid role.
+  // “Protected but ungated” still requires an authenticated role
   return !!role;
 };
 
-// Determine the correct app destination based on user role and redirect.
-export const redirectByRole = (user: User | null | undefined) => {
+/** Pick a destination path for a user based on role/onboarding.
+ * Callers should push/replace this path; we avoid side effects here.
+ */
+export function destinationByRole(user: User | null | undefined): string {
   const emailVerified = !!user?.email_confirmed_at;
   const phoneVerified = !!user?.phone_confirmed_at;
 
   if (user && !emailVerified && !phoneVerified) {
-    if (typeof window !== 'undefined') {
-      // Remove any existing session for unverified users
-      void supabase.auth.signOut();
-      window.location.assign('/auth/verify');
-    }
     return '/auth/verify';
   }
 
   const role = getUserRole(user);
   const onboarded = !!(user as any)?.user_metadata?.onboarding_complete;
-  const path =
-    role === 'teacher'
-      ? '/teacher'
-      : role === 'admin'
-        ? '/admin'
-        : onboarded
-          ? '/dashboard'
-          : '/welcome';
+
+  if (role === 'teacher') return '/teacher';
+  if (role === 'admin') return '/admin';
+  return onboarded ? '/dashboard' : '/welcome';
+}
+
+/** Backwards-compatible helper that *navigates* only on client */
+export function redirectByRole(user: User | null | undefined) {
+  const path = destinationByRole(user);
   if (typeof window !== 'undefined') {
     window.location.assign(path);
   }
   return path;
-};
+}

@@ -10,7 +10,7 @@ import { useHeaderState } from '@/components/hooks/useHeaderState';
 
 /**
  * Header
- * - Sticky glass surface with gradient underline and soft glow on scroll
+ * - Non-sticky glass surface with gradient underline and soft glow on scroll
  * - Uses DS tokens/classes only (no inline hex)
  * - DesktopNav/MobileNav receive `showAdmin={false}`
  * - Preserves mega menu & streak chip (rendered inside DesktopNav/MobileNav)
@@ -77,8 +77,8 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
     <header
       role="banner"
       className={[
-        // Base layout
-        'sticky top-0 z-50 transition-all duration-300',
+        // Base layout (non-sticky)
+        'relative z-50 transition-all duration-300',
         // Glass vs solid surface
         solidHeader
           ? 'bg-background/95 border-b border-border shadow-sm'

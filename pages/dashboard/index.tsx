@@ -1,4 +1,6 @@
 // pages/dashboard/index.tsx
+'use client';
+
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Image from 'next/image';
@@ -33,6 +35,7 @@ export default function Dashboard() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [needsSetup, setNeedsSetup] = useState(false);
   const [showTips, setShowTips] = useState(false);
 
   // Hook now exposes: nextRestart + shields + claimShield + useShield
@@ -62,13 +65,14 @@ export default function Dashboard() {
 
     (async () => {
       try {
+        // Handle OAuth callback on first load
         if (typeof window !== 'undefined') {
           const url = window.location.href;
           if (url.includes('code=') || url.includes('access_token=')) {
             const { error } = await supabaseBrowser.auth.exchangeCodeForSession(url);
             if (!error) {
-              router.replace('/dashboard');
-              return;
+              await router.replace('/dashboard');
+              // continue to load dashboard normally
             }
           }
         }
@@ -78,10 +82,11 @@ export default function Dashboard() {
         } = await supabaseBrowser.auth.getSession();
 
         if (!session?.user) {
-          router.replace('/login');
+          await router.replace('/login?next=/dashboard');
           return;
         }
 
+        // Load (or create minimal) profile
         const { data, error } = await supabaseBrowser
           .from('user_profiles')
           .select('*')
@@ -91,20 +96,49 @@ export default function Dashboard() {
         if (cancelled) return;
 
         if (error) {
-          console.error(error);
+          console.error('[dashboard] profile load error:', error);
           setLoading(false);
           return;
         }
 
-        if (!data || (data as any).draft) {
-          router.replace('/profile/setup');
-          return;
+        let p = data as Profile | null;
+
+        // If the profile row doesn't exist yet, create a minimal one so we don't bounce
+        if (!p) {
+          const minimal = {
+            user_id: session.user.id,
+            email: session.user.email,
+            preferred_language: 'en',
+            onboarding_complete: false,
+          } as any;
+
+          const { data: created, error: insertErr } = await supabaseBrowser
+            .from('user_profiles')
+            .insert(minimal)
+            .select('*')
+            .single();
+
+          if (insertErr) {
+            console.error('[dashboard] profile insert error:', insertErr);
+          } else {
+            p = created as Profile;
+          }
         }
 
-        setProfile(data as Profile);
+        // Determine if onboarding is incomplete WITHOUT redirecting
+        const draftFlag = (p as any)?.draft === true;
+        const explicitIncomplete = (p as any)?.onboarding_complete === false;
+        // Heuristic fallback (if schema doesn't have flags)
+        const heuristicIncomplete =
+          (p as any)?.onboarding_complete == null &&
+          (!p?.full_name || !p?.preferred_language);
+
+        setNeedsSetup(!!(draftFlag || explicitIncomplete || heuristicIncomplete));
+
+        setProfile(p ?? null);
         setLoading(false);
       } catch (e) {
-        console.error(e);
+        console.error('[dashboard] fatal load error:', e);
         if (!cancelled) setLoading(false);
       }
     })();
@@ -160,6 +194,21 @@ export default function Dashboard() {
   return (
     <section className="py-24 bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90">
       <Container>
+        {/* Setup banner instead of redirect */}
+        {needsSetup && (
+          <Alert variant="warning" className="mb-6">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <div className="font-medium">Complete your profile to unlock a personalized plan.</div>
+                <div className="text-sm opacity-80">It only takes a minute—target band, exam date and study prefs.</div>
+              </div>
+              <Button as="a" href="/profile/setup" variant="secondary" className="rounded-ds-xl">
+                Continue setup
+              </Button>
+            </div>
+          </Alert>
+        )}
+
         <div className="flex items-center justify-between gap-4">
           <div>
             <h1 className="font-slab text-display text-gradient-primary">
@@ -229,7 +278,7 @@ export default function Dashboard() {
           <Card className="p-6 rounded-ds-2xl">
             <div className="text-small opacity-70 mb-1">Goal Band</div>
             <div className="text-h1 font-semibold">
-              {profile?.goal_band?.toFixed(1) ?? (ai.suggestedGoal?.toFixed?.(1) || '—')}
+              {profile?.goal_band?.toFixed?.(1) ?? (ai.suggestedGoal?.toFixed?.(1) || '—')}
             </div>
             <div className="mt-3">
               <Badge variant="info" size="sm">{profile?.english_level || 'Level —'}</Badge>

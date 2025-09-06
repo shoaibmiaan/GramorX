@@ -1,8 +1,12 @@
 // components/design-system/UserMenu.tsx
+'use client';
+
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import { supabaseBrowser } from '@/lib/supabaseBrowser';
 import { useLocale } from '@/lib/locale';
+import { signOutAndRedirect } from '@/lib/auth/signOut';
 
 type MenuItem = {
   label: string;
@@ -17,7 +21,7 @@ export const UserMenu: React.FC<{
   name?: string | null;
   avatarUrl?: string | null;
   className?: string;
-  items?: MenuItem[];          // You can pass Profile/Account items from Header
+  items?: MenuItem[];          // Optional external items (e.g., from Header)
   onSignOut?: () => void | Promise<void>;
   showEmail?: boolean;
 }> = ({
@@ -30,7 +34,9 @@ export const UserMenu: React.FC<{
   onSignOut,
   showEmail = true,
 }) => {
+  const router = useRouter();
   const { locale, setLocale, t } = useLocale();
+
   const [open, setOpen] = useState(false);
   const [localAvatar, setLocalAvatar] = useState<string | null>(avatarUrl ?? null);
 
@@ -42,18 +48,28 @@ export const UserMenu: React.FC<{
 
   const fallbackInitial = (name?.[0] || email?.[0] || 'U').toUpperCase();
 
+  // Default actions (Dashboard/Profile/Account + Sign out)
+  const defaultSignOut = async () => {
+    await signOutAndRedirect(router);
+  };
+
   const defaultItems: MenuItem[] = useMemo(() => {
     const base: MenuItem[] = [
+      { label: 'Dashboard', href: '/dashboard', icon: <i className="fas fa-gauge" aria-hidden="true" /> },
       { label: 'Profile', href: '/profile', icon: <i className="fas fa-id-badge" aria-hidden="true" /> },
       { label: 'Account', href: '/account', icon: <i className="fas fa-user" aria-hidden="true" /> },
+      {
+        label: 'Sign out',
+        onClick: onSignOut ?? defaultSignOut,
+        icon: <i className="fas fa-sign-out-alt" aria-hidden="true" />,
+      },
     ];
-    if (onSignOut) base.push({ label: 'Sign out', onClick: onSignOut, icon: <i className="fas fa-sign-out-alt" aria-hidden="true" /> });
     return base;
   }, [onSignOut]);
 
   const _items = items?.length ? items : defaultItems;
 
-  // close on outside click + Esc
+  // Close on outside click + Esc
   useEffect(() => {
     const onDocClick = (e: MouseEvent) => {
       if (!open) return;
@@ -77,7 +93,10 @@ export const UserMenu: React.FC<{
     };
   }, [open]);
 
-  const focusItem = (idx: number) => itemRefs.current[idx] && (itemRefs.current[idx] as HTMLElement).focus();
+  const focusItem = (idx: number) => {
+    const el = itemRefs.current[idx];
+    if (el) (el as HTMLElement).focus();
+  };
 
   const onButtonKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>) => {
     if (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') {
@@ -108,6 +127,16 @@ export const UserMenu: React.FC<{
     }
   };
 
+  const handleLanguageChange = async (lang: string) => {
+    setLocale(lang);
+    // FIX: use a real supabase client instance
+    const supabase = supabaseBrowser();
+    await supabase
+      .from('user_profiles')
+      .update({ preferred_language: lang })
+      .eq('user_id', userId);
+  };
+
   return (
     <div className={`relative ${className}`}>
       <button
@@ -122,7 +151,6 @@ export const UserMenu: React.FC<{
         title={email ?? name ?? 'User'}
       >
         {localAvatar ? (
-          // Using <img> here to avoid Next remote domain config issues
           // eslint-disable-next-line @next/next/no-img-element
           <img src={localAvatar} alt="" className="h-9 w-9 rounded-full object-cover" decoding="async" />
         ) : (
@@ -163,14 +191,7 @@ export const UserMenu: React.FC<{
             <select
               className="w-full rounded-md bg-lightBg dark:bg-dark border border-vibrantPurple/20 px-2 py-1"
               value={locale}
-              onChange={async (e) => {
-                const lang = e.target.value;
-                setLocale(lang);
-                await supabaseBrowser
-                  .from('user_profiles')
-                  .update({ preferred_language: lang })
-                  .eq('user_id', userId);
-              }}
+              onChange={(e) => handleLanguageChange(e.target.value)}
             >
               <option value="en">English</option>
               <option value="ur">Urdu</option>
