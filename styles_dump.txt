@@ -1,0 +1,411 @@
+[1] ----- styles/globals.css -----
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Ensure full-height layout */
+html, body, #__next { height: 100%; }
+
+/* =========================
+   Color tokens → RGB triplets
+   (must match design-system/tokens/colors.js)
+   ========================= */
+:root{
+  --color-primary:        67 97 238;   /* #4361ee */
+  --color-primaryDark:    58 86 212;   /* #3a56d4 */
+  --color-secondary:     247 37 133;   /* #f72585 */
+  --color-accent:         76 201 240;  /* #4cc9f0 */
+  --color-success:        46 196 182;  /* #2ec4b6 */
+
+  --color-purpleVibe:    157 78 221;   /* #9d4edd */
+  --color-vibrantPurple: 157 78 221;   /* alias */
+  --color-electricBlue:    0 187 249;  /* #00bbf9 */
+  --color-neonGreen:     128 255 219;  /* #80ffdb */
+  --color-sunsetOrange:  255 107 107;  /* #ff6b6b */
+  --color-sunsetRed:     255  77  77;  /* #ff4d4d */
+  --color-goldenYellow:  255 209 102;  /* #ffd166 */
+
+  --color-dark:           15  15  27;  /* #0f0f1b */
+  --color-darker:          7   7  16;  /* #070710 */
+  --color-lightBg:       240 242 245;  /* #f0f2f5 */
+  --color-lightText:      26  26  46;  /* #1a1a2e */
+  --color-grayish:       138 138 156;  /* #8a8a9c */
+
+  --color-lightCard:     255 255 255;  /* #ffffff */
+  --color-lightBorder:   224 224 224;  /* #e0e0e0 */
+  --color-mutedText:     208 208 224;  /* #d0d0e0 */
+}
+
+/* Light = default; Dark via .dark on <html> (next-themes) */
+body { @apply font-sans text-lightText bg-lightBg overflow-x-hidden relative; }
+.dark body { @apply text-white bg-gradient-to-br from-darker to-dark; }
+
+/* =========================
+   Headings → Roboto Slab (no circular apply)
+   ========================= */
+@layer base {
+  h1, h2, h3, .heading { @apply font-slab; }
+}
+
+/* =========================
+   Header / Nav (GLOBAL)
+   ========================= */
+.header-glass {
+  @apply text-lightText bg-white/90 backdrop-blur-md border-b border-gray-200;
+}
+.dark .header-glass {
+  @apply text-white bg-dark/95 border-vibrantPurple/20;
+}
+
+/* Navigation pill with underline (active & hover) */
+.nav-pill{
+  @apply relative inline-flex items-center justify-center rounded-full px-4 py-2 transition;
+  /* Light theme text */
+  @apply text-lightText/80 hover:text-lightText;
+  background: transparent;
+}
+.dark .nav-pill{
+  /* Dark theme text */
+  @apply text-white/90 hover:text-white;
+}
+
+/* underline */
+.nav-pill::after{
+  content:""; position:absolute; left:50%; transform:translateX(-50%);
+  bottom:-6px; height:3px; width:60%;
+  background: rgb(var(--color-neonGreen));
+  border-radius:9999px; opacity:0; transition:opacity .25s ease;
+}
+.nav-pill:hover::after{ opacity:.9; }
+
+/* active pill background (light vs dark) */
+.nav-pill.is-active{ @apply bg-vibrantPurple/10; }
+.dark .nav-pill.is-active{ @apply bg-white/5; }
+.nav-pill.is-active::after{ opacity:1; }
+
+/* Container utility */
+.container { @apply max-w-[1200px] mx-auto px-5; }
+
+/* =========================
+   Buttons (GLOBAL pretty hover)
+   ========================= */
+.btn {
+  @apply inline-flex items-center justify-center font-semibold rounded-full px-8 py-3
+         relative overflow-hidden transition;
+  transition-property: transform, box-shadow, filter, background-position, background-image, opacity;
+  transition-duration: .35s;
+  transition-timing-function: cubic-bezier(.22,.61,.36,1);
+}
+
+/* Shine sweep overlay */
+.btn--fx::after{
+  content:""; position:absolute; inset:-2px;
+  background: linear-gradient(120deg, transparent 30%, rgba(255,255,255,.22) 50%, transparent 70%);
+  transform: translateX(-150%) skewX(-20deg);
+  transition: transform .65s ease;
+  pointer-events: none;
+}
+.btn--fx:hover::after{ transform: translateX(150%) skewX(-20deg); }
+
+/* Lift + stronger glow on hover; slight press on active */
+.btn--fx:hover{ transform: translateY(-2px) scale(1.02); }
+.btn--fx:active{ transform: translateY(-1px) scale(0.995); }
+
+/* Gradient drift */
+.btn-primary, .btn-accent { background-size: 200% 200%; background-position: 0% 50%; }
+.btn-primary:hover, .btn-accent:hover { background-position: 100% 50%; }
+
+/* Variants */
+.btn-primary  { @apply text-white bg-gradient-to-br from-purpleVibe to-electricBlue shadow-glow; }
+.btn-primary:hover {
+  background-image: linear-gradient(135deg,
+    rgb(var(--color-electricBlue)),
+    rgb(var(--color-purpleVibe)));
+  @apply shadow-glowLg;
+}
+
+.btn-secondary{ @apply border-2 border-primary text-primary bg-transparent; }
+.dark .btn-secondary { @apply border-neonGreen text-neonGreen; }
+
+.btn-accent   { @apply text-white bg-gradient-to-br from-sunsetOrange to-sunsetRed shadow-glow; }
+.btn-accent:hover {
+  background-image: linear-gradient(135deg,
+    rgb(var(--color-sunsetRed)),
+    rgb(var(--color-sunsetOrange)));
+  @apply shadow-glowLg;
+}
+
+/* =========================
+   Badges / chips
+   ========================= */
+.streak-chip { @apply bg-primary/10 text-primary font-semibold rounded-ds px-4 py-2 flex items-center gap-2; }
+.dark .streak-chip { @apply bg-purpleVibe/15 text-neonGreen; }
+
+/* =========================
+   Card surfaces
+   ========================= */
+.card-surface { @apply rounded-ds-2xl border bg-lightCard border-lightBorder text-lightText; }
+.dark .card-surface { @apply border-vibrantPurple/20 backdrop-blur-md bg-purpleVibe/10 text-white; }
+
+/* Glass card variant (used by waitlist/testimonials etc.) */
+.card-glass {
+  @apply rounded-ds-2xl backdrop-blur-xl border shadow-glowLg;
+  @apply bg-white/70 text-lightText border-lightBorder;
+}
+.dark .card-glass {
+  @apply bg-purpleVibe/10 text-white border-vibrantPurple/20;
+}
+
+/* =========================
+   Text gradients
+   ========================= */
+.text-gradient-primary { @apply bg-clip-text text-transparent bg-gradient-to-r from-purpleVibe to-electricBlue; }
+.text-gradient-accent  { @apply bg-clip-text text-transparent bg-gradient-to-r from-neonGreen to-electricBlue; }
+.text-gradient-vertical{ @apply bg-clip-text text-transparent bg-gradient-to-b from-neonGreen to-electricBlue; }
+
+/* Footer link hover: color shift + tiny gradient underline */
+.footer-link{
+  @apply relative inline-flex items-center text-gray-600 dark:text-grayish transition-colors duration-200;
+}
+.footer-link::after{
+  content:""; position:absolute; left:0; bottom:-2px; height:2px; width:0%;
+  background: linear-gradient(90deg,
+    rgb(var(--color-purpleVibe)),
+    rgb(var(--color-electricBlue)));
+  border-radius:9999px; transition: width .25s ease;
+}
+.footer-link:hover{ @apply text-electricBlue; }
+.footer-link:hover::after{ width:100%; }
+
+/* Neon label for inputs */
+.label-neon { @apply text-neonGreen font-medium; }
+
+/* Dark section helper (hero/modules/pricing/waitlist) */
+.section-dark { @apply bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90; }
+
+/* AI sidebar helpers (theme aware, token-only) */
+.ai-icon-btn{
+  @apply h-9 w-9 grid place-items-center rounded-lg hover:bg-vibrantPurple/10 text-lightText dark:text-white;
+}
+.ai-tab{
+  @apply px-3 py-1.5 rounded-full text-lightText/80 dark:text-white/80 hover:text-lightText dark:hover:text-white;
+}
+.ai-tab.is-active{
+  @apply bg-vibrantPurple/10 text-lightText dark:text-white;
+}
+
+/* AI sidebar split view */
+:root { --gx-ai-right: 0px; --gx-ai-bottom: 0px; }
+
+/* Push content when AI sidebar is open */
+html.gx-ai-open #__next { padding-right: var(--gx-ai-right); box-sizing: border-box; }
+@media (max-width: 767px) {
+  html.gx-ai-open-bottom #__next { padding-bottom: var(--gx-ai-bottom); box-sizing: border-box; }
+}
+
+[2] ----- styles/premium.css -----
+/* Premium Exam Room CSS Variables
+   Attach a theme by setting: <html data-pr-theme="carbon"> etc.
+   The Tailwind build for premium should include this file.
+*/
+
+:root, html {
+  --pr-radius: 16px;
+  --pr-shadow-md: 0 8px 24px rgba(0,0,0,0.20);
+  --pr-shadow-lg: 0 18px 48px rgba(0,0,0,0.30);
+  --pr-ring: 0 0 0 3px color-mix(in oklab, var(--pr-primary), white 40%);
+}
+
+/* Carbon Noir (dark) */
+html[data-pr-theme="carbon"] {
+  --pr-bg: #0B0F1A;
+  --pr-fg: #E6EAF2;
+  --pr-card: #121829;
+  --pr-border: #24304A;
+  --pr-primary: #00E0B8;
+  --pr-on-primary: #001413;
+  --pr-accent: #7B61FF;
+  --pr-danger: #FF6B6B;
+  --pr-warning: #FFD166;
+  --pr-success: #12B886;
+}
+
+/* Ivory Quartz (light) */
+html[data-pr-theme="ivory"] {
+  --pr-bg: #FBFBFD;
+  --pr-fg: #0D1220;
+  --pr-card: #FFFFFF;
+  --pr-border: #E6E9F2;
+  --pr-primary: #4C6FFF;
+  --pr-on-primary: #FFFFFF;
+  --pr-accent: #12B886;
+  --pr-danger: #E03131;
+  --pr-warning: #F59F00;
+  --pr-success: #2F9E44;
+}
+
+/* Royal Aster (navy+gold) */
+html[data-pr-theme="royal"] {
+  --pr-bg: #0A1226;
+  --pr-fg: #F6F7FB;
+  --pr-card: #0F1A3A;
+  --pr-border: #1C2A55;
+  --pr-primary: #D9B970; /* gold */
+  --pr-on-primary: #1A1200;
+  --pr-accent: #2E8BFF;
+  --pr-danger: #FF7A85;
+  --pr-warning: #FFD68A;
+  --pr-success: #89F0C0;
+}
+
+/* Aurora Neo (vibrant gradient) */
+html[data-pr-theme="aurora"] {
+  --pr-bg: #0C0C15;
+  --pr-fg: #EDEFFF;
+  --pr-card: #131324;
+  --pr-border: #2A2A45;
+  --pr-primary: #9A4DFF;
+  --pr-on-primary: #130027;
+  --pr-accent: #15D1C2;
+  --pr-danger: #FF87B7;
+  --pr-warning: #FFC46B;
+  --pr-success: #5BE7A9;
+  background-image: radial-gradient(1000px 600px at 10% -10%, rgba(154,77,255,0.12), transparent 60%),
+                    radial-gradient(1200px 700px at 110% 10%, rgba(21,209,194,0.10), transparent 70%);
+  background-attachment: fixed;
+}
+
+/* Utilities (optional) */
+.pr-themed .card {
+  border-radius: var(--pr-radius);
+  background: var(--pr-card);
+  border: 1px solid var(--pr-border);
+  box-shadow: var(--pr-shadow-md);
+}
+
+
+[3] ----- styles/themes/autumn.css -----
+html[data-season='autumn'] {
+  --season-bg: #fff7f0;
+  --season-accent: #d2691e;
+}
+
+
+[4] ----- styles/themes/index.css -----
+@import './spring.css';
+@import './summer.css';
+@import './autumn.css';
+@import './winter.css';
+
+
+[5] ----- styles/themes/spring.css -----
+html[data-season='spring'] {
+  --season-bg: #fdf6f6;
+  --season-accent: #ff6b6b;
+}
+
+
+[6] ----- styles/themes/summer.css -----
+html[data-season='summer'] {
+  --season-bg: #fffbe6;
+  --season-accent: #ffa500;
+}
+
+
+[7] ----- styles/themes/winter.css -----
+html[data-season='winter'] {
+  --season-bg: #f0f8ff;
+  --season-accent: #1e90ff;
+}
+
+
+[8] ----- styles/tokens.css -----
+/* Design tokens → CSS variables
+   (must match design-system/tokens/colors.js) */
+:root {
+  --color-primary:        67 97 238;   /* #4361ee */
+  --color-primaryDark:    58 86 212;   /* #3a56d4 */
+  --color-secondary:     247 37 133;  /* #f72585 */
+  --color-accent:         76 201 240;  /* #4cc9f0 */
+  --color-success:        46 196 182;  /* #2ec4b6 */
+
+  --color-purpleVibe:    157 78 221;   /* #9d4edd */
+  --color-vibrantPurple: 157 78 221;   /* alias */
+  --color-electricBlue:    0 187 249;  /* #00bbf9 */
+  --color-neonGreen:     128 255 219;  /* #80ffdb */
+  --color-sunsetOrange:  255 107 107;  /* #ff6b6b */
+  --color-sunsetRed:     255  77  77;  /* #ff4d4d */
+  --color-goldenYellow:  255 209 102;  /* #ffd166 */
+
+  --color-dark:           15  15  27;  /* #0f0f1b */
+  --color-darker:          7   7  16;  /* #070710 */
+  --color-lightBg:       240 242 245;  /* #f0f2f5 */
+  --color-lightText:      26  26  46;  /* #1a1a2e */
+  /* darker gray for accessible body text on light backgrounds */
+  --color-grayish:       106 106 134;  /* #6a6a86 */
+
+  --color-lightCard:     255 255 255;  /* #ffffff */
+  --color-lightBorder:   224 224 224;  /* #e0e0e0 */
+  --color-border:        224 224 224;  /* #e0e0e0 */
+  --color-mutedText:     208 208 224;  /* #d0d0e0 */
+
+  /* Generic tokens */
+  --color-background: var(--color-lightBg);
+  --color-foreground: var(--color-lightText);
+}
+
+.dark {
+  --color-background: var(--color-darker);
+  --color-foreground: 255 255 255;
+}
+
+
+[9] ----- styles/tracker.css -----
+@import './tokens.css';
+
+/* Design system utility classes */
+.bg-dark{background-color:rgb(var(--color-dark));}
+.bg-card{background-color:rgb(var(--color-darker));}
+.text-foreground{color:rgb(var(--color-foreground));}
+.text-mutedText{color:rgb(var(--color-mutedText));}
+.border-border{border-color:rgb(var(--color-border));}
+.bg-primary{background-color:rgb(var(--color-primary));}
+.text-primary{color:rgb(var(--color-primary));}
+.bg-success{background-color:rgb(var(--color-success));}
+.text-success{color:rgb(var(--color-success));}
+.bg-warning{background-color:rgb(var(--color-goldenYellow));}
+.text-warning{color:rgb(var(--color-goldenYellow));}
+
+/* Tracker styles */
+*{box-sizing:border-box;}
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;}
+.wrap{max-width:1200px;margin:0 auto;padding:20px;}
+h1{margin:0 0 8px;}
+.legend{margin-bottom:8px;}
+.bar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;position:sticky;top:0;background:rgb(var(--color-dark)/0.9);backdrop-filter:blur(6px);border-bottom:1px solid rgb(var(--color-border));padding:10px;margin:6px 0 12px;}
+select,button{background:rgb(var(--color-darker));color:rgb(var(--color-foreground));border:1px solid rgb(var(--color-border));border-radius:8px;padding:8px 10px;}
+.stats{display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 10px;}
+.stat{background:rgb(var(--color-darker));border:1px solid rgb(var(--color-border));padding:6px 10px;border-radius:8px;}
+table{width:100%;border-collapse:collapse;}
+thead th{position:sticky;top:56px;background:rgb(var(--color-dark));z-index:2;color:rgb(var(--color-mutedText));text-align:left;font-weight:600;padding:10px;border-bottom:1px solid rgb(var(--color-border));}
+tbody td{padding:10px;border-bottom:1px solid rgb(var(--color-border));vertical-align:top;}
+.pill{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;border:1px solid rgb(var(--color-border));}
+.pill.todo{background:rgb(var(--color-dark));}
+.pill.prog{background:rgb(var(--color-darker));border-color:rgb(var(--color-border));color:rgb(var(--color-mutedText));}
+.pill.done{background:rgb(var(--color-dark));border-color:rgb(var(--color-success));color:rgb(var(--color-success));}
+.nowrap{white-space:nowrap;}
+.card{background:rgb(var(--color-darker));border:1px solid rgb(var(--color-border));border-radius:12px;padding:14px;}
+.section-title{font-weight:700;margin-bottom:8px;}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px;}
+.badge{display:inline-block;font-size:12px;padding:2px 8px;border-radius:999px;border:1px solid rgb(var(--color-border));}
+.badge.ok{background:rgb(var(--color-success)/0.15);color:rgb(var(--color-success));}
+.badge.warn{background:rgb(var(--color-goldenYellow)/0.15);color:rgb(var(--color-goldenYellow));}
+.bar .btn{cursor:pointer;}
+.sum{min-width:280px;}
+input[type="date"]{background:rgb(var(--color-darker));border:1px solid rgb(var(--color-border));color:rgb(var(--color-foreground));border-radius:8px;padding:6px;}
+.hint{font-size:12px;color:rgb(var(--color-mutedText));margin-top:6px;}
+a.link{color:rgb(var(--color-primary));text-decoration:none;border-bottom:1px dashed rgb(var(--color-primary));}
+a.link:hover{opacity:.9;}
+.card-spacing{margin:12px 0 16px;}
+
+
