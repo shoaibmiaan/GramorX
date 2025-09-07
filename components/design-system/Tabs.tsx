@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 export type Tab = { key: string; label: string; disabled?: boolean };
 export type TabsProps = {
@@ -8,16 +8,21 @@ export type TabsProps = {
   className?: string;
 };
 
-export const Tabs: React.FC<TabsProps> = ({ tabs, value, onChange, className='' }) => {
+export const Tabs: React.FC<TabsProps> = ({
+  tabs,
+  value,
+  onChange,
+  className = "",
+}) => {
   return (
     <div className={`w-full ${className}`}>
       <div className="flex flex-wrap gap-2 border-b border-border dark:border-vibrantPurple/20">
-        {tabs.map(t => {
+        {tabs.map((t) => {
           const active = value === t.key;
-          const base = 'px-4 py-2 rounded-ds-t font-medium';
+          const base = "px-4 py-2 rounded-ds-t font-medium";
           const styles = active
-            ? 'text-primary border-b-2 border-primary dark:text-electricBlue dark:border-electricBlue'
-            : 'text-mutedText hover:text-lightText dark:hover:text-foreground';
+            ? "text-primary border-b-2 border-primary dark:text-electricBlue dark:border-electricBlue"
+            : "text-mutedText hover:text-lightText dark:hover:text-foreground";
           return (
             <button
               key={t.key}

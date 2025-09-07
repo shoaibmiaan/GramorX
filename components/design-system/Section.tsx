@@ -1,6 +1,6 @@
 // components/design-system/Section.tsx
-import React from 'react';
-import { Container as DSContainer } from './Container';
+import React from "react";
+import { Container as DSContainer } from "./Container";
 
 export type SectionProps = React.HTMLAttributes<HTMLElement> & {
   Container?: boolean;
@@ -10,13 +10,17 @@ export type SectionProps = React.HTMLAttributes<HTMLElement> & {
 
 export const Section: React.FC<SectionProps> = ({
   id,
-  className = '',
+  className = "",
   Container = false,
-  containerClassName = '',
+  containerClassName = "",
   children,
   ...rest
 }) => {
-  const content = Container ? <DSContainer className={containerClassName}>{children}</DSContainer> : children;
+  const content = Container ? (
+    <DSContainer className={containerClassName}>{children}</DSContainer>
+  ) : (
+    children
+  );
   return (
     <section
       id={id}

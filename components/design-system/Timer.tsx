@@ -1,6 +1,6 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from "react";
 
-export type TimerMode = 'countdown' | 'stopwatch';
+export type TimerMode = "countdown" | "stopwatch";
 
 export type TimerProps = {
   /** Seconds to start from (for countdown) or 0 for stopwatch */
@@ -18,37 +18,44 @@ function format(seconds: number) {
   const hh = Math.floor(s / 3600);
   const mm = Math.floor((s % 3600) / 60);
   const ss = s % 60;
-  const pad = (n: number) => n.toString().padStart(2, '0');
+  const pad = (n: number) => n.toString().padStart(2, "0");
   return hh > 0 ? `${pad(hh)}:${pad(mm)}:${pad(ss)}` : `${pad(mm)}:${pad(ss)}`;
 }
 
 export const Timer: React.FC<TimerProps> = ({
   initialSeconds = 0,
-  mode = 'countdown',
+  mode = "countdown",
   running = true,
   onTick,
   onComplete,
-  className = '',
-  ariaLabel = 'Timer',
+  className = "",
+  ariaLabel = "Timer",
 }) => {
   const [seconds, setSeconds] = useState(initialSeconds);
   const raf = useRef<number | null>(null);
   const last = useRef<number | null>(null);
 
-  useEffect(() => { setSeconds(initialSeconds); }, [initialSeconds]);
+  useEffect(() => {
+    setSeconds(initialSeconds);
+  }, [initialSeconds]);
 
   useEffect(() => {
-    if (!running) { if (raf.current) cancelAnimationFrame(raf.current); raf.current = null; last.current = null; return; }
+    if (!running) {
+      if (raf.current) cancelAnimationFrame(raf.current);
+      raf.current = null;
+      last.current = null;
+      return;
+    }
 
     const loop = (t: number) => {
       if (last.current == null) last.current = t;
       const dt = (t - last.current) / 1000;
       last.current = t;
 
-      setSeconds(prev => {
-        const next = mode === 'countdown' ? prev - dt : prev + dt;
+      setSeconds((prev) => {
+        const next = mode === "countdown" ? prev - dt : prev + dt;
         onTick?.(next);
-        if (mode === 'countdown' && next <= 0) {
+        if (mode === "countdown" && next <= 0) {
           onComplete?.();
           return 0;
         }
@@ -57,12 +64,19 @@ export const Timer: React.FC<TimerProps> = ({
       raf.current = requestAnimationFrame(loop);
     };
     raf.current = requestAnimationFrame(loop);
-    return () => { if (raf.current) cancelAnimationFrame(raf.current); raf.current = null; last.current = null; };
+    return () => {
+      if (raf.current) cancelAnimationFrame(raf.current);
+      raf.current = null;
+      last.current = null;
+    };
   }, [running, mode, onTick, onComplete]);
 
   const label = useMemo(() => format(seconds), [seconds]);
 
-  const intent = mode === 'countdown' && seconds <= 60 ? 'text-sunsetOrange' : 'text-lightText dark:text-foreground';
+  const intent =
+    mode === "countdown" && seconds <= 60
+      ? "text-sunsetOrange"
+      : "text-lightText dark:text-foreground";
 
   return (
     <div

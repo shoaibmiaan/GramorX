@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 export const AppleIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}>
@@ -20,41 +20,83 @@ export const FacebookIcon = (props: React.SVGProps<SVGSVGElement>) => (
 );
 
 export const MailIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true" {...props}>
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    aria-hidden="true"
+    {...props}
+  >
     <rect x="3" y="5" width="18" height="14" rx="2" />
     <polyline points="3,7 12,13 21,7" />
   </svg>
 );
 
 export const SmsIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true" {...props}>
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    aria-hidden="true"
+    {...props}
+  >
     <rect x="2" y="3" width="20" height="14" rx="2" />
     <path d="M8 21l4-4 4 4" />
   </svg>
 );
 
 export const ShieldIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true" {...props}>
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    aria-hidden="true"
+    {...props}
+  >
     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" />
   </svg>
 );
 
 export const PhoneIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true" {...props}>
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    aria-hidden="true"
+    {...props}
+  >
     <rect x="7" y="2" width="10" height="20" rx="2" />
     <path d="M11 18h2" />
   </svg>
 );
 
 export const ChartIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true" {...props}>
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    aria-hidden="true"
+    {...props}
+  >
     <path d="M3 3v18h18" />
     <polyline points="7 14 11 10 15 14 21 8" />
   </svg>
 );
 
 export const UserCheckIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true" {...props}>
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    aria-hidden="true"
+    {...props}
+  >
     <circle cx="8" cy="8" r="3" />
     <path d="M5 21v-2a4 4 0 0 1 4-4h0a4 4 0 0 1 4 4v2" />
     <path d="m16 11 2 2 4-4" />
@@ -68,7 +110,14 @@ export const TwitterIcon = (props: React.SVGProps<SVGSVGElement>) => (
 );
 
 export const InstagramIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true" {...props}>
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    aria-hidden="true"
+    {...props}
+  >
     <rect x="2" y="2" width="20" height="20" rx="5" />
     <circle cx="12" cy="12" r="4" />
     <circle cx="17" cy="7" r="1" fill="currentColor" />
@@ -90,18 +139,31 @@ export const YoutubeIcon = (props: React.SVGProps<SVGSVGElement>) => (
 );
 
 export const MapPinIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true" {...props}>
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    aria-hidden="true"
+    {...props}
+  >
     <path d="M12 21s-6-5.3-6-10a6 6 0 1 1 12 0c0 4.7-6 10-6 10Z" />
     <circle cx="12" cy="11" r="2" />
   </svg>
 );
 
 export const ClockIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true" {...props}>
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    aria-hidden="true"
+    {...props}
+  >
     <circle cx="12" cy="12" r="9" />
     <path d="M12 7v5l3 3" />
   </svg>
 );
 
 export type IconProps = React.SVGProps<SVGSVGElement>;
-

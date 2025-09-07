@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 export type ProgressBarProps = {
   value: number; // 0..100
@@ -6,7 +6,11 @@ export type ProgressBarProps = {
   className?: string;
 };
 
-export const ProgressBar: React.FC<ProgressBarProps> = ({ value, label, className='' }) => {
+export const ProgressBar: React.FC<ProgressBarProps> = ({
+  value,
+  label,
+  className = "",
+}) => {
   const v = Math.max(0, Math.min(100, value));
   return (
     <div className={`w-full ${className}`}>

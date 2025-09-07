@@ -1,17 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 
-const SEASONS = ['spring', 'summer', 'autumn', 'winter'] as const;
-type Season = typeof SEASONS[number];
+const SEASONS = ["spring", "summer", "autumn", "winter"] as const;
+type Season = (typeof SEASONS)[number];
 
 export function SeasonToggle() {
   const [season, setSeason] = useState<Season>(() => {
-    if (typeof window === 'undefined') return 'spring';
-    return (localStorage.getItem('season') as Season) || 'spring';
+    if (typeof window === "undefined") return "spring";
+    return (localStorage.getItem("season") as Season) || "spring";
   });
 
   useEffect(() => {
-    document.documentElement.setAttribute('data-season', season);
-    try { localStorage.setItem('season', season); } catch {}
+    document.documentElement.setAttribute("data-season", season);
+    try {
+      localStorage.setItem("season", season);
+    } catch {}
   }, [season]);
 
   const next = () => {

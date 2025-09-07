@@ -1,12 +1,12 @@
 // components/design-system/UserMenu.tsx
-'use client';
+"use client";
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/router';
-import { supabaseBrowser } from '@/lib/supabaseBrowser';
-import { useLocale } from '@/lib/locale';
-import { signOutAndRedirect } from '@/lib/auth/signOut';
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/router";
+import { supabaseBrowser } from "@/lib/supabaseBrowser";
+import { useLocale } from "@/lib/locale";
+import { signOutAndRedirect } from "@/lib/auth/signOut";
 
 type MenuItem = {
   label: string;
@@ -21,7 +21,7 @@ export const UserMenu: React.FC<{
   name?: string | null;
   avatarUrl?: string | null;
   className?: string;
-  items?: MenuItem[];          // Optional external items (e.g., from Header)
+  items?: MenuItem[]; // Optional external items (e.g., from Header)
   onSignOut?: () => void | Promise<void>;
   showEmail?: boolean;
 }> = ({
@@ -29,7 +29,7 @@ export const UserMenu: React.FC<{
   email = null,
   name = null,
   avatarUrl = null,
-  className = '',
+  className = "",
   items,
   onSignOut,
   showEmail = true,
@@ -38,15 +38,19 @@ export const UserMenu: React.FC<{
   const { locale, setLocale, t } = useLocale();
 
   const [open, setOpen] = useState(false);
-  const [localAvatar, setLocalAvatar] = useState<string | null>(avatarUrl ?? null);
+  const [localAvatar, setLocalAvatar] = useState<string | null>(
+    avatarUrl ?? null,
+  );
 
   const btnRef = useRef<HTMLButtonElement | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
-  const itemRefs = useRef<Array<HTMLAnchorElement | HTMLButtonElement | null>>([]);
+  const itemRefs = useRef<Array<HTMLAnchorElement | HTMLButtonElement | null>>(
+    [],
+  );
 
   useEffect(() => setLocalAvatar(avatarUrl ?? null), [avatarUrl]);
 
-  const fallbackInitial = (name?.[0] || email?.[0] || 'U').toUpperCase();
+  const fallbackInitial = (name?.[0] || email?.[0] || "U").toUpperCase();
 
   // Default actions (Dashboard/Profile/Account + Sign out)
   const defaultSignOut = async () => {
@@ -55,11 +59,23 @@ export const UserMenu: React.FC<{
 
   const defaultItems: MenuItem[] = useMemo(() => {
     const base: MenuItem[] = [
-      { label: 'Dashboard', href: '/dashboard', icon: <i className="fas fa-gauge" aria-hidden="true" /> },
-      { label: 'Profile', href: '/profile', icon: <i className="fas fa-id-badge" aria-hidden="true" /> },
-      { label: 'Account', href: '/account', icon: <i className="fas fa-user" aria-hidden="true" /> },
       {
-        label: 'Sign out',
+        label: "Dashboard",
+        href: "/dashboard",
+        icon: <i className="fas fa-gauge" aria-hidden="true" />,
+      },
+      {
+        label: "Profile",
+        href: "/profile",
+        icon: <i className="fas fa-id-badge" aria-hidden="true" />,
+      },
+      {
+        label: "Account",
+        href: "/account",
+        icon: <i className="fas fa-user" aria-hidden="true" />,
+      },
+      {
+        label: "Sign out",
         onClick: onSignOut ?? defaultSignOut,
         icon: <i className="fas fa-sign-out-alt" aria-hidden="true" />,
       },
@@ -80,16 +96,16 @@ export const UserMenu: React.FC<{
     };
     const onKey = (e: KeyboardEvent) => {
       if (!open) return;
-      if (e.key === 'Escape') {
+      if (e.key === "Escape") {
         setOpen(false);
         btnRef.current?.focus();
       }
     };
-    document.addEventListener('mousedown', onDocClick);
-    document.addEventListener('keydown', onKey);
+    document.addEventListener("mousedown", onDocClick);
+    document.addEventListener("keydown", onKey);
     return () => {
-      document.removeEventListener('mousedown', onDocClick);
-      document.removeEventListener('keydown', onKey);
+      document.removeEventListener("mousedown", onDocClick);
+      document.removeEventListener("keydown", onKey);
     };
   }, [open]);
 
@@ -99,11 +115,11 @@ export const UserMenu: React.FC<{
   };
 
   const onButtonKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>) => {
-    if (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') {
+    if (e.key === "ArrowDown" || e.key === "Enter" || e.key === " ") {
       e.preventDefault();
       setOpen(true);
       setTimeout(() => focusItem(0), 0);
-    } else if (e.key === 'ArrowUp') {
+    } else if (e.key === "ArrowUp") {
       e.preventDefault();
       setOpen(true);
       setTimeout(() => focusItem(_items.length - 1), 0);
@@ -111,17 +127,19 @@ export const UserMenu: React.FC<{
   };
 
   const onMenuKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    const currentIndex = itemRefs.current.findIndex((n) => n === document.activeElement);
-    if (e.key === 'ArrowDown') {
+    const currentIndex = itemRefs.current.findIndex(
+      (n) => n === document.activeElement,
+    );
+    if (e.key === "ArrowDown") {
       e.preventDefault();
       focusItem((currentIndex + 1) % _items.length);
-    } else if (e.key === 'ArrowUp') {
+    } else if (e.key === "ArrowUp") {
       e.preventDefault();
       focusItem((currentIndex - 1 + _items.length) % _items.length);
-    } else if (e.key === 'Home') {
+    } else if (e.key === "Home") {
       e.preventDefault();
       focusItem(0);
-    } else if (e.key === 'End') {
+    } else if (e.key === "End") {
       e.preventDefault();
       focusItem(_items.length - 1);
     }
@@ -132,9 +150,9 @@ export const UserMenu: React.FC<{
     // FIX: use a real supabase client instance
     const supabase = supabaseBrowser();
     await supabase
-      .from('user_profiles')
+      .from("user_profiles")
       .update({ preferred_language: lang })
-      .eq('user_id', userId);
+      .eq("user_id", userId);
   };
 
   return (
@@ -148,11 +166,16 @@ export const UserMenu: React.FC<{
         onClick={() => setOpen((v) => !v)}
         onKeyDown={onButtonKeyDown}
         className="h-9 w-9 rounded-full bg-vibrantPurple/15 text-vibrantPurple font-semibold flex items-center justify-center hover:bg-vibrantPurple/25 focus:outline-none focus:ring-2 focus:ring-vibrantPurple"
-        title={email ?? name ?? 'User'}
+        title={email ?? name ?? "User"}
       >
         {localAvatar ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={localAvatar} alt="" className="h-9 w-9 rounded-full object-cover" decoding="async" />
+          <img
+            src={localAvatar}
+            alt=""
+            className="h-9 w-9 rounded-full object-cover"
+            decoding="async"
+          />
         ) : (
           fallbackInitial
         )}
@@ -173,13 +196,22 @@ export const UserMenu: React.FC<{
                 <div className="h-9 w-9 rounded-full bg-vibrantPurple/15 flex items-center justify-center overflow-hidden">
                   {localAvatar ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={localAvatar} alt="" className="h-9 w-9 object-cover" decoding="async" />
+                    <img
+                      src={localAvatar}
+                      alt=""
+                      className="h-9 w-9 object-cover"
+                      decoding="async"
+                    />
                   ) : (
-                    <span className="text-vibrantPurple font-semibold">{fallbackInitial}</span>
+                    <span className="text-vibrantPurple font-semibold">
+                      {fallbackInitial}
+                    </span>
                   )}
                 </div>
                 <div>
-                  <div className="font-medium text-lightText dark:text-foreground">{name ?? email}</div>
+                  <div className="font-medium text-lightText dark:text-foreground">
+                    {name ?? email}
+                  </div>
                   {email && name && <div className="opacity-80">{email}</div>}
                 </div>
               </div>
@@ -187,7 +219,9 @@ export const UserMenu: React.FC<{
           )}
 
           <div className="px-4 py-3 border-b border-vibrantPurple/15">
-            <label className="block text-small mb-1">{t('userMenu.language')}</label>
+            <label className="block text-small mb-1">
+              {t("userMenu.language")}
+            </label>
             <select
               className="w-full rounded-md bg-lightBg dark:bg-dark border border-vibrantPurple/20 px-2 py-1"
               value={locale}
@@ -204,9 +238,10 @@ export const UserMenu: React.FC<{
           <div className="py-1">
             {_items.map((it, idx) => {
               const common =
-                'w-full text-left px-4 py-3 flex items-center gap-2 hover:bg-vibrantPurple/10 focus:bg-vibrantPurple/10 focus:outline-none';
+                "w-full text-left px-4 py-3 flex items-center gap-2 hover:bg-vibrantPurple/10 focus:bg-vibrantPurple/10 focus:outline-none";
               if (it.href) {
-                const isInternal = it.href.startsWith('/') || it.href.startsWith('#');
+                const isInternal =
+                  it.href.startsWith("/") || it.href.startsWith("#");
                 return isInternal ? (
                   <Link
                     key={it.label}

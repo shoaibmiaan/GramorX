@@ -1,7 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
-import Link from 'next/link';
-import { BellIcon } from '@/lib/icons';
-import { useNotifications } from '@/components/notifications/NotificationProvider';
+import React, { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { BellIcon } from "@/lib/icons";
+import { useNotifications } from "@/components/notifications/NotificationProvider";
 
 /** Notification bell with dropdown, context-driven and a11y-safe. */
 export const NotificationBell: React.FC = () => {
@@ -20,21 +20,23 @@ export const NotificationBell: React.FC = () => {
       setOpen(false);
     };
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+      if (e.key === "Escape") {
         setOpen(false);
         buttonRef.current?.focus();
       }
     };
-    document.addEventListener('mousedown', onDocClick);
-    document.addEventListener('keydown', onKey);
+    document.addEventListener("mousedown", onDocClick);
+    document.addEventListener("keydown", onKey);
     return () => {
-      document.removeEventListener('mousedown', onDocClick);
-      document.removeEventListener('keydown', onKey);
+      document.removeEventListener("mousedown", onDocClick);
+      document.removeEventListener("keydown", onKey);
     };
   }, [open]);
 
   const markAllAsRead = async () => {
-    await Promise.all(notifications.filter((n) => !n.read_at).map((n) => markRead(n.id)));
+    await Promise.all(
+      notifications.filter((n) => !n.read_at).map((n) => markRead(n.id)),
+    );
   };
 
   return (
@@ -68,17 +70,26 @@ export const NotificationBell: React.FC = () => {
           <div className="flex items-center justify-between border-b border-purpleVibe/20 px-3 py-2">
             <span className="text-sm font-semibold">Notifications</span>
             {unread > 0 && (
-              <button onClick={markAllAsRead} className="text-xs text-purpleVibe hover:underline">
+              <button
+                onClick={markAllAsRead}
+                className="text-xs text-purpleVibe hover:underline"
+              >
                 Mark all as read
               </button>
             )}
           </div>
 
-          <ul id="notification-menu" role="menu" className="max-h-72 overflow-auto text-sm">
+          <ul
+            id="notification-menu"
+            role="menu"
+            className="max-h-72 overflow-auto text-sm"
+          >
             {notifications.map((n) => {
-              const isInternal = n.url?.startsWith('/');
+              const isInternal = n.url?.startsWith("/");
               const row = (
-                <div className={`flex items-start gap-2 px-3 py-2 ${n.read_at ? 'opacity-60' : ''}`}>
+                <div
+                  className={`flex items-start gap-2 px-3 py-2 ${n.read_at ? "opacity-60" : ""}`}
+                >
                   <div className="flex-1">
                     <div className="font-medium">{n.title}</div>
                     {n.body && <div className="text-sm">{n.body}</div>}
@@ -98,7 +109,11 @@ export const NotificationBell: React.FC = () => {
               );
 
               return (
-                <li key={n.id} role="menuitem" className="hover:bg-purpleVibe/5">
+                <li
+                  key={n.id}
+                  role="menuitem"
+                  className="hover:bg-purpleVibe/5"
+                >
                   {n.url ? (
                     isInternal ? (
                       <Link
@@ -126,7 +141,10 @@ export const NotificationBell: React.FC = () => {
                       </a>
                     )
                   ) : (
-                    <button className="block w-full text-left" onClick={() => markRead(n.id)}>
+                    <button
+                      className="block w-full text-left"
+                      onClick={() => markRead(n.id)}
+                    >
                       {row}
                     </button>
                   )}

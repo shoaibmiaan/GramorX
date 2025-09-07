@@ -1,17 +1,17 @@
-import React from 'react';
+import React from "react";
 
 export type FooterGridProps = React.HTMLAttributes<HTMLDivElement> & {
   children?: React.ReactNode;
 };
 
 export const FooterGrid: React.FC<FooterGridProps> = ({
-  className = '',
+  className = "",
   children,
   ...rest
 }) => {
-  const classes = ['grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4', className]
+  const classes = ["grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4", className]
     .filter(Boolean)
-    .join(' ');
+    .join(" ");
   return (
     <div className={classes} {...rest}>
       {children}

@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 export type Subscores = {
   taskResponse?: number;
@@ -20,7 +20,12 @@ function clampBand(b: number) {
   return Math.max(0, Math.min(9, b));
 }
 
-export const ScoreCard: React.FC<ScoreCardProps> = ({ overall, subscores, title='Band Score', className='' }) => {
+export const ScoreCard: React.FC<ScoreCardProps> = ({
+  overall,
+  subscores,
+  title = "Band Score",
+  className = "",
+}) => {
   const band = clampBand(overall);
   const pct = (band / 9) * 100;
 
@@ -47,7 +52,9 @@ export const ScoreCard: React.FC<ScoreCardProps> = ({ overall, subscores, title=
             />
           </svg>
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-h3 font-semibold tabular-nums">{band.toFixed(1)}</div>
+            <div className="text-h3 font-semibold tabular-nums">
+              {band.toFixed(1)}
+            </div>
           </div>
         </div>
         <div>
@@ -55,14 +62,22 @@ export const ScoreCard: React.FC<ScoreCardProps> = ({ overall, subscores, title=
           <div className="text-h2 font-slab">Overall {band.toFixed(1)}</div>
           {subscores && (
             <div className="mt-3 grid grid-cols-2 gap-2 text-small">
-              {Object.entries(subscores).map(([k, v]) => (
-                v != null && (
-                  <div key={k} className="flex items-center justify-between rounded-ds px-2.5 py-1.5 bg-purpleVibe/10 text-lightText dark:text-foreground">
-                    <span className="capitalize">{k.replace(/([A-Z])/g, ' $1')}</span>
-                    <span className="font-semibold tabular-nums">{clampBand(v).toFixed(1)}</span>
-                  </div>
-                )
-              ))}
+              {Object.entries(subscores).map(
+                ([k, v]) =>
+                  v != null && (
+                    <div
+                      key={k}
+                      className="flex items-center justify-between rounded-ds px-2.5 py-1.5 bg-purpleVibe/10 text-lightText dark:text-foreground"
+                    >
+                      <span className="capitalize">
+                        {k.replace(/([A-Z])/g, " $1")}
+                      </span>
+                      <span className="font-semibold tabular-nums">
+                        {clampBand(v).toFixed(1)}
+                      </span>
+                    </div>
+                  ),
+              )}
             </div>
           )}
         </div>

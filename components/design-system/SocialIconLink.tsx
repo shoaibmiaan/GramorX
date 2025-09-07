@@ -1,11 +1,11 @@
-import React from 'react';
+import React from "react";
 
 export const SocialIconLink: React.FC<{
   href: string;
   icon: string; // e.g., 'facebook-f', 'twitter', 'instagram'
   label: string;
   className?: string;
-}> = ({ href, icon, label, className = '' }) => (
+}> = ({ href, icon, label, className = "" }) => (
   <a
     href={href}
     aria-label={label}

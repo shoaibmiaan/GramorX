@@ -1,11 +1,11 @@
 "use client";
 import { env } from "@/lib/env";
-import React, { useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
-import { createClient } from '@supabase/supabase-js';
-import { Alert } from './Alert';
-import { Button } from './Button';
-import { Badge } from './Badge';
+import React, { useEffect, useRef, useState } from "react";
+import Image from "next/image";
+import { createClient } from "@supabase/supabase-js";
+import { Alert } from "./Alert";
+import { Button } from "./Button";
+import { Badge } from "./Badge";
 
 type Props = {
   userId: string | null;
@@ -17,15 +17,15 @@ type Props = {
 
 const supabase = createClient(
   env.NEXT_PUBLIC_SUPABASE_URL,
-  env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
 );
 
 export const AvatarUploader: React.FC<Props> = ({
   userId,
   onUploaded,
-  className = '',
+  className = "",
   initialUrl,
-  bucket = 'avatars',
+  bucket = "avatars",
 }) => {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(initialUrl ?? null);
@@ -42,12 +42,12 @@ export const AvatarUploader: React.FC<Props> = ({
   }, [file]);
 
   const onSelect = (f: File) => {
-    if (!f.type.startsWith('image/')) {
-      setError('Please choose an image file (JPG/PNG/WebP).');
+    if (!f.type.startsWith("image/")) {
+      setError("Please choose an image file (JPG/PNG/WebP).");
       return;
     }
     if (f.size > 3 * 1024 * 1024) {
-      setError('Max size is 3MB.');
+      setError("Max size is 3MB.");
       return;
     }
     setError(null);
@@ -56,18 +56,25 @@ export const AvatarUploader: React.FC<Props> = ({
 
   const upload = async () => {
     if (!userId || !file) return;
-    setBusy(true); setError(null);
+    setBusy(true);
+    setError(null);
 
-    const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+    const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
     const path = `${userId}/avatar-${Date.now()}.${ext}`;
 
-    const { error: upErr } = await supabase.storage.from(bucket).upload(path, file, {
-      cacheControl: '3600',
-      upsert: true,
-      contentType: file.type,
-    });
+    const { error: upErr } = await supabase.storage
+      .from(bucket)
+      .upload(path, file, {
+        cacheControl: "3600",
+        upsert: true,
+        contentType: file.type,
+      });
 
-    if (upErr) { setBusy(false); setError(upErr.message); return; }
+    if (upErr) {
+      setBusy(false);
+      setError(upErr.message);
+      return;
+    }
 
     // Public URL (switch to signed if bucket is private)
     const { data } = supabase.storage.from(bucket).getPublicUrl(path);
@@ -80,16 +87,20 @@ export const AvatarUploader: React.FC<Props> = ({
   return (
     <div className={`card-surface p-4 rounded-ds ${className}`}>
       <div
-        onDragOver={(e) => { e.preventDefault(); setDrag(true); }}
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDrag(true);
+        }}
         onDragLeave={() => setDrag(false)}
         onDrop={(e) => {
-          e.preventDefault(); setDrag(false);
+          e.preventDefault();
+          setDrag(false);
           const f = e.dataTransfer.files?.[0];
           if (f) onSelect(f);
         }}
         className={`
           border-2 border-dashed rounded-ds p-6 text-center cursor-pointer
-          ${drag ? 'border-primary bg-primary/5' : 'border-border dark:border-vibrantPurple/20'}
+          ${drag ? "border-primary bg-primary/5" : "border-border dark:border-vibrantPurple/20"}
         `}
         onClick={() => inputRef.current?.click()}
       >
@@ -104,7 +115,9 @@ export const AvatarUploader: React.FC<Props> = ({
         ) : (
           <div className="text-grayish">
             <div className="text-h3 mb-1">Upload avatar</div>
-            <div className="text-small opacity-80">Drag & drop or click to browse</div>
+            <div className="text-small opacity-80">
+              Drag & drop or click to browse
+            </div>
             <div className="mt-2">
               <Badge size="sm">JPG • PNG • WebP • ≤3MB</Badge>
             </div>
@@ -123,14 +136,27 @@ export const AvatarUploader: React.FC<Props> = ({
         }}
       />
 
-      {error && <Alert variant="error" className="mt-3">{error}</Alert>}
+      {error && (
+        <Alert variant="error" className="mt-3">
+          {error}
+        </Alert>
+      )}
 
       <div className="mt-3 flex gap-3 justify-center">
-        <Button variant="secondary" onClick={() => inputRef.current?.click()} className="rounded-ds-xl">
+        <Button
+          variant="secondary"
+          onClick={() => inputRef.current?.click()}
+          className="rounded-ds-xl"
+        >
           Choose file
         </Button>
-        <Button variant="primary" onClick={upload} disabled={!file || !userId || busy} className="rounded-ds-xl">
-          {busy ? 'Uploading…' : 'Upload'}
+        <Button
+          variant="primary"
+          onClick={upload}
+          disabled={!file || !userId || busy}
+          className="rounded-ds-xl"
+        >
+          {busy ? "Uploading…" : "Upload"}
         </Button>
       </div>
     </div>

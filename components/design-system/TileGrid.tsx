@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 export type TileGridProps = React.HTMLAttributes<HTMLDivElement> & {
   /** Tailwind gap utility, e.g., "gap-4" */
@@ -9,13 +9,13 @@ export type TileGridProps = React.HTMLAttributes<HTMLDivElement> & {
 };
 
 export const TileGrid: React.FC<TileGridProps> = ({
-  gap = 'gap-4',
-  cols = '',
-  className = '',
+  gap = "gap-4",
+  cols = "",
+  className = "",
   children,
   ...rest
 }) => {
-  const classes = ['grid', gap, cols, className].filter(Boolean).join(' ');
+  const classes = ["grid", gap, cols, className].filter(Boolean).join(" ");
   return (
     <div className={classes} {...rest}>
       {children}

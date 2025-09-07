@@ -1,7 +1,7 @@
 // components/design-system/NavLink.tsx
-import Link from 'next/link';
-import { useRouter } from 'next/router';
-import * as React from 'react';
+import Link from "next/link";
+import { useRouter } from "next/router";
+import * as React from "react";
 
 type Props = {
   href: string;
@@ -9,7 +9,7 @@ type Props = {
   label?: string;
   exact?: boolean;
   className?: string;
-  variant?: 'pill' | 'plain';
+  variant?: "pill" | "plain";
 };
 
 export const NavLink: React.FC<Props> = ({
@@ -17,16 +17,16 @@ export const NavLink: React.FC<Props> = ({
   children,
   label,
   exact = false,
-  className = '',
-  variant = 'pill',
+  className = "",
+  variant = "pill",
 }) => {
   const { pathname, asPath } = useRouter();
   // consider hashes as internal (e.g., #pricing)
   const current = asPath || pathname;
   const isActive = exact ? current === href : current.startsWith(href);
 
-  const base = variant === 'pill' ? 'nav-pill' : 'inline-flex items-center';
-  const active = isActive ? 'is-active' : '';
+  const base = variant === "pill" ? "nav-pill" : "inline-flex items-center";
+  const active = isActive ? "is-active" : "";
 
   return (
     <Link href={href} className={`${base} ${active} ${className}`.trim()}>
