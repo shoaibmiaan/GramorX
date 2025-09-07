@@ -19,10 +19,10 @@ export const Radio: React.FC<RadioProps> = ({
         type="radio"
         className={[
           "mt-1 h-5 w-5 border rounded-full",
-          "text-primary focus:ring-2 focus:ring-primary focus:outline-none",
-          "dark:bg-dark/50 dark:border-purpleVibe/30 dark:focus:ring-electricBlue",
+          "text-primary focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background focus:outline-none",
+          "dark:bg-dark/50 dark:border-purpleVibe/30 ",
           error
-            ? "border-sunsetOrange focus:ring-sunsetOrange"
+            ? "border-sunsetOrange focus-visible:ring focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             : "border-border",
         ].join(" ")}
         {...props}

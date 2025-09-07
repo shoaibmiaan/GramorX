@@ -67,7 +67,7 @@ export const QuestionMCQ: React.FC<{
               <input
                 type="radio"
                 name={group}
-                className="h-4 w-4 text-primary focus:ring-primary dark:focus:ring-electricBlue"
+                className="h-4 w-4 text-primary focus-visible:ring focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background "
                 checked={value === opt.key}
                 onChange={() => onChange?.(opt.key)}
               />
@@ -134,7 +134,7 @@ export const QuestionGapFill: React.FC<{
     <QuestionShell number={number} status={status} className={className}>
       <input
         type="text"
-        className="w-full rounded-ds border border-border bg-card text-lightText placeholder-mutedText focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-dark/50 dark:text-foreground dark:placeholder-mutedText/40 dark:border-purpleVibe/30 dark:focus:ring-electricBlue dark:focus:border-electricBlue px-3 py-2"
+        className="w-full rounded-ds border border-border bg-card text-lightText placeholder-mutedText focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background focus:border-primary dark:bg-dark/50 dark:text-foreground dark:placeholder-mutedText/40 dark:border-purpleVibe/30  dark:focus:border-electricBlue px-3 py-2"
         value={value}
         onChange={(e) => onChange?.(e.target.value)}
         placeholder={placeholder}

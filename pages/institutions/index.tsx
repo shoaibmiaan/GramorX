@@ -7,7 +7,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { Button } from '@/components/design-system/Button'
 import { Input } from '@/components/design-system/Input'
-import { Skeleton } from '@/components/ui/skeleton'
+import { Skeleton } from '@/components/design-system/Skeleton'
 
 // ---------- Types ----------
 type OrgRow = { id: string; name: string; code: string | null; logo_url: string | null }

@@ -165,7 +165,7 @@ export const UserMenu: React.FC<{
         aria-controls="user-menu"
         onClick={() => setOpen((v) => !v)}
         onKeyDown={onButtonKeyDown}
-        className="h-9 w-9 rounded-full bg-vibrantPurple/15 text-vibrantPurple font-semibold flex items-center justify-center hover:bg-vibrantPurple/25 focus:outline-none focus:ring-2 focus:ring-vibrantPurple"
+        className="h-9 w-9 rounded-full bg-vibrantPurple/15 text-vibrantPurple font-semibold flex items-center justify-center hover:bg-vibrantPurple/25 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background "
         title={email ?? name ?? "User"}
       >
         {localAvatar ? (

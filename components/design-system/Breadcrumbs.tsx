@@ -14,7 +14,7 @@ export const Breadcrumbs: React.FC<{ items: Crumb[]; className?: string }> = ({
             {c.href ? (
               <Link
                 href={c.href}
-                className="hover:text-lightText dark:hover:text-foreground focus:outline-none focus:ring-2 focus:ring-primary rounded-ds px-1"
+                className="hover:text-lightText dark:hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-ds px-1"
               >
                 {c.label}
               </Link>

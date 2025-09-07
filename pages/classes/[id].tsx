@@ -5,7 +5,7 @@ import Link from 'next/link'
 import type { GetServerSideProps } from 'next'
 import { Button } from '@/components/design-system/Button'
 import { Input } from '@/components/design-system/Input'
-import { Skeleton } from '@/components/ui/skeleton'
+import { Skeleton } from '@/components/design-system/Skeleton'
 import { supabaseServer } from '@/lib/supabaseServer'
 
 // ---------- Types ----------

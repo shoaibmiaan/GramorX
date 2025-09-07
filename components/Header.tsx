@@ -95,7 +95,7 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
           {/* Brand */}
           <Link
             href={user?.id ? '/dashboard' : '/'}
-            className="flex items-center gap-3 group focus:outline-none focus:ring-2 focus:ring-border rounded-ds"
+            className="flex items-center gap-3 group focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background  rounded-ds"
             aria-label="Go to home"
           >
             <span className="relative inline-flex items-center justify-center rounded-xl bg-card p-1.5 shadow-sm ring-1 ring-border">

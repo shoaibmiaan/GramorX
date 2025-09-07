@@ -66,7 +66,7 @@ const Field = ({
       onChange={(e) => onChange(Number(e.target.value))}
       className={type === 'range'
         ? 'mt-2 w-full'
-        : 'mt-2 w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary'}
+        : 'mt-2 w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background'}
     />
   </label>
 );

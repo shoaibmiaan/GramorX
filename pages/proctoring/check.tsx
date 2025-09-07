@@ -7,7 +7,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { Button } from '@/components/design-system/Button'
 import { Input } from '@/components/design-system/Input'
-import { Skeleton } from '@/components/ui/skeleton'
+import { Skeleton } from '@/components/design-system/Skeleton'
 import { precheck } from '@/lib/proctoring'
 
 // DS helpers
@@ -113,7 +113,7 @@ import Head from 'next/head'
 import Link from 'next/link'
 import type { GetServerSideProps } from 'next'
 import { Button } from '@/components/design-system/Button'
-import { Skeleton } from '@/components/ui/skeleton'
+import { Skeleton } from '@/components/design-system/Skeleton'
 import { startSession, verifyFrame, sendFlag } from '@/lib/proctoring'
 
 export type ExamPageProps = { attemptId: string }

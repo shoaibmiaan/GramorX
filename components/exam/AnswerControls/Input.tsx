@@ -62,7 +62,7 @@ export const AnswerInput = React.forwardRef<HTMLInputElement, AnswerInputProps>(
           className={[
             'w-full rounded-md border border-border bg-background',
             compact ? 'px-2 py-1.5 text-sm' : 'px-3 py-2 text-base',
-            'outline-none focus:ring-2 focus:ring-primary/40',
+            'outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background/40',
             error ? 'ring-1 ring-red-500/40' : '',
           ].join(' ')}
           {...rest}
