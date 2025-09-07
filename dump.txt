@@ -1,0 +1,574 @@
+[1] ----- design-system/tokens/colors.js -----
+// design-system/tokens/colors.js
+module.exports = {
+  primary: '#4361ee',
+  primaryDark: '#3a56d4',
+  secondary: '#f72585',
+  accent: '#4cc9f0',
+  success: '#2ec4b6',
+  purpleVibe: '#9d4edd',
+  electricBlue: '#00bbf9',
+  neonGreen: '#80ffdb',
+  sunsetOrange: '#ff6b6b',
+  goldenYellow: '#ffd166',
+  dark: '#0f0f1b',
+  darker: '#070710',
+  lightBg: '#f0f2f5',
+  lightText: '#1a1a2e',
+  // Darkened for improved contrast on light backgrounds
+  grayish: '#6a6a86',
+
+  // Added (for desired_design alignment)
+  vibrantPurple: '#9d4edd', // alias for utilities (same hue as purpleVibe)
+  sunsetRed: '#ff4d4d',     // CTA gradient end
+  lightCard: '#ffffff',     // light surface bg
+  lightBorder: '#e0e0e0',   // light surface border
+  // Generic border token (alias of lightBorder)
+  border: '#e0e0e0',
+  mutedText: '#d0d0e0',     // subtle text color
+};
+
+
+[2] ----- design-system/tokens/scale.js -----
+// design-system/tokens/scale.js
+module.exports = {
+  radius: {
+    none: '0',
+    sm: '0.375rem', // 6px
+    md: '0.75rem',  // 12px
+    lg: '1rem',     // 16px
+    xl: '1.25rem',  // 20px
+    '2xl': '1.5rem' // 24px
+  },
+  spacing: {
+    // extends Tailwind's scale with project-specific steps
+    3.5: '0.875rem',  // 14px
+    17.5: '4.375rem', // 70px
+    18: '4.5rem',     // 72px
+    22: '5.5rem',     // 88px
+    30: '7.5rem',     // 120px
+    220: '55rem'      // 880px
+  },
+  typeScale: {
+    // Existing
+    display: ['3rem', { lineHeight: '1.1', letterSpacing: '-0.01em' }], // 48px
+    h1: ['2.25rem', { lineHeight: '1.15' }],  // 36px
+    h2: ['1.875rem', { lineHeight: '1.2' }],  // 30px
+    h3: ['1.5rem', { lineHeight: '1.3' }],    // 24px
+    body: ['1rem', { lineHeight: '1.6' }],    // 16px
+    small: ['0.875rem', { lineHeight: '1.5' }], // 14px
+
+    // Added (for desired_design hero / headings & fine text)
+    displayLg: ['3.5rem', { lineHeight: '1.2', letterSpacing: '-0.02em' }], // 56px — big hero
+    h4: ['1.25rem', { lineHeight: '1.4' }],    // 20px — useful for card titles
+    caption: ['0.75rem', { lineHeight: '1.4' }], // 12px — helper/labels
+    tiny: ['0.6875rem', { lineHeight: '1.4' }],  // 11px — fine print
+    micro: ['0.625rem', { lineHeight: '1.4' }], // 10px — micro text
+  }
+};
+
+
+[3] ----- premium-ui/tokens/colors.ts -----
+export const pr = {
+bg: 'var(--pr-bg)',
+fg: 'var(--pr-fg)',
+card: 'var(--pr-card)',
+border: 'var(--pr-border)',
+primary: 'var(--pr-primary)',
+onPrimary: 'var(--pr-on-primary)',
+accent: 'var(--pr-accent)',
+danger: 'var(--pr-danger)',
+success: 'var(--pr-success)',
+warning: 'var(--pr-warning)',
+};
+
+[4] ----- premium-ui/tokens/shadows.ts -----
+export const shadows = {
+glow: '0 12px 40px rgba(0,0,0,0.35)',
+};
+
+[5] ----- premium-ui/tokens/typography.ts -----
+export const typography = {
+fontDisplay: 'Inter, ui-sans-serif, system-ui, sans-serif',
+fontMono: 'JetBrains Mono, ui-monospace, monospace',
+};
+
+[6] ----- styles/globals.css -----
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Ensure full-height layout */
+html, body, #__next { height: 100%; }
+
+/* =========================
+   Color tokens → RGB triplets
+   (must match design-system/tokens/colors.js)
+   ========================= */
+:root{
+  --color-primary:        67 97 238;   /* #4361ee */
+  --color-primaryDark:    58 86 212;   /* #3a56d4 */
+  --color-secondary:     247 37 133;   /* #f72585 */
+  --color-accent:         76 201 240;  /* #4cc9f0 */
+  --color-success:        46 196 182;  /* #2ec4b6 */
+
+  --color-purpleVibe:    157 78 221;   /* #9d4edd */
+  --color-vibrantPurple: 157 78 221;   /* alias */
+  --color-electricBlue:    0 187 249;  /* #00bbf9 */
+  --color-neonGreen:     128 255 219;  /* #80ffdb */
+  --color-sunsetOrange:  255 107 107;  /* #ff6b6b */
+  --color-sunsetRed:     255  77  77;  /* #ff4d4d */
+  --color-goldenYellow:  255 209 102;  /* #ffd166 */
+
+  --color-dark:           15  15  27;  /* #0f0f1b */
+  --color-darker:          7   7  16;  /* #070710 */
+  --color-lightBg:       240 242 245;  /* #f0f2f5 */
+  --color-lightText:      26  26  46;  /* #1a1a2e */
+  --color-grayish:       138 138 156;  /* #8a8a9c */
+
+  --color-lightCard:     255 255 255;  /* #ffffff */
+  --color-lightBorder:   224 224 224;  /* #e0e0e0 */
+  --color-mutedText:     208 208 224;  /* #d0d0e0 */
+}
+
+/* Light = default; Dark via .dark on <html> (next-themes) */
+body { @apply font-sans text-lightText bg-lightBg overflow-x-hidden relative; }
+.dark body { @apply text-white bg-gradient-to-br from-darker to-dark; }
+
+/* =========================
+   Headings → Roboto Slab (no circular apply)
+   ========================= */
+@layer base {
+  h1, h2, h3, .heading { @apply font-slab; }
+}
+
+/* =========================
+   Header / Nav (GLOBAL)
+   ========================= */
+.header-glass {
+  @apply text-lightText bg-white/90 backdrop-blur-md border-b border-gray-200;
+}
+.dark .header-glass {
+  @apply text-white bg-dark/95 border-vibrantPurple/20;
+}
+
+/* Navigation pill with underline (active & hover) */
+.nav-pill{
+  @apply relative inline-flex items-center justify-center rounded-full px-4 py-2 transition;
+  /* Light theme text */
+  @apply text-lightText/80 hover:text-lightText;
+  background: transparent;
+}
+.dark .nav-pill{
+  /* Dark theme text */
+  @apply text-white/90 hover:text-white;
+}
+
+/* underline */
+.nav-pill::after{
+  content:""; position:absolute; left:50%; transform:translateX(-50%);
+  bottom:-6px; height:3px; width:60%;
+  background: rgb(var(--color-neonGreen));
+  border-radius:9999px; opacity:0; transition:opacity .25s ease;
+}
+.nav-pill:hover::after{ opacity:.9; }
+
+/* active pill background (light vs dark) */
+.nav-pill.is-active{ @apply bg-vibrantPurple/10; }
+.dark .nav-pill.is-active{ @apply bg-white/5; }
+.nav-pill.is-active::after{ opacity:1; }
+
+/* Container utility */
+.container { @apply max-w-[1200px] mx-auto px-5; }
+
+/* =========================
+   Buttons (GLOBAL pretty hover)
+   ========================= */
+.btn {
+  @apply inline-flex items-center justify-center font-semibold rounded-full px-8 py-3
+         relative overflow-hidden transition;
+  transition-property: transform, box-shadow, filter, background-position, background-image, opacity;
+  transition-duration: .35s;
+  transition-timing-function: cubic-bezier(.22,.61,.36,1);
+}
+
+/* Shine sweep overlay */
+.btn--fx::after{
+  content:""; position:absolute; inset:-2px;
+  background: linear-gradient(120deg, transparent 30%, rgba(255,255,255,.22) 50%, transparent 70%);
+  transform: translateX(-150%) skewX(-20deg);
+  transition: transform .65s ease;
+  pointer-events: none;
+}
+.btn--fx:hover::after{ transform: translateX(150%) skewX(-20deg); }
+
+/* Lift + stronger glow on hover; slight press on active */
+.btn--fx:hover{ transform: translateY(-2px) scale(1.02); }
+.btn--fx:active{ transform: translateY(-1px) scale(0.995); }
+
+/* Gradient drift */
+.btn-primary, .btn-accent { background-size: 200% 200%; background-position: 0% 50%; }
+.btn-primary:hover, .btn-accent:hover { background-position: 100% 50%; }
+
+/* Variants */
+.btn-primary  { @apply text-white bg-gradient-to-br from-purpleVibe to-electricBlue shadow-glow; }
+.btn-primary:hover {
+  background-image: linear-gradient(135deg,
+    rgb(var(--color-electricBlue)),
+    rgb(var(--color-purpleVibe)));
+  @apply shadow-glowLg;
+}
+
+.btn-secondary{ @apply border-2 border-primary text-primary bg-transparent; }
+.dark .btn-secondary { @apply border-neonGreen text-neonGreen; }
+
+.btn-accent   { @apply text-white bg-gradient-to-br from-sunsetOrange to-sunsetRed shadow-glow; }
+.btn-accent:hover {
+  background-image: linear-gradient(135deg,
+    rgb(var(--color-sunsetRed)),
+    rgb(var(--color-sunsetOrange)));
+  @apply shadow-glowLg;
+}
+
+/* =========================
+   Badges / chips
+   ========================= */
+.streak-chip { @apply bg-primary/10 text-primary font-semibold rounded-ds px-4 py-2 flex items-center gap-2; }
+.dark .streak-chip { @apply bg-purpleVibe/15 text-neonGreen; }
+
+/* =========================
+   Card surfaces
+   ========================= */
+.card-surface { @apply rounded-ds-2xl border bg-lightCard border-lightBorder text-lightText; }
+.dark .card-surface { @apply border-vibrantPurple/20 backdrop-blur-md bg-purpleVibe/10 text-white; }
+
+/* Glass card variant (used by waitlist/testimonials etc.) */
+.card-glass {
+  @apply rounded-ds-2xl backdrop-blur-xl border shadow-glowLg;
+  @apply bg-white/70 text-lightText border-lightBorder;
+}
+.dark .card-glass {
+  @apply bg-purpleVibe/10 text-white border-vibrantPurple/20;
+}
+
+/* =========================
+   Text gradients
+   ========================= */
+.text-gradient-primary { @apply bg-clip-text text-transparent bg-gradient-to-r from-purpleVibe to-electricBlue; }
+.text-gradient-accent  { @apply bg-clip-text text-transparent bg-gradient-to-r from-neonGreen to-electricBlue; }
+.text-gradient-vertical{ @apply bg-clip-text text-transparent bg-gradient-to-b from-neonGreen to-electricBlue; }
+
+/* Footer link hover: color shift + tiny gradient underline */
+.footer-link{
+  @apply relative inline-flex items-center text-gray-600 dark:text-grayish transition-colors duration-200;
+}
+.footer-link::after{
+  content:""; position:absolute; left:0; bottom:-2px; height:2px; width:0%;
+  background: linear-gradient(90deg,
+    rgb(var(--color-purpleVibe)),
+    rgb(var(--color-electricBlue)));
+  border-radius:9999px; transition: width .25s ease;
+}
+.footer-link:hover{ @apply text-electricBlue; }
+.footer-link:hover::after{ width:100%; }
+
+/* Neon label for inputs */
+.label-neon { @apply text-neonGreen font-medium; }
+
+/* Dark section helper (hero/modules/pricing/waitlist) */
+.section-dark { @apply bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90; }
+
+/* AI sidebar helpers (theme aware, token-only) */
+.ai-icon-btn{
+  @apply h-9 w-9 grid place-items-center rounded-lg hover:bg-vibrantPurple/10 text-lightText dark:text-white;
+}
+.ai-tab{
+  @apply px-3 py-1.5 rounded-full text-lightText/80 dark:text-white/80 hover:text-lightText dark:hover:text-white;
+}
+.ai-tab.is-active{
+  @apply bg-vibrantPurple/10 text-lightText dark:text-white;
+}
+
+/* AI sidebar split view */
+:root { --gx-ai-right: 0px; --gx-ai-bottom: 0px; }
+
+/* Push content when AI sidebar is open */
+html.gx-ai-open #__next { padding-right: var(--gx-ai-right); box-sizing: border-box; }
+@media (max-width: 767px) {
+  html.gx-ai-open-bottom #__next { padding-bottom: var(--gx-ai-bottom); box-sizing: border-box; }
+}
+
+[7] ----- styles/premium.css -----
+/* Premium Exam Room CSS Variables
+   Attach a theme by setting: <html data-pr-theme="carbon"> etc.
+   The Tailwind build for premium should include this file.
+*/
+
+:root, html {
+  --pr-radius: 16px;
+  --pr-shadow-md: 0 8px 24px rgba(0,0,0,0.20);
+  --pr-shadow-lg: 0 18px 48px rgba(0,0,0,0.30);
+  --pr-ring: 0 0 0 3px color-mix(in oklab, var(--pr-primary), white 40%);
+}
+
+/* Carbon Noir (dark) */
+html[data-pr-theme="carbon"] {
+  --pr-bg: #0B0F1A;
+  --pr-fg: #E6EAF2;
+  --pr-card: #121829;
+  --pr-border: #24304A;
+  --pr-primary: #00E0B8;
+  --pr-on-primary: #001413;
+  --pr-accent: #7B61FF;
+  --pr-danger: #FF6B6B;
+  --pr-warning: #FFD166;
+  --pr-success: #12B886;
+}
+
+/* Ivory Quartz (light) */
+html[data-pr-theme="ivory"] {
+  --pr-bg: #FBFBFD;
+  --pr-fg: #0D1220;
+  --pr-card: #FFFFFF;
+  --pr-border: #E6E9F2;
+  --pr-primary: #4C6FFF;
+  --pr-on-primary: #FFFFFF;
+  --pr-accent: #12B886;
+  --pr-danger: #E03131;
+  --pr-warning: #F59F00;
+  --pr-success: #2F9E44;
+}
+
+/* Royal Aster (navy+gold) */
+html[data-pr-theme="royal"] {
+  --pr-bg: #0A1226;
+  --pr-fg: #F6F7FB;
+  --pr-card: #0F1A3A;
+  --pr-border: #1C2A55;
+  --pr-primary: #D9B970; /* gold */
+  --pr-on-primary: #1A1200;
+  --pr-accent: #2E8BFF;
+  --pr-danger: #FF7A85;
+  --pr-warning: #FFD68A;
+  --pr-success: #89F0C0;
+}
+
+/* Aurora Neo (vibrant gradient) */
+html[data-pr-theme="aurora"] {
+  --pr-bg: #0C0C15;
+  --pr-fg: #EDEFFF;
+  --pr-card: #131324;
+  --pr-border: #2A2A45;
+  --pr-primary: #9A4DFF;
+  --pr-on-primary: #130027;
+  --pr-accent: #15D1C2;
+  --pr-danger: #FF87B7;
+  --pr-warning: #FFC46B;
+  --pr-success: #5BE7A9;
+  background-image: radial-gradient(1000px 600px at 10% -10%, rgba(154,77,255,0.12), transparent 60%),
+                    radial-gradient(1200px 700px at 110% 10%, rgba(21,209,194,0.10), transparent 70%);
+  background-attachment: fixed;
+}
+
+/* Utilities (optional) */
+.pr-themed .card {
+  border-radius: var(--pr-radius);
+  background: var(--pr-card);
+  border: 1px solid var(--pr-border);
+  box-shadow: var(--pr-shadow-md);
+}
+
+
+[8] ----- styles/themes/autumn.css -----
+html[data-season='autumn'] {
+  --season-bg: #fff7f0;
+  --season-accent: #d2691e;
+}
+
+
+[9] ----- styles/themes/index.css -----
+@import './spring.css';
+@import './summer.css';
+@import './autumn.css';
+@import './winter.css';
+
+
+[10] ----- styles/themes/spring.css -----
+html[data-season='spring'] {
+  --season-bg: #fdf6f6;
+  --season-accent: #ff6b6b;
+}
+
+
+[11] ----- styles/themes/summer.css -----
+html[data-season='summer'] {
+  --season-bg: #fffbe6;
+  --season-accent: #ffa500;
+}
+
+
+[12] ----- styles/themes/winter.css -----
+html[data-season='winter'] {
+  --season-bg: #f0f8ff;
+  --season-accent: #1e90ff;
+}
+
+
+[13] ----- styles/tokens.css -----
+/* Design tokens → CSS variables
+   (must match design-system/tokens/colors.js) */
+:root {
+  --color-primary:        67 97 238;   /* #4361ee */
+  --color-primaryDark:    58 86 212;   /* #3a56d4 */
+  --color-secondary:     247 37 133;  /* #f72585 */
+  --color-accent:         76 201 240;  /* #4cc9f0 */
+  --color-success:        46 196 182;  /* #2ec4b6 */
+
+  --color-purpleVibe:    157 78 221;   /* #9d4edd */
+  --color-vibrantPurple: 157 78 221;   /* alias */
+  --color-electricBlue:    0 187 249;  /* #00bbf9 */
+  --color-neonGreen:     128 255 219;  /* #80ffdb */
+  --color-sunsetOrange:  255 107 107;  /* #ff6b6b */
+  --color-sunsetRed:     255  77  77;  /* #ff4d4d */
+  --color-goldenYellow:  255 209 102;  /* #ffd166 */
+
+  --color-dark:           15  15  27;  /* #0f0f1b */
+  --color-darker:          7   7  16;  /* #070710 */
+  --color-lightBg:       240 242 245;  /* #f0f2f5 */
+  --color-lightText:      26  26  46;  /* #1a1a2e */
+  /* darker gray for accessible body text on light backgrounds */
+  --color-grayish:       106 106 134;  /* #6a6a86 */
+
+  --color-lightCard:     255 255 255;  /* #ffffff */
+  --color-lightBorder:   224 224 224;  /* #e0e0e0 */
+  --color-border:        224 224 224;  /* #e0e0e0 */
+  --color-mutedText:     208 208 224;  /* #d0d0e0 */
+
+  /* Generic tokens */
+  --color-background: var(--color-lightBg);
+  --color-foreground: var(--color-lightText);
+}
+
+.dark {
+  --color-background: var(--color-darker);
+  --color-foreground: 255 255 255;
+}
+
+
+[14] ----- tailwind.config.js -----
+/** @type {import('tailwindcss').Config} */
+const colors = require('./design-system/tokens/colors.js');
+const scale = require('./design-system/tokens/scale.js');
+
+module.exports = {
+  darkMode: ['class'],
+  content: [
+    './pages/**/*.{js,ts,jsx,tsx}',
+    './components/**/*.{js,ts,jsx,tsx}',
+    './app/**/*.{js,ts,jsx,tsx}',
+  ],
+  theme: {
+    extend: {
+      // Use CSS vars so slash opacity works: e.g., border-vibrantPurple/20
+      colors: {
+        primary:       'rgb(var(--color-primary) / <alpha-value>)',
+        primaryDark:   'rgb(var(--color-primaryDark) / <alpha-value>)',
+        secondary:     'rgb(var(--color-secondary) / <alpha-value>)',
+        accent:        'rgb(var(--color-accent) / <alpha-value>)',
+        success:       'rgb(var(--color-success) / <alpha-value>)',
+        purpleVibe:    'rgb(var(--color-purpleVibe) / <alpha-value>)',
+        vibrantPurple: 'rgb(var(--color-vibrantPurple) / <alpha-value>)',
+        electricBlue:  'rgb(var(--color-electricBlue) / <alpha-value>)',
+        neonGreen:     'rgb(var(--color-neonGreen) / <alpha-value>)',
+        sunsetOrange:  'rgb(var(--color-sunsetOrange) / <alpha-value>)',
+        sunsetRed:     'rgb(var(--color-sunsetRed) / <alpha-value>)',
+        goldenYellow:  'rgb(var(--color-goldenYellow) / <alpha-value>)',
+        dark:          'rgb(var(--color-dark) / <alpha-value>)',
+        darker:        'rgb(var(--color-darker) / <alpha-value>)',
+        lightBg:       'rgb(var(--color-lightBg) / <alpha-value>)',
+        lightText:     'rgb(var(--color-lightText) / <alpha-value>)',
+        grayish:       'rgb(var(--color-grayish) / <alpha-value>)',
+        lightCard:     'rgb(var(--color-lightCard) / <alpha-value>)',
+        lightBorder:   'rgb(var(--color-lightBorder) / <alpha-value>)',
+        mutedText:     'rgb(var(--color-mutedText) / <alpha-value>)',
+      },
+
+      borderRadius: {
+        ds: scale.radius.lg,
+        'ds-xl': scale.radius.xl,
+        'ds-2xl': scale.radius['2xl'],
+      },
+      spacing: { ...scale.spacing },
+      fontSize: { ...scale.typeScale },
+
+      boxShadow: {
+        glow: '0 10px 20px rgba(157,78,221,0.3)',
+        glowLg: '0 20px 30px rgba(157,78,221,0.3)',
+      },
+
+      fontFamily: {
+        // Use next/font variables globally
+        sans: ['var(--font-sans)', 'Poppins', 'ui-sans-serif'],
+        slab: ['var(--font-display)', 'Roboto Slab', 'serif'],
+
+        // keep legacy alias if referenced anywhere
+        poppins: ['Poppins', 'sans-serif'],
+      },
+    },
+  },
+  plugins: [],
+};
+
+[15] ----- tailwind.config.premium.js -----
+/** Premium Tailwind Config (for building public/premium.css)
+ *  - Use a 'pr-' prefix so styles don't collide with the main site.
+ *  - Map utilities to CSS variables defined in styles/premium.css.
+ */
+const scale = require('./design-system/tokens/scale.js');
+module.exports = {
+  darkMode: ['class', '[data-pr-theme="carbon"]'],
+  prefix: 'pr-',
+  content: [
+    './premium-ui/**/*.{ts,tsx,js,jsx}',
+    './stories/**/*.{ts,tsx,js,jsx,mdx}',
+    './pages/**/*.{ts,tsx,js,jsx}',
+    './components/**/*.{ts,tsx,js,jsx}',
+  ],
+  theme: {
+    extend: {
+      colors: {
+        bg: 'var(--pr-bg)',
+        fg: 'var(--pr-fg)',
+        card: 'var(--pr-card)',
+        border: 'var(--pr-border)',
+        primary: 'var(--pr-primary)',
+        on: {
+          primary: 'var(--pr-on-primary)',
+        },
+        accent: 'var(--pr-accent)',
+        danger: 'var(--pr-danger)',
+        warning: 'var(--pr-warning)',
+        success: 'var(--pr-success)',
+      },
+      borderRadius: {
+        xl: 'var(--pr-radius)',
+        '2xl': 'calc(var(--pr-radius) + 8px)',
+      },
+      boxShadow: {
+        md: 'var(--pr-shadow-md)',
+        lg: 'var(--pr-shadow-lg)',
+        ring: 'var(--pr-ring)',
+      },
+      transitionDuration: {
+        150: '150ms',
+        200: '200ms',
+      },
+      fontSize: { ...scale.typeScale },
+    },
+  },
+  plugins: [
+    require('tailwindcss-animate'),
+  ],
+};
+
+
