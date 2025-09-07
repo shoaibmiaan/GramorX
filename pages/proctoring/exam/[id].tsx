@@ -5,7 +5,7 @@ import * as React from 'react'
 import Head from 'next/head'
 import Link from 'next/link'
 import type { GetServerSideProps } from 'next'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/design-system/Button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { startSession, verifyFrame, sendFlag } from '@/lib/proctoring'
 
