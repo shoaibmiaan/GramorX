@@ -1,231 +1,208 @@
 // components/design-system/Input.tsx
-import React, {
-  useId,
-  useState,
-  forwardRef,
-  useImperativeHandle,
-  useRef,
-} from "react";
+import React, { useId, useState, forwardRef, useImperativeHandle, useRef } from 'react'
 
-/** tiny class combiner */
-const cx = (...xs: Array<string | false | null | undefined>) =>
-  xs.filter(Boolean).join(" ");
+const cx = (...xs: Array<string | false | null | undefined>) => xs.filter(Boolean).join(' ')
 
-export type InputSize = "sm" | "md" | "lg";
-export type InputVariant = "solid" | "subtle" | "ghost" | "underline";
-export type InputState = "none" | "success" | "warning" | "danger";
+export type InputSize = 'sm' | 'md' | 'lg'
+export type InputVariant = 'solid' | 'subtle' | 'ghost' | 'underline'
+export type InputState = 'none' | 'success' | 'warning' | 'danger'
 
-export type InputProps = Omit<
-  React.InputHTMLAttributes<HTMLInputElement>,
-  "size"
-> & {
-  label?: string;
-  hint?: string;
-  error?: string; // shows below field; sets aria-invalid + tone=danger
-  state?: InputState; // visual tone without error text (success/warning/danger)
-  iconLeft?: React.ReactNode;
-  iconRight?: React.ReactNode;
-  size?: InputSize;
-  variant?: InputVariant;
-  rounded?: "ds" | "ds-xl" | "ds-2xl" | "lg" | "xl" | "2xl";
-  addonLeft?: React.ReactNode;
-  addonRight?: React.ReactNode;
-  clearable?: boolean;
-  onClear?: () => void;
-  passwordToggle?: boolean; // works when type="password"
-  loading?: boolean;
-  showCounter?: boolean;
-  requiredMark?: boolean;
-};
+export type InputProps = Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'> & {
+  label?: string
+  /** Enable nice float label (works with placeholder=" ") */
+  floatLabel?: boolean
+  hint?: string
+  error?: string
+  state?: InputState
+  iconLeft?: React.ReactNode
+  iconRight?: React.ReactNode
+  size?: InputSize
+  variant?: InputVariant
+  rounded?: 'ds' | 'ds-xl' | 'ds-2xl' | 'lg' | 'xl' | '2xl'
+  addonLeft?: React.ReactNode
+  addonRight?: React.ReactNode
+  clearable?: boolean
+  onClear?: () => void
+  passwordToggle?: boolean
+  loading?: boolean
+  showCounter?: boolean
+  requiredMark?: boolean
+}
 
-const sizeMap: Record<
-  InputSize,
-  { input: string; icon: string; addon: string; label: string }
-> = {
-  sm: {
-    input: "h-9 text-sm",
-    icon: "h-4 w-4",
-    addon: "px-2 text-xs",
-    label: "text-xs",
-  },
-  md: {
-    input: "h-10",
-    icon: "h-5 w-5",
-    addon: "px-3 text-sm",
-    label: "text-small",
-  },
-  lg: {
-    input: "h-12 text-base",
-    icon: "h-5 w-5",
-    addon: "px-4",
-    label: "text-sm",
-  },
-};
+const sizeMap: Record<InputSize, { h: string; text: string; padX: string; icon: string; addon: string; label: string }> = {
+  sm: { h: 'h-9',  text: 'text-sm',  padX: 'px-3', icon: 'h-4 w-4', addon: 'px-2 text-xs', label: 'text-xs' },
+  md: { h: 'h-10', text: 'text-[0.95rem]', padX: 'px-4', icon: 'h-5 w-5', addon: 'px-3 text-sm', label: 'text-small' },
+  lg: { h: 'h-12', text: 'text-base', padX: 'px-4', icon: 'h-5 w-5', addon: 'px-4', label: 'text-sm' },
+}
 
-const roundedMap: Record<NonNullable<InputProps["rounded"]>, string> = {
-  ds: "rounded-ds",
-  "ds-xl": "rounded-ds-xl",
-  "ds-2xl": "rounded-ds-2xl",
-  lg: "rounded-lg",
-  xl: "rounded-xl",
-  "2xl": "rounded-2xl",
-};
+const roundedMap = {
+  ds: 'rounded-ds',
+  'ds-xl': 'rounded-ds-xl',
+  'ds-2xl': 'rounded-ds-2xl',
+  lg: 'rounded-lg',
+  xl: 'rounded-xl',
+  '2xl': 'rounded-2xl',
+} as const
+
+const roundedLeft = {
+  ds: 'rounded-l-ds',
+  'ds-xl': 'rounded-l-ds-xl',
+  'ds-2xl': 'rounded-l-ds-2xl',
+  lg: 'rounded-l-lg',
+  xl: 'rounded-l-xl',
+  '2xl': 'rounded-l-2xl',
+} as const
+
+const roundedRight = {
+  ds: 'rounded-r-ds',
+  'ds-xl': 'rounded-r-ds-xl',
+  'ds-2xl': 'rounded-r-ds-2xl',
+  lg: 'rounded-r-lg',
+  xl: 'rounded-r-xl',
+  '2xl': 'rounded-r-2xl',
+} as const
 
 const variantBase: Record<InputVariant, string> = {
   solid: cx(
-    "bg-card text-card-foreground border border-border",
-    "focus:bg-card focus:border-primary focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+    'bg-card text-card-foreground border border-border',
+    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background'
   ),
   subtle: cx(
-    "bg-background text-foreground border border-border",
-    "focus:border-primary focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+    'bg-background text-foreground border border-border',
+    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background'
   ),
   ghost: cx(
-    "bg-transparent text-foreground border border-transparent",
-    "hover:border-border focus:border-primary focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+    'bg-transparent text-foreground border border-transparent',
+    'hover:border-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background'
   ),
   underline: cx(
-    "bg-transparent text-foreground border-0 border-b border-border rounded-none",
-    "focus:border-b-primary focus-visible:ring-0",
+    'bg-transparent text-foreground border-0 border-b border-border rounded-none',
+    'focus-visible:outline-none focus-visible:ring-0 focus-visible:border-b-primary'
   ),
-};
+}
 
-const stateCls: Record<Exclude<InputState, "none">, string> = {
-  success: "border-success focus:border-success focus-visible:ring-success/30",
-  warning:
-    "border-goldenYellow focus:border-goldenYellow focus-visible:ring-goldenYellow/30",
-  danger:
-    "border-sunsetRed focus:border-sunsetRed focus-visible:ring-sunsetRed/30",
-};
+const stateCls: Record<Exclude<InputState, 'none'>, string> = {
+  success: 'border-success focus-visible:border-success focus-visible:ring-success/30',
+  warning: 'border-goldenYellow focus-visible:border-goldenYellow focus-visible:ring-goldenYellow/30',
+  danger:  'border-sunsetRed focus-visible:border-sunsetRed focus-visible:ring-sunsetRed/30',
+}
 
 const Spinner: React.FC<{ className?: string }> = ({ className }) => (
   <span
     role="status"
     aria-hidden="true"
-    className={cx(
-      "inline-block animate-spin rounded-full border-2 border-foreground/40 border-t-foreground",
-      "h-4 w-4",
-      className,
-    )}
+    className={cx('inline-block animate-spin rounded-full border-2 border-foreground/40 border-t-foreground h-4 w-4', className)}
   />
-);
+)
 
-/** Named export preserved */
 export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
   {
     label,
+    floatLabel,
     hint,
     error,
-    state = "none",
+    state = 'none',
     iconLeft,
     iconRight,
     addonLeft,
     addonRight,
-    className = "",
+    className = '',
     id,
-    size = "md",
-    variant = "subtle",
-    rounded = "ds",
+    size = 'md',
+    variant = 'subtle',
+    rounded = 'ds',
     clearable,
     onClear,
     passwordToggle,
     loading,
     showCounter,
     requiredMark,
-    type = "text",
+    type = 'text',
     value,
     defaultValue,
     maxLength,
+    disabled,
+    readOnly,
     ...props
   },
-  ref,
+  ref
 ) {
-  const generatedId = useId();
-  const inputId = id || generatedId;
+  const generatedId = useId()
+  const inputId = id || generatedId
 
-  const isPasswordToggle = type === "password" && passwordToggle;
-  const [reveal, setReveal] = useState(false);
+  const isPasswordToggle = type === 'password' && passwordToggle
+  const [reveal, setReveal] = useState(false)
 
-  const [uncontrolledVal, setUncontrolledVal] = useState<
-    string | number | readonly string | undefined
-  >(defaultValue);
-  const controlled = value !== undefined;
+  const [uncontrolledVal, setUncontrolledVal] = useState<string | number | readonly string | undefined>(defaultValue)
+  const controlled = value !== undefined
 
-  const inputRef = useRef<HTMLInputElement>(null);
-  useImperativeHandle(ref, () => inputRef.current as HTMLInputElement);
+  const inputRef = useRef<HTMLInputElement>(null)
+  useImperativeHandle(ref, () => inputRef.current as HTMLInputElement)
 
-  const describedIds: string[] = [];
-  if (hint) describedIds.push(`${inputId}-hint`);
-  if (error) describedIds.push(`${inputId}-error`);
-  const describedBy = describedIds.length ? describedIds.join(" ") : undefined;
+  const describedIds: string[] = []
+  if (hint) describedIds.push(`${inputId}-hint`)
+  if (error) describedIds.push(`${inputId}-error`)
+  const describedBy = describedIds.length ? describedIds.join(' ') : undefined
 
-  const sz = sizeMap[size];
+  const sz = sizeMap[size]
 
   const baseField = cx(
-    "w-full placeholder-mutedText transition-all duration-200",
-    // turn off number spinners
-    "appearance-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none",
+    'w-full transition-all duration-200 placeholder-mutedText',
+    'appearance-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none',
     variantBase[variant],
-    variant !== "underline" ? roundedMap[rounded] : "",
-    sz.input,
-    "pl-4 pr-4",
-  );
+    variant !== 'underline' ? roundedMap[rounded] : '',
+    sz.h,
+    sz.text,
+    sz.padX
+  )
 
-  const tone = error
-    ? stateCls.danger
-    : state !== "none"
-      ? stateCls[state]
-      : "";
+  const tone =
+    error ? stateCls.danger :
+    state !== 'none' ? stateCls[state] :
+    ''
 
-  const leftPad = iconLeft ? "pl-10" : addonLeft ? "pl-0" : "";
-  const rightStuff =
-    iconRight || clearable || isPasswordToggle || loading || addonRight;
-  const rightPad = rightStuff ? "pr-10" : "";
-
-  const fieldCls = cx(baseField, tone, leftPad, rightPad, className);
+  const hasLeft = Boolean(iconLeft || addonLeft)
+  const hasRight = Boolean(iconRight || clearable || isPasswordToggle || loading || addonRight)
+  const leftPad = iconLeft ? 'pl-10' : addonLeft ? 'pl-0' : ''
+  const rightPad = hasRight ? 'pr-10' : ''
+  const fieldCls = cx(baseField, tone, leftPad, rightPad, disabled && 'opacity-70 cursor-not-allowed', readOnly && 'opacity-90')
 
   const onClearClick = () => {
     if (controlled) {
-      onClear?.();
+      onClear?.()
       if (inputRef.current) {
-        inputRef.current.value = "";
-        inputRef.current.dispatchEvent(new Event("input", { bubbles: true }));
+        inputRef.current.value = ''
+        inputRef.current.dispatchEvent(new Event('input', { bubbles: true }))
       }
     } else {
-      setUncontrolledVal("");
-      onClear?.();
+      setUncontrolledVal('')
+      onClear?.()
     }
-    inputRef.current?.focus();
-  };
+    inputRef.current?.focus()
+  }
 
-  const currVal = (controlled ? value : uncontrolledVal) ?? "";
-  const length =
-    typeof currVal === "string" ? currVal.length : String(currVal).length;
+  const currVal = (controlled ? value : uncontrolledVal) ?? ''
+  const length = typeof currVal === 'string' ? currVal.length : String(currVal).length
 
   return (
     <label htmlFor={inputId} className="block">
-      {label && (
-        <span
-          className={cx(
-            "mb-1.5 inline-block text-small text-mutedText",
-            sz.label,
-          )}
-        >
+      {/* Static label (non-floating) */}
+      {!floatLabel && label && (
+        <span className={cx('mb-1.5 inline-block text-small text-mutedText', sz.label)}>
           {label}
           {requiredMark && <span className="ml-1 text-sunsetRed">*</span>}
         </span>
       )}
 
-      <div
-        className={cx("relative flex items-stretch", error && "text-sunsetRed")}
-      >
+      <div className={cx('relative flex items-stretch', error && 'text-sunsetRed')}>
         {/* Left addon */}
-        {addonLeft && variant !== "underline" && (
+        {addonLeft && variant !== 'underline' && (
           <span
             className={cx(
-              "inline-flex items-center border border-border bg-background text-mutedText",
-              roundedMap[rounded].replace("rounded", "rounded-l"),
-              sz.addon,
+              'inline-flex items-center border border-border bg-background text-mutedText',
+              roundedLeft[rounded],
+              'rounded-r-none',
+              sz.addon
             )}
           >
             {addonLeft}
@@ -234,8 +211,28 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
 
         {/* Left icon */}
         {iconLeft && (
-          <span className="pointer-events-none absolute inset-y-0 left-3 inline-flex items-center text-mutedText opacity-70">
+          <span className={cx(
+            'pointer-events-none absolute inset-y-0 left-3 inline-flex items-center opacity-70',
+            error ? 'text-sunsetRed' : 'text-mutedText'
+          )}>
             {iconLeft}
+          </span>
+        )}
+
+        {/* Floating label */}
+        {floatLabel && label && variant !== 'underline' && (
+          <span
+            className={cx(
+              'pointer-events-none absolute left-4 top-1/2 -translate-y-1/2',
+              'text-mutedText transition-all duration-150',
+              // peer hooks
+              'peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-small',
+              'peer-focus:-top-2 peer-focus:text-[0.75rem] peer-focus:text-foreground',
+              // when has value (controlled or uncontrolled)
+              (currVal ? '-top-2 text-[0.75rem] text-foreground' : '')
+            )}
+          >
+            {label}{requiredMark && <span className="ml-1 text-sunsetRed">*</span>}
           </span>
         )}
 
@@ -244,40 +241,39 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
           id={inputId}
           ref={inputRef}
           {...props}
-          type={isPasswordToggle ? (reveal ? "text" : "password") : type}
+          type={isPasswordToggle ? (reveal ? 'text' : 'password') : type}
           className={cx(
             fieldCls,
-            addonLeft && variant !== "underline" && "rounded-l-none",
-            addonRight && variant !== "underline" && "rounded-r-none",
-            "focus:outline-none",
+            addonLeft && variant !== 'underline' && 'rounded-l-none',
+            addonRight && variant !== 'underline' && 'rounded-r-none',
+            floatLabel && 'peer placeholder-transparent'
           )}
           aria-describedby={describedBy}
-          aria-invalid={!!error || state === "danger" || undefined}
+          aria-invalid={!!error || (state === 'danger') || undefined}
+          disabled={disabled}
+          readOnly={readOnly}
           value={controlled ? value : uncontrolledVal}
           onChange={(e) => {
-            if (!controlled) setUncontrolledVal(e.target.value);
-            props.onChange?.(e);
+            if (!controlled) setUncontrolledVal(e.target.value)
+            props.onChange?.(e)
           }}
+          placeholder={floatLabel ? ' ' : props.placeholder}
           maxLength={maxLength}
         />
 
-        {/* Right cluster (icon/loader/buttons) */}
+        {/* Right cluster */}
         <div className="absolute inset-y-0 right-2 flex items-center gap-2">
           {loading && <Spinner />}
-          {iconRight && (
-            <span className="pointer-events-none inline-flex items-center text-mutedText opacity-70">
-              {iconRight}
-            </span>
-          )}
+          {iconRight && <span className="pointer-events-none inline-flex items-center text-mutedText opacity-70">{iconRight}</span>}
 
           {isPasswordToggle && (
             <button
               type="button"
               className="inline-flex items-center px-2 text-xs text-mutedText hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-ds"
               onClick={() => setReveal((v) => !v)}
-              aria-label={reveal ? "Hide password" : "Show password"}
+              aria-label={reveal ? 'Hide password' : 'Show password'}
             >
-              {reveal ? "Hide" : "Show"}
+              {reveal ? 'Hide' : 'Show'}
             </button>
           )}
 
@@ -294,12 +290,13 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
         </div>
 
         {/* Right addon */}
-        {addonRight && variant !== "underline" && (
+        {addonRight && variant !== 'underline' && (
           <span
             className={cx(
-              "inline-flex items-center border border-border bg-background text-mutedText",
-              roundedMap[rounded].replace("rounded", "rounded-r"),
-              sz.addon,
+              'inline-flex items-center border border-border bg-background text-mutedText',
+              roundedRight[rounded],
+              'rounded-l-none',
+              sz.addon
             )}
           >
             {addonRight}
@@ -311,27 +308,19 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
       <div className="mt-1 flex items-start justify-between gap-3">
         <div className="min-w-0">
           {error ? (
-            <span
-              id={`${inputId}-error`}
-              className="block text-small text-sunsetRed"
-            >
+            <span id={`${inputId}-error`} role="alert" aria-live="polite" className="block text-small text-sunsetRed">
               {error}
             </span>
           ) : hint ? (
-            <span
-              id={`${inputId}-hint`}
-              className="block text-small text-mutedText"
-            >
+            <span id={`${inputId}-hint`} className="block text-small text-mutedText">
               {hint}
             </span>
           ) : null}
         </div>
-        {showCounter && typeof maxLength === "number" && (
-          <span className="text-small text-mutedText">
-            {length} / {maxLength}
-          </span>
+        {showCounter && typeof maxLength === 'number' && (
+          <span className="text-small text-mutedText">{length} / {maxLength}</span>
         )}
       </div>
     </label>
-  );
-});
+  )
+})

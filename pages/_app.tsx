@@ -8,7 +8,7 @@ import { ThemeProvider } from 'next-themes';
 import '@/styles/globals.css';
 import '@/styles/themes/index.css';
 
-import Layout from '@/components/Layout'; // ⬅️ default import (matches the Layout I gave you)
+import Layout from '@/components/Layout';
 import { ToastProvider } from '@/components/design-system/Toaster';
 import { NotificationProvider } from '@/components/notifications/NotificationProvider';
 import { supabaseBrowser } from '@/lib/supabaseBrowser';
@@ -23,24 +23,29 @@ import { ImpersonationBanner } from '@/components/admin/ImpersonationBanner';
 import SidebarAI from '@/components/ai/SidebarAI';
 import AuthAssistant from '@/components/auth/AuthAssistant';
 
+// Existing layouts
+import DashboardLayout from '@/components/layouts/DashboardLayout';
+import PublicMarketingLayout from '@/components/layouts/PublicMarketingLayout';
+import AdminLayout from '@/components/layouts/AdminLayout';
+import LearningLayout from '@/components/layouts/LearningLayout';
+import CommunityLayout from '@/components/layouts/CommunityLayout';
+import MarketplaceLayout from '@/components/layouts/MarketplaceLayout';
+import InstitutionsLayout from '@/components/layouts/InstitutionsLayout';
+
+// NEW layouts
+import AuthLayout from '@/components/layouts/AuthLayout';
+import ReportsLayout from '@/components/layouts/ReportsLayout';
+import ProctoringLayout from '@/components/layouts/ProctoringLayout';
+import ExamLayout from '@/components/layouts/ExamLayout';
+
 import { Poppins, Roboto_Slab } from 'next/font/google';
-const poppins = Poppins({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-  display: 'swap',
-  variable: '--font-sans',
-});
-const slab = Roboto_Slab({
-  subsets: ['latin'],
-  weight: ['400', '600', '700'],
-  display: 'swap',
-  variable: '--font-display',
-});
+const poppins = Poppins({ subsets: ['latin'], weight: ['400','500','600','700'], display: 'swap', variable: '--font-sans' });
+const slab = Roboto_Slab({ subsets: ['latin'], weight: ['400','600','700'], display: 'swap', variable: '--font-display' });
 
 function GuardSkeleton() {
   return (
     <div className="grid min-h-[100dvh] place-items-center">
-      <div className="h-6 w-40 animate-pulse rounded bg-muted" />
+      <div className="h-6 w-40 animate-pulse rounded bg-border" />
     </div>
   );
 }
@@ -53,22 +58,77 @@ function InnerApp({ Component, pageProps }: AppProps) {
   const isAuthPage = useMemo(
     () =>
       /^\/(login|signup|register)(\/|$)/.test(pathname) ||
-      /^\/auth\/(login|signup|register)(\/|$)/.test(pathname),
+      /^\/auth\/(login|signup|register|mfa|verify)(\/|$)/.test(pathname) ||
+      pathname === '/forgot-password',
     [pathname]
   );
   const isNoChromeRoute = useMemo(
-    () => /\/exam(\/|$)|\/exam-room(\/|$)|\/focus-mode(\/|$)/.test(pathname),
-    [pathname]
+    // Keep focus/exam routes chrome-free
+    () => /\/exam(\/|$)|\/exam-room(\/|$)|\/focus-mode(\/|$)/.test(pathname) || isAuthPage,
+    [pathname, isAuthPage]
   );
-  const showLayout = !isPremium && !isAuthPage && !isNoChromeRoute;
+  const showLayout = !isPremium && !isNoChromeRoute;
 
-  // Idle timeout (auto sign-out UX)
+  // Route groups
+  const isDashboardRoute =
+    pathname.startsWith('/dashboard') ||
+    pathname.startsWith('/account') ||
+    pathname.startsWith('/settings') ||
+    pathname.startsWith('/notifications') ||
+    pathname.startsWith('/study-plan') ||
+    pathname.startsWith('/progress') ||
+    pathname.startsWith('/leaderboard') ||
+    pathname.startsWith('/mistakes') ||
+    pathname.startsWith('/pwa');
+
+  const isAdminRoute = pathname.startsWith('/admin') || pathname.startsWith('/teacher');
+
+  const isMarketingRoute =
+    pathname === '/' ||
+    pathname.startsWith('/pricing') ||
+    pathname.startsWith('/predictor') ||
+    pathname.startsWith('/faq') ||
+    pathname.startsWith('/legal') ||
+    pathname.startsWith('/data-deletion');
+
+  const isLearningRoute =
+    pathname.startsWith('/learning') || pathname.startsWith('/content/studio');
+
+  const isCommunityRoute = pathname.startsWith('/community');
+
+  const isMarketplaceRoute =
+    pathname.startsWith('/marketplace') ||
+    pathname.startsWith('/coach') ||
+    pathname.startsWith('/classes') ||
+    pathname.startsWith('/bookings') ||
+    pathname === '/partners';
+
+  const isInstitutionsRoute = pathname.startsWith('/institutions');
+
+  const isReportsRoute =
+    pathname.startsWith('/reports') || pathname.startsWith('/placement');
+
+  const isProctoringRoute =
+    pathname.startsWith('/proctoring/check') || pathname.startsWith('/proctoring/exam');
+
+  const isExamRoute =
+    pathname.startsWith('/mock') ||
+    pathname.startsWith('/listening') ||
+    pathname.startsWith('/reading') ||
+    pathname.startsWith('/writing') ||
+    pathname.startsWith('/speaking') ||
+    pathname.startsWith('/exam/rehearsal') ||
+    pathname.startsWith('/premium/listening') ||
+    pathname.startsWith('/premium/reading') ||
+    pathname.startsWith('/proctoring/exam');
+
+  // Idle timeout
   useEffect(() => {
     const cleanup = initIdleTimeout(env.NEXT_PUBLIC_IDLE_TIMEOUT_MINUTES);
     return cleanup;
   }, []);
 
-  // Sync client session → HttpOnly cookies for SSR/middleware
+  // Sync session → cookies
   useEffect(() => {
     const { data: sub } = supabaseBrowser.auth.onAuthStateChange(async (event, session) => {
       try {
@@ -78,29 +138,21 @@ function InnerApp({ Component, pageProps }: AppProps) {
           credentials: 'same-origin',
           body: JSON.stringify({ event, session }),
         });
-      } catch {
-        // no-op
-      }
+      } catch {}
     });
     return () => sub?.subscription?.unsubscribe();
   }, []);
 
   const { isChecking } = useRouteGuard();
 
-  // Background token expiry safety — don't force-login on /pricing
+  // Sign-out on expiry (but not on pricing/public)
   useEffect(() => {
     const interval = setInterval(async () => {
-      const {
-        data: { session },
-      } = await supabaseBrowser.auth.getSession();
-      const expiresAt = session?.expires_at;
-      if (session && expiresAt && expiresAt <= Date.now() / 1000) {
+      const { data: { session } } = await supabaseBrowser.auth.getSession();
+      const exp = session?.expires_at;
+      if (session && exp && exp <= Date.now() / 1000) {
         await supabaseBrowser.auth.signOut();
-        if (
-          !isGuestOnlyRoute(router.pathname) &&
-          !isPublicRoute(router.pathname) &&
-          !/^\/pricing(\/|$)/.test(router.pathname)
-        ) {
+        if (!isGuestOnlyRoute(router.pathname) && !isPublicRoute(router.pathname) && !/^\/pricing(\/|$)/.test(router.pathname)) {
           router.replace('/login');
         }
       }
@@ -110,7 +162,8 @@ function InnerApp({ Component, pageProps }: AppProps) {
 
   if (isChecking) return <GuardSkeleton />;
 
-  const pageBody = isPremium ? (
+  // Premium routes get their own theme provider
+  const basePage = isPremium ? (
     <PremiumThemeProvider>
       <Component {...pageProps} />
     </PremiumThemeProvider>
@@ -118,25 +171,50 @@ function InnerApp({ Component, pageProps }: AppProps) {
     <Component {...pageProps} />
   );
 
+  // When global chrome is visible, wrap inside <Layout> and choose section layout
+  let content = basePage;
+  if (showLayout) {
+    if (isAdminRoute) content = <AdminLayout>{basePage}</AdminLayout>;
+    else if (isInstitutionsRoute) content = <InstitutionsLayout>{basePage}</InstitutionsLayout>;
+    else if (isDashboardRoute) content = <DashboardLayout>{basePage}</DashboardLayout>;
+    else if (isMarketplaceRoute) content = <MarketplaceLayout>{basePage}</MarketplaceLayout>;
+    else if (isLearningRoute) content = <LearningLayout>{basePage}</LearningLayout>;
+    else if (isCommunityRoute) content = <CommunityLayout>{basePage}</CommunityLayout>;
+    else if (isReportsRoute) content = <ReportsLayout>{basePage}</ReportsLayout>;
+    else if (isExamRoute) content = <ExamLayout>{basePage}</ExamLayout>;
+    else if (isMarketingRoute) content = <PublicMarketingLayout>{basePage}</PublicMarketingLayout>;
+  }
+
+  // When chrome is hidden (auth/proctoring/exam/focus), still apply correct wrappers
+  const nakedContent = isAuthPage ? (
+    <AuthLayout>{basePage}</AuthLayout>
+  ) : isProctoringRoute ? (
+    pathname.startsWith('/proctoring/exam') ? (
+      <ProctoringLayout>
+        <ExamLayout>{basePage}</ExamLayout>
+      </ProctoringLayout>
+    ) : (
+      <ProctoringLayout>{basePage}</ProctoringLayout>
+    )
+  ) : isExamRoute ? (
+    <ExamLayout>{basePage}</ExamLayout>
+  ) : (
+    basePage
+  );
+
   return (
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
-      <Head>
-        {/* We use lucide-react + DS icons now; Font Awesome removed for performance. */}
-        {isPremium ? <link rel="stylesheet" href="/premium.css" /> : null}
-        {/* Optional: PWA/theme color could be set here using tokens */}
-        {/* <meta name="theme-color" content="#000000" /> */}
-      </Head>
-
+      <Head>{isPremium ? <link rel="stylesheet" href="/premium.css" /> : null}</Head>
       <div className={`${poppins.variable} ${slab.variable} ${poppins.className} min-h-[100dvh]`}>
         {showLayout ? (
           <Layout>
             <ImpersonationBanner />
-            {pageBody}
+            {content}
           </Layout>
         ) : (
           <>
             <ImpersonationBanner />
-            {pageBody}
+            {nakedContent}
           </>
         )}
         <AuthAssistant />

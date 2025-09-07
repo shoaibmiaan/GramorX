@@ -1,8 +1,8 @@
+'use client';
+
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import AuthLayout from '@/components/layouts/AuthLayout';
-import AuthSidePanel from '@/components/layouts/AuthSidePanel';
 import { Input } from '@/components/design-system/Input';
 import { PasswordInput } from '@/components/design-system/PasswordInput';
 import { Button } from '@/components/design-system/Button';
@@ -51,7 +51,7 @@ export default function SignupWithPassword() {
           referral,
         }),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({} as any));
       setLoading(false);
 
       if (!res.ok) {
@@ -70,9 +70,7 @@ export default function SignupWithPassword() {
             },
             body: JSON.stringify({ code: referral.trim() }),
           });
-        } catch {
-          // ignore
-        }
+        } catch {}
       }
 
       if (typeof window !== 'undefined') {
@@ -84,28 +82,8 @@ export default function SignupWithPassword() {
     }
   }
 
-  const RightPanel = (
-    <AuthSidePanel
-      title="Create your account"
-      description="Use your email & password to get started."
-      footerLink={
-        <>
-          Already have an account?{' '}
-          <Link href="/login" className="text-primaryDark hover:underline">
-            Log in
-          </Link>
-        </>
-      }
-    />
-  );
-
   return (
-    <AuthLayout
-      title="Sign up with Email"
-      subtitle="Create an account using email & password."
-      right={RightPanel}
-      showRightOnMobile
-    >
+    <>
       {err && (
         <Alert variant="error" title="Error" className="mb-4">
           {err === 'user_exists' ? (
@@ -160,16 +138,21 @@ export default function SignupWithPassword() {
         >
           {loading ? 'Creating…' : 'Create account'}
         </Button>
+        <p className="mt-2 text-xs text-mutedText text-center">
+          By continuing you agree to our{' '}
+          <Link href="/legal/terms" className="underline">Terms</Link> &amp;{' '}
+          <Link href="/legal/privacy" className="underline">Privacy</Link>.
+        </p>
       </form>
 
       <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
         <Button asChild variant="secondary" className="rounded-ds-xl" fullWidth>
           <Link href="/signup">Back to Sign-up Options</Link>
         </Button>
-        <Button asChild variant="ghost" className="rounded-ds-xl" fullWidth>
+        <Button asChild variant="link" className="rounded-ds-xl" fullWidth>
           <Link href="/login">Already have an account? Log in</Link>
         </Button>
       </div>
-    </AuthLayout>
+    </>
   );
 }

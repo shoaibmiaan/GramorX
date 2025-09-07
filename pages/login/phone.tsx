@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+'use client';
+
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import AuthLayout from '@/components/layouts/AuthLayout';
-import AuthSidePanel from '@/components/layouts/AuthSidePanel';
 import { Input } from '@/components/design-system/Input';
 import { Button } from '@/components/design-system/Button';
 import { Alert } from '@/components/design-system/Alert';
@@ -24,8 +24,7 @@ export default function LoginWithPhone() {
   const MAX_RESENDS = Number(process.env.NEXT_PUBLIC_MAX_RESEND_ATTEMPTS ?? 3);
   const RESEND_COOLDOWN = Number(process.env.NEXT_PUBLIC_RESEND_COOLDOWN ?? 30);
 
-  const useSafeEffect = typeof React.useEffect === 'function' ? React.useEffect : () => {};
-  useSafeEffect(() => {
+  useEffect(() => {
     if (!cooldown) return;
     const timer = setInterval(() => setCooldown((c) => (c > 0 ? c - 1 : 0)), 1000);
     return () => clearInterval(timer);
@@ -59,7 +58,7 @@ export default function LoginWithPhone() {
 
     const trimmedPhone = phone.trim();
     setLoading(true);
-    // @ts-expect-error `token` is supported for verification
+    // @ts-expect-error token is supported for verification by supabase-js
     const { data, error } = await supabase.auth.signInWithOtp({ phone: trimmedPhone, token: code });
     setLoading(false);
     if (error) return setErr(getAuthErrorMessage(error));
@@ -102,24 +101,13 @@ export default function LoginWithPhone() {
     }
   }
 
-  const RightPanel = (
-    <AuthSidePanel
-      title="Phone sign-in"
-      description="Use a one-time SMS code to sign in."
-      footerLink={
-        <>
-          Prefer email?{' '}
-          <Link href="/login/email" className="text-primary hover:underline">
-            Use email &amp; password
-          </Link>
-        </>
-      }
-    />
-  );
-
   return (
-    <AuthLayout title="Phone Verification" subtitle="Sign in with an SMS code." right={RightPanel} showRightOnMobile>
-      {err && <Alert variant="error" title="Error" className="mb-4">{err}</Alert>}
+    <>
+      {err && (
+        <Alert variant="error" title="Error" className="mb-4">
+          {err}
+        </Alert>
+      )}
 
       {stage === 'request' ? (
         <form onSubmit={requestOtp} className="space-y-6 mt-2">
@@ -148,7 +136,7 @@ export default function LoginWithPhone() {
             inputMode="numeric"
             placeholder="123456"
             value={code}
-            onChange={(e)=>setCode(e.target.value)}
+            onChange={(e) => setCode(e.target.value)}
             required
           />
           <Button
@@ -176,7 +164,10 @@ export default function LoginWithPhone() {
                   ? 'Resend limit reached'
                   : `Resend code (${MAX_RESENDS - resendAttempts} left)`}
           </Button>
-          <p className="text-small text-grayish dark:text-gray-400 text-center">
+          <p className="text-xs text-mutedText text-center">
+            We never share your number. Standard SMS rates may apply.
+          </p>
+          <p className="text-small text-mutedText text-center">
             {resendAttempts >= MAX_RESENDS
               ? 'No resend attempts left.'
               : cooldown > 0
@@ -189,6 +180,6 @@ export default function LoginWithPhone() {
       <Button asChild variant="secondary" className="mt-6 rounded-ds-xl" fullWidth>
         <Link href="/login">Back to Login Options</Link>
       </Button>
-    </AuthLayout>
+    </>
   );
 }

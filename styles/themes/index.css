@@ -1,3 +1,35 @@
+/* styles/themes/index.css */
+/* Base semantic map consumed by tailwind.config.js (gx-*) */
+:root {
+  --gx-background: var(--color-lightBg);
+  --gx-foreground: var(--color-lightText);
+  --gx-card:       var(--color-lightCard);
+  --gx-card-foreground: var(--color-lightText);
+  --gx-popover:    var(--color-lightCard);
+  --gx-popover-foreground: var(--color-lightText);
+  --gx-border:     var(--color-lightBorder);
+  --gx-input:      var(--color-lightBorder);
+  --gx-ring:       var(--color-electricBlue);
+  --gx-muted:      245 245 248;
+  --gx-muted-foreground: 120 120 140;
+}
+
+/* Dark overrides (works with .dark by next-themes) */
+.dark {
+  --gx-background: 18 18 30;
+  --gx-foreground: 255 255 255;
+  --gx-card:       22 22 34;
+  --gx-card-foreground: 255 255 255;
+  --gx-popover:    22 22 34;
+  --gx-popover-foreground: 255 255 255;
+  --gx-border:     60 60 80;
+  --gx-input:      60 60 80;
+  --gx-ring:       var(--color-neonGreen);
+  --gx-muted:      32 32 48;
+  --gx-muted-foreground: 180 180 200;
+}
+
+/* Optional seasonal themes override selectively */
 @import './spring.css';
 @import './summer.css';
 @import './autumn.css';

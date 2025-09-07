@@ -1,12 +1,21 @@
 // components/design-system/Skeleton.tsx
-import React from "react";
+import * as React from 'react'
 
-export const Skeleton: React.FC<{ className?: string }> = ({
-  className = "",
+export const Skeleton: React.FC<{ className?: string; shape?: 'rect' | 'circle'; animated?: boolean }> = ({
+  className = '',
+  shape = 'rect',
+  animated = true,
 }) => {
   return (
     <div
-      className={`animate-pulse rounded bg-border/50 dark:bg-card/20 ${className}`}
+      className={[
+        animated ? 'animate-pulse' : '',
+        shape === 'circle' ? 'rounded-full' : 'rounded-ds',
+        'bg-muted',
+        className,
+      ].join(' ')}
     />
-  );
-};
+  )
+}
+
+export default Skeleton

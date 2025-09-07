@@ -1,0 +1,29 @@
+/* Light (default) */
+:root {
+  --gx-background: 240 242 245;    /* lightBg */
+  --gx-foreground: 26 26 46;       /* lightText */
+  --gx-card: 255 255 255;          /* lightCard */
+  --gx-card-foreground: 26 26 46;  /* lightText */
+  --gx-border: 224 224 224;        /* lightBorder */
+  --gx-input: 224 224 224;         /* lightBorder */
+  --gx-ring: 0 187 249;            /* electricBlue */
+  --gx-muted: 240 242 245;         /* light-ish bg */
+  --gx-muted-foreground: 138 138 156; /* grayish */
+  --gx-popover: 255 255 255;
+  --gx-popover-foreground: 26 26 46;
+}
+
+/* Dark */
+.dark {
+  --gx-background: 7 7 16;         /* darker */
+  --gx-foreground: 255 255 255;
+  --gx-card: 15 15 27;             /* dark */
+  --gx-card-foreground: 255 255 255;
+  --gx-border: 157 78 221;         /* purpleVibe tint */
+  --gx-input: 157 78 221;
+  --gx-ring: 0 187 249;            /* electricBlue */
+  --gx-muted: 29 29 46;
+  --gx-muted-foreground: 208 208 224;
+  --gx-popover: 15 15 27;
+  --gx-popover-foreground: 255 255 255;
+}

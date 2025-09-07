@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+'use client';
+
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import AuthLayout from '@/components/layouts/AuthLayout';
-import AuthSidePanel from '@/components/layouts/AuthSidePanel';
 import { Input } from '@/components/design-system/Input';
 import { Button } from '@/components/design-system/Button';
 import { Alert } from '@/components/design-system/Alert';
@@ -26,8 +26,7 @@ export default function SignupWithPhone() {
   const MAX_RESENDS = Number(process.env.NEXT_PUBLIC_MAX_RESEND_ATTEMPTS ?? 3);
   const RESEND_COOLDOWN = Number(process.env.NEXT_PUBLIC_RESEND_COOLDOWN ?? 30);
 
-  const useSafeEffect = typeof React.useEffect === 'function' ? React.useEffect : () => {};
-  useSafeEffect(() => {
+  useEffect(() => {
     if (!cooldown) return;
     const timer = setInterval(() => setCooldown((c) => (c > 0 ? c - 1 : 0)), 1000);
     return () => clearInterval(timer);
@@ -72,7 +71,11 @@ export default function SignupWithPhone() {
 
     setLoading(true);
     const trimmedPhone = phone.trim();
-    const { data, error } = await supabase.auth.verifyOtp({ phone: trimmedPhone, token: code, type: 'sms' });
+    const { data, error } = await supabase.auth.verifyOtp({
+      phone: trimmedPhone,
+      token: code,
+      type: 'sms',
+    });
     setLoading(false);
 
     if (error) return setErr(getAuthErrorMessage(error));
@@ -128,24 +131,13 @@ export default function SignupWithPhone() {
     }
   }
 
-  const RightPanel = (
-    <AuthSidePanel
-      title="Phone sign-up"
-      description="Create your account with a one-time SMS code."
-      footerLink={
-        <>
-          Prefer email?{' '}
-          <Link href="/signup/password" className="text-primaryDark hover:underline">
-            Use Email &amp; Password
-          </Link>
-        </>
-      }
-    />
-  );
-
   return (
-    <AuthLayout title="Phone Verification" subtitle="Sign up with an SMS code." right={RightPanel} showRightOnMobile>
-      {err && <Alert variant="error" title="Error" className="mb-4">{err}</Alert>}
+    <>
+      {err && (
+        <Alert variant="error" title="Error" className="mb-4">
+          {err}
+        </Alert>
+      )}
 
       {stage === 'request' ? (
         <form onSubmit={requestOtp} className="space-y-6 mt-2">
@@ -174,8 +166,21 @@ export default function SignupWithPhone() {
         </form>
       ) : (
         <form onSubmit={verifyOtp} className="space-y-6 mt-2">
-          <Input label="Verification code" inputMode="numeric" placeholder="123456" value={code} onChange={(e)=>setCode(e.target.value)} required />
-          <Button type="submit" variant="primary" className="rounded-ds-xl" fullWidth disabled={loading && !resending}>
+          <Input
+            label="Verification code"
+            inputMode="numeric"
+            placeholder="123456"
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            required
+          />
+          <Button
+            type="submit"
+            variant="primary"
+            className="rounded-ds-xl"
+            fullWidth
+            disabled={loading && !resending}
+          >
             {loading && !resending ? 'Verifying…' : 'Verify & Continue'}
           </Button>
           <Button
@@ -194,7 +199,10 @@ export default function SignupWithPhone() {
                   ? 'Resend limit reached'
                   : `Resend code (${MAX_RESENDS - resendAttempts} left)`}
           </Button>
-          <p className="text-small text-grayish dark:text-gray-400 text-center">
+          <p className="text-xs text-mutedText text-center">
+            We never share your number. Standard SMS rates may apply.
+          </p>
+          <p className="text-small text-mutedText text-center">
             {resendAttempts >= MAX_RESENDS
               ? 'No resend attempts left.'
               : cooldown > 0
@@ -207,6 +215,6 @@ export default function SignupWithPhone() {
       <Button asChild variant="secondary" className="mt-6 rounded-ds-xl" fullWidth>
         <Link href="/signup">Back to Sign-up Options</Link>
       </Button>
-    </AuthLayout>
+    </>
   );
 }

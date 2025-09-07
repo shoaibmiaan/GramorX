@@ -2,6 +2,9 @@
 const colors = require('./design-system/tokens/colors.js');
 const scale = require('./design-system/tokens/scale.js');
 
+// semantic color helper for CSS vars
+const semantic = (v) => `rgb(var(--gx-${v}) / <alpha-value>)`;
+
 module.exports = {
   darkMode: ['class'],
   content: [
@@ -13,6 +16,7 @@ module.exports = {
     extend: {
       // Use CSS vars so slash opacity works: e.g., border-vibrantPurple/20
       colors: {
+        // existing DS colors
         primary:       'rgb(var(--color-primary) / <alpha-value>)',
         primaryDark:   'rgb(var(--color-primaryDark) / <alpha-value>)',
         secondary:     'rgb(var(--color-secondary) / <alpha-value>)',
@@ -33,6 +37,19 @@ module.exports = {
         lightCard:     'rgb(var(--color-lightCard) / <alpha-value>)',
         lightBorder:   'rgb(var(--color-lightBorder) / <alpha-value>)',
         mutedText:     'rgb(var(--color-mutedText) / <alpha-value>)',
+
+        // semantic aliases (used by updated components)
+        background:           semantic('background'),
+        foreground:           semantic('foreground'),
+        card:                 semantic('card'),
+        'card-foreground':    semantic('card-foreground'),
+        border:               semantic('border'),
+        input:                semantic('input'),
+        ring:                 semantic('ring'),
+        muted:                semantic('muted'),
+        'muted-foreground':   semantic('muted-foreground'),
+        popover:              semantic('popover'),
+        'popover-foreground': semantic('popover-foreground'),
       },
 
       borderRadius: {

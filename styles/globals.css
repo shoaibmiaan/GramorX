@@ -1,3 +1,6 @@
+/* styles/globals.css */
+@import './semantic.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

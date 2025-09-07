@@ -3,8 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import AuthLayout from '@/components/layouts/AuthLayout';
-import AuthSidePanel from '@/components/layouts/AuthSidePanel';
+
 import { Button } from '@/components/design-system/Button';
 import { Alert } from '@/components/design-system/Alert';
 import { Badge } from '@/components/design-system/Badge';
@@ -20,7 +19,7 @@ import { destinationByRole } from '@/lib/routeAccess';
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mb-3 text-small uppercase tracking-wide text-mutedText">
+    <div className="mb-3 text-sm uppercase tracking-wide text-mutedText">
       {children}
     </div>
   );
@@ -37,7 +36,9 @@ export default function LoginOptions() {
   useEffect(() => {
     let mounted = true;
     (async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
       if (!mounted) return;
 
@@ -52,13 +53,14 @@ export default function LoginOptions() {
           return;
         }
       }
-
       setReady(true);
     })();
-
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, [router.query.next, router.asPath, router.replace]);
 
+  // Persist role in query + localStorage
   useEffect(() => {
     if (!router.isReady) return;
     const roleQuery = typeof router.query.role === 'string' ? router.query.role : null;
@@ -103,9 +105,7 @@ export default function LoginOptions() {
 
       const origin = typeof window !== 'undefined' ? window.location.origin : undefined;
       const next = `/dashboard${selectedRole ? `?role=${encodeURIComponent(selectedRole)}` : ''}`;
-      const redirectTo = origin
-        ? `${origin}/auth/callback?next=${encodeURIComponent(next)}`
-        : undefined;
+      const redirectTo = origin ? `${origin}/auth/callback?next=${encodeURIComponent(next)}` : undefined;
 
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
@@ -119,49 +119,18 @@ export default function LoginOptions() {
     }
   }
 
-  const RightPanel = (
-    <AuthSidePanel
-      title="Sign in to GramorX"
-      description="One account for all IELTS modules — Listening, Reading, Writing, and Speaking — with AI feedback and progress tracking."
-      features={[
-        <>🔒 Secure OAuth (Apple, Google, Facebook)</>,
-        <>📱 Phone OTP sign-in</>,
-        <>📧 Email &amp; Password</>,
-        <>📊 Personalized study plan &amp; analytics</>,
-      ]}
-      footerLink={
-        <>
-          By continuing, you agree to our{' '}
-          <Link href="/legal/terms" className="text-primary hover:underline hover:text-primary/80 transition">
-            Terms
-          </Link>{' '}
-          and{' '}
-          <Link href="/legal/privacy" className="text-primary hover:underline hover:text-primary/80 transition">
-            Privacy Policy
-          </Link>
-          .
-        </>
-      }
-    />
-  );
-
   if (!ready) {
     return (
-      <AuthLayout title="Checking session…" subtitle="" right={RightPanel} showRightOnMobile>
-        <div className="p-6 text-mutedText" aria-live="polite">Please wait…</div>
-      </AuthLayout>
+      <div className="p-6 text-mutedText" aria-live="polite">
+        Checking session… Please wait.
+      </div>
     );
   }
 
   return (
-    <AuthLayout
-      title="Welcome back"
-      subtitle="Choose a sign-in method."
-      right={RightPanel}
-      showRightOnMobile
-    >
+    <>
       {err && (
-        <Alert variant="error" title="Error" className="mb-4" role="status">
+        <Alert variant="error" title="Error" className="mb-4" role="status" aria-live="assertive">
           {err}
         </Alert>
       )}
@@ -170,7 +139,6 @@ export default function LoginOptions() {
         <>
           <SectionLabel>Sign in as</SectionLabel>
 
-          {/* Role chooser: soft chips with selected state */}
           <div className="grid gap-3">
             <Button
               onClick={() => chooseRole('student')}
@@ -200,68 +168,69 @@ export default function LoginOptions() {
               <span className="font-medium">Teacher</span>
             </Button>
           </div>
+
+          <div className="mt-6 text-sm text-mutedText">
+            By continuing, you agree to our{' '}
+            <Link href="/legal/terms" className="text-primary hover:underline hover:text-primary/80 transition">
+              Terms
+            </Link>{' '}
+            and{' '}
+            <Link href="/legal/privacy" className="text-primary hover:underline hover:text-primary/80 transition">
+              Privacy Policy
+            </Link>
+            .
+          </div>
         </>
       ) : (
         <>
-          <SectionLabel>Continue with</SectionLabel>
+          <SectionLabel>Sign in</SectionLabel>
 
           <div className="grid gap-3">
-            {/* Apple (Coming Soon) */}
-            <Button
-              disabled
-              variant="soft"
-              tone="secondary"
-              size="lg"
-              shape="rounded"
-              fullWidth
-              className="relative opacity-75"
-              leadingIcon={<AppleIcon className="h-5 w-5" />}
-            >
-              Continue with Apple
-              <Badge variant="info" size="sm" className="absolute right-3 top-2 animate-pulse">
-                Coming Soon
-              </Badge>
-            </Button>
-
-            <Button
-              onClick={() => oauth('google')}
-              loading={busy === 'google'}
-              loadingText="Opening Google…"
-              variant="secondary"
-              size="lg"
-              shape="rounded"
-              fullWidth
-              leadingIcon={<GoogleIcon className="h-5 w-5" />}
-            >
-              Continue with Google
-            </Button>
-
-            <Button
-              onClick={() => oauth('facebook')}
-              loading={busy === 'facebook'}
-              loadingText="Opening Facebook…"
-              variant="secondary"
-              size="lg"
-              shape="rounded"
-              fullWidth
-              leadingIcon={<FacebookIcon className="h-5 w-5" />}
-            >
-              Continue with Facebook
-            </Button>
-
-            {/* Email (uses Button href instead of asChild) */}
+            {/* Email = main CTA */}
             <Button
               href={`/login/email${selectedRole ? `?role=${selectedRole}` : ''}`}
-              variant="secondary"
+              variant="primary"
               size="lg"
               shape="rounded"
               fullWidth
               leadingIcon={<MailIcon className="h-5 w-5" />}
             >
-              Email (Password)
+              Email &amp; Password
             </Button>
 
-            {/* Phone (Coming Soon) */}
+            {/* Google (soft primary) */}
+            <Button
+              onClick={() => oauth('google')}
+              loading={busy === 'google'}
+              loadingText="Opening Google…"
+              variant="soft"
+              tone="primary"
+              size="lg"
+              shape="rounded"
+              fullWidth
+              leadingIcon={<GoogleIcon className="h-5 w-5" />}
+              aria-label="Sign in with Google"
+            >
+              Sign in with Google
+            </Button>
+
+            {/* Facebook (soft accent) */}
+            <Button
+              onClick={() => oauth('facebook')}
+              loading={busy === 'facebook'}
+              loadingText="Opening Facebook…"
+              variant="soft"
+              tone="accent"
+              size="lg"
+              shape="rounded"
+              fullWidth
+              leadingIcon={<FacebookIcon className="h-5 w-5" />}
+              aria-label="Sign in with Facebook"
+            >
+              Sign in with Facebook
+            </Button>
+
+            {/* Apple (soft secondary, disabled) */}
             <Button
               disabled
               variant="soft"
@@ -269,17 +238,32 @@ export default function LoginOptions() {
               size="lg"
               shape="rounded"
               fullWidth
-              className="relative opacity-75"
-              leadingIcon={<SmsIcon className="h-5 w-5" />}
+              className="justify-between opacity-75"
+              leadingIcon={<AppleIcon className="h-5 w-5" />}
+              aria-disabled="true"
             >
-              Phone (OTP)
-              <Badge variant="info" size="sm" className="absolute right-3 top-2 animate-pulse">
-                Coming Soon
-              </Badge>
+              <span>Sign in with Apple</span>
+              <Badge variant="info" size="sm">Coming Soon</Badge>
+            </Button>
+
+            {/* Phone (soft secondary, disabled) */}
+            <Button
+              disabled
+              variant="soft"
+              tone="secondary"
+              size="lg"
+              shape="rounded"
+              fullWidth
+              className="justify-between opacity-75"
+              leadingIcon={<SmsIcon className="h-5 w-5" />}
+              aria-disabled="true"
+            >
+              <span>Phone (OTP)</span>
+              <Badge variant="info" size="sm">Coming Soon</Badge>
             </Button>
           </div>
 
-          <div className="mt-6 flex items-center justify-between text-small text-mutedText">
+          <div className="mt-6 flex items-center justify-between text-sm text-mutedText">
             <div>
               New here?{' '}
               <Link
@@ -295,6 +279,6 @@ export default function LoginOptions() {
           </div>
         </>
       )}
-    </AuthLayout>
+    </>
   );
 }

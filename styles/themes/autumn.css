@@ -1,4 +1,3 @@
-html[data-season='autumn'] {
-  --season-bg: #fff7f0;
-  --season-accent: #d2691e;
+:root.autumn {
+  --gx-ring: var(--color-sunsetOrange);
 }

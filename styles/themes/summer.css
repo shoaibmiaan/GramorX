@@ -1,4 +1,3 @@
-html[data-season='summer'] {
-  --season-bg: #fffbe6;
-  --season-accent: #ffa500;
+:root.summer {
+  --gx-ring: var(--color-electricBlue);
 }
