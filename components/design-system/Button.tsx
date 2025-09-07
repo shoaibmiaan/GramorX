@@ -1,20 +1,20 @@
 // components/design-system/Button.tsx
-import * as React from 'react';
-import Link from 'next/link';
+import * as React from 'react'
+import Link from 'next/link'
 
 /** tiny class combiner */
 const cx = (...xs: Array<string | false | null | undefined>) =>
-  xs.filter(Boolean).join(' ');
+  xs.filter(Boolean).join(' ')
 
 /** Visual weight/style of the button */
 export type ButtonVariant =
-  | 'primary'      // backward-compatible: solid + primary tone
+  | 'primary'      // solid + primary tone (gradient class applied)
   | 'secondary'    // solid + secondary tone
-  | 'accent'       // solid + accent tone
+  | 'accent'       // solid + accent tone (gradient class applied)
   | 'outline'
   | 'soft'
   | 'ghost'
-  | 'link';
+  | 'link'
 
 /** Semantic color family */
 export type ButtonTone =
@@ -23,50 +23,51 @@ export type ButtonTone =
   | 'accent'
   | 'success'
   | 'warning'
-  | 'danger';
+  | 'danger'
 
-export type ButtonSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
-export type ButtonShape = 'pill' | 'rounded' | 'square';
+export type ButtonSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl'
+export type ButtonShape = 'pill' | 'rounded' | 'square'
 
 export type ButtonProps = {
-  variant?: ButtonVariant;
+  variant?: ButtonVariant
   /** Optional tone override (works with outline/soft/ghost/link too) */
-  tone?: ButtonTone;
-  size?: ButtonSize;
-  shape?: ButtonShape;        // default 'pill'
-  href?: string;              // internal Link or external <a>
-  external?: boolean;         // force external <a>
-  fullWidth?: boolean;
-  loading?: boolean;
-  loadingText?: string;       // default: "Please wait…"
-  disabled?: boolean;
-  leadingIcon?: React.ReactNode;
-  trailingIcon?: React.ReactNode;
-  animated?: boolean;         // enables subtle shine/lift
-  elevateOnHover?: boolean;   // soft glow on hover
-  iconOnly?: boolean;         // square icon button (requires aria-label)
-  children?: React.ReactNode;
-} & React.ButtonHTMLAttributes<HTMLButtonElement>;
+  tone?: ButtonTone
+  size?: ButtonSize
+  shape?: ButtonShape        // default 'pill'
+  href?: string              // internal Link or external <a>
+  external?: boolean         // force external <a>
+  fullWidth?: boolean
+  loading?: boolean
+  loadingText?: string       // default: "Please wait…"
+  disabled?: boolean
+  leadingIcon?: React.ReactNode
+  trailingIcon?: React.ReactNode
+  animated?: boolean         // enables shine/lift (globals.css: .btn .btn--fx)
+  elevateOnHover?: boolean   // soft glow on hover
+  iconOnly?: boolean         // square icon button (requires aria-label)
+  children?: React.ReactNode
+} & React.ButtonHTMLAttributes<HTMLButtonElement>
 
+/** Sizing */
 const sizeClasses: Record<ButtonSize, string> = {
   xs: 'h-8 px-3 text-xs',
   sm: 'h-9 px-4 text-sm',
   md: 'h-10 px-5',
   lg: 'h-12 px-6 text-base',
   xl: 'h-14 px-7 text-lg',
-};
+}
 
+/** Shape */
 const shapeClasses: Record<ButtonShape, string> = {
   pill: 'rounded-full',
   rounded: 'rounded-ds-2xl',
   square: 'aspect-square rounded-ds',
-};
+}
 
-/** Tone → tokenized utilities (no dynamic class names; safe for JIT) */
+/** Tone → tokenized utilities (safe for JIT) */
 const toneTokens = {
   primary: {
     text: 'text-primary',
-    fg: 'text-primary-foreground',
     bg: 'bg-primary',
     hoverBg: 'hover:bg-primary/90',
     border: 'border-primary',
@@ -76,7 +77,6 @@ const toneTokens = {
   },
   secondary: {
     text: 'text-secondary',
-    fg: 'text-secondary-foreground',
     bg: 'bg-secondary',
     hoverBg: 'hover:bg-secondary/90',
     border: 'border-secondary',
@@ -86,7 +86,6 @@ const toneTokens = {
   },
   accent: {
     text: 'text-accent',
-    fg: 'text-accent-foreground',
     bg: 'bg-accent',
     hoverBg: 'hover:bg-accent/90',
     border: 'border-accent',
@@ -96,7 +95,6 @@ const toneTokens = {
   },
   success: {
     text: 'text-success',
-    fg: 'text-lightText',
     bg: 'bg-success',
     hoverBg: 'hover:bg-success/90',
     border: 'border-success',
@@ -106,7 +104,6 @@ const toneTokens = {
   },
   warning: {
     text: 'text-goldenYellow',
-    fg: 'text-dark',
     bg: 'bg-goldenYellow',
     hoverBg: 'hover:bg-goldenYellow/90',
     border: 'border-goldenYellow',
@@ -116,7 +113,6 @@ const toneTokens = {
   },
   danger: {
     text: 'text-sunsetRed',
-    fg: 'text-lightText',
     bg: 'bg-sunsetRed',
     hoverBg: 'hover:bg-sunsetRed/90',
     border: 'border-sunsetRed',
@@ -124,21 +120,29 @@ const toneTokens = {
     hoverSoftBg: 'hover:bg-sunsetRed/15',
     softBorder: 'border-sunsetRed/20',
   },
-} as const;
+} as const
 
-const buildVariant = (variant: ButtonVariant, toneKey: ButtonTone) => {
-  const t = toneTokens[toneKey];
+const buildVariant = (variant: ButtonVariant, toneKey: ButtonTone, animated: boolean) => {
+  const t = toneTokens[toneKey]
 
-  // backward-compatible solid mapping for primary/secondary/accent
+  // solid variants
   if (variant === 'primary' || variant === 'secondary' || variant === 'accent') {
-    const tk = variant as Exclude<ButtonVariant, 'outline' | 'soft' | 'ghost' | 'link'>;
-    const tt = toneTokens[tk as ButtonTone];
-    return cx(
-      tt.bg,
-      tt.fg,
-      tt.hoverBg,
+    // Prefer accessible text on solids
+    const solids = cx(
+      t.bg,
+      'text-white',
+      t.hoverBg,
       'border border-transparent'
-    );
+    )
+    // Hook into global gradient/glow for primary/accent if animated
+    const gradientHook =
+      animated && (variant === 'primary' || variant === 'accent')
+        ? variant === 'primary'
+          ? 'btn-primary'
+          : 'btn-accent'
+        : ''
+
+    return cx(solids, gradientHook)
   }
 
   if (variant === 'outline') {
@@ -148,7 +152,7 @@ const buildVariant = (variant: ButtonVariant, toneKey: ButtonTone) => {
       'border',
       t.border,
       t.hoverSoftBg
-    );
+    )
   }
 
   if (variant === 'soft') {
@@ -158,7 +162,7 @@ const buildVariant = (variant: ButtonVariant, toneKey: ButtonTone) => {
       'border',
       t.softBorder,
       t.hoverSoftBg
-    );
+    )
   }
 
   if (variant === 'ghost') {
@@ -166,23 +170,23 @@ const buildVariant = (variant: ButtonVariant, toneKey: ButtonTone) => {
       'bg-transparent border border-transparent',
       t.text,
       t.hoverSoftBg
-    );
+    )
   }
 
   // link
   return cx(
     'bg-transparent p-0 h-auto rounded-none underline underline-offset-4 border-0',
-    t.text,
-    'hover:opacity-90'
-  );
-};
+    'hover:opacity-90',
+    toneTokens[toneKey].text
+  )
+}
 
 const Spinner: React.FC<{ size?: ButtonSize }> = ({ size = 'sm' }) => {
   const dim =
     size === 'xs' ? 'h-3 w-3' :
     size === 'sm' ? 'h-4 w-4' :
     size === 'md' ? 'h-4 w-4' :
-    size === 'lg' ? 'h-5 w-5' : 'h-6 w-6';
+    size === 'lg' ? 'h-5 w-5' : 'h-6 w-6'
   return (
     <span
       role="status"
@@ -192,8 +196,8 @@ const Spinner: React.FC<{ size?: ButtonSize }> = ({ size = 'sm' }) => {
         dim
       )}
     />
-  );
-};
+  )
+}
 
 export const Button = React.forwardRef<HTMLButtonElement | HTMLAnchorElement, ButtonProps>(
   (
@@ -228,27 +232,28 @@ export const Button = React.forwardRef<HTMLButtonElement | HTMLAnchorElement, Bu
         ? 'secondary'
         : variant === 'accent'
         ? 'accent'
-        : 'primary');
+        : 'primary')
 
     const base = cx(
       'inline-flex items-center justify-center select-none font-medium',
       'transition-all duration-200',
-      'focus:outline-none focus-visible:ring-2 focus-visible:ring-border',
+      // Use DS ring tokens (shadcn-style)
+      'focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
       'disabled:opacity-60 disabled:cursor-not-allowed',
       animated && variant !== 'link' && 'btn btn--fx',
-      elevateOnHover && variant !== 'link' && 'hover:shadow-glow',
-    );
+      elevateOnHover && variant !== 'link' && 'hover:shadow-glow'
+    )
 
     // size & shape (link stays unpadded)
-    const sizeCls = variant === 'link' ? '' : sizeClasses[size];
+    const sizeCls = variant === 'link' ? '' : sizeClasses[size]
     const shapeCls =
       variant === 'link'
         ? ''
         : iconOnly
         ? shapeClasses.square
-        : shapeClasses[shape];
+        : shapeClasses[shape]
 
-    const toneVariantCls = buildVariant(variant, derivedTone);
+    const toneVariantCls = buildVariant(variant, derivedTone, animated)
 
     const cls = cx(
       base,
@@ -257,9 +262,9 @@ export const Button = React.forwardRef<HTMLButtonElement | HTMLAnchorElement, Bu
       fullWidth && 'w-full',
       toneVariantCls,
       className
-    );
+    )
 
-    const inert = disabled || loading;
+    const inert = disabled || loading
     const content = (
       <>
         {loading && (
@@ -269,32 +274,30 @@ export const Button = React.forwardRef<HTMLButtonElement | HTMLAnchorElement, Bu
           </span>
         )}
         {!loading && leadingIcon ? <span className="mr-2 inline-flex">{leadingIcon}</span> : null}
-        {!iconOnly && (
-          <span>{loading ? loadingText : children}</span>
-        )}
+        {!iconOnly && <span>{loading ? loadingText : children}</span>}
         {!loading && trailingIcon ? <span className="ml-2 inline-flex">{trailingIcon}</span> : null}
       </>
-    );
+    )
 
     const dataAttrs = {
       'data-variant': variant,
       'data-tone': derivedTone,
       'data-size': size,
       'data-loading': loading ? '' : undefined,
-    } as const;
+    } as const
 
-    // Icon-only should have an accessible label
-    const computedAriaLabel = iconOnly ? ariaLabel ?? String(children ?? '') : ariaLabel;
+    // Icon-only must be labelled
+    const computedAriaLabel = iconOnly ? ariaLabel ?? String(children ?? '') : ariaLabel
 
     // Link render (inert when disabled/loading)
     if (href) {
-      const isInternal = !external && (href.startsWith('/') || href.startsWith('#'));
+      const isInternal = !external && (href.startsWith('/') || href.startsWith('#'))
       const linkProps = {
         'aria-disabled': inert || undefined,
         tabIndex: inert ? -1 : undefined,
         className: inert ? cls + ' pointer-events-none' : cls,
         ...dataAttrs,
-      };
+      }
 
       if (isInternal) {
         return (
@@ -306,7 +309,7 @@ export const Button = React.forwardRef<HTMLButtonElement | HTMLAnchorElement, Bu
           >
             {content}
           </Link>
-        );
+        )
       }
       return (
         <a
@@ -319,7 +322,7 @@ export const Button = React.forwardRef<HTMLButtonElement | HTMLAnchorElement, Bu
         >
           {content}
         </a>
-      );
+      )
     }
 
     // Button render
@@ -336,9 +339,9 @@ export const Button = React.forwardRef<HTMLButtonElement | HTMLAnchorElement, Bu
       >
         {content}
       </button>
-    );
+    )
   }
-);
+)
 
-Button.displayName = 'Button';
-export default Button;
+Button.displayName = 'Button'
+export default Button

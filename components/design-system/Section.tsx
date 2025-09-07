@@ -1,3 +1,4 @@
+// components/design-system/Section.tsx
 import React from 'react';
 import { Container as DSContainer } from './Container';
 
