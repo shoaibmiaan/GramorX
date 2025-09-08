@@ -1,5 +1,5 @@
-import { Icon } from "@/components/design-system/Icon";
 // components/sections/Modules.tsx
+import { Icon } from "@/components/design-system/Icon";
 import React from 'react';
 import Link from 'next/link';
 import { Container } from '@/components/design-system/Container';
@@ -152,3 +152,5 @@ export const Modules: React.FC = () => {
     </Section>
   );
 };
+
+export default Modules;

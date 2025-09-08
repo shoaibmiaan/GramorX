@@ -1,5 +1,5 @@
-import { Icon } from "@/components/design-system/Icon";
 // components/sections/Waitlist.tsx
+import { Icon } from "@/components/design-system/Icon";
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
 import { Container } from '@/components/design-system/Container';
@@ -34,7 +34,7 @@ const normalizeMonth = (s: string) => {
   return s;
 };
 
-export default function WaitlistSection() {
+export function Waitlist() {
   const router = useRouter();
 
   const [form, setForm] = useState<FormState>({
@@ -214,3 +214,6 @@ export default function WaitlistSection() {
     </Section>
   );
 }
+
+export default Waitlist;
+export { Waitlist as WaitlistSection }; // optional alias if you referenced the old name elsewhere

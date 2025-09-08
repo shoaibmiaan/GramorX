@@ -1,5 +1,5 @@
-import { Icon } from "@/components/design-system/Icon";
 // components/sections/Pricing.tsx
+import { Icon } from "@/components/design-system/Icon";
 import React from 'react';
 import Link from 'next/link';
 import { Container } from '@/components/design-system/Container';
@@ -90,7 +90,6 @@ export const Pricing: React.FC = () => {
               key={t.name}
               className={`p-7 rounded-2xl relative hover:-translate-y-2 transition hover:shadow-glow ${t.featured ? 'ring-1 ring-accent/40' : ''}`}
             >
-              {/* Match Modules.tsx: corner badge */}
               <Badge
                 variant={t.featured ? 'accent' : 'info'}
                 size="sm"
@@ -99,15 +98,12 @@ export const Pricing: React.FC = () => {
                 {t.featured ? 'FEATURED' : 'STANDARD'}
               </Badge>
 
-              {/* Optional ribbon for “MOST POPULAR” */}
               {t.featured && <Ribbon label="MOST POPULAR" variant="accent" position="top-right" />}
 
-              {/* Gradient icon blob like Modules */}
               <div className="w-17.5 h-17.5 rounded-full flex items-center justify-center mb-6 text-white text-2xl bg-gradient-to-br from-purpleVibe to-electricBlue">
                 <i className={`fas ${tierIcon(t.name)}`} aria-hidden="true" />
               </div>
 
-              {/* Title + price block, echoing Modules heading rhythm */}
               <h3 className="text-xl font-semibold mb-2 flex items-center gap-2">
                 <Icon name="circle-check" />
                 {t.name}
@@ -117,7 +113,6 @@ export const Pricing: React.FC = () => {
                 <div className="text-muted-foreground mt-1">{t.period}</div>
               </div>
 
-              {/* Feature list styled exactly like Modules bullets */}
               <ul className="mt-2">
                 {t.features.map((f) => (
                   <li
@@ -130,7 +125,6 @@ export const Pricing: React.FC = () => {
                 ))}
               </ul>
 
-              {/* Actions — keep spacing consistent with Modules */}
               <div className="mt-4 grid gap-3">
                 <Button
                   href={`/checkout?plan=${planSlug(t.name)}`}
@@ -150,3 +144,5 @@ export const Pricing: React.FC = () => {
     </Section>
   );
 };
+
+export default Pricing;
