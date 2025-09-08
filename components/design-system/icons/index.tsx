@@ -1,3 +1,4 @@
+// components/design-system/icons/index.tsx
 import * as React from 'react'
 import { Icon } from '@/components/design-system/Icon'
 
@@ -10,6 +11,5 @@ export const MailIcon: React.FC<IconProps> = (props) => <Icon name="mail" {...pr
 export const PhoneIcon: React.FC<IconProps> = (props) => <Icon name="phone" {...props} />
 export const MapPinIcon: React.FC<IconProps> = (props) => <Icon name="map-pin" {...props} />
 
-// Default export (so you can import *all* icons if needed)
 const Icons = { MailIcon, PhoneIcon, MapPinIcon }
 export default Icons
