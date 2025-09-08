@@ -76,7 +76,7 @@ export const Timer: React.FC<TimerProps> = ({
   const intent =
     mode === "countdown" && seconds <= 60
       ? "text-sunsetOrange"
-      : "text-lightText dark:text-foreground";
+      : "text-foreground dark:text-foreground";
 
   return (
     <div

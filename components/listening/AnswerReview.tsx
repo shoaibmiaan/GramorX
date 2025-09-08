@@ -147,7 +147,7 @@ export default function AnswerReview({ questions, answers, className = '' }: Pro
 
                 {/* Type-specific context */}
                 {q.type === 'mcq' && q.options?.length ? (
-                  <div className="text-small text-grayish mb-2">
+                  <div className="text-small text-muted-foreground mb-2">
                     Options: {q.options.map((opt, idx) => (
                       <span key={idx} className="inline-block mr-2">
                         <span className="font-semibold">{String.fromCharCode(65 + idx)}.</span> {opt}
@@ -157,7 +157,7 @@ export default function AnswerReview({ questions, answers, className = '' }: Pro
                 ) : null}
 
                 {q.type === 'match' && (q.match_left?.length || q.match_right?.length) ? (
-                  <div className="text-small text-grayish mb-2">
+                  <div className="text-small text-muted-foreground mb-2">
                     <div>Left: {q.match_left?.join(', ') || '—'}</div>
                     <div>Right: {q.match_right?.join(', ') || '—'}</div>
                   </div>

@@ -18,7 +18,7 @@ export const CommandCenterTile: React.FC<CommandCenterTileProps> = ({ label, hre
     )}
   >
     <span>{label}</span>
-    <i className={`fas ${icon} text-grayish`} aria-hidden="true" />
+    <i className={`fas ${icon} text-muted-foreground`} aria-hidden="true" />
   </Link>
 );
 

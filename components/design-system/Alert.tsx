@@ -61,12 +61,12 @@ export const Alert: React.FC<{
   const tone: Record<Variant, Record<Appearance, string>> = {
     info: {
       soft: 'bg-electricBlue/10 text-electricBlue border-electricBlue/30',
-      solid: 'bg-electricBlue text-lightText border-electricBlue',
+      solid: 'bg-electricBlue text-foreground border-electricBlue',
       outline: 'bg-transparent text-electricBlue border-electricBlue',
     },
     success: {
       soft: 'bg-success/10 text-success border-success/30',
-      solid: 'bg-success text-lightText border-success',
+      solid: 'bg-success text-foreground border-success',
       outline: 'bg-transparent text-success border-success',
     },
     warning: {
@@ -76,7 +76,7 @@ export const Alert: React.FC<{
     },
     error: {
       soft: 'bg-sunsetRed/10 text-sunsetRed border-sunsetRed/30',
-      solid: 'bg-sunsetRed text-lightText border-sunsetRed',
+      solid: 'bg-sunsetRed text-foreground border-sunsetRed',
       outline: 'bg-transparent text-sunsetRed border-sunsetRed',
     },
   }

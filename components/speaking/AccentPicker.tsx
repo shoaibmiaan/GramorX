@@ -12,7 +12,7 @@ export const AccentPicker: React.FC<{ value: Accent; onChange: (a: Accent)=>void
         <button
           key={o}
           onClick={()=>onChange(o)}
-          className={`px-3 py-1 rounded-ds border ${o===value ? 'border-primary text-primary' : 'border-white/10 text-grayish'}`}
+          className={`px-3 py-1 rounded-ds border ${o===value ? 'border-primary text-primary' : 'border-white/10 text-muted-foreground'}`}
         >
           <span className="text-small">{o}</span>
         </button>

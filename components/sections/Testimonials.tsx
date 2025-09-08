@@ -49,7 +49,7 @@ export const Testimonials: React.FC = () => {
       <Container>
         <div className="text-center mb-12">
           <h2 className="font-slab text-h2 tracking-tight text-gradient-primary">Learners Who Leveled Up</h2>
-          <p className="text-grayish mt-2">Real prep. Real gains. Repeatable process.</p>
+          <p className="text-muted-foreground mt-2">Real prep. Real gains. Repeatable process.</p>
         </div>
 
         <div className="grid gap-6 md:grid-cols-3">

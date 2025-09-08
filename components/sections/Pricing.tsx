@@ -80,7 +80,7 @@ export const Pricing: React.FC = () => {
       <Container>
         <div className="text-center mb-16">
           <h2 className="font-slab text-4xl mb-3 text-gradient-primary">FLEXIBLE PRICING PLANS</h2>
-          <p className="text-grayish text-lg">Choose the plan that fits your preparation needs</p>
+          <p className="text-muted-foreground text-lg">Choose the plan that fits your preparation needs</p>
         </div>
 
         <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
@@ -113,7 +113,7 @@ export const Pricing: React.FC = () => {
               </h3>
               <div className="mb-4">
                 <div className="font-slab text-5xl text-gradient-primary leading-none">{t.price}</div>
-                <div className="text-grayish mt-1">{t.period}</div>
+                <div className="text-muted-foreground mt-1">{t.period}</div>
               </div>
 
               {/* Feature list styled exactly like Modules bullets */}

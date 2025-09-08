@@ -50,7 +50,7 @@ export const Specialties: React.FC = () => {
       <Container>
         <div className="text-center mb-12">
           <h2 className="font-slab text-h2 tracking-tight text-gradient-primary">What Makes Us Different</h2>
-          <p className="text-grayish mt-2">Deep focus on IELTS outcomes with maximum AI involvement.</p>
+          <p className="text-muted-foreground mt-2">Deep focus on IELTS outcomes with maximum AI involvement.</p>
         </div>
 
         <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">

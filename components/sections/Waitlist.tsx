@@ -140,7 +140,7 @@ export default function WaitlistSection() {
           <h2 className="font-slab text-h2 md:text-display tracking-tight uppercase text-gradient-primary">
             Join our exclusive pre-launch
           </h2>
-          <p className="text-grayish mt-3">Be among the first with early-bird benefits.</p>
+          <p className="text-muted-foreground mt-3">Be among the first with early-bird benefits.</p>
         </div>
 
         <div ref={alertWrapRef} tabIndex={-1} aria-live="polite" aria-atomic="true" className="outline-none">
@@ -207,8 +207,8 @@ export default function WaitlistSection() {
           </form>
         </Card>
 
-        <p className="text-small text-grayish mt-5 text-center">Have a referral code? Add <code>?ref=YOURCODE</code> to the URL.</p>
-        <p className="text-small text-grayish mt-1 text-center">By joining, you agree to receive early-access emails.</p>
+        <p className="text-small text-muted-foreground mt-5 text-center">Have a referral code? Add <code>?ref=YOURCODE</code> to the URL.</p>
+        <p className="text-small text-muted-foreground mt-1 text-center">By joining, you agree to receive early-access emails.</p>
       </Container>
     </Section>
   );

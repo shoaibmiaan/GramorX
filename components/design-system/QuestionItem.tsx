@@ -102,7 +102,7 @@ export const QuestionTFNG: React.FC<{
             type="button"
             onClick={() => onChange?.(o.k)}
             className={`px-3 py-2 rounded-ds border text-small
-              ${value === o.k ? "bg-primary text-primary-foreground dark:bg-electricBlue" : "bg-card dark:bg-dark/40 text-lightText dark:text-foreground"}
+              ${value === o.k ? "bg-primary text-primary-foreground dark:bg-electricBlue" : "bg-card dark:bg-dark/40 text-foreground dark:text-foreground"}
               border-border dark:border-border/20`}
             aria-pressed={value === o.k}
           >
@@ -134,7 +134,7 @@ export const QuestionGapFill: React.FC<{
     <QuestionShell number={number} status={status} className={className}>
       <input
         type="text"
-        className="w-full rounded-ds border border-border bg-card text-lightText placeholder-mutedText focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background focus:border-primary dark:bg-dark/50 dark:text-foreground dark:placeholder-mutedText/40 dark:border-purpleVibe/30  dark:focus:border-electricBlue px-3 py-2"
+        className="w-full rounded-ds border border-border bg-card text-foreground placeholder-mutedText focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background focus:border-primary dark:bg-dark/50 dark:text-foreground dark:placeholder-mutedText/40 dark:border-purpleVibe/30  dark:focus:border-electricBlue px-3 py-2"
         value={value}
         onChange={(e) => onChange?.(e.target.value)}
         placeholder={placeholder}

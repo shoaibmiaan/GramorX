@@ -27,7 +27,7 @@ export default function TimingRehearsal() {
   return (
     <Card className="card-surface p-6 rounded-ds-2xl mb-6">
       <h2 className="font-slab text-h2 mb-2">Timing Rehearsal</h2>
-      <p className="mb-4 text-grayish">Practice with a countdown timer to simulate exam pressure.</p>
+      <p className="mb-4 text-muted-foreground">Practice with a countdown timer to simulate exam pressure.</p>
       <div className="flex items-end gap-3 mb-4">
         <Input
           type="number"

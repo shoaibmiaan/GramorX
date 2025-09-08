@@ -58,7 +58,7 @@ export const ReevalHistory: React.FC<ReevalHistoryProps> = ({
   if (!items || items.length === 0) {
     return (
       <Card className="card-surface p-6 rounded-ds-2xl">
-        <p className="text-grayish">No re‑evaluations yet.</p>
+        <p className="text-muted-foreground">No re‑evaluations yet.</p>
       </Card>
     );
   }
@@ -86,7 +86,7 @@ export const ReevalHistory: React.FC<ReevalHistoryProps> = ({
                       {new Date(item.created_at).toLocaleString()}
                     </span>
                   </div>
-                  <div className="mt-0.5 text-small text-grayish">
+                  <div className="mt-0.5 text-small text-muted-foreground">
                     <span className="capitalize">Mode: {item.mode}</span>
                     {item.focus?.length ? (
                       <span>
@@ -107,7 +107,7 @@ export const ReevalHistory: React.FC<ReevalHistoryProps> = ({
                 )}
               </div>
               {item.feedback ? (
-                <p className="mt-2 text-small text-grayish whitespace-pre-line">
+                <p className="mt-2 text-small text-muted-foreground whitespace-pre-line">
                   {item.feedback}
                 </p>
               ) : null}

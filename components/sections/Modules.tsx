@@ -107,7 +107,7 @@ export const Modules: React.FC = () => {
       <Container>
         <div className="text-center mb-16">
           <h2 className="font-slab text-4xl mb-3 text-gradient-primary">COMPREHENSIVE IELTS MODULES</h2>
-          <p className="text-grayish text-lg">AI + proven pedagogy for faster score gains</p>
+          <p className="text-muted-foreground text-lg">AI + proven pedagogy for faster score gains</p>
         </div>
         <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {items.map((m) => {

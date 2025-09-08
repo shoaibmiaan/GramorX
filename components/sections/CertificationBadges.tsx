@@ -26,7 +26,7 @@ export const CertificationBadges: React.FC = () => {
           <h2 className="font-slab text-h2 tracking-tight text-gradient-primary">
             Trusted Exam Prep Standards
           </h2>
-          <p className="text-grayish mt-2">
+          <p className="text-muted-foreground mt-2">
             Inspired by leading bodies and aligned with real IELTS marking criteria.
           </p>
         </div>

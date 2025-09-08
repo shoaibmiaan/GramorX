@@ -59,11 +59,11 @@ export const ReevalPanel: React.FC<{
   return (
     <Card className="card-surface p-6 rounded-ds-2xl">
       <h3 className="text-h3">AI Re-evaluation</h3>
-      <p className="text-grayish mt-1">Run a second pass with different strictness or focus.</p>
+      <p className="text-muted-foreground mt-1">Run a second pass with different strictness or focus.</p>
 
       <div className="mt-4">
         <label className="block">
-          <span className="mb-1.5 inline-block text-small text-gray-600 dark:text-grayish">Mode</span>
+          <span className="mb-1.5 inline-block text-small text-gray-600 dark:text-muted-foreground">Mode</span>
           <select
             className="w-full p-3.5 rounded-ds border border-gray-200 dark:border-white/10 bg-white dark:bg-dark"
             value={mode}

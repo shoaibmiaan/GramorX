@@ -73,7 +73,7 @@ export function SavedItems() {
       <Card className="p-6 rounded-ds-2xl flex items-center justify-between">
         <div>
           <div className="font-semibold mb-1">Saved items</div>
-          <div className="text-sm text-gray-600 dark:text-grayish">Sign in to access your bookmarks.</div>
+          <div className="text-sm text-gray-600 dark:text-muted-foreground">Sign in to access your bookmarks.</div>
         </div>
         <Button href="/login" variant="primary" className="rounded-ds-xl">Sign in</Button>
       </Card>
@@ -114,7 +114,7 @@ export function SavedItems() {
         </select>
       </div>
       {items.filter((b) => filter === 'all' || b.category === filter).length === 0 ? (
-        <div className="text-sm text-gray-600 dark:text-grayish">No saved items yet.</div>
+        <div className="text-sm text-gray-600 dark:text-muted-foreground">No saved items yet.</div>
       ) : (
         <ul className="grid gap-2">
           {items
@@ -160,7 +160,7 @@ export function SavedItems() {
                         }
                       }}
                     />
-                    <span className="text-sm text-gray-600 dark:text-grayish">
+                    <span className="text-sm text-gray-600 dark:text-muted-foreground">
                       {new Date(b.created_at).toLocaleDateString()}
                     </span>
                   </div>

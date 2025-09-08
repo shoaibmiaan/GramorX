@@ -23,7 +23,7 @@ export const QuestionBlock: React.FC<{
   return (
     <div data-qid={q.id} className={`p-4 rounded-ds border ${flagged ? 'border-goldenYellow/60' : 'border-gray-200 dark:border-white/10'}`}>
       <div className="flex items-start justify-between gap-3">
-        <div className="text-small text-grayish">Q{q.qNo} — {q.type.toUpperCase()}</div>
+        <div className="text-small text-muted-foreground">Q{q.qNo} — {q.type.toUpperCase()}</div>
         <div className="flex items-center gap-2">
           {flagged && <Badge variant="warning" size="sm">Flagged</Badge>}
           <Badge variant={answered ? 'success' : 'neutral'} size="sm">
@@ -91,7 +91,7 @@ export const QuestionBlock: React.FC<{
               value={value ?? ''}
               onChange={e => onChange(e.currentTarget.value)}
             />
-            <p className="text-small text-grayish mt-1">Press <kbd className="px-1 rounded-ds bg-gray-200/60 dark:bg-white/10">Enter</kbd> to jump to next unanswered.</p>
+            <p className="text-small text-muted-foreground mt-1">Press <kbd className="px-1 rounded-ds bg-gray-200/60 dark:bg-white/10">Enter</kbd> to jump to next unanswered.</p>
           </div>
         )}
 
@@ -99,7 +99,7 @@ export const QuestionBlock: React.FC<{
           <div className="grid sm:grid-cols-2 gap-3" aria-label={`Matching for question ${q.qNo}`}>
             {(q as MATCH).pairs.map((p, idx) => (
               <div key={`${q.id}:${idx}`} className="p-3 rounded-ds border border-gray-200 dark:border-white/10">
-                <div className="text-small text-grayish mb-1">{p.left}</div>
+                <div className="text-small text-muted-foreground mb-1">{p.left}</div>
                 <select
                   className="w-full bg-white dark:bg-dark/50 border border-gray-200 dark:border-white/10 rounded-ds p-2"
                   value={(value && value[p.left]) || ''}

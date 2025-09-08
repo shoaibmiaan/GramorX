@@ -67,7 +67,7 @@ export const ScoreCard: React.FC<ScoreCardProps> = ({
                   v != null && (
                     <div
                       key={k}
-                      className="flex items-center justify-between rounded-ds px-2.5 py-1.5 bg-purpleVibe/10 text-lightText dark:text-foreground"
+                      className="flex items-center justify-between rounded-ds px-2.5 py-1.5 bg-purpleVibe/10 text-foreground dark:text-foreground"
                     >
                       <span className="capitalize">
                         {k.replace(/([A-Z])/g, " $1")}

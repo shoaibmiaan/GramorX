@@ -255,7 +255,7 @@ export const QuestionRenderer: React.FC<Props> = ({
   return (
     <div>
       {index != null && (
-        <div className="text-small text-grayish mb-1">Question {index}</div>
+        <div className="text-small text-muted-foreground mb-1">Question {index}</div>
       )}
       <div className="tight-block mb-4">{question.prompt}</div>
 
