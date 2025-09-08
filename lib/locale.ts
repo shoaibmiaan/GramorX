@@ -1,6 +1,5 @@
 // lib/locale.ts
-// Minimal, Pages Router–friendly locale helpers.
-// Exposes: detectLocale, setLocale, persistLocale (alias).
+// Minimal, safe helpers for Pages Router. SSR-safe (checks window existence).
 
 const STORAGE_KEY = 'gx_locale';
 export type SupportedLocale = 'en' | 'ur' | 'ar' | 'hi';
@@ -9,8 +8,7 @@ export function detectLocale(): SupportedLocale {
   try {
     if (typeof window !== 'undefined') {
       // 1) URL ?lang=
-      const url = new URL(window.location.href);
-      const q = url.searchParams.get('lang');
+      const q = new URL(window.location.href).searchParams.get('lang');
       if (q) return q as SupportedLocale;
 
       // 2) localStorage
@@ -25,9 +23,7 @@ export function detectLocale(): SupportedLocale {
       const nav = navigator?.language?.slice(0, 2);
       if (nav) return nav as SupportedLocale;
     }
-  } catch {
-    /* no-op */
-  }
+  } catch {/* no-op */}
   return 'en';
 }
 
@@ -39,10 +35,8 @@ export function setLocale(next: SupportedLocale) {
       document.documentElement.setAttribute('lang', next);
       window.dispatchEvent(new CustomEvent('gx:locale-change', { detail: { locale: next } }));
     }
-  } catch {
-    /* no-op */
-  }
+  } catch {/* no-op */}
 }
 
-// Back-compat alias for code importing `persistLocale`
+// Back-compat: some code imports persistLocale
 export const persistLocale = setLocale;
