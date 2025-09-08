@@ -56,6 +56,41 @@ export function useSidebarAI() {
   return ctx;
 }
 
+/**
+ * Minimal markdown renderer used by AI components.
+ * - Strips markdown list markers to plain paragraphs.
+ * - Supports fenced code blocks with optional language tag.
+ */
+export function renderMarkdown(raw: string): React.ReactNode {
+  const nodes: React.ReactNode[] = [];
+  const parts = raw.split(/```/g);
+
+  parts.forEach((chunk, i) => {
+    if (i % 2 === 1) {
+      const langMatch = chunk.match(/^(\w+)\n/);
+      const lang = langMatch ? langMatch[1] : '';
+      const code = langMatch ? chunk.slice(lang.length + 1) : chunk;
+      nodes.push(
+        <pre key={`code-${i}`} className="mt-2 overflow-auto rounded-ds bg-card p-3 text-card-foreground">
+          <code className={lang ? `language-${lang}` : undefined}>{code}</code>
+        </pre>
+      );
+    } else {
+      const lines = chunk.split(/\n+/);
+      lines.forEach((line, j) => {
+        const trimmed = line.trim();
+        if (!trimmed) return;
+        const text = trimmed.replace(/^(?:[*+-]|\d+\.)\s+/, '');
+        nodes.push(<p key={`p-${i}-${j}`} className="leading-relaxed">{text}</p>);
+      });
+    }
+  });
+
+  return nodes.length === 1 ? nodes[0] : <>{nodes}</>;
+}
+
+/* ---------------- Draggable Sidebar ---------------- */
+
 const BOX_WIDTH = 320;
 const BOX_HEIGHT = 480;
 
@@ -67,8 +102,8 @@ export function applyDrag(
 ) {
   let x = init.x + client.x - start.x;
   let y = init.y + client.y - start.y;
-  const maxX = viewport.w - BOX_WIDTH;
-  const maxY = viewport.h - BOX_HEIGHT;
+  const maxX = Math.max(0, viewport.w - BOX_WIDTH);
+  const maxY = Math.max(0, viewport.h - BOX_HEIGHT);
   x = Math.min(Math.max(0, x), maxX);
   y = Math.min(Math.max(0, y), maxY);
   return { x, y };
@@ -92,7 +127,7 @@ const SidebarAI: React.FC = () => {
     posRef.current = pos;
   }, [pos]);
 
-  // Restore position on mount
+  // Restore position on mount (SSR-safe)
   useEffect(() => {
     if (typeof window === 'undefined') return;
     try {
@@ -103,7 +138,9 @@ const SidebarAI: React.FC = () => {
         posRef.current = saved;
         return;
       }
-    } catch {}
+    } catch {
+      // ignore
+    }
     const w = window.innerWidth;
     const h = window.innerHeight;
     const init = {
@@ -136,7 +173,9 @@ const SidebarAI: React.FC = () => {
       window.removeEventListener('pointerup', handleUp);
       try {
         localStorage.setItem('sidebar-ai-pos', JSON.stringify(posRef.current));
-      } catch {}
+      } catch {
+        // ignore
+      }
     }
 
     window.addEventListener('pointermove', handleMove);
@@ -154,7 +193,7 @@ const SidebarAI: React.FC = () => {
     return (
       <button
         type="button"
-        className="fixed bottom-4 right-4 z-50 rounded-full bg-primary px-4 py-2 text-primary-foreground shadow"
+        className="fixed bottom-4 right-4 z-50 rounded-full bg-primary px-4 py-2 text-primary-foreground shadow-glow hover:shadow-glowLg transition"
         onClick={() => setOpen(true)}
       >
         Need help?
@@ -166,17 +205,18 @@ const SidebarAI: React.FC = () => {
     <div
       ref={boxRef}
       data-testid="sidebar-ai"
-      className="fixed z-50 flex w-[320px] h-[480px] flex-col rounded-md border border-border bg-background shadow-lg"
+      className="fixed z-50 flex h-[480px] w-[320px] flex-col rounded-ds border border-border bg-background shadow-lg"
       style={{ transform: `translate(${pos.x}px, ${pos.y}px)` }}
     >
       <div data-testid="sidebar-ai-header" onPointerDown={onPointerDown} className="cursor-move">
         <SidebarHeader onClose={() => setOpen(false)} />
       </div>
+
       <MessageList
         items={msgs}
         loading={false}
         streamingId={null}
-        renderMarkdown={(s) => <>{s}</>}
+        renderMarkdown={renderMarkdown}
         scrollRef={scrollRef}
         isMobile={false}
         newChat={() => setMsgs([])}
@@ -185,6 +225,7 @@ const SidebarAI: React.FC = () => {
         voiceDenied={false}
         listening={false}
       />
+
       <Composer
         toggleVoice={() => {}}
         voiceSupported={false}
