@@ -20,7 +20,7 @@ import useRouteGuard from '@/hooks/useRouteGuard';
 
 import { PremiumThemeProvider } from '@/premium-ui/theme/PremiumThemeProvider';
 import { ImpersonationBanner } from '@/components/admin/ImpersonationBanner';
-import SidebarAI from '@/components/ai/SidebarAI';
+import SidebarAI, { SidebarAIProvider } from '@/components/ai/SidebarAI';
 import AuthAssistant from '@/components/auth/AuthAssistant';
 
 // Existing layouts
@@ -229,7 +229,9 @@ export default function App(props: AppProps) {
     <LanguageProvider>
       <ToastProvider>
         <NotificationProvider>
-          <InnerApp {...props} />
+          <SidebarAIProvider>
+            <InnerApp {...props} />
+          </SidebarAIProvider>
         </NotificationProvider>
       </ToastProvider>
     </LanguageProvider>
