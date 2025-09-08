@@ -74,7 +74,9 @@ export default function SignupWithPassword() {
       }
 
       if (typeof window !== 'undefined') {
-        window.location.assign(`/auth/verify?email=${encodeURIComponent(trimmedEmail)}`);
+        window.location.assign(
+          `/auth/verify?email=${encodeURIComponent(trimmedEmail)}${referral ? `&ref=${encodeURIComponent(referral)}` : ''}`
+        );
       }
     } catch (e: any) {
       setLoading(false);

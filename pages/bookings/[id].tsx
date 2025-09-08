@@ -7,7 +7,7 @@ import Head from 'next/head'
 import Link from 'next/link'
 import Image from 'next/image'
 import type { GetServerSideProps } from 'next'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/design-system/Button'
 import { supabaseServer } from '@/lib/supabaseServer'
 
 // ---------- Types ----------

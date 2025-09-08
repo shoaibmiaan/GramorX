@@ -1,93 +1,110 @@
 // pages/auth/verify.tsx
-import Image from 'next/image';
-import { useEffect, useMemo, useState } from 'react';
+import * as React from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
-import AuthLayout from '@/components/layouts/AuthLayout';
+import { Card } from '@/components/design-system/Card';
 import { Alert } from '@/components/design-system/Alert';
+import { Button } from '@/components/design-system/Button';
 import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser';
 import { redirectByRole } from '@/lib/routeAccess';
 
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="mb-3 text-sm uppercase tracking-wide text-mutedText">{children}</div>
+  );
+}
+
 export default function VerifyPage() {
   const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
+  const email = typeof router.query.email === 'string' ? router.query.email : null;
+  const ref = typeof router.query.ref === 'string' ? router.query.ref : '';
 
-  // Read query params safely
-  const email = useMemo(
-    () => (typeof router.query.email === 'string' ? router.query.email : null),
-    [router.query.email]
-  );
+  const [busy, setBusy] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+  const [notice, setNotice] = React.useState<string | null>(null);
+  const [resent, setResent] = React.useState(false);
 
-  // Check if we have a `code` param (OAuth/Magic link)
-  const hasCode = useMemo(() => {
+  const hasCode = React.useMemo(() => {
     if (typeof window === 'undefined') return false;
-    const sp = new URLSearchParams(window.location.search);
-    return sp.has('code');
-  }, [router.asPath]); // rerun if URL changes
+    return new URLSearchParams(window.location.search).has('code');
+  }, [router.asPath]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (!hasCode) return;
-
-    // Use full URL (Supabase parses code & other params internally)
     (async () => {
-      const { data, error } = await supabase.auth.exchangeCodeForSession(
-        window.location.href,
-      );
+      setBusy(true);
+      setError(null);
+      const { data, error } = await supabase.auth.exchangeCodeForSession(window.location.href);
+      setBusy(false);
       if (error) {
         setError(error.message);
-      } else if (!data.session) {
-        setError('Session missing. Please try again.');
-      } else {
-        const user = data.session.user;
-        const mfaEnabled = (user.user_metadata as any)?.mfa_enabled;
-        const mfaVerified = (user.user_metadata as any)?.mfa_verified;
-        if (mfaEnabled && !mfaVerified) {
-          window.location.assign('/auth/mfa');
-          return;
-        }
-        redirectByRole(user ?? null);
+        return;
       }
+      redirectByRole(data?.session?.user ?? null);
     })();
-  }, [hasCode, router]);
+  }, [hasCode]);
 
-  const subtitle =
-    error
-      ? 'Verification failed.'
-      : hasCode
-      ? 'Completing sign-up...'
-      : email
-      ? `We’ve emailed a confirmation link to ${email}.`
-      : 'Check your inbox for a verification link.';
+  async function handleResend() {
+    if (!email || busy) return;
+    setBusy(true);
+    setError(null);
+    try {
+      // @ts-expect-error supabase-js may not expose resend type yet
+      const { error: resendErr } = await supabase.auth.resend({ type: 'signup', email });
+      if (resendErr) {
+        setError(resendErr.message);
+      } else {
+        setResent(true);
+        setNotice('We’ve sent a new verification link.');
+      }
+    } finally {
+      setBusy(false);
+    }
+  }
 
   return (
-    <AuthLayout
-      title="Verify your account"
-      subtitle={subtitle}
-      right={
-        <div className="relative w-full h-full flex items-center justify-center bg-primary/10 dark:bg-dark">
-          <Image
-            src="/brand/logo.png"
-            alt="GramorX Logo"
-            fill
-            sizes="100vw"
-            className="object-contain p-6"
-          />
-        </div>
-      }
-      showRightOnMobile
-    >
-      {error ? (
-        <Alert variant="error" title="Verification error" className="mt-4">
-          {error}
-        </Alert>
-      ) : (
-        <p className="mt-4 text-gray-600 dark:text-gray-300">
-          {hasCode
-            ? 'Verifying your email, please wait...'
-            : email
-            ? 'Open the email and click the link to continue.'
-            : 'If you didn’t receive an email, check spam or try again.'}
-        </p>
-      )}
-    </AuthLayout>
+    <>
+      <SectionLabel>Verify your email</SectionLabel>
+      <Card className="p-6 rounded-ds-2xl card-surface space-y-4">
+        {error && (
+          <Alert tone="danger">
+            {error.toLowerCase().includes('already registered')
+              ? 'This email is already registered. You can log in instead.'
+              : error}
+          </Alert>
+        )}
+        {notice && <Alert tone="success">{notice}</Alert>}
+
+        {!hasCode && !error && (
+          <div>
+            <p className="text-sm text-mutedText mb-3">
+              {email
+                ? `We’ve sent a confirmation link to ${email}.`
+                : 'Check your inbox for a verification link.'}
+            </p>
+            <div className="flex gap-3 items-center">
+              <Button
+                size="sm"
+                variant="soft"
+                onClick={handleResend}
+                disabled={!email || busy || resent}
+              >
+                {resent ? 'Sent ✓' : busy ? 'Sending…' : 'Resend email'}
+              </Button>
+              <Link
+                href={`/login${ref ? `?ref=${ref}` : ''}`}
+                className="text-sm text-accent underline"
+              >
+                Back to Login
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {hasCode && !error && (
+          <p className="text-sm text-mutedText">Completing sign-in…</p>
+        )}
+      </Card>
+    </>
   );
 }

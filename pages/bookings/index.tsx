@@ -5,9 +5,9 @@ import * as React from 'react'
 import Head from 'next/head'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Skeleton } from '@/components/ui/skeleton'
+import { Button } from '@/components/design-system/Button'
+import { Input } from '@/components/design-system/Input'
+import { Skeleton } from '@/components/design-system/Skeleton'
 
 // ---------- Types ----------
 type BookingItem = {

@@ -39,7 +39,7 @@ export default function SignupOptions() {
         return;
       }
 
-      if (data?.linked_email) {
+      if ((data as any)?.linked_email) {
         router.push(`/login?message=${encodeURIComponent('Account exists—use login.')}`);
       } else if (data?.url) {
         window.location.href = data.url;
@@ -61,7 +61,7 @@ export default function SignupOptions() {
           className="rounded-ds-xl"
           fullWidth
         >
-          <Link href={`/signup/password${ref ? `?ref=${ref}` : ''}`}>
+          <Link href={`/signup/email${ref ? `?ref=${ref}` : ''}`}>
             <span className="inline-flex items-center gap-3">
               <MailIcon className="h-5 w-5" />
               Sign up with Email
@@ -69,7 +69,7 @@ export default function SignupOptions() {
           </Link>
         </Button>
 
-        {/* Google / Facebook as soft */}
+        {/* Google / Facebook */}
         <Button
           onClick={() => signUpOAuth('google')}
           variant="soft"
@@ -95,7 +95,7 @@ export default function SignupOptions() {
           </span>
         </Button>
 
-        {/* Apple (optional — keep disabled if not ready) */}
+        {/* Apple (disabled until wired) */}
         <Button
           disabled
           variant="soft"
@@ -109,7 +109,7 @@ export default function SignupOptions() {
           </span>
         </Button>
 
-        {/* Phone path stays available */}
+        {/* Phone path */}
         <Button
           asChild
           variant="secondary"
