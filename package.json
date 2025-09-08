@@ -9,6 +9,9 @@
     "build:premium": "tailwindcss -i ./styles/premium.css -c tailwind.config.premium.js -o ./public/premium.css --minify",
     "start": "next start",
     "lint": "next lint",
+    "lint:fix": "next lint --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "pin:hash": "ts-node tools/hash-pin.ts",
     "diagnose": "powershell -ExecutionPolicy Bypass -File .\\\\tools\\\\report-build-issues.ps1",
     "test": "TWILIO_BYPASS=1 tsx tools/run-tests.ts",
@@ -80,7 +83,10 @@
     "concurrently": "^9.2.1",
     "eslint": "8.57.0",
     "eslint-config-next": "14.2.31",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.2.1",
     "postcss": "^8.4.41",
+    "prettier": "^3.3.3",
     "tailwindcss": "^3.4.10",
     "ts-node": "^10.9.2",
     "tsx": "^4.20.5",
@@ -90,5 +96,13 @@
   "engines": {
     "node": ">=20 <21",
     "npm": ">=10 <11"
+  },
+  "prettier": {
+    "singleQuote": true,
+    "trailingComma": "all",
+    "semi": true,
+    "printWidth": 100,
+    "tabWidth": 2,
+    "endOfLine": "lf"
   }
 }
