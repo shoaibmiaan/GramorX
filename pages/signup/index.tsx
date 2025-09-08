@@ -12,6 +12,7 @@ import {
   MailIcon,
   SmsIcon,
 } from '@/components/design-system/icons';
+import { Badge } from '@/components/design-system/Badge';
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
@@ -82,6 +83,7 @@ export default function SignupOptions() {
             Sign up with Google
           </span>
         </Button>
+
         <Button
           onClick={() => signUpOAuth('facebook')}
           variant="soft"
@@ -95,18 +97,26 @@ export default function SignupOptions() {
           </span>
         </Button>
 
-        {/* Apple (disabled until wired) */}
+        {/* Apple (disabled until wired) — top-right Coming Soon badge */}
         <Button
           disabled
           variant="soft"
           tone="secondary"
-          className="rounded-ds-xl opacity-75"
+          className="relative rounded-ds-xl opacity-75 justify-start"
           fullWidth
+          aria-disabled="true"
         >
           <span className="inline-flex items-center gap-3">
             <AppleIcon className="h-5 w-5" />
-            Sign up with Apple (soon)
+            Sign up with Apple
           </span>
+          <Badge
+            variant="info"
+            size="sm"
+            className="absolute top-2 right-3 text-xs px-2 py-0.5"
+          >
+            Coming Soon
+          </Badge>
         </Button>
 
         {/* Phone path */}

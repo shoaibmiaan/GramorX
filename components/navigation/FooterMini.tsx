@@ -35,26 +35,10 @@ export const FooterMini: React.FC<{
           {/* Center: quick links */}
           <nav aria-label="Mini footer navigation" className="order-last w-full sm:order-none sm:w-auto">
             <ul className="flex flex-wrap items-center gap-x-4 gap-y-2">
-              <li>
-                <NavLink href="/legal/terms" className="hover:text-foreground">
-                  Terms
-                </NavLink>
-              </li>
-              <li>
-                <NavLink href="/legal/privacy" className="hover:text-foreground">
-                  Privacy
-                </NavLink>
-              </li>
-              <li>
-                <NavLink href="/pricing" className="hover:text-foreground">
-                  Pricing
-                </NavLink>
-              </li>
-              <li>
-                <NavLink href="/help" className="hover:text-foreground">
-                  Help
-                </NavLink>
-              </li>
+              <li><NavLink href="/legal/terms" className="hover:text-foreground">Terms</NavLink></li>
+              <li><NavLink href="/legal/privacy" className="hover:text-foreground">Privacy</NavLink></li>
+              <li><NavLink href="/pricing" className="hover:text-foreground">Pricing</NavLink></li>
+              <li><NavLink href="/help" className="hover:text-foreground">Help</NavLink></li>
             </ul>
           </nav>
 

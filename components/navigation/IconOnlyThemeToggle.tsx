@@ -5,7 +5,8 @@ import { Moon, Sun } from 'lucide-react';
 
 export function IconOnlyThemeToggle() {
   const { theme, setTheme, resolvedTheme } = useTheme();
-  const isDark = (theme ?? resolvedTheme) === 'dark';
+  const currentTheme = theme ?? resolvedTheme;
+  const isDark = currentTheme === 'dark';
 
   return (
     <button

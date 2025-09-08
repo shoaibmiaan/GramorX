@@ -1,5 +1,4 @@
 'use client';
-// components/navigation/ModuleMenu.tsx
 
 import React from 'react';
 import Link from 'next/link';
@@ -20,7 +19,7 @@ export function ModuleMenu({ open, setOpen, modulesRef }: ModuleMenuProps) {
   const TRIGGER_ID = 'desktop-modules-trigger';
   const MENU_ID = 'desktop-modules-menu';
 
-  // Focus first item on open; restore to trigger on close
+  // Focus mgmt
   React.useEffect(() => {
     if (open) menuRef.current?.querySelector<HTMLElement>('a,button')?.focus();
   }, [open]);
@@ -36,11 +35,7 @@ export function ModuleMenu({ open, setOpen, modulesRef }: ModuleMenuProps) {
 
     const onDown = (e: MouseEvent) => {
       const t = e.target as Node;
-      if (
-        !menuRef.current?.contains(t) &&
-        !buttonRef.current?.contains(t) &&
-        !modulesRef.current?.contains(t)
-      ) {
+      if (!menuRef.current?.contains(t) && !buttonRef.current?.contains(t) && !modulesRef.current?.contains(t)) {
         close();
       }
     };
@@ -81,11 +76,7 @@ export function ModuleMenu({ open, setOpen, modulesRef }: ModuleMenuProps) {
   const desktopOverlay =
     typeof document !== 'undefined' && open
       ? createPortal(
-          <div
-            className="fixed inset-0 z-40 hidden md:block bg-transparent"
-            aria-hidden="true"
-            onClick={close}
-          />,
+          <div className="fixed inset-0 z-40 hidden md:block bg-transparent" aria-hidden="true" onClick={close} />,
           document.body
         )
       : null;
@@ -129,10 +120,9 @@ export function ModuleMenu({ open, setOpen, modulesRef }: ModuleMenuProps) {
             w-[720px] lg:w-[860px] xl:w-[960px] max-w-[98vw]
           "
         >
-          {/* scroll guard */}
           <div className="max-h-[70vh] overflow-y-auto">
             <div className="grid grid-cols-12">
-              {/* Left: modules list on deeper panel */}
+              {/* Left: modules */}
               <div className="col-span-8 p-6 lg:p-7 bg-card dark:bg-darker">
                 <h3 className="font-slab text-lg mb-2">Skill Modules</h3>
                 <p className="text-sm text-muted-foreground mb-4">
@@ -148,19 +138,15 @@ export function ModuleMenu({ open, setOpen, modulesRef }: ModuleMenuProps) {
                       onClick={close}
                       className="
                         group relative flex items-start gap-3 rounded-xl border border-transparent p-4
-                        transition
-                        hover:bg-primary/10 dark:hover:bg-purpleVibe/20 hover:shadow-glow
+                        transition hover:bg-primary/10 dark:hover:bg-purpleVibe/20 hover:shadow-glow
                       "
                     >
-                      {/* Icon chip with lift + glow on hover */}
                       <span
                         className="
                           mt-0.5 inline-flex h-9 w-9 items-center justify-center rounded-lg
                           bg-primary/10 text-primary ring-2 ring-primary/15
-                          transition
-                          group-hover:-translate-y-0.5 group-hover:scale-[1.03]
-                          group-hover:bg-primary group-hover:text-primary-foreground
-                          group-hover:ring-primary/40
+                          transition group-hover:-translate-y-0.5 group-hover:scale-[1.03]
+                          group-hover:bg-primary group-hover:text-primary-foreground group-hover:ring-primary/40
                         "
                         aria-hidden="true"
                       >
@@ -169,19 +155,15 @@ export function ModuleMenu({ open, setOpen, modulesRef }: ModuleMenuProps) {
 
                       <span className="min-w-0">
                         <span className="block font-medium">{label}</span>
-                        {desc && (
-                          <span className="text-sm text-muted-foreground">{desc}</span>
-                        )}
+                        {desc && <span className="text-sm text-muted-foreground">{desc}</span>}
                       </span>
 
-                      {/* underline accent that slides in on hover (like your SS) */}
                       <span
                         aria-hidden="true"
                         className="
                           absolute left-4 right-4 bottom-2 h-[3px] rounded-full
                           bg-electricBlue/70 dark:bg-neonGreen/70
-                          opacity-0 translate-y-1
-                          transition
+                          opacity-0 translate-y-1 transition
                           group-hover:opacity-100 group-hover:translate-y-0
                         "
                       />
@@ -190,33 +172,21 @@ export function ModuleMenu({ open, setOpen, modulesRef }: ModuleMenuProps) {
                 </div>
               </div>
 
-              {/* Right: CTA rail with gentle contrast */}
+              {/* Right: CTA rail */}
               <div className="col-span-4 p-6 lg:p-7 bg-muted/60 dark:bg-purpleVibe/20">
                 <div>
                   <h4 className="font-slab text-lg mb-1">New here?</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Take a quick placement to get a personalized start.
-                  </p>
+                  <p className="text-sm text-muted-foreground">Take a quick placement to get a personalized start.</p>
                 </div>
 
                 <Link
                   href="/placement"
                   role="menuitem"
                   onClick={close}
-                  className="
-                    mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl
-                    btn btn-primary btn--fx px-4 py-2
-                  "
+                  className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl btn btn-primary btn--fx px-4 py-2"
                 >
                   Start placement
-                  <svg
-                    className="h-4 w-4"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    aria-hidden="true"
-                  >
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                     <path d="M5 12h14M13 5l7 7-7 7" />
                   </svg>
                 </Link>
@@ -233,8 +203,7 @@ export function ModuleMenu({ open, setOpen, modulesRef }: ModuleMenuProps) {
           <div
             className="
               fixed inset-x-0 top-0 z-50 md:hidden
-              border-b border-border bg-card dark:bg-dark
-              shadow-xl
+              border-b border-border bg-card dark:bg-dark shadow-xl
               animate-in slide-in-from-top-2 duration-150
             "
             role="dialog"
@@ -242,7 +211,6 @@ export function ModuleMenu({ open, setOpen, modulesRef }: ModuleMenuProps) {
             aria-label="Modules"
             ref={menuRef}
           >
-            {/* header */}
             <div className="flex items-center justify-between px-4 py-3">
               <h3 className="font-slab text-lg">Modules</h3>
               <button
@@ -250,26 +218,17 @@ export function ModuleMenu({ open, setOpen, modulesRef }: ModuleMenuProps) {
                 aria-label="Close"
                 className="inline-flex h-9 w-9 items-center justify-center rounded-lg hover:bg-muted"
               >
-                <svg
-                  className="h-5 w-5"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
+                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M6 6l12 12M6 18L18 6" />
                 </svg>
               </button>
             </div>
 
-            {/* scrollable content */}
             <div className="max-h-[80vh] overflow-y-auto px-4 pb-4">
               <div className="rounded-xl border border-border bg-card dark:bg-darker p-3">
                 <div className="mb-2">
                   <div className="font-medium">Skill Modules</div>
-                  <div className="text-sm text-muted-foreground">
-                    Build the core exam skills with focused practice.
-                  </div>
+                  <div className="text-sm text-muted-foreground">Build the core exam skills with focused practice.</div>
                 </div>
 
                 <ul className="space-y-1">
@@ -280,18 +239,15 @@ export function ModuleMenu({ open, setOpen, modulesRef }: ModuleMenuProps) {
                         onClick={close}
                         className="
                           group relative flex items-start gap-3 rounded-lg px-3 py-3
-                          transition
-                          hover:bg-primary/10 dark:hover:bg-purpleVibe/20 hover:shadow-glow
+                          transition hover:bg-primary/10 dark:hover:bg-purpleVibe/20 hover:shadow-glow
                         "
                       >
                         <span
                           className="
                             mt-0.5 inline-flex h-9 w-9 items-center justify-center rounded-lg
                             bg-primary/10 text-primary ring-2 ring-primary/15
-                            transition
-                            group-hover:-translate-y-0.5 group-hover:scale-[1.03]
-                            group-hover:bg-primary group-hover:text-primary-foreground
-                            group-hover:ring-primary/40
+                            transition group-hover:-translate-y-0.5 group-hover:scale-[1.03]
+                            group-hover:bg-primary group-hover:text-primary-foreground group-hover:ring-primary/40
                           "
                           aria-hidden="true"
                         >
@@ -299,17 +255,14 @@ export function ModuleMenu({ open, setOpen, modulesRef }: ModuleMenuProps) {
                         </span>
                         <span className="min-w-0">
                           <span className="block font-medium">{label}</span>
-                          {desc && (
-                            <span className="text-sm text-muted-foreground">{desc}</span>
-                          )}
+                          {desc && <span className="text-sm text-muted-foreground">{desc}</span>}
                         </span>
                         <span
                           aria-hidden="true"
                           className="
                             absolute left-4 right-4 bottom-1.5 h-[3px] rounded-full
                             bg-electricBlue/70 dark:bg-neonGreen/70
-                            opacity-0 translate-y-1
-                            transition
+                            opacity-0 translate-y-1 transition
                             group-hover:opacity-100 group-hover:translate-y-0
                           "
                         />
@@ -319,27 +272,14 @@ export function ModuleMenu({ open, setOpen, modulesRef }: ModuleMenuProps) {
                 </ul>
               </div>
 
-              {/* CTA */}
               <div className="mt-3 rounded-xl border border-border bg-muted/60 dark:bg-purpleVibe/20 p-3">
                 <div className="mb-2">
                   <div className="font-slab text-lg">New here?</div>
-                  <div className="text-sm text-muted-foreground">
-                    Take a quick placement to get a personalized start.
-                  </div>
+                  <div className="text-sm text-muted-foreground">Take a quick placement to get a personalized start.</div>
                 </div>
-                <Link
-                  href="/placement"
-                  onClick={close}
-                  className="w-full btn btn-primary btn--fx rounded-xl px-4 py-3 inline-flex items-center justify-center gap-2"
-                >
+                <Link href="/placement" onClick={close} className="w-full btn btn-primary btn--fx rounded-xl px-4 py-3 inline-flex items-center justify-center gap-2">
                   Start placement
-                  <svg
-                    className="h-4 w-4"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M5 12h14M13 5l7 7-7 7" />
                   </svg>
                 </Link>

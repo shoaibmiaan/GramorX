@@ -3,6 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser';
 import { Card } from '@/components/design-system/Card';
 import { Input } from '@/components/design-system/Input';
 import { PasswordInput } from '@/components/design-system/PasswordInput';
@@ -18,48 +19,45 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 export default function SignupEmailPage() {
   const router = useRouter();
   const ref = typeof router.query.ref === 'string' ? router.query.ref : '';
-
   const [email, setEmail] = React.useState('');
   const [pw, setPw] = React.useState('');
+  const [referral, setReferral] = React.useState(ref);
   const [busy, setBusy] = React.useState(false);
   const [err, setErr] = React.useState<string | null>(null);
   const [success, setSuccess] = React.useState(false);
+  const [emailExists, setEmailExists] = React.useState(false);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setErr(null);
+    setEmailExists(false);
 
     try {
       setBusy(true);
-      // Use our API so we get consistent 'user_exists' handling across flows.
-      const res = await fetch('/api/auth/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: email.trim(),
-          password: pw,
-          referral: ref || '',
-        }),
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password: pw,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/verify?email=${encodeURIComponent(
+            email
+          )}${ref ? `&ref=${encodeURIComponent(ref)}` : ''}`,
+          data: referral ? { referral_code: referral } : undefined,
+        },
       });
 
-      const data = await res.json().catch(() => ({} as any));
-      setBusy(false);
-
-      if (!res.ok) {
-        // Map duplicate case to friendly message, do NOT show success UI.
-        if (data?.error === 'user_exists') {
-          setErr('This email is already registered. You can log in or reset your password.');
-          return;
+      if (error) {
+        if (error.message.toLowerCase().includes('already registered')) {
+          setEmailExists(true);
+          setErr('This email is already registered.');
+        } else {
+          setErr(error.message);
         }
-        setErr(data?.error || 'Something went wrong. Please try again.');
         return;
       }
 
-      // Success → show verify message (don’t auto-redirect)
-      setSuccess(true);
-    } catch (e: any) {
+      if (data?.user) setSuccess(true);
+    } finally {
       setBusy(false);
-      setErr(e?.message || 'Network error. Please try again.');
     }
   }
 
@@ -68,23 +66,25 @@ export default function SignupEmailPage() {
       <SectionLabel>Sign up with Email</SectionLabel>
       <Card className="p-6 rounded-ds-2xl card-surface">
         {err && (
-          <Alert tone="danger" className="mb-3">
+          <Alert variant="error" title="Error" className="mb-3">
             {err}{' '}
-            <span className="block mt-1">
-              <Link href={`/login${ref ? `?ref=${ref}` : ''}`} className="underline text-primary">
-                Log in
-              </Link>{' '}
-              or{' '}
-              <Link href="/auth/reset" className="underline text-primary">
-                reset password
-              </Link>.
-            </span>
+            {emailExists && (
+              <span className="block mt-1">
+                <Link href={`/login${ref ? `?ref=${ref}` : ''}`} className="underline text-primary">
+                  Log in instead
+                </Link>{' '}
+                or{' '}
+                <Link href="/auth/reset" className="underline text-primary">
+                  reset password
+                </Link>.
+              </span>
+            )}
           </Alert>
         )}
 
         {success ? (
-          <Alert tone="success">
-            We’ve sent a confirmation link to <b>{email}</b>. Please verify your email to continue.
+          <Alert variant="success" title="Check your email">
+            We’ve sent a confirmation link to <b>{email}</b>.
           </Alert>
         ) : (
           <form onSubmit={onSubmit} className="space-y-4">
@@ -100,6 +100,11 @@ export default function SignupEmailPage() {
               value={pw}
               onChange={(e) => setPw(e.target.value)}
               required
+            />
+            <Input
+              label="Referral code (optional)"
+              value={referral}
+              onChange={(e) => setReferral(e.target.value)}
             />
             <Button
               type="submit"

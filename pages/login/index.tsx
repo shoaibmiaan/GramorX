@@ -238,12 +238,18 @@ export default function LoginOptions() {
               size="lg"
               shape="rounded"
               fullWidth
-              className="justify-between opacity-75"
+              className="relative justify-start opacity-75"
               leadingIcon={<AppleIcon className="h-5 w-5" />}
               aria-disabled="true"
             >
               <span>Sign in with Apple</span>
-              <Badge variant="info" size="sm">Coming Soon</Badge>
+              <Badge
+                variant="info"
+                size="sm"
+                className="absolute top-2 right-3 text-xs px-2 py-0.5"
+              >
+                Coming Soon
+              </Badge>
             </Button>
 
             {/* Phone (soft secondary, disabled) */}
@@ -254,12 +260,18 @@ export default function LoginOptions() {
               size="lg"
               shape="rounded"
               fullWidth
-              className="justify-between opacity-75"
+              className="relative justify-start opacity-75"
               leadingIcon={<SmsIcon className="h-5 w-5" />}
               aria-disabled="true"
             >
               <span>Phone (OTP)</span>
-              <Badge variant="info" size="sm">Coming Soon</Badge>
+              <Badge
+                variant="info"
+                size="sm"
+                className="absolute top-2 right-3 text-xs px-2 py-0.5"
+              >
+                Coming Soon
+              </Badge>
             </Button>
           </div>
 

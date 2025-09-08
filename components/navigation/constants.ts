@@ -1,4 +1,4 @@
-// components/navigation/links.ts
+// components/navigation/constants.ts
 import type { LucideIcon } from 'lucide-react';
 import { Headphones, BookOpen, PenSquare, MicVocal } from 'lucide-react';
 
@@ -7,11 +7,9 @@ export type ModuleLink = {
   href: string;
   desc?: string;
   Icon?: LucideIcon;
-
-  // 🆕 optional niceties (safe to ignore):
-  badge?: string;                // e.g. "New", "AI"
-  tone?: 'purple' | 'blue' | 'orange' | 'green'; // maps to DS accent ring/bg
-  kbd?: string;                  // keyboard hint, e.g. "L"
+  badge?: string;
+  tone?: 'purple' | 'blue' | 'orange' | 'green';
+  kbd?: string;
 };
 
 export const MODULE_LINKS: ModuleLink[] = [

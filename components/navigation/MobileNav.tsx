@@ -17,7 +17,7 @@ interface UserInfo {
   avatarUrl: string | null;
 }
 
-interface MobileNavProps {
+interface MobileNavProps extends React.HTMLAttributes<HTMLDivElement> {
   user: UserInfo;
   role: string | null;
   ready: boolean;
@@ -27,11 +27,27 @@ interface MobileNavProps {
   mobileModulesOpen: boolean;
   setMobileModulesOpen: (open: boolean) => void;
   signOut: () => Promise<void>;
+  /** Force-hide admin links regardless of role */
+  showAdmin?: boolean;
 }
 
 export function MobileNav({
-  user, role, ready, streak, mobileOpen, setMobileOpen, mobileModulesOpen, setMobileModulesOpen, signOut,
+  user,
+  role,
+  ready,
+  streak,
+  mobileOpen,
+  setMobileOpen,
+  mobileModulesOpen,
+  setMobileModulesOpen,
+  signOut,
+  showAdmin = true,
+  className,
+  ...rest
 }: MobileNavProps) {
+  const canSeePartners = role === 'partner' || role === 'admin';
+  const canSeeAdmin = role === 'admin' && showAdmin;
+
   const overlay = (
     <div
       className={`
@@ -45,14 +61,16 @@ export function MobileNav({
 
   const panel = mobileOpen ? (
     <div
-      className="
+      className={`
         fixed inset-x-0 top-0 z-50 md:hidden
         border-b border-border bg-background shadow-lg
         animate-in slide-in-from-top-2 duration-150
-      "
+        ${className ?? ''}
+      `}
       role="dialog"
       aria-modal="true"
       aria-label="Mobile navigation"
+      {...rest}
     >
       <Container>
         <div className="flex items-center justify-between py-3">
@@ -122,10 +140,7 @@ export function MobileNav({
               </button>
 
               {mobileModulesOpen && (
-                <ul
-                  id="mobile-modules-list"
-                  className="mt-1 ml-2 overflow-hidden rounded-lg border border-border"
-                >
+                <ul id="mobile-modules-list" className="mt-1 ml-2 overflow-hidden rounded-lg border border-border">
                   {MODULE_LINKS.map((m) => (
                     <li key={m.href}>
                       <NavLink
@@ -153,7 +168,7 @@ export function MobileNav({
               </li>
             ))}
 
-            {(role === 'partner' || role === 'admin') && (
+            {canSeePartners && (
               <li>
                 <NavLink
                   href="/partners"
@@ -164,7 +179,7 @@ export function MobileNav({
                 </NavLink>
               </li>
             )}
-            {role === 'admin' && (
+            {canSeeAdmin && (
               <li>
                 <NavLink
                   href="/admin/partners"

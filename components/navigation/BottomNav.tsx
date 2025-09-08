@@ -1,6 +1,7 @@
 'use client';
+
 import React from 'react';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
 import { Home, BookOpen, PencilLine, User as UserIcon } from 'lucide-react';
 import { NavLink } from '@/components/design-system/NavLink';
 import { supabaseBrowser } from '@/lib/supabaseBrowser';
@@ -18,14 +19,14 @@ export const BottomNav: React.FC = () => {
 
   React.useEffect(() => {
     supabaseBrowser.auth.getSession().then(({ data: { session } }) => {
-      setHasSession(!!session);
+      setHasSession(Boolean(session));
     });
   }, []);
 
   const gate = (href: string) => (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (!hasSession) {
       e.preventDefault();
-      router.push('/login?next=' + href);
+      router.push('/login?next=' + encodeURIComponent(href));
     }
   };
 
@@ -48,8 +49,7 @@ export const BottomNav: React.FC = () => {
               onClick={gate(href)}
               className="
                 group flex flex-col items-center gap-1 py-2.5
-                text-xs text-muted-foreground
-                transition
+                text-xs text-muted-foreground transition
                 focus:outline-none focus-visible:ring-2 focus-visible:ring-border
                 [&.is-active]:text-primary
               "
@@ -57,8 +57,7 @@ export const BottomNav: React.FC = () => {
             >
               <span
                 className="
-                  inline-flex h-9 w-9 items-center justify-center rounded-full
-                  transition
+                  inline-flex h-9 w-9 items-center justify-center rounded-full transition
                   group-[.is-active]:bg-primary/15 group-hover:bg-primary/10
                 "
                 aria-hidden="true"

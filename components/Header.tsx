@@ -57,7 +57,7 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
     };
   }, []);
 
-  // Prevent background scroll when mobile menu is open (UX nicety)
+  // Prevent background scroll when mobile menu is open
   useEffect(() => {
     const preventTouch = (e: TouchEvent) => e.preventDefault();
     if (mobileOpen) {
@@ -77,16 +77,10 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
     <header
       role="banner"
       className={[
-        // Base layout (non-sticky)
         'relative z-50 transition-all duration-300',
-        // Glass vs solid surface
-        solidHeader
-          ? 'bg-background/95 border-b border-border shadow-sm'
-          : 'header-glass',
-        // Gradient underline (subtle brand bar at the bottom)
+        solidHeader ? 'bg-background/95 border-b border-border shadow-sm' : 'header-glass',
         'before:content-[""] before:absolute before:inset-x-0 before:bottom-0 before:h-[2px]',
         'before:bg-gradient-to-r before:from-vibrantPurple/70 before:via-electricBlue/70 before:to-neonGreen/70',
-        // Soft glow when scrolled
         solidHeader ? 'shadow-glow' : '',
       ].join(' ')}
     >
@@ -95,7 +89,7 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
           {/* Brand */}
           <Link
             href={user?.id ? '/dashboard' : '/'}
-            className="flex items-center gap-3 group focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background  rounded-ds"
+            className="flex items-center gap-3 group focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-ds"
             aria-label="Go to home"
           >
             <span className="relative inline-flex items-center justify-center rounded-xl bg-card p-1.5 shadow-sm ring-1 ring-border">
@@ -107,21 +101,16 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
                 className="h-10 w-10 md:h-11 md:w-11 rounded-lg object-contain"
                 priority
               />
-              {/* Tiny brand accent dot */}
               <span className="absolute -right-1 -bottom-1 h-2.5 w-2.5 rounded-full bg-accent/90 ring-2 ring-card" />
             </span>
-            <p
-              className="font-slab font-bold text-2xl md:text-3xl leading-none"
-              role="heading"
-              aria-level={1}
-            >
+            <p className="font-slab font-bold text-2xl md:text-3xl leading-none" role="heading" aria-level={1}>
               <span className="text-gradient-primary transition-opacity group-hover:opacity-90">
                 GramorX
               </span>
             </p>
           </Link>
 
-          {/* Desktop Navigation (includes Modules mega menu + Streak chip) */}
+          {/* Desktop Navigation */}
           <DesktopNav
             user={user}
             role={role}
@@ -131,15 +120,12 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
             setOpenModules={setOpenDesktopModules}
             modulesRef={modulesRef}
             signOut={signOut}
-            // Hide Admin regardless of role
-            // @ts-expect-error TODO: add `showAdmin` prop to DesktopNav types
             showAdmin={false}
-            // Subtle entrance when header becomes solid
             className="hidden lg:flex items-center gap-2 will-change-transform transition-[opacity,transform] duration-200 data-[solid=true]:opacity-100 data-[solid=false]:opacity-95"
             data-solid={solidHeader}
           />
 
-          {/* Mobile Navigation (hamburger + overlay + Modules sheet) */}
+          {/* Mobile Navigation */}
           <MobileNav
             user={user}
             role={role}
@@ -150,14 +136,12 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
             mobileModulesOpen={mobileModulesOpen}
             setMobileModulesOpen={setMobileModulesOpen}
             signOut={signOut}
-            // @ts-expect-error TODO: add `showAdmin` prop to MobileNav types
             showAdmin={false}
             className="lg:hidden"
           />
         </div>
       </Container>
 
-      {/* Streak live region for screen readers */}
       <span className="sr-only" aria-live="polite">
         {typeof streakState === 'number' ? `Current streak ${streakState} days` : ''}
       </span>
