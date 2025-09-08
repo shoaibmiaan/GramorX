@@ -1,3 +1,4 @@
+import { Icon } from "@/components/design-system/Icon";
 // components/sections/Specialties.tsx
 import * as React from 'react';
 import Link from 'next/link';
@@ -68,7 +69,7 @@ export const Specialties: React.FC = () => {
                   <p className="text-muted-foreground mt-1">{s.desc}</p>
                   <div className="mt-3">
                     <Link href={s.href} className="text-electricBlue hover:underline inline-flex items-center gap-2">
-                      Explore <i className="fas fa-arrow-right" aria-hidden="true" />
+                      Explore <Icon name="arrow-right" />
                     </Link>
                   </div>
                 </div>

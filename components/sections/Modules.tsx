@@ -1,3 +1,4 @@
+import { Icon } from "@/components/design-system/Icon";
 // components/sections/Modules.tsx
 import React from 'react';
 import Link from 'next/link';
@@ -123,7 +124,7 @@ export const Modules: React.FC = () => {
                 </div>
 
                 <h3 className="text-xl font-semibold mb-3 flex items-center gap-2">
-                  <i className="fas fa-circle-check text-neonGreen" aria-hidden="true" />
+                  <Icon name="circle-check" />
                   {m.title}
                 </h3>
 
@@ -139,7 +140,7 @@ export const Modules: React.FC = () => {
                 {m.href && (
                   <div className="mt-4">
                     <Link href={m.href} className="inline-flex items-center gap-2 text-electricBlue hover:underline">
-                      Open <i className="fas fa-arrow-right" aria-hidden="true" />
+                      Open <Icon name="arrow-right" />
                     </Link>
                   </div>
                 )}

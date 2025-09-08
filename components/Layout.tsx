@@ -1,5 +1,5 @@
-// components/Layout.tsx
 'use client';
+// components/Layout.tsx
 
 import React from 'react';
 import { useRouter } from 'next/router';

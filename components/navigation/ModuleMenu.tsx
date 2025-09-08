@@ -1,5 +1,5 @@
-// components/navigation/ModuleMenu.tsx
 'use client';
+// components/navigation/ModuleMenu.tsx
 
 import React from 'react';
 import Link from 'next/link';

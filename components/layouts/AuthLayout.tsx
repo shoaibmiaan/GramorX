@@ -1,5 +1,5 @@
-// components/layouts/AuthLayout.tsx
 'use client';
+// components/layouts/AuthLayout.tsx
 
 import React from 'react';
 import Image from 'next/image';

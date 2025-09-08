@@ -1,3 +1,4 @@
+import { Icon } from "@/components/design-system/Icon";
 // components/sections/Waitlist.tsx
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
@@ -198,10 +199,10 @@ export default function WaitlistSection() {
 
             <div className="md:col-span-2 pt-1">
               <Button type="submit" variant="primary" disabled={!canSubmit} className="w-full rounded-full py-5 text-h3 font-semibold">
-                <i className="fas fa-lock mr-2" aria-hidden="true" /> {loading ? 'Securing…' : 'Secure Your Early Access'}
+                <Icon name="lock" /> {loading ? 'Securing…' : 'Secure Your Early Access'}
               </Button>
               <div className="text-center text-small mt-3 text-electricBlue">
-                <i className="fas fa-gift mr-2" aria-hidden="true" /> First 500 get 30% off for 3 months
+                <Icon name="gift" /> First 500 get 30% off for 3 months
               </div>
             </div>
           </form>

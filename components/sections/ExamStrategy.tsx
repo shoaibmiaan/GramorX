@@ -1,3 +1,4 @@
+import { Icon } from "@/components/design-system/Icon";
 import React from 'react';
 import { Container } from '@/components/design-system/Container';
 import { Section } from '@/components/design-system/Section';
@@ -80,7 +81,7 @@ export default function ExamStrategy() {
             >
               <div className="flex items-center justify-between">
                 <span className="font-medium">{x.label}</span>
-                <i className="fas fa-arrow-right text-muted-foreground" aria-hidden="true" />
+                <Icon name="arrow-right" />
               </div>
             </NavLink>
           ))}

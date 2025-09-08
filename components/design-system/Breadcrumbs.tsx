@@ -1,3 +1,4 @@
+import { Icon } from "@/components/design-system/Icon";
 import React from "react";
 import Link from "next/link";
 
@@ -25,7 +26,7 @@ export const Breadcrumbs: React.FC<{ items: Crumb[]; className?: string }> = ({
             )}
             {i < items.length - 1 && (
               <span className="opacity-60">
-                <i className="fas fa-chevron-right" aria-hidden="true" />
+                <Icon name="chevron-right" />
               </span>
             )}
           </li>

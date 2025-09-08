@@ -1,5 +1,6 @@
+'use client';
+import { Icon } from "@/components/design-system/Icon";
 // components/design-system/UserMenu.tsx
-"use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
@@ -62,22 +63,22 @@ export const UserMenu: React.FC<{
       {
         label: "Dashboard",
         href: "/dashboard",
-        icon: <i className="fas fa-gauge" aria-hidden="true" />,
+        icon: <Icon name="gauge" />,
       },
       {
         label: "Profile",
         href: "/profile",
-        icon: <i className="fas fa-id-badge" aria-hidden="true" />,
+        icon: <Icon name="id-badge" />,
       },
       {
         label: "Account",
         href: "/account",
-        icon: <i className="fas fa-user" aria-hidden="true" />,
+        icon: <Icon name="user" />,
       },
       {
         label: "Sign out",
         onClick: onSignOut ?? defaultSignOut,
-        icon: <i className="fas fa-sign-out-alt" aria-hidden="true" />,
+        icon: <Icon name="sign-out-alt" />,
       },
     ];
     return base;

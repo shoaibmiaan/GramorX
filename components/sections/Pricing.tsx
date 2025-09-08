@@ -1,3 +1,4 @@
+import { Icon } from "@/components/design-system/Icon";
 // components/sections/Pricing.tsx
 import React from 'react';
 import Link from 'next/link';
@@ -108,7 +109,7 @@ export const Pricing: React.FC = () => {
 
               {/* Title + price block, echoing Modules heading rhythm */}
               <h3 className="text-xl font-semibold mb-2 flex items-center gap-2">
-                <i className="fas fa-circle-check text-neonGreen" aria-hidden="true" />
+                <Icon name="circle-check" />
                 {t.name}
               </h3>
               <div className="mb-4">
