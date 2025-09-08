@@ -2,7 +2,8 @@ import * as React from 'react'
 import {
   X, Eye, EyeOff, Flame, Shield, Bell, Check, AlertTriangle, Info, ArrowRight,
   Book, Lock, Gift, Star, StarHalf, Gauge, User, LogOut, StepBack, Pause, Play,
-  StepForward, ChevronRight, CheckCircle, IdCard
+  StepForward, ChevronRight, CheckCircle, IdCard,
+  Mail, Phone, MapPin,
 } from 'lucide-react'
 
 const map: Record<string, React.ElementType> = {
@@ -22,12 +23,18 @@ const map: Record<string, React.ElementType> = {
   'star': Star, 'star-half-alt': StarHalf,
   'gauge': Gauge, 'tachometer-alt': Gauge,
   'id-badge': IdCard,
+  // New additions
+  'mail': Mail, 'envelope': Mail,
+  'phone': Phone, 'phone-alt': Phone,
+  'map-pin': MapPin, 'location-pin': MapPin,
   'user': User, 'sign-out-alt': LogOut,
   'step-backward': StepBack, 'pause': Pause, 'play': Play, 'step-forward': StepForward,
 }
 
 export const Icon: React.FC<{ name: string; className?: string; 'aria-hidden'?: boolean }> = ({
-  name, className = '', ...rest
+  name,
+  className = '',
+  ...rest
 }) => {
   const key = String(name || '').toLowerCase().replace(/^fa-/, '')
   const Cmp = map[key]
