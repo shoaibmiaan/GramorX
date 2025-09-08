@@ -62,7 +62,7 @@ export const Badge: React.FC<{
     success: {
       soft: 'bg-success/10 text-success border-success/30',
       outline: 'bg-transparent text-success border-success',
-      solid: 'bg-success text-lightText border-success',
+      solid: 'bg-success text-foreground border-success',
       dot: 'bg-success',
     },
     warning: {
@@ -74,13 +74,13 @@ export const Badge: React.FC<{
     danger: {
       soft: 'bg-sunsetRed/10 text-sunsetRed border-sunsetRed/30',
       outline: 'bg-transparent text-sunsetRed border-sunsetRed',
-      solid: 'bg-sunsetRed text-lightText border-sunsetRed',
+      solid: 'bg-sunsetRed text-foreground border-sunsetRed',
       dot: 'bg-sunsetRed',
     },
     info: {
       soft: 'bg-electricBlue/10 text-electricBlue border-electricBlue/30',
       outline: 'bg-transparent text-electricBlue border-electricBlue',
-      solid: 'bg-electricBlue text-lightText border-electricBlue',
+      solid: 'bg-electricBlue text-foreground border-electricBlue',
       dot: 'bg-electricBlue',
     },
   } as const

@@ -1,3 +1,4 @@
+import { Icon } from "@/components/design-system/Icon";
 // components/sections/Specialties.tsx
 import * as React from 'react';
 import Link from 'next/link';
@@ -50,7 +51,7 @@ export const Specialties: React.FC = () => {
       <Container>
         <div className="text-center mb-12">
           <h2 className="font-slab text-h2 tracking-tight text-gradient-primary">What Makes Us Different</h2>
-          <p className="text-grayish mt-2">Deep focus on IELTS outcomes with maximum AI involvement.</p>
+          <p className="text-muted-foreground mt-2">Deep focus on IELTS outcomes with maximum AI involvement.</p>
         </div>
 
         <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
@@ -68,7 +69,7 @@ export const Specialties: React.FC = () => {
                   <p className="text-muted-foreground mt-1">{s.desc}</p>
                   <div className="mt-3">
                     <Link href={s.href} className="text-electricBlue hover:underline inline-flex items-center gap-2">
-                      Explore <i className="fas fa-arrow-right" aria-hidden="true" />
+                      Explore <Icon name="arrow-right" />
                     </Link>
                   </div>
                 </div>

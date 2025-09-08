@@ -36,7 +36,7 @@ export const NotificationBell: React.FC = () => {
         onClick={()=>setOpen(v=>!v)}
         className="relative inline-flex h-10 w-10 items-center justify-center rounded-lg hover:bg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background">
         <BellIcon className="h-5 w-5" aria-hidden="true"/>
-        {unread>0 && <span aria-live="polite" className="absolute -top-1 -right-1 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-sunsetRed px-1 text-[10px] leading-none text-lightText">{unread}</span>}
+        {unread>0 && <span aria-live="polite" className="absolute -top-1 -right-1 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-sunsetRed px-1 text-[10px] leading-none text-foreground">{unread}</span>}
       </button>
 
       {open && (

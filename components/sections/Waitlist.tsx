@@ -1,3 +1,4 @@
+import { Icon } from "@/components/design-system/Icon";
 // components/sections/Waitlist.tsx
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
@@ -140,7 +141,7 @@ export default function WaitlistSection() {
           <h2 className="font-slab text-h2 md:text-display tracking-tight uppercase text-gradient-primary">
             Join our exclusive pre-launch
           </h2>
-          <p className="text-grayish mt-3">Be among the first with early-bird benefits.</p>
+          <p className="text-muted-foreground mt-3">Be among the first with early-bird benefits.</p>
         </div>
 
         <div ref={alertWrapRef} tabIndex={-1} aria-live="polite" aria-atomic="true" className="outline-none">
@@ -198,17 +199,17 @@ export default function WaitlistSection() {
 
             <div className="md:col-span-2 pt-1">
               <Button type="submit" variant="primary" disabled={!canSubmit} className="w-full rounded-full py-5 text-h3 font-semibold">
-                <i className="fas fa-lock mr-2" aria-hidden="true" /> {loading ? 'Securing…' : 'Secure Your Early Access'}
+                <Icon name="lock" /> {loading ? 'Securing…' : 'Secure Your Early Access'}
               </Button>
               <div className="text-center text-small mt-3 text-electricBlue">
-                <i className="fas fa-gift mr-2" aria-hidden="true" /> First 500 get 30% off for 3 months
+                <Icon name="gift" /> First 500 get 30% off for 3 months
               </div>
             </div>
           </form>
         </Card>
 
-        <p className="text-small text-grayish mt-5 text-center">Have a referral code? Add <code>?ref=YOURCODE</code> to the URL.</p>
-        <p className="text-small text-grayish mt-1 text-center">By joining, you agree to receive early-access emails.</p>
+        <p className="text-small text-muted-foreground mt-5 text-center">Have a referral code? Add <code>?ref=YOURCODE</code> to the URL.</p>
+        <p className="text-small text-muted-foreground mt-1 text-center">By joining, you agree to receive early-access emails.</p>
       </Container>
     </Section>
   );

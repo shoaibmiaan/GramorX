@@ -1,3 +1,4 @@
+import { Icon } from "@/components/design-system/Icon";
 // components/sections/Modules.tsx
 import React from 'react';
 import Link from 'next/link';
@@ -107,7 +108,7 @@ export const Modules: React.FC = () => {
       <Container>
         <div className="text-center mb-16">
           <h2 className="font-slab text-4xl mb-3 text-gradient-primary">COMPREHENSIVE IELTS MODULES</h2>
-          <p className="text-grayish text-lg">AI + proven pedagogy for faster score gains</p>
+          <p className="text-muted-foreground text-lg">AI + proven pedagogy for faster score gains</p>
         </div>
         <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {items.map((m) => {
@@ -123,7 +124,7 @@ export const Modules: React.FC = () => {
                 </div>
 
                 <h3 className="text-xl font-semibold mb-3 flex items-center gap-2">
-                  <i className="fas fa-circle-check text-neonGreen" aria-hidden="true" />
+                  <Icon name="circle-check" />
                   {m.title}
                 </h3>
 
@@ -139,7 +140,7 @@ export const Modules: React.FC = () => {
                 {m.href && (
                   <div className="mt-4">
                     <Link href={m.href} className="inline-flex items-center gap-2 text-electricBlue hover:underline">
-                      Open <i className="fas fa-arrow-right" aria-hidden="true" />
+                      Open <Icon name="arrow-right" />
                     </Link>
                   </div>
                 )}

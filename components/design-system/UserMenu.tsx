@@ -1,5 +1,6 @@
+'use client';
+import { Icon } from "@/components/design-system/Icon";
 // components/design-system/UserMenu.tsx
-"use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
@@ -62,22 +63,22 @@ export const UserMenu: React.FC<{
       {
         label: "Dashboard",
         href: "/dashboard",
-        icon: <i className="fas fa-gauge" aria-hidden="true" />,
+        icon: <Icon name="gauge" />,
       },
       {
         label: "Profile",
         href: "/profile",
-        icon: <i className="fas fa-id-badge" aria-hidden="true" />,
+        icon: <Icon name="id-badge" />,
       },
       {
         label: "Account",
         href: "/account",
-        icon: <i className="fas fa-user" aria-hidden="true" />,
+        icon: <Icon name="user" />,
       },
       {
         label: "Sign out",
         onClick: onSignOut ?? defaultSignOut,
-        icon: <i className="fas fa-sign-out-alt" aria-hidden="true" />,
+        icon: <Icon name="sign-out-alt" />,
       },
     ];
     return base;
@@ -188,10 +189,10 @@ export const UserMenu: React.FC<{
           ref={listRef}
           tabIndex={-1}
           onKeyDown={onMenuKeyDown}
-          className="absolute right-0 mt-2 w-64 rounded-2xl border border-vibrantPurple/20 bg-lightBg dark:bg-dark shadow-lg overflow-hidden"
+          className="absolute right-0 mt-2 w-64 rounded-2xl border border-vibrantPurple/20 bg-background dark:bg-dark shadow-lg overflow-hidden"
         >
           {showEmail && (email || name) && (
-            <div className="px-4 py-3 text-small text-grayish dark:text-foreground/70 border-b border-vibrantPurple/15">
+            <div className="px-4 py-3 text-small text-muted-foreground dark:text-foreground/70 border-b border-vibrantPurple/15">
               <div className="flex items-center gap-3">
                 <div className="h-9 w-9 rounded-full bg-vibrantPurple/15 flex items-center justify-center overflow-hidden">
                   {localAvatar ? (
@@ -209,7 +210,7 @@ export const UserMenu: React.FC<{
                   )}
                 </div>
                 <div>
-                  <div className="font-medium text-lightText dark:text-foreground">
+                  <div className="font-medium text-foreground dark:text-foreground">
                     {name ?? email}
                   </div>
                   {email && name && <div className="opacity-80">{email}</div>}
@@ -223,7 +224,7 @@ export const UserMenu: React.FC<{
               {t("userMenu.language")}
             </label>
             <select
-              className="w-full rounded-md bg-lightBg dark:bg-dark border border-vibrantPurple/20 px-2 py-1"
+              className="w-full rounded-md bg-background dark:bg-dark border border-vibrantPurple/20 px-2 py-1"
               value={locale}
               onChange={(e) => handleLanguageChange(e.target.value)}
             >

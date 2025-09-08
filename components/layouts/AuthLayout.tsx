@@ -1,5 +1,5 @@
-// components/layouts/AuthLayout.tsx
 'use client';
+// components/layouts/AuthLayout.tsx
 
 import React from 'react';
 import Image from 'next/image';
@@ -42,7 +42,7 @@ export default function AuthLayout({
   const [mobileView, setMobileView] = React.useState<'left' | 'right'>('left');
 
   return (
-    <div className="relative min-h-screen bg-lightBg text-lightText dark:bg-gradient-to-br dark:from-dark/90 dark:to-darker">
+    <div className="relative min-h-screen bg-background text-foreground dark:bg-gradient-to-br dark:from-dark/90 dark:to-darker">
       {/* Theme toggle */}
       <div className="absolute right-4 top-4 z-40">
         <ThemeToggle />

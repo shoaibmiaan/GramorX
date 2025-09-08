@@ -41,7 +41,7 @@ export const AiTestDrive: React.FC<{ className?: string }> = ({ className = '' }
   return (
     <Card className={`card-surface p-6 rounded-ds-2xl ${className}`}>
       <h3 className="text-h3 font-semibold mb-2">⚡ Test the AI (2–3 lines)</h3>
-      <p className="text-grayish mb-4">Ask a quick question to see how the AI replies. This won’t affect your scores.</p>
+      <p className="text-muted-foreground mb-4">Ask a quick question to see how the AI replies. This won’t affect your scores.</p>
 
       <form onSubmit={handleAsk} className="flex flex-col md:flex-row gap-3">
         <Input

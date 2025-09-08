@@ -42,12 +42,12 @@ export default function ExamLayout({
       <DistractionFreeBanner />
       <FocusGuard exam={exam} slug={slug} />
       <div className="min-h-screen flex flex-col">
-        <header className="sticky top-0 z-40 border-b bg-lightBg dark:bg-dark">
+        <header className="sticky top-0 z-40 border-b bg-background dark:bg-dark">
           <Container className="flex items-center justify-between gap-4 py-3">
             <div className="flex items-center gap-4">
               <div className="leading-tight">
                 {attemptId && (
-                  <div className="text-small text-grayish dark:text-gray-400">Attempt {attemptId}</div>
+                  <div className="text-small text-muted-foreground dark:text-gray-400">Attempt {attemptId}</div>
                 )}
                 <h1 className="font-semibold">{title}</h1>
               </div>

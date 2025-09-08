@@ -1,3 +1,4 @@
+import { Icon } from "@/components/design-system/Icon";
 // components/sections/Testimonials.tsx
 import * as React from 'react';
 import Link from 'next/link';
@@ -49,7 +50,7 @@ export const Testimonials: React.FC = () => {
       <Container>
         <div className="text-center mb-12">
           <h2 className="font-slab text-h2 tracking-tight text-gradient-primary">Learners Who Leveled Up</h2>
-          <p className="text-grayish mt-2">Real prep. Real gains. Repeatable process.</p>
+          <p className="text-muted-foreground mt-2">Real prep. Real gains. Repeatable process.</p>
         </div>
 
         <div className="grid gap-6 md:grid-cols-3">
@@ -74,11 +75,11 @@ export const Testimonials: React.FC = () => {
               </blockquote>
 
               <div className="mt-5 flex items-center gap-1 text-warning/90" aria-hidden="true">
-                <i className="fas fa-star" aria-hidden="true" />
-                <i className="fas fa-star" aria-hidden="true" />
-                <i className="fas fa-star" aria-hidden="true" />
-                <i className="fas fa-star" aria-hidden="true" />
-                <i className="fas fa-star-half-alt" aria-hidden="true" />
+                <Icon name="star" />
+                <Icon name="star" />
+                <Icon name="star" />
+                <Icon name="star" />
+                <Icon name="star-half-alt" />
               </div>
             </Card>
           ))}
@@ -89,7 +90,7 @@ export const Testimonials: React.FC = () => {
             href="/reviews"
             className="inline-flex items-center gap-2 px-4 py-2 rounded-ds border border-border hover:bg-electricBlue/5 transition"
           >
-            Read more reviews <i className="fas fa-arrow-right" aria-hidden="true" />
+            Read more reviews <Icon name="arrow-right" />
           </Link>
         </div>
       </Container>

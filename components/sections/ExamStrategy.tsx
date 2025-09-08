@@ -1,3 +1,4 @@
+import { Icon } from "@/components/design-system/Icon";
 import React from 'react';
 import { Container } from '@/components/design-system/Container';
 import { Section } from '@/components/design-system/Section';
@@ -13,7 +14,7 @@ export default function ExamStrategy() {
         <div className="flex items-end justify-between gap-4">
           <div>
             <h2 className="font-slab text-h1 md:text-display">IELTS Exam Strategy</h2>
-            <p className="text-grayish mt-1">
+            <p className="text-muted-foreground mt-1">
               A simple path: learn key strategies → practise each module → get AI feedback → re‑evaluate & improve.
             </p>
           </div>
@@ -24,7 +25,7 @@ export default function ExamStrategy() {
           {/* 1. Foundations */}
           <Card className="card-surface p-6 rounded-ds-2xl">
             <h3 className="text-h3">1) Foundations</h3>
-            <ul className="mt-3 space-y-2 text-grayish">
+            <ul className="mt-3 space-y-2 text-muted-foreground">
               <li>• Understand band descriptors (TR/CC/LR/GRA)</li>
               <li>• Learn time management per module</li>
               <li>• Build exam‑day checklist</li>
@@ -39,7 +40,7 @@ export default function ExamStrategy() {
           {/* 2. Practise with AI */}
           <Card className="card-surface p-6 rounded-ds-2xl">
             <h3 className="text-h3">2) Practise with AI</h3>
-            <ul className="mt-3 space-y-2 text-grayish">
+            <ul className="mt-3 space-y-2 text-muted-foreground">
               <li>• Writing Task 1/2 or GT letter → instant band & tips</li>
               <li>• Listening/Reading drills with live inputs</li>
               <li>• Speaking: record → STT → pronunciation & feedback</li>
@@ -53,7 +54,7 @@ export default function ExamStrategy() {
           {/* 3. Review & Improve */}
           <Card className="card-surface p-6 rounded-ds-2xl">
             <h3 className="text-h3">3) Review & Improve</h3>
-            <ul className="mt-3 space-y-2 text-grayish">
+            <ul className="mt-3 space-y-2 text-muted-foreground">
               <li>• Compare scores vs goals & identify gaps</li>
               <li>• Use <b>AI Re‑evaluation</b> to test strict/coaching modes</li>
               <li>• Track progress; repeat weak areas</li>
@@ -80,7 +81,7 @@ export default function ExamStrategy() {
             >
               <div className="flex items-center justify-between">
                 <span className="font-medium">{x.label}</span>
-                <i className="fas fa-arrow-right text-grayish" aria-hidden="true" />
+                <Icon name="arrow-right" />
               </div>
             </NavLink>
           ))}

@@ -30,7 +30,7 @@ export const RetentionCard: React.FC<RetentionCardProps> = ({
       </div>
       <div>
         <h3 className="text-h3 mb-1">{heading}</h3>
-        <p className="text-grayish">{description}</p>
+        <p className="text-muted-foreground">{description}</p>
       </div>
     </div>
   </Link>

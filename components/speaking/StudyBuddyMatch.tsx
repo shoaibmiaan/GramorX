@@ -48,7 +48,7 @@ export default function StudyBuddyMatch() {
   return (
     <div className="max-w-md mx-auto">
       <h2 className="text-h2">Study Buddy</h2>
-      <p className="mt-2 text-grayish">Find a partner with similar goals and timezone.</p>
+      <p className="mt-2 text-muted-foreground">Find a partner with similar goals and timezone.</p>
       <div className="mt-4 flex flex-col gap-3">
         <Input placeholder="Timezone" value={timezone} onChange={e => setTimezone(e.target.value)} />
         <Input placeholder="Goal Band" value={goalBand} onChange={e => setGoalBand(e.target.value)} />

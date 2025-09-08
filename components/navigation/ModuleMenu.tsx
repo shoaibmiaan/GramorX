@@ -1,5 +1,5 @@
-// components/navigation/ModuleMenu.tsx
 'use client';
+// components/navigation/ModuleMenu.tsx
 
 import React from 'react';
 import Link from 'next/link';
@@ -125,7 +125,7 @@ export function ModuleMenu({ open, setOpen, modulesRef }: ModuleMenuProps) {
           className="
             absolute left-1/2 top-full z-50 mt-4 hidden md:block
             -translate-x-1/2 overflow-hidden rounded-2xl border border-border shadow-2xl ring-1 ring-black/5
-            bg-lightCard dark:bg-dark
+            bg-card dark:bg-dark
             w-[720px] lg:w-[860px] xl:w-[960px] max-w-[98vw]
           "
         >
@@ -133,7 +133,7 @@ export function ModuleMenu({ open, setOpen, modulesRef }: ModuleMenuProps) {
           <div className="max-h-[70vh] overflow-y-auto">
             <div className="grid grid-cols-12">
               {/* Left: modules list on deeper panel */}
-              <div className="col-span-8 p-6 lg:p-7 bg-lightCard dark:bg-darker">
+              <div className="col-span-8 p-6 lg:p-7 bg-card dark:bg-darker">
                 <h3 className="font-slab text-lg mb-2">Skill Modules</h3>
                 <p className="text-sm text-muted-foreground mb-4">
                   Build the core exam skills with focused practice.
@@ -264,7 +264,7 @@ export function ModuleMenu({ open, setOpen, modulesRef }: ModuleMenuProps) {
 
             {/* scrollable content */}
             <div className="max-h-[80vh] overflow-y-auto px-4 pb-4">
-              <div className="rounded-xl border border-border bg-lightCard dark:bg-darker p-3">
+              <div className="rounded-xl border border-border bg-card dark:bg-darker p-3">
                 <div className="mb-2">
                   <div className="font-medium">Skill Modules</div>
                   <div className="text-sm text-muted-foreground">

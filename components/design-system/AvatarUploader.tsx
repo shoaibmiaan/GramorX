@@ -1,4 +1,4 @@
-"use client";
+'use client';
 import { env } from "@/lib/env";
 import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
@@ -113,7 +113,7 @@ export const AvatarUploader: React.FC<Props> = ({
             className="mx-auto h-28 w-28 rounded-full object-cover ring-2 ring-primary/40"
           />
         ) : (
-          <div className="text-grayish">
+          <div className="text-muted-foreground">
             <div className="text-h3 mb-1">Upload avatar</div>
             <div className="text-small opacity-80">
               Drag & drop or click to browse

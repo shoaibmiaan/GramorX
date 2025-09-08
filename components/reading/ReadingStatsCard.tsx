@@ -78,7 +78,7 @@ export function ReadingStatsCard() {
       <Card className="p-6 flex items-center justify-between">
         <div>
           <div className="font-semibold mb-1">Reading progress</div>
-          <div className="text-sm text-gray-600 dark:text-grayish">Sign in to track your attempts and accuracy.</div>
+          <div className="text-sm text-gray-600 dark:text-muted-foreground">Sign in to track your attempts and accuracy.</div>
         </div>
         <Button href="/login" variant="primary" className="rounded-ds-xl">Sign in</Button>
       </Card>
@@ -96,21 +96,21 @@ export function ReadingStatsCard() {
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div>
-          <div className="text-sm text-gray-600 dark:text-grayish">Attempts</div>
+          <div className="text-sm text-gray-600 dark:text-muted-foreground">Attempts</div>
           <div className="text-xl font-semibold">{stat?.attempts ?? 0}</div>
         </div>
         <div>
-          <div className="text-sm text-gray-600 dark:text-grayish">Points</div>
+          <div className="text-sm text-gray-600 dark:text-muted-foreground">Points</div>
           <div className="text-xl font-semibold">{stat?.total_score ?? 0}/{stat?.total_max ?? 0}</div>
         </div>
         <div>
-          <div className="text-sm text-gray-600 dark:text-grayish">Avg. duration</div>
+          <div className="text-sm text-gray-600 dark:text-muted-foreground">Avg. duration</div>
           <div className="text-xl font-semibold">
             {stat?.avg_duration_ms ? Math.round((stat.avg_duration_ms/1000)/60) + ' min' : '—'}
           </div>
         </div>
         <div>
-          <div className="text-sm text-gray-600 dark:text-grayish">Last attempt</div>
+          <div className="text-sm text-gray-600 dark:text-muted-foreground">Last attempt</div>
           <div className="text-xl font-semibold">
             {stat?.last_attempt_at ? new Date(stat.last_attempt_at).toLocaleDateString() : '—'}
           </div>
@@ -119,7 +119,7 @@ export function ReadingStatsCard() {
 
       <div className="mb-3 font-medium">Recent attempts</div>
       {recent.length === 0 ? (
-        <div className="text-sm text-gray-600 dark:text-grayish">No attempts yet. Try a passage to see your stats.</div>
+        <div className="text-sm text-gray-600 dark:text-muted-foreground">No attempts yet. Try a passage to see your stats.</div>
       ) : (
         <ul className="grid gap-2">
           {recent.map(a => (
@@ -128,7 +128,7 @@ export function ReadingStatsCard() {
                 <Link href={`/reading/review/${a.id}`} className="underline">
                   {a.passage_slug}
                 </Link>
-                <span className="ml-2 text-sm text-gray-600 dark:text-grayish">
+                <span className="ml-2 text-sm text-gray-600 dark:text-muted-foreground">
                   {new Date(a.created_at).toLocaleString()}
                 </span>
               </div>

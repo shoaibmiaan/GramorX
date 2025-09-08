@@ -45,10 +45,10 @@ export const CourseCatalog: React.FC = () => {
   }, []);
 
   return (
-    <section className="py-24 bg-lightBg dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90" id="catalog">
+    <section className="py-24 bg-background dark:bg-gradient-to-br dark:from-dark/80 dark:to-darker/90" id="catalog">
       <Container>
         <h2 className="font-slab text-h2 mb-2">Structured Course Library</h2>
-        <p className="text-grayish">Academic & General tracks, organized by level.</p>
+        <p className="text-muted-foreground">Academic & General tracks, organized by level.</p>
 
         {loading && (
           <Card className="p-6 rounded-ds-2xl mt-6">
@@ -85,7 +85,7 @@ export const CourseCatalog: React.FC = () => {
             ))}
             {courses.length === 0 && (
               <Card className="p-6 rounded-ds-2xl">
-                <div className="text-grayish">No courses available yet.</div>
+                <div className="text-muted-foreground">No courses available yet.</div>
               </Card>
             )}
           </div>

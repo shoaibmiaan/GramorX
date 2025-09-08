@@ -1,3 +1,4 @@
+import { Icon } from "@/components/design-system/Icon";
 import React from "react";
 import Link from "next/link";
 
@@ -14,18 +15,18 @@ export const Breadcrumbs: React.FC<{ items: Crumb[]; className?: string }> = ({
             {c.href ? (
               <Link
                 href={c.href}
-                className="hover:text-lightText dark:hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-ds px-1"
+                className="hover:text-foreground dark:hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-ds px-1"
               >
                 {c.label}
               </Link>
             ) : (
-              <span className="text-lightText dark:text-foreground">
+              <span className="text-foreground dark:text-foreground">
                 {c.label}
               </span>
             )}
             {i < items.length - 1 && (
               <span className="opacity-60">
-                <i className="fas fa-chevron-right" aria-hidden="true" />
+                <Icon name="chevron-right" />
               </span>
             )}
           </li>
