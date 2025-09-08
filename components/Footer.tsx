@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Container } from '@/components/design-system/Container';
 import { NavLink } from '@/components/design-system/NavLink';
 import { SocialIconLink } from '@/components/design-system/SocialIconLink';
-import { MailIcon, PhoneIcon, MapPinIcon } from '@/components/design-system/icons';
+import { Icon } from '@/components/design-system/Icon';
 
 const year = new Date().getFullYear();
 
@@ -136,15 +136,15 @@ export const Footer: React.FC = () => {
             <h3 className="mb-3 font-slab text-lg">Contact</h3>
             <ul className="space-y-3 text-sm text-muted-foreground">
               <li className="flex items-start gap-2">
-                <MapPinIcon className="mt-0.5 h-4 w-4 opacity-80" aria-hidden />
+                <Icon name="map-pin" className="mt-0.5 h-4 w-4 opacity-80" aria-hidden={true} />
                 <span>Gulberg, Lahore, Pakistan</span>
               </li>
               <li className="flex items-start gap-2">
-                <PhoneIcon className="mt-0.5 h-4 w-4 opacity-80" aria-hidden />
+                <Icon name="phone" className="mt-0.5 h-4 w-4 opacity-80" aria-hidden={true} />
                 <span>+92 300 0000000</span>
               </li>
               <li className="flex items-start gap-2">
-                <MailIcon className="mt-0.5 h-4 w-4 opacity-80" aria-hidden />
+                <Icon name="mail" className="mt-0.5 h-4 w-4 opacity-80" aria-hidden={true} />
                 <span>support@gramorx.com</span>
               </li>
             </ul>
@@ -155,10 +155,10 @@ export const Footer: React.FC = () => {
         <div className="flex flex-col items-start justify-between gap-3 border-t border-border py-6 text-sm text-muted-foreground sm:flex-row sm:items-center">
           <p>© {year} GramorX Learning School. All rights reserved.</p>
           <div className="flex items-center gap-4">
-            <NavLink href="/terms" className="hover:text-foreground">
+            <NavLink href="/legal/terms" className="hover:text-foreground">
               Terms
             </NavLink>
-            <NavLink href="/privacy" className="hover:text-foreground">
+            <NavLink href="/legal/privacy" className="hover:text-foreground">
               Privacy
             </NavLink>
             <a
