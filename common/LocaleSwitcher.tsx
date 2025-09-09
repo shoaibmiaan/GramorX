@@ -45,7 +45,7 @@ export function LocaleSwitcher({
         value={locale}
         onChange={(e) => change(e.target.value as SupportedLocale)}
         className="rounded-ds border border-border bg-card px-3 py-2 text-foreground shadow-sm
-                   focus:outline-none focus-visible:ring-2 focus-visible:ring-border
+                   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border focus-visible:ring-offset-2 focus-visible:ring-offset-background
                    hover:bg-border/30 disabled:opacity-50"
       >
         <option value="en">English</option>

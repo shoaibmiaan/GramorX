@@ -293,7 +293,7 @@ export default function TeacherHome() {
                     value={newName}
                     onChange={(e) => setNewName(e.target.value)}
                     placeholder="e.g., Alpha Academy — Batch A"
-                    className="w-full rounded-ds border border-border bg-background px-3 py-2 text-sm outline-none ring-border focus:ring-2"
+                    className="w-full rounded-ds border border-border bg-background px-3 py-2 text-sm outline-none ring-border focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                   />
                   <Button
                     type="submit"

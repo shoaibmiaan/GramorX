@@ -204,3 +204,5 @@ html.gx-ai-open #__next { padding-right: var(--gx-ai-right); box-sizing: border-
 @media (max-width: 767px) {
   html.gx-ai-open-bottom #__next { padding-bottom: var(--gx-ai-bottom); box-sizing: border-box; }
 }
+:root { --safe-bottom: env(safe-area-inset-bottom, 0px); }
+.pb-safe { padding-bottom: max(var(--safe-bottom), 1rem); }

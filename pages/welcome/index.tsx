@@ -18,9 +18,9 @@ type WordOfDay = { word: string; meaning?: string; example?: string };
 const ModuleCard: React.FC<{ title: string; href: string; caption: string; chip?: string }> = ({
   title, href, caption, chip,
 }) => (
-  <Link href={href} className="block focus:outline-none group">
+  <Link href={href} className="block focus-visible:outline-none group">
     <div className="card-surface rounded-ds-2xl border border-border bg-card text-card-foreground p-5 transition
-                    hover:shadow-glow hover:-translate-y-0.5 focus:ring-2 focus:ring-border">
+                    hover:shadow-glow hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-border"> focus-visible:ring-offset-2 focus-visible:ring-offset-background
       <div className="flex items-center justify-between mb-2">
         <h3 className="text-lg font-semibold">{title}</h3>
         {chip ? <Badge variant="info">{chip}</Badge> : null}

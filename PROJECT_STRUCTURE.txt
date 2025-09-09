@@ -1,0 +1,1161 @@
+.
+├── .env.example
+├── .env.local
+├── .eslintrc.js
+├── .eslintrc.json
+├── .gitattributes
+├── .github
+│   └── workflows
+│       └── ci.yml
+├── .gitignore
+├── .gitlab-ci.yml
+├── .lighthouseci
+│   ├── assertion-results.json
+│   ├── flags-27bff290-066a-4257-a1bd-b4feb7b84ce9.json
+│   ├── lhr-1757388673379.html
+│   ├── lhr-1757388673379.json
+│   ├── lhr-1757388702363.html
+│   ├── lhr-1757388702363.json
+│   ├── lhr-1757388730720.html
+│   └── lhr-1757388730720.json
+├── .npmrc
+├── .prettierignore
+├── .prettierrc.json
+├── .storybook
+│   ├── main.ts
+│   ├── preview.ts
+│   └── preview.tsx
+├── .vscode
+│   └── settings.json
+├── GTM_Implementation_Tracker_FilesByPhase.md
+├── MOBILE_RELEASE_PHASES.md
+├── PROJECT_STRUCTURE.txt
+├── __tests__
+│   ├── check-otp.test.ts
+│   ├── login-success.test.ts
+│   ├── mock-tests.test.ts
+│   ├── payments
+│   │   ├── card.test.ts
+│   │   ├── easypaisa.test.ts
+│   │   └── jazzcash.test.ts
+│   ├── phone-login-success.test.ts
+│   ├── send-otp.test.ts
+│   ├── signup-success.test.ts
+│   ├── use-email-login-mfa.test.ts
+│   └── validation.test.ts
+├── _tests_
+│   ├── learning-modules.test.ts
+│   ├── login-event.test.ts
+│   └── notifications-default.test.ts
+├── audit and Mobile app.html
+├── audit and Mobile app.md
+├── azure-pipelines.yml
+├── common
+│   └── LocaleSwitcher.tsx
+├── components
+│   ├── Footer.tsx
+│   ├── Header.tsx
+│   ├── Layout.tsx
+│   ├── SaveItemButton.tsx
+│   ├── admin
+│   │   └── ImpersonationBanner.tsx
+│   ├── ai
+│   │   ├── AiTestDrive.tsx
+│   │   ├── Composer.tsx
+│   │   ├── MessageList.tsx
+│   │   ├── SidebarAI.test.ts
+│   │   ├── SidebarAI.tsx
+│   │   └── SidebarHeader.tsx
+│   ├── auth
+│   │   ├── AdminGuard.tsx
+│   │   ├── AuthAssistant.tsx
+│   │   └── RoleGuard.tsx
+│   ├── certificates
+│   │   └── CertificateCanvas.tsx
+│   ├── challenge
+│   │   ├── ChallengeCohortCard.tsx
+│   │   ├── Leaderboard.tsx
+│   │   └── TaskList.tsx
+│   ├── checkout
+│   │   ├── PaymentOptions.tsx
+│   │   └── StickyCheckoutBar.tsx
+│   ├── coach
+│   │   └── MotivationCoach.tsx
+│   ├── common
+│   │   └── LocaleSwitcher.tsx
+│   ├── dashboard
+│   │   ├── SavedItems.tsx
+│   │   ├── ShareLinkCard.tsx
+│   │   └── WhatsAppOptIn.tsx
+│   ├── design-system
+│   │   ├── Alert.tsx
+│   │   ├── AudioBar.tsx
+│   │   ├── AudioRecordButton.tsx
+│   │   ├── AvatarUploader.tsx
+│   │   ├── Badge.tsx
+│   │   ├── Breadcrumbs.tsx
+│   │   ├── Button.tsx
+│   │   ├── Card.tsx
+│   │   ├── Checkbox.tsx
+│   │   ├── Container.tsx
+│   │   ├── Drawer.tsx
+│   │   ├── EmptyState.tsx
+│   │   ├── FooterGrid.tsx
+│   │   ├── GradientText.tsx
+│   │   ├── Icon.tsx
+│   │   ├── Input.tsx
+│   │   ├── Modal.tsx
+│   │   ├── NavLink.tsx
+│   │   ├── NotificationBell.tsx
+│   │   ├── PasswordInput.tsx
+│   │   ├── ProgressBar.tsx
+│   │   ├── QuestionItem.tsx
+│   │   ├── Radio.tsx
+│   │   ├── Ribbon.tsx
+│   │   ├── ScoreCard.tsx
+│   │   ├── SeasonToggle.tsx
+│   │   ├── Section.tsx
+│   │   ├── Select.tsx
+│   │   ├── Skeleton.tsx
+│   │   ├── SocialIconLink.tsx
+│   │   ├── StreakIndicator.tsx
+│   │   ├── Tabs.tsx
+│   │   ├── Textarea.tsx
+│   │   ├── ThemeToggle.tsx
+│   │   ├── TileGrid.tsx
+│   │   ├── Timer.tsx
+│   │   ├── Toaster.tsx
+│   │   ├── Toggle.tsx
+│   │   ├── UserMenu.tsx
+│   │   ├── icons
+│   │   │   └── index.tsx
+│   │   └── index.ts
+│   ├── exam
+│   │   ├── AnswerControls
+│   │   │   ├── GapFill.tsx
+│   │   │   ├── HeadingMatch.tsx
+│   │   │   ├── Input.tsx
+│   │   │   ├── MCQ.tsx
+│   │   │   ├── MapPoint.tsx
+│   │   │   ├── Matching.tsx
+│   │   │   ├── TrueFalseNG.tsx
+│   │   │   ├── YesNoNG.tsx
+│   │   │   └── index.tsx
+│   │   ├── AnxietyScripts.tsx
+│   │   ├── AudioPlayerSegmented.tsx
+│   │   ├── DeviceCheck.tsx
+│   │   ├── ExamChecklist.tsx
+│   │   ├── ExamShell.tsx
+│   │   ├── FocusGuard.tsx
+│   │   ├── QuestionPalette.tsx
+│   │   ├── TimerHUD.tsx
+│   │   └── TimingRehearsal.tsx
+│   ├── feature
+│   │   ├── GoalRoadmap.tsx
+│   │   ├── HeaderStreakChip.tsx
+│   │   ├── StudyCalendar.tsx
+│   │   └── WordOfTheDayCard.tsx
+│   ├── hooks
+│   │   └── useHeaderState.ts
+│   ├── layouts
+│   │   ├── AdminLayout.tsx
+│   │   ├── AuthLayout.tsx
+│   │   ├── AuthSidePanel.tsx
+│   │   ├── CommunityLayout.tsx
+│   │   ├── DashboardLayout.tsx
+│   │   ├── ExamLayout.tsx
+│   │   ├── InstitutionsLayout.tsx
+│   │   ├── LearningLayout.tsx
+│   │   ├── MarketplaceLayout.tsx
+│   │   ├── ProctoringLayout.tsx
+│   │   ├── PublicMarketingLayout.tsx
+│   │   └── ReportsLayout.tsx
+│   ├── learning
+│   │   └── DrillRunner.tsx
+│   ├── listening
+│   │   ├── AnswerReview.tsx
+│   │   ├── AudioSectionsPlayer.tsx
+│   │   ├── NoiseLadderPlayer.tsx
+│   │   └── ReviewScreen.tsx
+│   ├── marketing
+│   │   └── SocialProofStrip.tsx
+│   ├── mistakes
+│   │   └── MistakeCard.tsx
+│   ├── mock-tests
+│   │   └── SectionTest.tsx
+│   ├── modules
+│   │   └── ExamStrategy.tsx
+│   ├── nav
+│   │   ├── CommandCenter.tsx
+│   │   └── ModulesMenu.tsx
+│   ├── navigation
+│   │   ├── BottomNav.tsx
+│   │   ├── DesktopNav.tsx
+│   │   ├── FireStreak.tsx
+│   │   ├── FooterMini.tsx
+│   │   ├── IconOnlyThemeToggle.tsx
+│   │   ├── Links.ts
+│   │   ├── MobileNav.tsx
+│   │   ├── ModuleMenu.tsx
+│   │   └── constants.ts
+│   ├── notifications
+│   │   └── NotificationProvider.tsx
+│   ├── onboarding
+│   │   └── StepShell.tsx
+│   ├── partners
+│   │   └── PartnerSummary.tsx
+│   ├── payments
+│   │   ├── CheckoutForm.tsx
+│   │   ├── InvoiceTable.tsx
+│   │   └── PlanPicker.tsx
+│   ├── paywall
+│   │   ├── PaywallGate.tsx
+│   │   └── UsageCounterBadge.tsx
+│   ├── predictor
+│   │   ├── BandBreakdown.tsx
+│   │   └── BandPredictorForm.tsx
+│   ├── quick
+│   │   └── QuickDrillButton.tsx
+│   ├── reading
+│   │   ├── QuestionBlock.tsx
+│   │   ├── QuestionNav.tsx
+│   │   ├── QuestionRenderer.tsx
+│   │   ├── ReadingFilterBar.tsx
+│   │   ├── ReadingStatsCard.tsx
+│   │   ├── TimerProgress.tsx
+│   │   ├── templates.ts
+│   │   └── useReadingAnswers.ts
+│   ├── referrals
+│   │   ├── RedeemBox.tsx
+│   │   ├── ReferralCard.tsx
+│   │   └── ShareLink.tsx
+│   ├── review
+│   │   ├── AIFeedbackPanel.tsx
+│   │   ├── AnswerDiff.tsx
+│   │   └── ChallengeScore.tsx
+│   ├── sections
+│   │   ├── CertificationBadges.tsx
+│   │   ├── CommandCenterTile.tsx
+│   │   ├── ExamStrategy.tsx
+│   │   ├── Hero.tsx
+│   │   ├── Learning
+│   │   │   ├── CourseCatalog.tsx
+│   │   │   ├── DrillGenerator.tsx
+│   │   │   ├── Syllabus.tsx
+│   │   │   └── TipsGrid.tsx
+│   │   ├── Modules.tsx
+│   │   ├── Pricing.tsx
+│   │   ├── RetentionCard.tsx
+│   │   ├── Specialties.tsx
+│   │   ├── Testimonials.tsx
+│   │   └── Waitlist.tsx
+│   ├── speaking
+│   │   ├── AIReview.tsx
+│   │   ├── AccentMirror.tsx
+│   │   ├── AccentPicker.tsx
+│   │   ├── MinimalPairs.tsx
+│   │   ├── Recorder.tsx
+│   │   ├── StudyBuddyMatch.tsx
+│   │   ├── useSpeech.ts
+│   │   └── useTTS.ts
+│   ├── study
+│   │   ├── PlanCard.tsx
+│   │   └── WeekGrid.tsx
+│   ├── study-plan
+│   │   ├── TargetSummary.tsx
+│   │   └── UpcomingPlan.tsx
+│   ├── teacher
+│   │   ├── AssignTaskModal.tsx
+│   │   └── CohortTable.tsx
+│   ├── visa
+│   │   ├── GapToGoal.tsx
+│   │   └── TargetScoreForm.tsx
+│   ├── waitlist
+│   │   └── WaitlistForm.tsx
+│   └── writing
+│       ├── AIReview.tsx
+│       ├── ReevalHistory.tsx
+│       └── ReevalPanel.tsx
+├── data
+│   ├── badges.ts
+│   ├── courses
+│   │   └── index.ts
+│   ├── footerLinks.ts
+│   ├── holidays.ts
+│   ├── home.ts
+│   ├── listening
+│   │   └── sample-001.json
+│   ├── mockTests.ts
+│   ├── reading
+│   │   └── sample-001.json
+│   ├── roleplay
+│   │   └── scenarios.ts
+│   ├── speaking
+│   │   ├── sample-001.json
+│   │   └── scripts.json
+│   └── writing
+│       ├── prompts.json
+│       └── sample-001.json
+├── db
+│   └── migrations
+│       ├── 001_core.sql
+│       ├── 002_referrals_partners.sql
+│       ├── 003_learning_progress.sql
+│       ├── 004_attempts.sql
+│       ├── 005_challenge_certificates.sql
+│       ├── 006_teammates.sql
+│       ├── 007_payment_events.sql
+│       ├── 008_referral_guards.sql
+│       ├── 010_challenge_progress.sql
+│       ├── 011_teacher_cohorts.sql
+│       ├── 012_certificates_assets.sql
+│       ├── 013_coaches.sql
+│       ├── 013_teacher_cohort_delete_policy.sql
+│       ├── 014_availability_bookings.sql
+│       ├── 014_teacher_assignments.sql
+│       ├── 015_classes_sessions.sql
+│       ├── 016_institutions.sql
+│       ├── 017_proctoring.sql
+│       ├── 018_ai_assessments_v2.sql
+│       ├── 019_content_items.sql
+│       └── 020_reports_materialized.sql
+├── design-system
+│   ├── Checkbox.tsx
+│   ├── Radio.tsx
+│   ├── Select.tsx
+│   ├── Toggle.tsx
+│   ├── index.ts
+│   └── tokens
+│       ├── colors.js
+│       └── scale.js
+├── doc
+│   ├── Reading_upload.sql
+│   ├── design_system_implementation_guide_pages_router.md
+│   ├── env.md
+│   ├── exam-layout.md
+│   ├── gdpr.md
+│   ├── notifications.md
+│   ├── payment-flow.md
+│   ├── rls-policies.md
+│   └── ui-guidelines.md
+├── docs
+│   └── audit
+│       ├── 00_env.md
+│       ├── day1_ds_findings.md
+│       ├── day1_pages.md
+│       ├── day1_risks.md
+│       ├── day1_summary.md
+│       └── screens
+├── dump.txt
+├── emails
+│   ├── BuddyInviteEmail.tsx
+│   ├── CertificateEmail.tsx
+│   ├── ChallengeWelcomeEmail.tsx
+│   ├── ChangeEmailAddressEmail.tsx
+│   ├── DailyTaskEmail.tsx
+│   ├── MagicLinkEmail.tsx
+│   ├── PaymentFailedEmail.tsx
+│   ├── ReauthEmail.tsx
+│   ├── ReceiptEmail.tsx
+│   ├── ReferralInviteEmail.tsx
+│   ├── ReferralRewardEmail.tsx
+│   ├── ResetPasswordEmail.tsx
+│   ├── SignupEmail.tsx
+│   └── TeacherNudgeEmail.tsx
+├── features.md
+├── hooks
+│   ├── use-toast.ts
+│   ├── useCountdown.ts
+│   ├── useEmailLoginMFA.ts
+│   ├── useMood.ts
+│   ├── usePremiumTheme.ts
+│   ├── useRecorder.ts
+│   ├── useRouteGuard.ts
+│   ├── useStreak.ts
+│   └── useTTS.ts
+├── index (10).html
+├── layouts
+│   └── PremiumShell.tsx
+├── lib
+│   ├── admin.ts
+│   ├── ai
+│   │   ├── evaluate.ts
+│   │   ├── evaluateSpeaking.ts
+│   │   ├── explain.ts
+│   │   ├── schema.ts
+│   │   ├── speaking.ts
+│   │   ├── speaking_v2.ts
+│   │   ├── writing.ts
+│   │   └── writing_v2.ts
+│   ├── aiPlan.ts
+│   ├── analytics
+│   │   ├── events.ts
+│   │   ├── providers
+│   │   │   ├── ga4.ts
+│   │   │   └── meta.ts
+│   │   └── track.ts
+│   ├── analytics.ts
+│   ├── answers.ts
+│   ├── api
+│   │   ├── partners.ts
+│   │   └── referrals.ts
+│   ├── apiAuth.ts
+│   ├── auth
+│   │   └── signOut.ts
+│   ├── authErrors.ts
+│   ├── authServer.ts
+│   ├── booking.ts
+│   ├── certificates.ts
+│   ├── challenge.ts
+│   ├── classes.ts
+│   ├── credits.ts
+│   ├── difficulty
+│   │   └── index.ts
+│   ├── entitlements.ts
+│   ├── env.ts
+│   ├── error-mapping
+│   │   └── index.ts
+│   ├── examSecurity.ts
+│   ├── explanations.ts
+│   ├── flags.ts
+│   ├── gamification
+│   │   └── index.ts
+│   ├── http.ts
+│   ├── i18n
+│   │   ├── config.ts
+│   │   └── index.ts
+│   ├── icons.tsx
+│   ├── learning-paths
+│   │   └── index.ts
+│   ├── listening
+│   │   ├── band.ts
+│   │   ├── normalize.ts
+│   │   ├── score.test.ts
+│   │   └── score.ts
+│   ├── locale.ts
+│   ├── locale.tsx
+│   ├── marketplace.ts
+│   ├── metrics.ts
+│   ├── monitoring
+│   │   └── sentry.ts
+│   ├── next-task
+│   │   └── index.ts
+│   ├── offlineSync.ts
+│   ├── partners.ts
+│   ├── payments
+│   │   ├── card.ts
+│   │   ├── easypaisa.ts
+│   │   ├── index.ts
+│   │   ├── jazzcash.ts
+│   │   ├── stripe.ts
+│   │   └── verify.ts
+│   ├── payments.ts
+│   ├── predictor.ts
+│   ├── premium
+│   │   └── constants.ts
+│   ├── pricing.ts
+│   ├── proctoring.ts
+│   ├── profile-options.test.ts
+│   ├── profile-options.ts
+│   ├── rateLimit.ts
+│   ├── reading
+│   │   ├── scoring.ts
+│   │   └── supabaseAdapters.ts
+│   ├── recommendations
+│   │   └── index.ts
+│   ├── redis.ts
+│   ├── referrals.ts
+│   ├── requireRole.ts
+│   ├── risk.ts
+│   ├── roles.ts
+│   ├── routeAccess.test.ts
+│   ├── routeAccess.ts
+│   ├── routes.ts
+│   ├── spaced-repetition
+│   │   └── index.ts
+│   ├── spacedRepetition.ts
+│   ├── speaking
+│   │   ├── promptBank.ts
+│   │   ├── saveJsonToStorage.ts
+│   │   ├── signedUrl.ts
+│   │   └── uploadSpeakingBlob.ts
+│   ├── streak.ts
+│   ├── streaks.ts
+│   ├── studyPlan.ts
+│   ├── subscriptions.ts
+│   ├── supabaseAdmin.ts
+│   ├── supabaseBrowser.ts
+│   ├── supabaseClient.ts
+│   ├── supabaseServer.ts
+│   ├── supabaseService.ts
+│   ├── teacher.ts
+│   ├── usage.ts
+│   └── utils.ts
+├── lighthouserc.json
+├── locales
+│   ├── en
+│   │   ├── common.json
+│   │   └── home.json
+│   └── ur
+│       ├── common.json
+│       └── home.json
+├── localhost--2025_09_09_03_30_48.report.html
+├── localhost--2025_09_09_03_30_48.report.json
+├── localhost-pricing-2025_09_09_03_31_17.report.html
+├── localhost-pricing-2025_09_09_03_31_17.report.json
+├── localhost-study_plan-2025_09_09_03_31_45.report.html
+├── localhost-study_plan-2025_09_09_03_31_45.report.json
+├── manifest.json
+├── middleware.ts
+├── next-env.d.ts
+├── next.config.mjs
+├── package-lock.json
+├── package.json
+├── pages
+│   ├── 403.tsx
+│   ├── _app.tsx
+│   ├── _document.tsx
+│   ├── accessibility.tsx
+│   ├── account
+│   │   ├── billing.tsx
+│   │   ├── index.tsx
+│   │   └── referrals.tsx
+│   ├── admin
+│   │   ├── content
+│   │   │   └── reading.tsx
+│   │   ├── imp-as.tsx
+│   │   ├── index.tsx
+│   │   ├── partners
+│   │   │   └── index.tsx
+│   │   ├── premium
+│   │   │   └── pin.tsx
+│   │   ├── reviews
+│   │   │   ├── [attemptId].tsx
+│   │   │   └── index.tsx
+│   │   ├── stop-impersonation.tsx
+│   │   ├── students
+│   │   │   └── index.tsx
+│   │   └── users.tsx
+│   ├── ai
+│   │   ├── index.tsx
+│   │   └── writing
+│   │       └── [id].tsx
+│   ├── api
+│   │   ├── account
+│   │   │   ├── delete.ts
+│   │   │   └── export.ts
+│   │   ├── admin
+│   │   │   ├── dashboard.ts
+│   │   │   ├── premium
+│   │   │   │   ├── clear-pin.ts
+│   │   │   │   ├── generate-pin.ts
+│   │   │   │   └── set-pin.ts
+│   │   │   ├── reviews
+│   │   │   │   └── index.ts
+│   │   │   ├── set-pin.ts
+│   │   │   ├── stop-impersonation.ts
+│   │   │   ├── students
+│   │   │   │   ├── actions.ts
+│   │   │   │   ├── export.ts
+│   │   │   │   └── list.ts
+│   │   │   └── users
+│   │   │       ├── list.ts
+│   │   │       └── set-role.ts
+│   │   ├── ai
+│   │   │   ├── chat.ts
+│   │   │   ├── explain.ts
+│   │   │   ├── health.ts
+│   │   │   ├── profile-suggest.ts
+│   │   │   ├── re-evaluate.ts
+│   │   │   ├── reading
+│   │   │   │   └── explanations.ts
+│   │   │   ├── speaking
+│   │   │   │   ├── evaluate.ts
+│   │   │   │   ├── grade.ts
+│   │   │   │   ├── score-audio-groq.ts
+│   │   │   │   ├── score-v2.ts
+│   │   │   │   └── score.ts
+│   │   │   ├── test-drive.ts
+│   │   │   └── writing
+│   │   │       ├── grade.ts
+│   │   │       └── score-v2.ts
+│   │   ├── auth
+│   │   │   ├── forgot-password.ts
+│   │   │   ├── login-event.ts
+│   │   │   ├── login-events.ts
+│   │   │   ├── login.ts
+│   │   │   ├── sessions
+│   │   │   │   ├── [id].ts
+│   │   │   │   └── index.ts
+│   │   │   ├── set-session.ts
+│   │   │   ├── signout.ts
+│   │   │   └── signup.ts
+│   │   ├── blog
+│   │   │   ├── [slug].ts
+│   │   │   ├── index.ts
+│   │   │   ├── moderate.ts
+│   │   │   ├── modqueue.ts
+│   │   │   └── submit.ts
+│   │   ├── bookings
+│   │   │   ├── availability.ts
+│   │   │   ├── cancel.ts
+│   │   │   ├── create.ts
+│   │   │   └── reschedule.ts
+│   │   ├── buddy
+│   │   │   └── match.ts
+│   │   ├── certificates
+│   │   │   ├── create.ts
+│   │   │   └── sign.ts
+│   │   ├── challenge
+│   │   │   ├── enroll.ts
+│   │   │   ├── leaderboard.ts
+│   │   │   └── progress.ts
+│   │   ├── check-otp.ts
+│   │   ├── classes
+│   │   │   ├── attendance.ts
+│   │   │   ├── cancel.ts
+│   │   │   ├── create.ts
+│   │   │   └── join-token.ts
+│   │   ├── coach
+│   │   │   └── mood.ts
+│   │   ├── content
+│   │   │   ├── delete.ts
+│   │   │   ├── publish.ts
+│   │   │   └── upload.ts
+│   │   ├── counters
+│   │   │   └── increment.ts
+│   │   ├── dev
+│   │   │   └── grant-role.ts
+│   │   ├── drills
+│   │   │   └── generate.ts
+│   │   ├── exam
+│   │   │   ├── [attemptId]
+│   │   │   │   ├── event.ts
+│   │   │   │   ├── score.ts
+│   │   │   │   └── submit.ts
+│   │   │   └── schedule.ts
+│   │   ├── healthz.ts
+│   │   ├── institutions
+│   │   │   ├── bulk-enroll.ts
+│   │   │   ├── invite.ts
+│   │   │   ├── orgs.ts
+│   │   │   ├── reports.ts
+│   │   │   └── students.ts
+│   │   ├── listening
+│   │   │   ├── review
+│   │   │   │   └── [attemptId].ts
+│   │   │   ├── submit.ts
+│   │   │   ├── test
+│   │   │   │   └── [slug].ts
+│   │   │   └── tests.ts
+│   │   ├── marketplace
+│   │   │   ├── apply.ts
+│   │   │   ├── approve.ts
+│   │   │   └── coaches.ts
+│   │   ├── metrics.ts
+│   │   ├── mistakes
+│   │   │   └── index.ts
+│   │   ├── notifications
+│   │   │   ├── [id].ts
+│   │   │   ├── index.ts
+│   │   │   └── nudge.ts
+│   │   ├── onboarding
+│   │   │   └── complete.ts
+│   │   ├── partners
+│   │   │   └── summary.ts
+│   │   ├── payments
+│   │   │   ├── create-checkout-session.ts
+│   │   │   ├── create-easypaisa-session.ts
+│   │   │   ├── create-jazzcash-session.ts
+│   │   │   ├── initiate.ts
+│   │   │   └── webhook.ts
+│   │   ├── placement
+│   │   │   ├── score.ts
+│   │   │   ├── start.ts
+│   │   │   └── submit.ts
+│   │   ├── predictor
+│   │   │   └── score.ts
+│   │   ├── premium
+│   │   │   ├── eligibility.ts
+│   │   │   ├── pin-status.ts
+│   │   │   ├── session.ts
+│   │   │   ├── set-pin.ts
+│   │   │   ├── signout.ts
+│   │   │   ├── status.ts
+│   │   │   ├── verify-pin.ts
+│   │   │   └── verify.ts
+│   │   ├── proctoring
+│   │   │   ├── flags.ts
+│   │   │   ├── start.ts
+│   │   │   └── verify.ts
+│   │   ├── progress
+│   │   │   └── share.ts
+│   │   ├── quick-drill.ts
+│   │   ├── reading
+│   │   │   ├── explain.ts
+│   │   │   ├── recompute.ts
+│   │   │   ├── submit.ts
+│   │   │   └── test
+│   │   │       └── [slug].ts
+│   │   ├── referrals
+│   │   │   ├── create.ts
+│   │   │   ├── redeem.ts
+│   │   │   └── stats.ts
+│   │   ├── referrals.ts
+│   │   ├── saved
+│   │   │   ├── [category].ts
+│   │   │   └── index.ts
+│   │   ├── scores
+│   │   │   └── challenge.ts
+│   │   ├── send-otp.ts
+│   │   ├── speaking
+│   │   │   ├── accent-mirror.ts
+│   │   │   ├── attempts
+│   │   │   │   ├── [id].ts
+│   │   │   │   └── index.ts
+│   │   │   ├── evaluate.ts
+│   │   │   ├── file.ts
+│   │   │   ├── limits
+│   │   │   │   └── today.ts
+│   │   │   ├── partner
+│   │   │   │   ├── review
+│   │   │   │   │   └── [attemptId].ts
+│   │   │   │   └── summary.ts
+│   │   │   ├── partner-summary.ts
+│   │   │   ├── partner.ts
+│   │   │   ├── prompts.ts
+│   │   │   ├── score-audio-groq.ts
+│   │   │   ├── score-groq.ts
+│   │   │   ├── score-save.ts
+│   │   │   ├── score.ts
+│   │   │   ├── signed-url.ts
+│   │   │   ├── start-attempt.ts
+│   │   │   └── upload.ts
+│   │   ├── strategies
+│   │   │   ├── toggle-save.ts
+│   │   │   └── vote.ts
+│   │   ├── streak.ts
+│   │   ├── subscriptions
+│   │   │   └── portal.ts
+│   │   ├── support.ts
+│   │   ├── teacher
+│   │   │   ├── apply.ts
+│   │   │   ├── assignments.ts
+│   │   │   └── cohorts.ts
+│   │   ├── twilio-status.ts
+│   │   ├── upload
+│   │   │   ├── audio.ts
+│   │   │   └── index.ts
+│   │   ├── waitlist
+│   │   │   └── submit.ts
+│   │   ├── waitlist.ts
+│   │   ├── webhooks
+│   │   │   └── payment.ts
+│   │   ├── whatsapp
+│   │   │   ├── subscribe.ts
+│   │   │   └── webhook.ts
+│   │   ├── words
+│   │   │   ├── learn.ts
+│   │   │   └── today.ts
+│   │   └── writing
+│   │       ├── reeval-history.ts
+│   │       ├── reevaluate.ts
+│   │       └── restore-reeval.ts
+│   ├── auth
+│   │   ├── callback.tsx
+│   │   ├── forgot.tsx
+│   │   ├── mfa.tsx
+│   │   ├── reset.tsx
+│   │   └── verify.tsx
+│   ├── blog
+│   │   ├── [slug].tsx
+│   │   └── index.tsx
+│   ├── bookings
+│   │   ├── [id].tsx
+│   │   └── index.tsx
+│   ├── cert
+│   │   └── [id].tsx
+│   ├── challenge
+│   │   ├── [cohort].tsx
+│   │   └── index.tsx
+│   ├── checkout
+│   │   ├── cancel.tsx
+│   │   ├── index.tsx
+│   │   └── success.tsx
+│   ├── classes
+│   │   ├── [id].tsx
+│   │   └── index.tsx
+│   ├── coach
+│   │   └── [id].tsx
+│   ├── community
+│   │   ├── chat.tsx
+│   │   ├── index.tsx
+│   │   ├── questions.tsx
+│   │   └── review
+│   │       └── index.tsx
+│   ├── content
+│   │   └── studio
+│   │       ├── [id].tsx
+│   │       └── index.tsx
+│   ├── dashboard
+│   │   └── index.tsx
+│   ├── data-deletion.tsx
+│   ├── exam
+│   │   └── rehearsal.tsx
+│   ├── faq.tsx
+│   ├── forgot-password.tsx
+│   ├── index.tsx
+│   ├── institutions
+│   │   ├── [orgId]
+│   │   │   ├── index.tsx
+│   │   │   ├── reports.tsx
+│   │   │   └── students.tsx
+│   │   └── index.tsx
+│   ├── labs
+│   │   └── ai-tutor.tsx
+│   ├── leaderboard
+│   │   └── index.tsx
+│   ├── learning
+│   │   ├── [slug].tsx
+│   │   ├── drills.tsx
+│   │   ├── index.tsx
+│   │   ├── skills
+│   │   │   ├── [skill].tsx
+│   │   │   ├── index.tsx
+│   │   │   └── lessons
+│   │   │       ├── [slug].tsx
+│   │   │       └── index.tsx
+│   │   └── strategies
+│   │       ├── [tipSlug].tsx
+│   │       └── index.tsx
+│   ├── legal
+│   │   ├── privacy.tsx
+│   │   └── terms.tsx
+│   ├── listening
+│   │   ├── [slug]
+│   │   │   └── review.tsx
+│   │   ├── [slug].tsx
+│   │   └── index.tsx
+│   ├── login
+│   │   ├── email.tsx
+│   │   ├── index.tsx
+│   │   ├── password.tsx
+│   │   └── phone.tsx
+│   ├── marketplace
+│   │   └── index.tsx
+│   ├── mistakes
+│   │   └── index.tsx
+│   ├── mock
+│   │   ├── listening
+│   │   │   └── [id].tsx
+│   │   ├── reading
+│   │   │   └── [id].tsx
+│   │   ├── speaking
+│   │   │   └── [id].tsx
+│   │   └── writing
+│   │       └── [id].tsx
+│   ├── mock-tests
+│   │   ├── [section].tsx
+│   │   ├── analytics.tsx
+│   │   ├── full.tsx
+│   │   └── index.tsx
+│   ├── notifications
+│   │   └── index.tsx
+│   ├── onboarding
+│   │   ├── date.tsx
+│   │   ├── goal.tsx
+│   │   ├── index.tsx
+│   │   ├── schedule.tsx
+│   │   ├── skills.tsx
+│   │   └── teacher
+│   │       ├── index.tsx
+│   │       └── status.tsx
+│   ├── pages_premium.jsx
+│   ├── partners
+│   │   └── index.tsx
+│   ├── placement
+│   │   ├── index.tsx
+│   │   ├── result.tsx
+│   │   ├── run.tsx
+│   │   └── start.tsx
+│   ├── predictor
+│   │   ├── index.tsx
+│   │   └── result.tsx
+│   ├── premium
+│   │   ├── index.tsx
+│   │   ├── listening
+│   │   │   └── [slug].tsx
+│   │   ├── pin.tsx
+│   │   └── reading
+│   │       └── [slug].tsx
+│   ├── pricing
+│   │   └── index.tsx
+│   ├── proctoring
+│   │   ├── check.tsx
+│   │   └── exam
+│   │       └── [id].tsx
+│   ├── profile
+│   │   ├── index.tsx
+│   │   └── setup.tsx
+│   ├── progress
+│   │   ├── [token].tsx
+│   │   └── index.tsx
+│   ├── pwa
+│   │   └── app.tsx
+│   ├── quick
+│   │   └── [skill].tsx
+│   ├── r
+│   │   └── [code].tsx
+│   ├── reading
+│   │   ├── [slug].tsx
+│   │   ├── index.tsx
+│   │   ├── passage
+│   │   │   └── [slug].tsx
+│   │   ├── review
+│   │   │   ├── [attemptId].tsx
+│   │   │   └── index.tsx
+│   │   └── stats.tsx
+│   ├── reports
+│   │   └── band-analytics.tsx
+│   ├── review
+│   │   ├── listening
+│   │   │   └── [id].tsx
+│   │   ├── reading
+│   │   │   └── [id].tsx
+│   │   ├── speaking
+│   │   │   └── [id].tsx
+│   │   └── writing
+│   │       └── [id].tsx
+│   ├── saved
+│   │   └── index.tsx
+│   ├── settings
+│   │   ├── billing.tsx
+│   │   ├── language.tsx
+│   │   └── security.tsx
+│   ├── signup
+│   │   ├── email.tsx
+│   │   ├── index.tsx
+│   │   ├── password.tsx
+│   │   └── phone.tsx
+│   ├── speaking
+│   │   ├── attempts
+│   │   │   └── index.tsx
+│   │   ├── buddy.tsx
+│   │   ├── index.tsx
+│   │   ├── partner
+│   │   │   ├── history.tsx
+│   │   │   └── review
+│   │   │       └── [attemptId].tsx
+│   │   ├── partner.tsx
+│   │   ├── practice.tsx
+│   │   ├── report.tsx
+│   │   ├── review
+│   │   │   └── [id].tsx
+│   │   ├── roleplay
+│   │   │   ├── [scenario].tsx
+│   │   │   └── index.tsx
+│   │   ├── settings.tsx
+│   │   └── simulator
+│   │       ├── index.tsx
+│   │       ├── part1.tsx
+│   │       ├── part2.tsx
+│   │       └── part3.tsx
+│   ├── study-plan
+│   │   └── index.tsx
+│   ├── teacher
+│   │   ├── cohorts
+│   │   │   └── [id].tsx
+│   │   └── index.tsx
+│   ├── tools
+│   │   └── mark-sections
+│   │       └── [slug].tsx
+│   ├── update-password.tsx
+│   ├── visa
+│   │   └── index.tsx
+│   ├── waitlist.tsx
+│   ├── welcome
+│   │   └── index.tsx
+│   └── writing
+│       ├── index.tsx
+│       └── review
+│           └── [attemptId].tsx
+├── playwright.config.ts
+├── postcss.config.js
+├── premium-exam-plan.md
+├── premium-ui
+│   ├── access
+│   │   ├── ExamGate.tsx
+│   │   └── PinGate.tsx
+│   ├── components
+│   │   ├── PrAudioPlayer.tsx
+│   │   ├── PrButton.tsx
+│   │   ├── PrCard.tsx
+│   │   ├── PrProgress.tsx
+│   │   └── PrTimer.tsx
+│   ├── exam
+│   │   ├── DistractionFree.tsx
+│   │   ├── ExamShell.tsx
+│   │   ├── MediaDock.tsx
+│   │   ├── QuestionCanvas.tsx
+│   │   ├── Scratchpad.tsx
+│   │   └── TimerHUD.tsx
+│   ├── monitoring
+│   │   └── AntiCheatSentry.tsx
+│   ├── results
+│   │   └── ResultPanel.tsx
+│   ├── theme
+│   │   ├── PremiumThemeProvider.tsx
+│   │   ├── ThemeSwitcher.tsx
+│   │   └── premium-themes.ts
+│   └── tokens
+│       ├── colors.ts
+│       ├── shadows.ts
+│       └── typography.ts
+├── public
+│   ├── apple-touch-icon.svg
+│   ├── brand
+│   │   ├── logo.png
+│   │   └── tagline.svg
+│   ├── favicon.svg
+│   ├── icon-192.svg
+│   ├── icon-512.svg
+│   ├── locales
+│   │   ├── ar
+│   │   │   └── common.json
+│   │   ├── en
+│   │   │   ├── common.json
+│   │   │   └── home.json
+│   │   ├── es
+│   │   │   └── common.json
+│   │   ├── hi
+│   │   │   └── common.json
+│   │   └── ur
+│   │       └── common.json
+│   ├── manifest.json
+│   ├── premium.css
+│   ├── sw.js
+│   └── workbox-4754cb34.js
+├── scripts
+│   ├── backfill_entitlements.ts
+│   ├── gen-types.ts
+│   ├── generate_certificate_template.ts
+│   ├── generate_social_proof.ts
+│   ├── l10n_extract.ts
+│   ├── phase0.sh
+│   └── seed_challenge.ts
+├── stories
+│   ├── Button.stories.tsx
+│   ├── Card.stories.tsx
+│   └── Container.stories.tsx
+├── styles
+│   ├── globals.css
+│   ├── premium.css
+│   ├── semantic.css
+│   ├── themes
+│   │   ├── autumn.css
+│   │   ├── index.css
+│   │   ├── spring.css
+│   │   ├── summer.css
+│   │   └── winter.css
+│   └── tokens.css
+├── styles_dump.txt
+├── supabase
+│   ├── config.toml
+│   ├── functions
+│   │   ├── reminders
+│   │   │   └── index.ts
+│   │   └── whatsapp-broadcast
+│   │       └── index.ts
+│   └── migrations
+│       ├── 20250811_create_user_profiles.sql
+│       ├── 20250811_storage_avatars.sql
+│       ├── 20250811_subscriptions_payments.sql
+│       ├── 20250811_user_streaks.sql
+│       ├── 20250812_staff_policies.sql
+│       ├── 20250825_role_based_policies.sql
+│       ├── 20250826_rls_policies.sql
+│       ├── 20250830_user_bookmarks.sql
+│       ├── 20250831_noise_progress.sql
+│       ├── 20250831_progress_share_links.sql
+│       ├── 20250831_travel_plans.sql
+│       ├── 20250831_whatsapp_optin.sql
+│       ├── 20250901_mistakes_book.sql
+│       ├── 20250901_mood_logs.sql
+│       ├── 20250901_progress_views.sql
+│       ├── 20250901_streak_recovery.sql
+│       ├── 20250901_streak_shield.sql
+│       ├── 20250901_study_buddies.sql
+│       ├── 20250901_visa_targets.sql
+│       ├── 20250902_mock_test_results.sql
+│       ├── 20250910_add_category_to_user_bookmarks.sql
+│       ├── 20250913_notification_settings.sql
+│       ├── 20250920_explanation_language.sql
+│       ├── 20250921_add_exam_date_to_user_profiles.sql
+│       ├── 20250921_login_events.sql
+│       ├── 20250922_add_phone_timezone_weaknesses.sql
+│       ├── 20250922_notifications.sql
+│       ├── 20250923_referrals.sql
+│       ├── 20250923_study_tasks.sql
+│       ├── 20250924_password_reuse_check.sql
+│       └── 20250925_exam_events.sql
+├── tailwind.config.js
+├── tailwind.config.premium.js
+├── tests
+│   ├── a11y
+│   │   ├── a11y.spec.ts
+│   │   └── wcag-axe.test.ts
+│   ├── api
+│   │   ├── challenge.progress.test.ts
+│   │   └── payments.webhook.test.ts
+│   └── pages
+│       ├── cert
+│       │   └── [id].test.tsx
+│       ├── challenge.test.tsx
+│       └── predictor.test.tsx
+├── tools
+│   ├── hash-pin.ts
+│   └── run-tests.ts
+├── trackor
+│   ├── Proindex.html
+│   ├── admin-dashboard.html
+│   ├── ai-sidebar.html
+│   ├── analytics.html
+│   ├── community.html
+│   ├── index.html
+│   ├── learning.html
+│   ├── listening.html
+│   ├── monetization.html
+│   ├── platform-ops.html
+│   ├── reading.html
+│   ├── speaking.html
+│   ├── teacher-admin.html
+│   ├── user.html
+│   └── writing.html
+├── tsconfig.json
+├── tsconfig.tsbuildinfo
+├── twilio-sms-webhook.ts
+├── types
+│   ├── attempts.ts
+│   ├── certificates.ts
+│   ├── challenge.ts
+│   ├── database.ts
+│   ├── groq.ts
+│   ├── partners.ts
+│   ├── payments.ts
+│   ├── plan.ts
+│   ├── predictor.ts
+│   ├── pricing.ts
+│   ├── profile.ts
+│   ├── questions.ts
+│   ├── referrals.ts
+│   ├── rehype-highlight.d.ts
+│   ├── supabase.ts
+│   └── teacher.ts
+├── utils
+│   ├── courses.ts
+│   ├── idleTimeout.ts
+│   ├── unlock.ts
+│   └── validation.ts
+└── vercel.json
+
+278 directories, 881 files

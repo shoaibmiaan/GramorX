@@ -1,53 +1,105 @@
-// components/design-system/Select.tsx
-import * as React from 'react'
-import { ChevronDownIcon } from '@/lib/icons'
+import * as React from "react";
 
-type Option = { value: string; label: string; disabled?: boolean }
-export type SelectSize = 'sm' | 'md' | 'lg'
-
-export type SelectProps = React.SelectHTMLAttributes<HTMLSelectElement> & {
-  label?: string
-  hint?: string
-  error?: string
-  options?: Option[]
-  size?: SelectSize
+function cn(...a: Array<string | false | undefined | null>) {
+  return a.filter(Boolean).join(" ");
 }
 
-const sizeMap: Record<SelectSize, string> = {
-  sm: 'h-9 text-sm',
-  md: 'h-10',
-  lg: 'h-12 text-base',
-}
+export type SelectProps = Readonly<
+  Omit<React.SelectHTMLAttributes<HTMLSelectElement>, "size"> & {
+    label?: string;
+    hint?: string;
+    error?: string | null;
+    required?: boolean;
+    size?: "sm" | "md" | "lg";
+    leftSlot?: React.ReactNode;
+    rightSlot?: React.ReactNode;
+  }
+>;
 
-export const Select: React.FC<SelectProps> = ({
-  label, hint, error, options = [], size = 'md', className = '', children, disabled, ...props
-}) => {
-  const base =
-    'w-full rounded-ds border border-border bg-card text-card-foreground ' +
-    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ' +
-    'pl-4 pr-10'
-  const invalid = error ? 'border-sunsetRed focus-visible:ring-sunsetRed/30' : ''
-  const disabledCls = disabled ? 'opacity-70 cursor-not-allowed' : ''
+const sizes: Record<NonNullable<SelectProps["size"]>, string> = {
+  sm: "h-9 text-sm",
+  md: "h-11 text-base",
+  lg: "h-12 text-base",
+};
 
-  return (
-    <label className={`block ${className}`}>
-      {label && <span className="mb-1.5 inline-block text-small text-mutedText">{label}</span>}
-      <div className="relative">
-        <select className={`${base} ${invalid} ${disabledCls} ${sizeMap[size]}`} disabled={disabled} {...props}>
-          {options.map(opt => (
-            <option key={opt.value} value={opt.value} disabled={opt.disabled}>{opt.label}</option>
-          ))}
-          {children}
-        </select>
-        <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 opacity-70">
-          <ChevronDownIcon className="h-4 w-4" aria-hidden="true" />
-        </span>
+export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
+  (
+    {
+      id,
+      label,
+      hint,
+      error,
+      required,
+      className,
+      size = "md",
+      leftSlot,
+      rightSlot,
+      children,
+      ...props
+    },
+    ref
+  ) => {
+    const selectId = id ?? React.useId();
+    const hintId = hint ? `${selectId}-hint` : undefined;
+    const errorId = error ? `${selectId}-error` : undefined;
+
+    return (
+      <div className="w-full">
+        {label && (
+          <label
+            htmlFor={selectId}
+            className="mb-1 block text-sm font-medium text-muted-foreground"
+          >
+            {label} {required && <span aria-hidden="true" className="text-sunsetOrange">*</span>}
+          </label>
+        )}
+
+        <div
+          className={cn(
+            "relative flex items-center rounded-ds-2xl border bg-input text-foreground",
+            error ? "border-sunsetOrange" : "border-border",
+            "focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 focus-within:ring-offset-background"
+          )}
+        >
+          {leftSlot && <span className="pl-3 pr-2 inline-flex">{leftSlot}</span>}
+
+          <select
+            ref={ref}
+            id={selectId}
+            aria-invalid={!!error || undefined}
+            aria-describedby={error ? errorId : hint ? hintId : undefined}
+            className={cn(
+              "w-full bg-transparent outline-none appearance-none pr-10 pl-3",
+              // iOS zoom guard
+              "text-[16px]",
+              sizes[size],
+              className
+            )}
+            {...props}
+          >
+            {children}
+          </select>
+
+          {/* Chevron */}
+          <span className="pointer-events-none absolute right-3 inline-flex translate-y-[-1px]">
+            ▼
+          </span>
+
+          {rightSlot && <span className="pr-3 pl-2 inline-flex">{rightSlot}</span>}
+        </div>
+
+        {hint && !error && (
+          <p id={hintId} className="mt-1 text-xs text-muted-foreground">
+            {hint}
+          </p>
+        )}
+        {error && (
+          <p id={errorId} className="mt-1 text-xs text-sunsetOrange">
+            {error}
+          </p>
+        )}
       </div>
-      {error ? (
-        <span className="mt-1 block text-small text-sunsetRed" role="alert" aria-live="polite">{error}</span>
-      ) : hint ? (
-        <span className="mt-1 block text-small text-mutedText">{hint}</span>
-      ) : null}
-    </label>
-  )
-}
+    );
+  }
+);
+Select.displayName = "Select";

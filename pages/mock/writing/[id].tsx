@@ -98,14 +98,14 @@ export default function WritingMockPage() {
         <section className="rounded-xl border border-border p-4">
           <h2 className="mb-2 text-base font-semibold">Task 1</h2>
           <p className="mb-2 text-sm text-foreground/80">{paper.task1Prompt}</p>
-          <textarea value={task1} onChange={(e) => setTask1(e.target.value)} className="h-40 w-full rounded-lg border border-border bg-background p-3 focus:outline-none focus:ring-2 focus:ring-primary" />
+          <textarea value={task1} onChange={(e) => setTask1(e.target.value)} className="h-40 w-full rounded-lg border border-border bg-background p-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background" />
           <div className="mt-1 text-xs text-foreground/70">Words: {wc1} (min {paper.minWordsTask1})</div>
         </section>
 
         <section className="rounded-xl border border-border p-4">
           <h2 className="mb-2 text-base font-semibold">Task 2</h2>
           <p className="mb-2 text-sm text-foreground/80">{paper.task2Prompt}</p>
-          <textarea value={task2} onChange={(e) => setTask2(e.target.value)} className="h-60 w-full rounded-lg border border-border bg-background p-3 focus:outline-none focus:ring-2 focus:ring-primary" />
+          <textarea value={task2} onChange={(e) => setTask2(e.target.value)} className="h-60 w-full rounded-lg border border-border bg-background p-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background" />
           <div className="mt-1 text-xs text-foreground/70">Words: {wc2} (min {paper.minWordsTask2})</div>
         </section>
 

@@ -58,7 +58,7 @@ export default function ExamLayout({
         </header>
 
         <main className="flex-1">
-          <Container className="py-6 flex gap-4">
+          <Container className="py-6 pb-safe md:pb-0 flex gap-4">
             {questionPalette && (
               <aside className="hidden md:block w-60 shrink-0">{questionPalette}</aside>
             )}

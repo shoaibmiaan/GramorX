@@ -36,7 +36,7 @@ export default function LocaleSwitcher({ value, onChanged, options }: Props) {
     <label className="inline-flex items-center gap-2 text-sm">
       <span className="text-mutedText">Language</span>
       <select
-        className="rounded-ds border border-border bg-card px-3 py-2 text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border"
+        className="rounded-ds border border-border bg-card px-3 py-2 text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         value={local}
         onChange={handleChange}
         disabled={busy}

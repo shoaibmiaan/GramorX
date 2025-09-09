@@ -53,7 +53,7 @@ export default function AuthLayout({
         
         {/* LEFT (form) */}
         {(mobileView === 'left' || !showRightOnMobile) && (
-          <section className="flex items-center justify-center bg-white dark:bg-dark px-8 py-12">
+          <section className="flex items-center justify-center bg-white dark:bg-dark px-8 py-12 pb-safe md:pb-12">
             <div className="w-full max-w-md space-y-6">
               {/* Brand header */}
               <div className="flex items-center gap-3 mb-6">

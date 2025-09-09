@@ -195,7 +195,7 @@ export default function ListeningMockPage() {
               )}
               {q.type !== 'mcq' && (
                 <input
-                  className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                   placeholder="Type your answer"
                   value={answers[q.id] || ''}
                   onChange={(e) => setAnswers((a) => ({ ...a, [q.id]: e.target.value }))}

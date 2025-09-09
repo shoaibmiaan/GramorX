@@ -232,9 +232,9 @@ export default function ReviewAttemptPage() {
                     onChange={e => setFinalBand(e.target.value)}
                     placeholder="e.g., 6.5"
                     className="w-full rounded-ds border bg-white text-lightText placeholder-gray-500
-                               focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary
+                               focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background focus:border-primary
                                dark:bg-dark/50 dark:text-white dark:placeholder-white/40 dark:border-purpleVibe/30
-                               dark:focus:ring-electricBlue dark:focus:border-electricBlue py-2.5 px-3.5"
+                               dark:focus-visible:ring-electricBlue dark:focus:border-electricBlue py-2.5 px-3.5"
                   />
                 </label>
 
@@ -246,9 +246,9 @@ export default function ReviewAttemptPage() {
                     onChange={e => setReason(e.target.value)}
                     placeholder="Explain why you adjusted the band (task achievement, coherence, pronunciation, etc.)"
                     className="w-full rounded-ds border bg-white text-lightText placeholder-gray-500
-                               focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary
+                               focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background focus:border-primary
                                dark:bg-dark/50 dark:text-white dark:placeholder-white/40 dark:border-purpleVibe/30
-                               dark:focus:ring-electricBlue dark:focus:border-electricBlue py-2.5 px-3.5"
+                               dark:focus-visible:ring-electricBlue dark:focus:border-electricBlue py-2.5 px-3.5"
                   />
                 </label>
 

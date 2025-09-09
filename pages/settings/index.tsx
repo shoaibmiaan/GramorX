@@ -1,7 +1,6 @@
-// pages/dashboard/index.tsx
+'use client';
 
 import React, { useEffect, useState } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/router';
 import Image from 'next/image';
 
@@ -177,7 +176,7 @@ export default function Dashboard() {
           <div className="grid gap-6 md:grid-cols-3">
             {[...Array(3)].map((_, i) => (
               <Card key={i} className="p-6 rounded-ds-2xl">
-                <div className="animate-pulse h-6 w-40 bg-gray-2 00 dark:bg-white/10 rounded" />
+                <div className="animate-pulse h-6 w-40 bg-gray-200 dark:bg-white/10 rounded" />
                 <div className="mt-4 animate-pulse h-24 bg-gray-200 dark:bg-white/10 rounded" />
               </Card>
             ))}
@@ -202,11 +201,9 @@ export default function Dashboard() {
                 <div className="font-medium">Complete your profile to unlock a personalized plan.</div>
                 <div className="text-sm opacity-80">It only takes a minute—target band, exam date and study prefs.</div>
               </div>
-              <Link href="/profile/setup" className="shrink-0">
-                <Button variant="secondary" className="rounded-ds-xl">
-                  Continue setup
-                </Button>
-              </Link>
+              <Button as="a" href="/profile/setup" variant="secondary" className="rounded-ds-xl">
+                Continue setup
+              </Button>
             </div>
           </Alert>
         )}
@@ -318,13 +315,14 @@ export default function Dashboard() {
               {(ai.sequence ?? []).slice(0, 3).map((s) => (
                 <Card key={s} className="p-6 rounded-ds-2xl flex flex-col">
                   <h3 className="font-slab text-h3 mb-2 capitalize">{s}</h3>
-                  <div className="mt-auto">
-                    <Link href={`/learning/skills/${s.toLowerCase()}`} className="w-full inline-block">
-                      <Button variant="primary" className="rounded-ds-xl w-full">
-                        Start
-                      </Button>
-                    </Link>
-                  </div>
+                  <Button
+                    as="a"
+                    href={`/learning/skills/${s.toLowerCase()}`}
+                    variant="primary"
+                    className="mt-auto rounded-ds-xl"
+                  >
+                    Start
+                  </Button>
                 </Card>
               ))}
             </div>
@@ -353,18 +351,18 @@ export default function Dashboard() {
             <p className="text-grayish mt-1">Jump back in with one click.</p>
             <div className="mt-6 flex flex-wrap gap-3">
               <QuickDrillButton />
-              <Link href="/learning">
-                <Button variant="primary" className="rounded-ds-xl">Start Today’s Lesson</Button>
-              </Link>
-              <Link href="/mock-tests">
-                <Button variant="secondary" className="rounded-ds-xl">Take a Mock Test</Button>
-              </Link>
-              <Link href="/writing">
-                <Button variant="accent" className="rounded-ds-xl">Practice Writing</Button>
-              </Link>
-              <Link href="/reading">
-                <Button variant="secondary" className="rounded-ds-xl">Practice Reading</Button>
-              </Link>
+              <Button as="a" href="/learning" variant="primary" className="rounded-ds-xl">
+                Start Today’s Lesson
+              </Button>
+              <Button as="a" href="/mock-tests" variant="secondary" className="rounded-ds-xl">
+                Take a Mock Test
+              </Button>
+              <Button as="a" href="/writing" variant="accent" className="rounded-ds-xl">
+                Practice Writing
+              </Button>
+              <Button as="a" href="/reading" variant="secondary" className="rounded-ds-xl">
+                Practice Reading
+              </Button>
               <Button onClick={handleShare} variant="secondary" className="rounded-ds-xl">
                 Share Progress
               </Button>
@@ -411,11 +409,9 @@ export default function Dashboard() {
               Unlock AI deep feedback, speaking evaluator, and full analytics.
             </p>
             <div className="mt-4">
-              <Link href="/pricing">
-                <Button variant="primary" className="rounded-ds-xl">
-                  See Plans
-                </Button>
-              </Link>
+              <Button as="a" href="/pricing" variant="primary" className="rounded-ds-xl">
+                See Plans
+              </Button>
             </div>
           </Card>
         </div>
@@ -441,11 +437,9 @@ export default function Dashboard() {
               </Alert>
             )}
             <div className="mt-4">
-              <Link href="/profile/setup">
-                <Button variant="secondary" className="rounded-ds-xl">
-                  Edit Profile
-                </Button>
-              </Link>
+              <Button as="a" href="/profile/setup" variant="secondary" className="rounded-ds-xl">
+                Edit Profile
+              </Button>
             </div>
           </Card>
         </div>

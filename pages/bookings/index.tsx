@@ -94,7 +94,7 @@ export default function BookingsIndexPage(){
           <div className="grid gap-3 md:grid-cols-12">
             <div className="md:col-span-3">
               <label className="text-sm text-mutedText">Status</label>
-              <select className="mt-1 w-full rounded-xl border border-border bg-card px-3 py-2 focus:ring-2 focus:ring-border" value={status} onChange={(e)=>{ setStatus(e.target.value as any); setPage('1') }}>
+              <select className="mt-1 w-full rounded-xl border border-border bg-card px-3 py-2 focus-visible:ring-2 focus-visible:ring-border" value={status} onChange={(e)=>{ setStatus(e.target.value as any); setPage('1') }}> focus-visible:ring-offset-2 focus-visible:ring-offset-background
                 <option value="">Any</option>
                 <option value="pending">Pending</option>
                 <option value="confirmed">Confirmed</option>

@@ -22,7 +22,7 @@ const LearningLayout: React.FC<React.PropsWithChildren> = ({ children }) => {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <section className="border-b border-border bg-card/30">
-        <Container className="py-5 sm:py-6">
+        <Container className="py-5 sm:py-6 pb-safe md:pb-0">
           <h1 className="font-slab text-xl sm:text-2xl">Learning & Studio</h1>
           <p className="text-sm text-mutedText mt-1">
             Lessons, drills, strategies — and your content studio.
@@ -37,7 +37,7 @@ const LearningLayout: React.FC<React.PropsWithChildren> = ({ children }) => {
         </Container>
       </section>
 
-      <Container className="py-6">
+      <Container className="py-6 pb-safe md:pb-0">
         <div className="card-surface rounded-ds-2xl p-4">{children}</div>
       </Container>
     </div>

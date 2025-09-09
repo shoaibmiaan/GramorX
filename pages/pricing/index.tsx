@@ -159,7 +159,7 @@ const PricingPage: NextPage = () => {
       </Head>
 
       {/* MAIN landmark added */}
-      <main role="main" className="min-h-screen bg-[radial-gradient(60rem_30rem_at_10%_-10%,rgba(99,102,241,.15),transparent_60%),radial-gradient(50rem_25rem_at_90%_10%,rgba(168,85,247,.18),transparent_60%),linear-gradient(to_bottom,#ffffff,#f8fafc)] text-foreground antialiased">
+      <main role="main" className="min-h-screen bg-marketing-aurora text-foreground antialiased">
         <Section id="pricing">
           <Container className="pt-6 md:pt-8 pb-12 md:pb-16" aria-labelledby="pricing-title">
 

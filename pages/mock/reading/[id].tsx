@@ -162,7 +162,7 @@ function renderInput(q: Q, value: string, onChange: (v: string) => void) {
     return <Options options={q.options || []} value={value} onPick={onChange} />;
   }
   return (
-    <input value={value} onChange={(e) => onChange(e.target.value)} className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Type your answer" />
+    <input value={value} onChange={(e) => onChange(e.target.value)} className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background" placeholder="Type your answer" />
   );
 }
 const Options: React.FC<{ options: string[]; value: string; onPick: (v: string) => void }> = ({ options, value, onPick }) => (

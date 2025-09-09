@@ -126,7 +126,7 @@ export default function BlogIndex() {
                 <span className="mb-1.5 inline-block text-small text-grayish">Category</span>
                 <select
                   className="w-full rounded-ds border bg-white text-lightText dark:bg-dark/50 dark:text-white
-                             dark:border-purpleVibe/30 focus:outline-none focus:ring-2 focus:ring-primary py-3 px-3"
+                             dark:border-purpleVibe/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background py-3 px-3"
                   value={cat}
                   onChange={e => { setCat(e.target.value as CategoryFilter); setPage(1); }}
                 >
@@ -137,7 +137,7 @@ export default function BlogIndex() {
                 <span className="mb-1.5 inline-block text-small text-grayish">Sort</span>
                 <select
                   className="w-full rounded-ds border bg-white text-lightText dark:bg-dark/50 dark:text-white
-                             dark:border-purpleVibe/30 focus:outline-none focus:ring-2 focus:ring-primary py-3 px-3"
+                             dark:border-purpleVibe/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background py-3 px-3"
                   value={sort}
                   onChange={e => setSort(e.target.value as Sort)}
                 >

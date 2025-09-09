@@ -4,6 +4,7 @@ import Link from 'next/link';
 import type { GetServerSideProps } from 'next';
 import { Container } from '@/components/design-system/Container';
 import { Card } from '@/components/design-system/Card';
+import Image from 'next/image';
 
 type Post = {
   id: string;
@@ -69,7 +70,18 @@ export default function BlogPostPage({ ok, post }: Props) {
                 {/* Content */}
                 <Card className="p-6 rounded-ds-2xl">
                   <div className="aspect-video rounded-ds bg-gradient-to-br from-primary/15 to-accent/15 mb-6 overflow-hidden">
-                    {post.hero_image_url ? <img src={post.hero_image_url} alt="" className="w-full h-full object-cover" /> : null}
+                    {post.hero_image_url ? (
+  <div className="relative w-full h-64 sm:h-80 lg:h-[28rem]">
+    <Image
+      src={post.hero_image_url}
+      alt={post.title || 'Blog hero'}
+      fill
+      sizes="(min-width: 1024px) 1024px, 100vw"
+      className="object-cover"
+      priority
+    />
+  </div>
+) : null}
                   </div>
                   <article className="prose prose-neutral dark:prose-invert max-w-none">
                     {/* Minimal markdown display (paragraph split) to avoid extra deps */}

@@ -7,6 +7,7 @@ import { Toggle } from '@/components/design-system/Toggle';
 import { StreakIndicator } from '@/components/design-system/StreakIndicator';
 import { SavedItems } from '@/components/dashboard/SavedItems';
 import { useStreak } from '@/hooks/useStreak';
+import Image from "next/image";
 import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser';
 import { useToast } from '@/components/design-system/Toaster';
 import type { Profile } from '@/types/profile';
@@ -168,8 +169,7 @@ export default function ProfilePage() {
               <div className="h-20 w-20 rounded-full bg-vibrantPurple/10 flex items-center justify-center overflow-hidden">
                 {profile?.avatar_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={profile.avatar_url} alt="Avatar" className="h-20 w-20 object-cover" />
-                ) : (
+                  <Image src={profile.avatar_url} alt="Avatar" width={80} height={80} className="h-20 w-20 object-cover" />                ) : (
                   <span className="text-2xl font-semibold text-vibrantPurple">
                     {profile?.full_name?.[0] || 'U'}
                   </span>
