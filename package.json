@@ -24,7 +24,8 @@
     "test:phase3": "vitest run tests/**/*.test.ts*",
     "ci:lighthouse": "CHROME_PATH=\"$(node -p \"require('playwright-core').chromium.executablePath()\")\" lhci autorun --config=./lighthouserc.json",
     "ci:a11y": "playwright test -c ./playwright.config.ts",
-    "ci:all": "start-server-and-test start http://localhost:3000 \"npm run ci:lighthouse && npm run ci:a11y\""
+    "ci:all": "start-server-and-test start http://localhost:3000 \"npm run ci:lighthouse && npm run ci:a11y\"",
+    "ds:guard": "bash scripts/ds_guard.sh"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
@@ -60,6 +61,7 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@axe-core/cli": "^4.10.2",
     "@axe-core/playwright": "^4.10.2",
     "@lhci/cli": "^0.15.1",
     "@mdx-js/react": "^2.3.0",
@@ -92,7 +94,9 @@
     "eslint": "8.57.0",
     "eslint-config-next": "14.2.31",
     "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-prettier": "^5.2.1",
+    "lighthouse": "^12.8.2",
     "postcss": "^8.4.41",
     "prettier": "^3.3.3",
     "start-server-and-test": "^2.1.0",

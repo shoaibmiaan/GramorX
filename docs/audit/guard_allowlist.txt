@@ -1,0 +1,9 @@
+# Lines containing these substrings will be ignored by the guard.
+# Add one path or substring per line.
+
+components/certificates/CertificateCanvas.tsx
+components/design-system/icons/index.tsx
+emails/
+pages/_document.tsx
+premium-ui/theme/premium-themes.ts
+pages/pages_premium.jsx
