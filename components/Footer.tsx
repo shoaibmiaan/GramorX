@@ -9,28 +9,6 @@ import { Icon } from '@/components/design-system/Icon';
 
 const year = new Date().getFullYear();
 
-const SITE = {
-  brandName: 'GramorX',
-  companyLegal: 'GramorX Learning School',
-  tagline:
-    'AI-powered IELTS prep: focused practice, instant feedback, and clear analytics—built to help you score higher, faster.',
-  addressLine: 'FL, United States',
-  phone: '+1 (972) 295-4571',
-  email: 'info@gramor-x.com',
-  socials: {
-    x: 'https://x.com/gramorx',
-    facebook: 'https://facebook.com/gramorx',
-    instagram: 'https://instagram.com/gramorx',
-    youtube: 'https://youtube.com/@gramorx',
-  },
-  links: {
-    login: '/login',
-    pricing: '/pricing',
-    terms: '/legal/terms',
-    privacy: '/legal/privacy',
-  },
-} as const;
-
 const MODULES = [
   { label: 'Listening', href: '/listening' },
   { label: 'Reading', href: '/reading' },
@@ -45,30 +23,49 @@ const QUICK_LINKS = [
   { label: 'Mock Tests', href: '/mock-tests' },
 ] as const;
 
+const RESOURCES = [
+  { label: 'Help Center', href: '/help' },
+  { label: 'Community', href: '/community' },
+  { label: 'Terms', href: '/legal/terms' },
+  { label: 'Privacy', href: '/legal/privacy' },
+] as const;
+
 export const Footer: React.FC = () => {
   return (
     <footer className="relative mt-16 border-t border-border bg-background">
       {/* Brand gradient bar */}
       <div
-        className="h-1 w-full bg-gradient-to-r from-vibrantPurple via-electricBlue to-neonGreen opacity-80"
+        className="
+          h-1 w-full bg-gradient-to-r
+          from-vibrantPurple via-electricBlue to-neonGreen
+          opacity-80
+        "
         aria-hidden="true"
       />
-
       <Container>
         {/* Top CTA */}
         <div className="flex flex-col items-start justify-between gap-4 py-10 sm:flex-row sm:items-center">
-          <h2 className="font-slab text-2xl">Ready to boost your IELTS score?</h2>
-
+          <h2 className="font-slab text-2xl">
+            Ready to boost your IELTS score?
+          </h2>
           <div className="flex items-center gap-3">
             <Link
-              href={SITE.links.login}
-              className="inline-flex items-center justify-center rounded-full bg-primary px-5 py-2.5 font-semibold text-primary-foreground transition hover:opacity-90"
+              href="/login"
+              className="
+                inline-flex items-center justify-center rounded-full
+                bg-primary px-5 py-2.5 font-semibold text-primary-foreground
+                transition hover:opacity-90
+              "
             >
               Get started
             </Link>
             <Link
-              href={SITE.links.pricing}
-              className="inline-flex items-center justify-center rounded-full border border-border px-5 py-2.5 font-semibold hover:bg-primary/10"
+              href="/pricing"
+              className="
+                inline-flex items-center justify-center rounded-full
+                border border-border px-5 py-2.5 font-semibold
+                hover:bg-muted
+              "
             >
               See pricing
             </Link>
@@ -82,18 +79,21 @@ export const Footer: React.FC = () => {
             <div className="mb-4">
               <Link href="/" className="inline-flex items-center gap-2">
                 <span className="font-slab text-xl font-bold">
-                  <span className="text-gradient-primary">{SITE.brandName}</span>
+                  <span className="text-gradient-primary">GramorX</span>
                 </span>
               </Link>
             </div>
-            <p className="max-w-sm text-sm text-mutedText">{SITE.tagline}</p>
+            <p className="max-w-sm text-sm text-muted-foreground">
+              AI-powered IELTS prep: focused practice, instant feedback, and
+              clear analytics—built to help you score higher, faster.
+            </p>
 
             {/* Socials */}
             <div className="mt-5 flex items-center gap-3">
-              <SocialIconLink platform="x" href={SITE.socials.x} />
-              <SocialIconLink platform="facebook" href={SITE.socials.facebook} />
-              <SocialIconLink platform="instagram" href={SITE.socials.instagram} />
-              <SocialIconLink platform="youtube" href={SITE.socials.youtube} />
+              <SocialIconLink platform="x" href="https://x.com/gramorx" />
+              <SocialIconLink platform="facebook" href="https://facebook.com/gramorx" />
+              <SocialIconLink platform="instagram" href="https://instagram.com/gramorx" />
+              <SocialIconLink platform="youtube" href="https://youtube.com/@gramorx" />
             </div>
           </div>
 
@@ -105,7 +105,7 @@ export const Footer: React.FC = () => {
                 <li key={m.href}>
                   <NavLink
                     href={m.href}
-                    className="text-sm text-mutedText hover:text-foreground"
+                    className="text-sm text-muted-foreground hover:text-foreground"
                   >
                     {m.label}
                   </NavLink>
@@ -122,7 +122,7 @@ export const Footer: React.FC = () => {
                 <li key={q.href}>
                   <NavLink
                     href={q.href}
-                    className="text-sm text-mutedText hover:text-foreground"
+                    className="text-sm text-muted-foreground hover:text-foreground"
                   >
                     {q.label}
                   </NavLink>
@@ -134,36 +134,36 @@ export const Footer: React.FC = () => {
           {/* Contact */}
           <div>
             <h3 className="mb-3 font-slab text-lg">Contact</h3>
-            <ul className="space-y-3 text-sm text-mutedText">
+            <ul className="space-y-3 text-sm text-muted-foreground">
               <li className="flex items-start gap-2">
-                <Icon name="map-pin" className="mt-0.5 h-4 w-4 opacity-80" aria-hidden />
-                <span>{SITE.addressLine}</span>
+                <Icon name="map-pin" className="mt-0.5 h-4 w-4 opacity-80" aria-hidden={true} />
+                <span>Gulberg, Lahore, Pakistan</span>
               </li>
               <li className="flex items-start gap-2">
-                <Icon name="phone" className="mt-0.5 h-4 w-4 opacity-80" aria-hidden />
-                <span>{SITE.phone}</span>
+                <Icon name="phone" className="mt-0.5 h-4 w-4 opacity-80" aria-hidden={true} />
+                <span>+92 300 0000000</span>
               </li>
               <li className="flex items-start gap-2">
-                <Icon name="mail" className="mt-0.5 h-4 w-4 opacity-80" aria-hidden />
-                <span>{SITE.email}</span>
+                <Icon name="mail" className="mt-0.5 h-4 w-4 opacity-80" aria-hidden={true} />
+                <span>support@gramorx.com</span>
               </li>
             </ul>
           </div>
         </div>
 
         {/* Bottom bar */}
-        <div className="flex flex-col items-start justify-between gap-3 border-t border-border py-6 text-sm text-mutedText sm:flex-row sm:items-center">
-          <p>© {year} {SITE.companyLegal}. All rights reserved.</p>
+        <div className="flex flex-col items-start justify-between gap-3 border-t border-border py-6 text-sm text-muted-foreground sm:flex-row sm:items-center">
+          <p>© {year} GramorX Learning School. All rights reserved.</p>
           <div className="flex items-center gap-4">
-            <NavLink href={SITE.links.terms} className="hover:text-foreground">
+            <NavLink href="/legal/terms" className="hover:text-foreground">
               Terms
             </NavLink>
-            <NavLink href={SITE.links.privacy} className="hover:text-foreground">
+            <NavLink href="/legal/privacy" className="hover:text-foreground">
               Privacy
             </NavLink>
             <a
               href="#top"
-              className="rounded-full border border-border px-3 py-1 hover:bg-primary/10"
+              className="rounded-full border border-border px-3 py-1 hover:bg-muted"
               aria-label="Back to top"
             >
               Back to top

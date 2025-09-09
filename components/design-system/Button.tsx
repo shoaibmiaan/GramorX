@@ -8,13 +8,22 @@ const cx = (...xs: Array<string | false | null | undefined>) =>
 
 /** Visual weight/style of the button */
 export type ButtonVariant =
-  | "primary" // solid + primary tone (gradient class applied)
-  | "secondary" // solid + secondary tone
-  | "accent" // solid + accent tone (gradient class applied)
+  | "primary"      // solid + primary tone (gradient hook)
+  | "secondary"    // solid + secondary tone
+  | "accent"       // solid + accent tone (gradient hook)
   | "outline"
   | "soft"
   | "ghost"
-  | "link";
+  | "link"
+  /** New power variants */
+  | "solid"        // generic solid; color via `tone`
+  | "elevated"     // soft + elevation + subtle border
+  | "dashed"       // dashed outline
+  | "glass"        // glassy card surface, blur, border
+  | "flat"         // minimal filled surface (bg-muted)
+  | "link-muted"   // link but lower contrast
+  | "chip"         // compact soft pill with tighter padding
+  | "toolbar";     // ghost-y, tighter, for toolbars
 
 /** Semantic color family */
 export type ButtonTone =
@@ -25,12 +34,12 @@ export type ButtonTone =
   | "warning"
   | "danger";
 
-export type ButtonSize = "xs" | "sm" | "md" | "lg" | "xl";
-export type ButtonShape = "pill" | "rounded" | "square";
+export type ButtonSize = "xs" | "sm" | "md" | "lg" | "xl" | "2xl";
+export type ButtonShape = "pill" | "rounded" | "square" | "circle";
 
 export type ButtonProps = {
   variant?: ButtonVariant;
-  /** Optional tone override (works with outline/soft/ghost/link too) */
+  /** Optional tone override (works with all variants) */
   tone?: ButtonTone;
   size?: ButtonSize;
   shape?: ButtonShape; // default 'pill'
@@ -55,13 +64,16 @@ const sizeClasses: Record<ButtonSize, string> = {
   md: "h-10 px-5",
   lg: "h-12 px-6 text-base",
   xl: "h-14 px-7 text-lg",
+  "2xl": "h-16 px-8 text-xl",
 };
+
 
 /** Shape */
 const shapeClasses: Record<ButtonShape, string> = {
   pill: "rounded-full",
   rounded: "rounded-ds-2xl",
   square: "aspect-square rounded-ds",
+  circle: "aspect-square rounded-full",
 };
 
 /** Tone → tokenized utilities (safe for JIT) */
@@ -122,6 +134,16 @@ const toneTokens = {
   },
 } as const;
 
+const buildSolid = (t: typeof toneTokens[keyof typeof toneTokens], animated: boolean, hook?: "primary" | "accent") =>
+  cx(
+    t.bg,
+    "text-white",
+    t.hoverBg,
+    "border border-transparent",
+    // gradient/glow hook for solid primaries
+    animated && hook ? (hook === "primary" ? "btn-primary" : "btn-accent") : ""
+  );
+
 const buildVariant = (
   variant: ButtonVariant,
   toneKey: ButtonTone,
@@ -129,32 +151,29 @@ const buildVariant = (
 ) => {
   const t = toneTokens[toneKey];
 
-  // solid variants
-  if (
-    variant === "primary" ||
-    variant === "secondary" ||
-    variant === "accent"
-  ) {
-    // Prefer accessible text on solids
-    const solids = cx(
-      t.bg,
-      "text-white",
-      t.hoverBg,
-      "border border-transparent",
-    );
-    // Hook into global gradient/glow for primary/accent if animated
-    const gradientHook =
-      animated && (variant === "primary" || variant === "accent")
-        ? variant === "primary"
-          ? "btn-primary"
-          : "btn-accent"
-        : "";
+  // legacy solid variants (keep BC)
+  if (variant === "primary" || variant === "secondary" || variant === "accent") {
+    const hook = variant === "primary" ? "primary" : variant === "accent" ? "accent" : undefined;
+    return buildSolid(t, animated, hook);
+  }
 
-    return cx(solids, gradientHook);
+  // new generic solid (works with all tones)
+  if (variant === "solid") {
+    return buildSolid(t, animated);
   }
 
   if (variant === "outline") {
     return cx("bg-transparent", t.text, "border", t.border, t.hoverSoftBg);
+  }
+
+  if (variant === "dashed") {
+    return cx(
+      "bg-transparent",
+      t.text,
+      "border border-dashed",
+      t.border,
+      t.hoverSoftBg
+    );
   }
 
   if (variant === "soft") {
@@ -169,25 +188,79 @@ const buildVariant = (
     );
   }
 
-  // link
-  return cx(
-    "bg-transparent p-0 h-auto rounded-none underline underline-offset-4 border-0",
-    "hover:opacity-90",
-    toneTokens[toneKey].text,
-  );
+  if (variant === "elevated") {
+    return cx(
+      t.softBg,
+      t.text,
+      "border",
+      t.softBorder,
+      "shadow-sm hover:shadow-md",
+      t.hoverSoftBg
+    );
+  }
+
+  if (variant === "glass") {
+    return cx(
+      "bg-card/60 backdrop-blur-md",
+      "border border-border/60",
+      "text-card-foreground",
+      "hover:bg-card/70"
+    );
+  }
+
+  if (variant === "flat") {
+    return cx(
+      "bg-muted text-muted-foreground",
+      "hover:bg-muted/90",
+      "border border-transparent"
+    );
+  }
+
+  if (variant === "chip") {
+    return cx(
+      "bg-muted text-foreground/80",
+      "hover:bg-muted/90",
+      "border border-border/60"
+    );
+  }
+
+  if (variant === "toolbar") {
+    return cx(
+      "bg-transparent text-foreground/90",
+      "border border-transparent",
+      "hover:bg-muted/60"
+    );
+  }
+
+  // link (strong)
+  if (variant === "link") {
+    return cx(
+      "bg-transparent p-0 h-auto rounded-none underline underline-offset-4 border-0",
+      "hover:opacity-90",
+      t.text,
+    );
+  }
+
+  // link-muted (subtle, no underline until hover)
+  if (variant === "link-muted") {
+    return cx(
+      "bg-transparent p-0 h-auto rounded-none border-0",
+      "text-muted-foreground hover:text-foreground hover:underline underline-offset-4"
+    );
+  }
+
+  // fallback (shouldn’t hit)
+  return cx("bg-muted text-foreground border border-transparent");
 };
 
 const Spinner: React.FC<{ size?: ButtonSize }> = ({ size = "sm" }) => {
   const dim =
-    size === "xs"
-      ? "h-3 w-3"
-      : size === "sm"
-        ? "h-4 w-4"
-        : size === "md"
-          ? "h-4 w-4"
-          : size === "lg"
-            ? "h-5 w-5"
-            : "h-6 w-6";
+    size === "xs" ? "h-3 w-3" :
+    size === "sm" ? "h-4 w-4" :
+    size === "md" ? "h-4 w-4" :
+    size === "lg" ? "h-5 w-5" :
+    size === "xl" ? "h-6 w-6" :
+    "h-7 w-7";
   return (
     <span
       role="status"
@@ -244,14 +317,16 @@ export const Button = React.forwardRef<
       // Use DS ring tokens (shadcn-style)
       "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
       "disabled:opacity-60 disabled:cursor-not-allowed",
-      animated && variant !== "link" && "btn btn--fx",
-      elevateOnHover && variant !== "link" && "hover:shadow-glow",
+      animated && !["link","link-muted"].includes(variant) && "btn btn--fx",
+      elevateOnHover && !["link","link-muted"].includes(variant) && "hover:shadow-glow",
+      // compact paddings for chip/toolbar (we still apply size height)
+      (variant === "chip" || variant === "toolbar") && "px-3"
     );
 
-    // size & shape (link stays unpadded)
-    const sizeCls = variant === "link" ? "" : sizeClasses[size];
+    // size & shape (link stays unpadded heightless)
+    const sizeCls = ["link","link-muted"].includes(variant) ? "" : sizeClasses[size];
     const shapeCls =
-      variant === "link"
+      ["link","link-muted"].includes(variant)
         ? ""
         : iconOnly
           ? shapeClasses.square
@@ -275,7 +350,7 @@ export const Button = React.forwardRef<
           <span
             className={cx(
               "inline-flex items-center gap-2",
-              variant === "link" && "gap-1",
+              (variant === "link" || variant === "link-muted") && "gap-1",
             )}
           >
             <Spinner size={size} />
@@ -283,11 +358,11 @@ export const Button = React.forwardRef<
           </span>
         )}
         {!loading && leadingIcon ? (
-          <span className="mr-2 inline-flex">{leadingIcon}</span>
+          <span className={cx("inline-flex", !iconOnly && "mr-2")}>{leadingIcon}</span>
         ) : null}
         {!iconOnly && <span>{loading ? loadingText : children}</span>}
         {!loading && trailingIcon ? (
-          <span className="ml-2 inline-flex">{trailingIcon}</span>
+          <span className={cx("inline-flex", !iconOnly && "ml-2")}>{trailingIcon}</span>
         ) : null}
       </>
     );
@@ -301,7 +376,7 @@ export const Button = React.forwardRef<
 
     // Icon-only must be labelled
     const computedAriaLabel = iconOnly
-      ? (ariaLabel ?? String(children ?? ""))
+      ? (ariaLabel ?? String(children ?? "")) 
       : ariaLabel;
 
     // Link render (inert when disabled/loading)
@@ -360,4 +435,24 @@ export const Button = React.forwardRef<
 );
 
 Button.displayName = "Button";
+
+/** Simple horizontal group that merges borders & radii nicely */
+export const ButtonGroup: React.FC<
+  React.PropsWithChildren<{ attached?: boolean; className?: string }>
+> = ({ attached = true, className, children }) => {
+  // expect Button children
+  return (
+    <div
+      role="group"
+      className={cx(
+        "inline-flex",
+        attached && "rounded-ds-2xl overflow-hidden border border-border",
+        className
+      )}
+    >
+      {children}
+    </div>
+  );
+};
+
 export default Button;
