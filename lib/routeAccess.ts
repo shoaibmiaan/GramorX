@@ -46,6 +46,14 @@ export const canAccess = (path: string, role: AppRole | null | undefined): boole
   return !!role;
 };
 
+/** Internal helper: read a loose role from user/app metadata without touching AppRole type */
+function readMetaRole(user: User | null | undefined): string | undefined {
+  // Prefer explicit metadata roles; fall back to any direct role for compatibility
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const u: any = user as any;
+  return u?.user_metadata?.role ?? u?.app_metadata?.role ?? u?.role;
+}
+
 /** Pick a destination path for a user based on role/onboarding.
  * Callers should push/replace this path; we avoid side effects here.
  */
@@ -57,8 +65,14 @@ export function destinationByRole(user: User | null | undefined): string {
     return '/auth/verify';
   }
 
+  // Handle pending teachers explicitly via metadata role (does not require changing AppRole)
+  const metaRole = readMetaRole(user);
+  if (metaRole === 'teacher_pending') {
+    return '/onboarding/teacher/status';
+  }
+
   const role = getUserRole(user);
-  const onboarded = !!(user as any)?.user_metadata?.onboarding_complete;
+  const onboarded = !!(user as unknown as { user_metadata?: { onboarding_complete?: boolean } })?.user_metadata?.onboarding_complete;
 
   if (role === 'teacher') return '/teacher';
   if (role === 'admin') return '/admin';

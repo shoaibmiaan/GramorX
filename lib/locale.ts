@@ -1,42 +1,44 @@
 // lib/locale.ts
-// Minimal, safe helpers for Pages Router. SSR-safe (checks window existence).
+// Minimal locale helper for Pages Router (SSR-safe)
 
-const STORAGE_KEY = 'gx_locale';
-export type SupportedLocale = 'en' | 'ur' | 'ar' | 'hi';
+export type Locale = 'en' | 'ur' | 'ar' | 'fr'; // add/remove as needed
+const STORAGE_KEY = 'locale';
 
-export function detectLocale(): SupportedLocale {
-  try {
-    if (typeof window !== 'undefined') {
-      // 1) URL ?lang=
-      const q = new URL(window.location.href).searchParams.get('lang');
-      if (q) return q as SupportedLocale;
+let current: Locale | null = null;
 
-      // 2) localStorage
-      const stored = window.localStorage.getItem(STORAGE_KEY);
-      if (stored) return stored as SupportedLocale;
-
-      // 3) <html lang>
-      const htmlLang = document.documentElement.getAttribute('lang');
-      if (htmlLang) return htmlLang as SupportedLocale;
-
-      // 4) navigator
-      const nav = navigator?.language?.slice(0, 2);
-      if (nav) return nav as SupportedLocale;
-    }
-  } catch {/* no-op */}
-  return 'en';
+// SSR-safe getter
+export function getLocale(defaultLocale: Locale = 'en'): Locale {
+  if (typeof window === 'undefined') return current ?? defaultLocale;
+  const saved = (localStorage.getItem(STORAGE_KEY) as Locale | null) ?? null;
+  current = saved ?? current ?? defaultLocale;
+  return current;
 }
 
-/** Persist + apply locale (also updates <html lang="...">). */
-export function setLocale(next: SupportedLocale) {
-  try {
-    if (typeof window !== 'undefined') {
-      window.localStorage.setItem(STORAGE_KEY, next);
+// Persist + update <html lang="">
+export function setLocale(next: Locale): void {
+  current = next;
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(STORAGE_KEY, next);
+    try {
       document.documentElement.setAttribute('lang', next);
-      window.dispatchEvent(new CustomEvent('gx:locale-change', { detail: { locale: next } }));
-    }
-  } catch {/* no-op */}
+    } catch {}
+  }
 }
 
-// Back-compat: some code imports persistLocale
-export const persistLocale = setLocale;
+// (Optional) Load translation JSON into a global cache (client only).
+// Adjust the fetch path to your actual public JSON files.
+type Dict = Record<string, string>;
+declare global {
+  interface Window { __i18n?: Record<Locale, Dict>; }
+}
+export async function loadTranslations(next: Locale): Promise<Dict> {
+  if (typeof window === 'undefined') return {};
+  window.__i18n = window.__i18n ?? {};
+  if (window.__i18n[next]) return window.__i18n[next];
+
+  const res = await fetch(`/locales/${next}.json`, { cache: 'force-cache' });
+  if (!res.ok) return {};
+  const dict = (await res.json()) as Dict;
+  window.__i18n[next] = dict;
+  return dict;
+}

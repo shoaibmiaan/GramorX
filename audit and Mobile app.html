@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#4361ee" />
+  <title>GramorX — IELTS MasterPortal</title>
+
+  <!-- ===== PWA scaffold (Phase-1→2 bridge) ===== -->
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+  <!-- ====== TOKEN LOCK v1 (desired_design compliant) ====== -->
+  <style>
+    /* ---------- Color tokens (RGB triples; allow /<alpha-value>) ---------- */
+    :root{
+      --color-background: 240 242 245;   /* lightBg */
+      --color-foreground: 26 26 46;       /* lightText */
+      --color-border:     202 205 216;    /* lightBorder */
+      --color-primary:    67 97 238;      /* #4361ee */
+      --color-secondary:  247 37 133;     /* #f72585 */
+      --color-accent:     76 201 240;     /* #4cc9f0 */
+      --color-success:    46 196 182;
+      --color-purpleVibe: 157 78 221;
+      --color-vibrantPurple: 157 78 221;
+      --color-electricBlue: 0 187 249;
+      --color-neonGreen:   128 255 219;
+      --color-sunsetOrange:255 107 107;
+      --color-goldenYellow:255 209 102;
+
+      --color-dark:        15 15 27;
+      --color-darker:      7 7 16;
+      --color-lightBg:     240 242 245;
+      --color-lightText:   26 26 46;
+      --color-grayish:     138 138 156;
+      --color-lightCard:   255 255 255;
+      --color-lightBorder: 222 226 233;
+      --color-mutedText:   120 127 146;
+
+      /* Type scale (subset) */
+      --fs-display: clamp(28px, 4vw, 42px);
+      --fs-h2:      clamp(22px, 3.2vw, 34px);
+      --fs-h3:      clamp(18px, 2.4vw, 22px);
+      --fs-body:    16px;
+      --radius-card: 16px;
+      --radius-chip: 999px;
+      --ring-size:  3px;
+    }
+    .dark{
+      --color-background: 10 12 19;
+      --color-foreground: 222 229 245;
+      --color-border:     48 58 82;
+      --color-lightCard:  18 22 33;
+      --color-lightBorder:48 58 82;
+      --color-mutedText:  146 160 182;
+    }
+
+    /* ---------- Minimal utility set (token classes) ---------- */
+    *{box-sizing:border-box} html,body{height:100%}
+    body{margin:0;font-family:Poppins,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial;
+         background: rgb(var(--color-background)); color: rgb(var(--color-foreground)); font-size: var(--fs-body);}
+    a{color:inherit;text-decoration:none}
+    .container{max-width:1100px;margin:0 auto;padding:24px}
+    .grid{display:grid;gap:16px}
+    .grid-4{grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
+    .grid-3{grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
+    .flex{display:flex} .items-center{align-items:center} .justify-between{justify-content:space-between} .gap-2{gap:8px} .gap-3{gap:12px} .gap-4{gap:16px} .wrap{flex-wrap:wrap}
+    .mt-1{margin-top:4px} .mt-2{margin-top:8px} .mt-3{margin-top:12px} .mt-4{margin-top:16px} .ml-2{margin-left:8px}
+    .bg-background{background: rgb(var(--color-background));}
+    .text-foreground{color: rgb(var(--color-foreground));}
+    .text-muted{color: rgb(var(--color-mutedText));}
+    .text-primary{color: rgb(var(--color-primary));}
+    .text-electricBlue{color: rgb(var(--color-electricBlue));}
+    .text-vibrantPurple{color: rgb(var(--color-vibrantPurple));}
+    .text-neonGreen{color: rgb(var(--color-neonGreen));}
+    .text-goldenYellow{color: rgb(var(--color-goldenYellow));}
+    .border-border{border-color: rgb(var(--color-border));}
+    .bg-card{background: rgb(var(--color-lightCard));}
+    .text-card-foreground{color: rgb(var(--color-lightText));}
+    .ring-border{box-shadow: 0 0 0 var(--ring-size) rgb(var(--color-border)) inset;}
+    .ring-primary{box-shadow: 0 0 0 var(--ring-size) rgb(var(--color-primary) / .35), 0 1px 0 0 rgb(0 0 0 / .04);}
+    .focus-visible:focus-visible{outline: none; box-shadow: 0 0 0 var(--ring-size) rgb(var(--color-primary) / .45) !important; border-color: rgb(var(--color-primary));}
+
+    /* ---------- Surfaces & components ---------- */
+    .card-surface{background: rgb(var(--color-lightCard)); border:1px solid rgb(var(--color-lightBorder)); border-radius:var(--radius-card); padding:16px}
+    .badge{display:inline-block;border:1px solid rgb(var(--color-lightBorder));border-radius:var(--radius-chip);padding:2px 10px;font-size:12px}
+    .pill{display:inline-block;border:1px solid rgb(var(--color-lightBorder));border-radius:var(--radius-chip);padding:2px 8px;font-size:12px}
+    .header-glass{position:sticky;top:0;backdrop-filter:saturate(150%) blur(10px); border-bottom:1px solid rgb(var(--color-lightBorder)); z-index:10}
+    .nav{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .nav ul{display:flex;gap:10px;list-style:none;margin:0;padding:0}
+    .nav a,.nav button{padding:8px 12px;border-radius:12px;border:1px solid transparent}
+    .nav a:hover{background: rgb(var(--color-primary) / .08)}
+    .streak-chip{display:inline-flex;gap:6px;align-items:center;border:1px solid rgb(var(--color-lightBorder)); padding:6px 10px;border-radius:var(--radius-chip);background: rgb(var(--color-lightCard))}
+
+    /* Buttons */
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 14px;border-radius:12px;font-weight:600;border:1px solid rgb(var(--color-lightBorder));transition:.2s transform,.2s opacity}
+    .btn:hover{transform:translateY(-1px);opacity:.96}
+    .btn:focus-visible{outline:none; box-shadow: 0 0 0 var(--ring-size) rgb(var(--color-primary) / .45)}
+    .btn-primary{background: rgb(var(--color-primary)); color: rgb(255 255 255); border-color: transparent}
+    .btn-secondary{background: rgb(var(--color-secondary)); color: rgb(255 255 255); border-color: transparent}
+    .btn-accent{background: rgb(var(--color-accent)); color: rgb(0 19 26); border-color: transparent}
+    .btn-ghost{background: transparent}
+
+    /* Inputs (A11y Day-2) */
+    .field{display:block}
+    .label{display:block;font-weight:600;margin-bottom:6px}
+    .input{width:100%;padding:12px 12px;border-radius:12px;background: rgb(var(--color-lightCard));border:1px solid rgb(var(--color-lightBorder)); color: rgb(var(--color-foreground));}
+    .input::placeholder{color: rgb(var(--color-mutedText))}
+    .input:focus-visible{outline:none; box-shadow: 0 0 0 var(--ring-size) rgb(var(--color-primary) / .45); border-color: rgb(var(--color-primary))}
+    .help{font-size:12px;color: rgb(var(--color-mutedText))}
+    .error-text{font-size:13px; color: rgb(var(--color-sunsetOrange))}
+    .input[aria-invalid="true"]{border-color: rgb(var(--color-sunsetOrange)); box-shadow: 0 0 0 var(--ring-size) rgb(var(--color-sunsetOrange) / .35)}
+
+    /* Modal (A11y Day-2) */
+    .backdrop{position:fixed;inset:0;background: rgb(var(--color-dark) / .6);display:none}
+    .backdrop[data-open="true"]{display:block}
+    .modal{position:fixed;inset:0;display:grid;place-items:center;pointer-events:none}
+    .modal[data-open="true"]{pointer-events:auto}
+    .dialog{width:min(560px, 92vw); background: rgb(var(--color-lightCard)); border:1px solid rgb(var(--color-lightBorder));
+            border-radius: var(--radius-card); padding: 16px; box-shadow: 0 10px 30px rgb(0 0 0 / .25)}
+    .dialog-header{display:flex;align-items:center;justify-content:space-between}
+    .dialog-title{font-size: var(--fs-h3); font-weight:700}
+    .dialog-body{margin-top:8px}
+    .visually-hidden{position:absolute !important; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;}
+    @media (max-width:720px){ .nav ul{flex-wrap:wrap} }
+
+    /* Motion safety */
+    @media (prefers-reduced-motion: reduce){
+      .btn{transition:none}
+    }
+
+    /* Sections */
+    .hero{padding:28px 0}
+    .hero h1{font-size:var(--fs-display);line-height:1.15;margin:0 0 10px}
+    .section{padding:22px 0}
+    .section h2{margin:0 0 10px;font-size:var(--fs-h2)}
+  </style>
+</head>
+
+<body class="bg-background text-foreground">
+  <!-- ===== Header ===== -->
+  <header class="header-glass bg-background" role="banner">
+    <div class="container nav">
+      <div class="flex items-center" aria-label="Brand">
+        <strong class="text-primary">GramorX</strong>
+        <span class="badge ml-2">IELTS</span>
+      </div>
+      <nav aria-label="Primary">
+        <ul>
+          <li><a href="#modules" class="nav-pill">Modules</a></li>
+          <li><a href="#analysis">Student Analysis</a></li>
+          <li><a href="#practice">Practice</a></li>
+          <li><a href="#evaluation">Evaluation</a></li>
+          <li><a href="#plan">Study Plan</a></li>
+          <li><a href="#reports">Reports</a></li>
+          <li aria-live="polite">
+            <span class="streak-chip" title="Your daily learning streak">
+              🔥 <span id="headerStreak">0</span><span class="visually-hidden">day streak</span>
+            </span>
+          </li>
+          <li>
+            <button id="themeToggle" class="btn btn-ghost" aria-label="Toggle theme">🌓</button>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ===== Hero ===== -->
+  <section class="hero container">
+    <div class="card-surface">
+      <h1><span class="text-vibrantPurple">AI-Powered</span> IELTS prep for <span class="text-electricBlue">Listening</span>, <span class="text-electricBlue">Reading</span>, <span class="text-electricBlue">Writing</span>, <span class="text-electricBlue">Speaking</span></h1>
+      <p class="text-muted mt-2">Personalized paths, realistic mocks, instant feedback, and smart tracking to push you to your target band.</p>
+      <div class="flex gap-2 wrap mt-3">
+        <a href="#modules" class="btn btn-primary">Start Learning</a>
+        <a href="#plan" class="btn btn-accent">Build Study Plan</a>
+        <a href="#ai" class="btn">Try AI Tutor</a>
+        <button id="openA11yModal" class="btn" aria-haspopup="dialog" aria-controls="a11yModal">A11y Modal Demo</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== IELTS Modules ===== -->
+  <section id="modules" class="section container">
+    <h2>IELTS Modules</h2>
+    <div class="grid grid-4">
+      <article class="card-surface" aria-labelledby="mod-listening">
+        <h3 id="mod-listening">Listening</h3>
+        <p class="text-muted">Segmented audio, markers, review with transcripts. Strict timers.</p>
+        <div class="flex gap-2 wrap">
+          <a href="/modules/listening" class="btn btn-primary">Practice</a>
+          <a href="/exam/listening" class="btn btn-secondary">Mock Test</a>
+          <a href="/evaluate/listening" class="btn">AI Evaluate</a>
+        </div>
+        <div class="pill mt-3">Progress: <span id="prog-listening">—</span></div>
+      </article>
+
+      <article class="card-surface" aria-labelledby="mod-reading">
+        <h3 id="mod-reading">Reading</h3>
+        <p class="text-muted">Multi-passage view, type renderers (T/F/NG, matching), highlighter.</p>
+        <div class="flex gap-2 wrap">
+          <a href="/modules/reading" class="btn btn-primary">Practice</a>
+          <a href="/exam/reading" class="btn btn-secondary">Mock Test</a>
+          <a href="/evaluate/reading" class="btn">AI Evaluate</a>
+        </div>
+        <div class="pill mt-3">Progress: <span id="prog-reading">—</span></div>
+      </article>
+
+      <article class="card-surface" aria-labelledby="mod-writing">
+        <h3 id="mod-writing">Writing</h3>
+        <p class="text-muted">Task 1/2 editor, live word count, structure hints, auto-save drafts.</p>
+        <div class="flex gap-2 wrap">
+          <a href="/modules/writing" class="btn btn-primary">Practice</a>
+          <a href="/exam/writing" class="btn btn-secondary">Mock Test</a>
+          <a href="/evaluate/writing" class="btn">AI Evaluate</a>
+        </div>
+        <div class="pill mt-3">Progress: <span id="prog-writing">—</span></div>
+      </article>
+
+      <article class="card-surface" aria-labelledby="mod-speaking">
+        <h3 id="mod-speaking">Speaking</h3>
+        <p class="text-muted">Mic recorder (Parts 1–3), cadence cues, upload, playback, coach.</p>
+        <div class="flex gap-2 wrap">
+          <a href="/modules/speaking" class="btn btn-primary">Practice</a>
+          <a href="/exam/speaking" class="btn btn-secondary">Mock Test</a>
+          <a href="/evaluate/speaking" class="btn">AI Evaluate</a>
+        </div>
+        <div class="pill mt-3">Progress: <span id="prog-speaking">—</span></div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ===== Student Analysis ===== -->
+  <section id="analysis" class="section container">
+    <div class="card-surface">
+      <h2>Student Analysis</h2>
+      <p class="text-muted">Band conversion, attempt analytics, weakness detection, time-on-task — with deep links to fix weak skills.</p>
+      <div class="flex gap-2 wrap mt-2">
+        <a href="/reports/band-analytics" class="btn btn-primary">Open Band Analytics</a>
+        <a href="/reports/attempts" class="btn">Attempts Report</a>
+        <a href="/reports/skills" class="btn">Skills Breakdown</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Practice Hub ===== -->
+  <section id="practice" class="section container">
+    <h2>Practice Hub</h2>
+    <div class="grid grid-3">
+      <div class="card-surface">
+        <h3>Daily Word</h3>
+        <p class="text-muted">Grow vocabulary + maintain streak (auto-$ reward at launch).</p>
+        <div class="flex gap-2 items-center">
+          <a href="/vocab" class="btn btn-accent">Open</a>
+          <span class="streak-chip">🔥 <span id="vocabStreak">0</span></span>
+        </div>
+      </div>
+      <div class="card-surface">
+        <h3>Drills</h3>
+        <p class="text-muted">Auto-generated drills based on weaknesses.</p>
+        <a class="btn mt-2" href="/drills">Go to Drills</a>
+      </div>
+
+      <!-- ====== Day-2: Accessible Inputs demo ====== -->
+      <form id="demoAuth" class="card-surface" novalidate aria-labelledby="demo-auth-title">
+        <h3 id="demo-auth-title">Sign in (A11y demo)</h3>
+        <p class="text-muted mt-1">Shows proper <code>aria-errormessage</code>, <code>aria-invalid</code>, and keyboard flow.</p>
+
+        <label class="label mt-2" for="email">Email</label>
+        <input id="email" name="email" type="email" class="input" placeholder="you@example.com"
+               autocomplete="email" required
+               aria-describedby="email-help email-error" aria-invalid="false" />
+        <div id="email-help" class="help mt-1">We’ll never share your email.</div>
+        <div id="email-error" class="error-text mt-1" role="alert" aria-live="polite"></div>
+
+        <label class="label mt-3" for="password">Password</label>
+        <input id="password" name="password" type="password" class="input" placeholder="••••••••"
+               autocomplete="current-password" required minlength="6"
+               aria-describedby="password-help password-error" aria-invalid="false" />
+        <div id="password-help" class="help mt-1">At least 6 characters.</div>
+        <div id="password-error" class="error-text mt-1" role="alert" aria-live="polite"></div>
+
+        <button class="btn btn-primary mt-3" type="submit">Sign in</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- ===== Evaluation ===== -->
+  <section id="evaluation" class="section container">
+    <div class="card-surface">
+      <h2>Evaluation</h2>
+      <p class="text-muted">Automated scoring, rubric breakdown, and actionable suggestions for Writing & Speaking. Explain-my-answer for Reading/Listening in review.</p>
+      <div class="flex gap-2 wrap mt-2">
+        <a href="/evaluate/writing" class="btn btn-primary">Evaluate Writing</a>
+        <a href="/evaluate/speaking" class="btn btn-secondary">Evaluate Speaking</a>
+        <a href="/review/explain" class="btn">Explain My Answer</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Study Plan ===== -->
+  <section id="plan" class="section container">
+    <div class="card-surface">
+      <h2>Study Plan</h2>
+      <p class="text-muted">Calendar, streaks, reminders, ETA to goal band — automatically updated after each attempt.</p>
+      <a href="/study-plan" class="btn btn-primary mt-2">Open My Plan</a>
+    </div>
+  </section>
+
+  <!-- ===== Reports / Deep Links ===== -->
+  <section id="reports" class="section container">
+    <div class="card-surface">
+      <h2>Reports & Deep Links</h2>
+      <div class="flex gap-2 wrap mt-2">
+        <a class="btn" href="/reports/band-analytics">Band Analytics</a>
+        <a class="btn" href="/reports/leaderboard">Leaderboard</a>
+        <a class="btn" href="/reports/progress">Progress</a>
+        <a class="btn" href="/content/studio">Content Studio</a>
+        <a class="btn" href="/labs/ai-tutor">AI Tutor</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Component Matrix (trimmed) ===== -->
+  <section class="section container" id="audit">
+    <h2>Component Matrix — Day-2 status</h2>
+    <div class="card-surface" role="region" aria-label="Component Matrix table">
+      <table class="table" style="width:100%;border-collapse:collapse">
+        <thead><tr>
+          <th>Component</th><th>Issues</th><th>Severity</th><th>Day-2 Action</th><th>Status</th>
+        </tr></thead>
+        <tbody>
+          <tr><td>Input</td><td>Missing aria err wiring</td><td>P1</td><td>Added aria-invalid + aria-errormessage</td><td>✅</td></tr>
+          <tr><td>Modal</td><td>No focus trap / restore</td><td>P1</td><td>Focus trap + ESC + restore</td><td>✅</td></tr>
+          <tr><td>Buttons</td><td>Weak focus-visible</td><td>P1</td><td>Token ring on focus</td><td>✅</td></tr>
+          <tr><td>NavLink</td><td>Mobile focus outline</td><td>P3</td><td>uses :focus-visible ring</td><td>✅</td></tr>
+        </tbody>
+      </table>
+      <p class="text-muted mt-2">P1s closed for Inputs & Modal; remaining P2/P3 continue tomorrow.</p>
+    </div>
+  </section>
+
+  <!-- ===== A11y guardrails snapshot (Day-2) ===== -->
+  <section class="section container" id="a11y">
+    <div class="card-surface">
+      <h2>Accessibility Guardrails (snapshot)</h2>
+      <ul>
+        <li>Use <code>:focus-visible</code> only; token rings on focus.</li>
+        <li>All icon buttons have <code>aria-label</code>.</li>
+        <li>Forms wire <code>aria-invalid</code>, <code>aria-describedby</code>, and error containers with <code>role="alert"</code>.</li>
+        <li>Modal uses <code>role="dialog"</code>, <code>aria-modal="true"</code>, focus trap, ESC to close, and focus restoration.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ===== Footer ===== -->
+  <footer class="bg-background" style="padding:28px 0;border-top:1px solid rgb(var(--color-lightBorder));margin-top:28px">
+    <div class="container flex justify-between gap-3 wrap">
+      <div>© <span id="y"></span> GramorX Learning School</div>
+      <div class="flex gap-2">
+        <a class="pill" href="/pricing">Pricing</a>
+        <a class="pill" href="/community">Community</a>
+        <a class="pill" href="/contact">Contact</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ===== A11y Modal (Day-2) ===== -->
+  <div id="modalRoot" class="modal" data-open="false" aria-hidden="true">
+    <div class="backdrop" data-open="false" id="modalBackdrop"></div>
+    <div
+      id="a11yModal"
+      class="dialog"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="a11yModalTitle"
+      aria-describedby="a11yModalDesc"
+      tabindex="-1"
+    >
+      <div class="dialog-header">
+        <h3 id="a11yModalTitle" class="dialog-title">Accessible Modal</h3>
+        <button id="closeA11yModal" class="btn btn-ghost focus-visible" aria-label="Close dialog">✕</button>
+      </div>
+      <div id="a11yModalDesc" class="dialog-body">
+        <p class="text-muted">This modal traps focus, closes on <span class="pill">ESC</span>, and returns focus to the trigger.</p>
+        <div class="mt-3">
+          <a href="/modules/writing" class="btn btn-primary">Go to Writing</a>
+          <button class="btn">Secondary Action</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Dashboard data contract (unchanged) ===== -->
+  <script id="dashboard-contract" type="application/json">
+  {
+    "user": { "name": "You", "targetBandScore": 7.5 },
+    "modules": [
+      { "id": "listening", "title": "Listening", "progress": 0, "nextRecommendedLesson": { "id": "l-101", "title": "Signals & Signposts" } },
+      { "id": "reading", "title": "Reading", "progress": 0, "nextRecommendedLesson": { "id": "r-201", "title": "Headings & Matching" } },
+      { "id": "writing", "title": "Writing", "progress": 0, "nextRecommendedLesson": { "id": "w-301", "title": "Task 2 Structure" } },
+      { "id": "speaking", "title": "Speaking", "progress": 0, "nextRecommendedLesson": { "id": "s-101", "title": "Part-2 Cue Cards" } }
+    ],
+    "recentActivity": [],
+    "recommendations": [],
+    "streakDays": 0
+  }
+  </script>
+
+  <!-- ===== Behavior: theme, form a11y, modal trap, PWA SW ===== -->
+  <script>
+    // Theme toggle
+    const themeBtn = document.getElementById('themeToggle');
+    themeBtn?.addEventListener('click', () => {
+      document.body.classList.toggle('dark');
+      localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light');
+    });
+    (function initTheme(){ const t = localStorage.getItem('theme'); if(t==='dark') document.body.classList.add('dark'); })();
+
+    // Year
+    document.getElementById('y').textContent = new Date().getFullYear();
+
+    // Populate streak/progress from "contract"
+    (function hydrate(){
+      try{
+        const data = JSON.parse(document.getElementById('dashboard-contract').textContent || '{}');
+        document.getElementById('headerStreak').textContent = String(data.streakDays ?? 0);
+        ['listening','reading','writing','speaking'].forEach(k=>{
+          const el = document.getElementById('prog-'+k);
+          if(el){ el.textContent = (data.modules.find(m=>m.id===k)?.progress ?? 0) + '%'; }
+        });
+        document.getElementById('vocabStreak').textContent = String(data.streakDays ?? 0);
+      }catch(e){}
+    })();
+
+    // A11y: Form validation with aria wiring
+    const form = document.getElementById('demoAuth');
+    function setFieldError(input, msgId, message){
+      const errEl = document.getElementById(msgId);
+      input.setAttribute('aria-invalid', message ? 'true' : 'false');
+      if(errEl){ errEl.textContent = message || ''; }
+    }
+    form?.addEventListener('submit', (e)=>{
+      e.preventDefault();
+      const email = document.getElementById('email');
+      const password = document.getElementById('password');
+      let firstInvalid = null;
+
+      // Reset
+      setFieldError(email, 'email-error', '');
+      setFieldError(password, 'password-error', '');
+
+      // Email
+      if(!email.value){
+        setFieldError(email, 'email-error', 'Please enter your email.');
+        firstInvalid = firstInvalid || email;
+      } else if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)){
+        setFieldError(email, 'email-error', 'That email looks invalid.');
+        firstInvalid = firstInvalid || email;
+      }
+
+      // Password
+      if(!password.value || password.value.length < 6){
+        setFieldError(password, 'password-error', 'Password must be at least 6 characters.');
+        firstInvalid = firstInvalid || password;
+      }
+
+      if(firstInvalid){ firstInvalid.focus(); return; }
+      // Simulate success path
+      alert('Signed in (demo). Wire to Supabase in integration.');
+    });
+
+    // ===== A11y Modal: open/close + focus trap + restore =====
+    const openBtn = document.getElementById('openA11yModal');
+    const closeBtn = document.getElementById('closeA11yModal');
+    const modalRoot = document.getElementById('modalRoot');
+    const modal = document.getElementById('a11yModal');
+    const backdrop = document.getElementById('modalBackdrop');
+    let lastFocused = null;
+
+    function setModalOpen(isOpen){
+      modalRoot.dataset.open = String(isOpen);
+      backdrop.dataset.open = String(isOpen);
+      modalRoot.setAttribute('aria-hidden', String(!isOpen));
+      if(isOpen){
+        lastFocused = document.activeElement;
+        // focus first focusable in dialog
+        const focusables = modal.querySelectorAll('a,button,input,textarea,select,[tabindex]:not([tabindex="-1"])');
+        (focusables[0] || modal).focus();
+        document.addEventListener('keydown', trap);
+      }else{
+        document.removeEventListener('keydown', trap);
+        if(lastFocused && lastFocused.focus) lastFocused.focus();
+      }
+    }
+
+    function trap(e){
+      if(e.key === 'Escape'){ e.preventDefault(); setModalOpen(false); return; }
+      if(e.key !== 'Tab') return;
+      const nodes = modal.querySelectorAll('a,button,input,textarea,select,[tabindex]:not([tabindex="-1"])');
+      const f = Array.from(nodes).filter(el=>!el.hasAttribute('disabled'));
+      const first = f[0], last = f[f.length-1];
+      if(!first || !last) return;
+      if(e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+      else if(!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+    }
+
+    openBtn?.addEventListener('click', ()=> setModalOpen(true));
+    closeBtn?.addEventListener('click', ()=> setModalOpen(false));
+    backdrop?.addEventListener('click', ()=> setModalOpen(false));
+
+    // PWA SW
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js').catch(()=>{}); });
+    }
+  </script>
+
+  <!-- Notes:
+    • Day-2 shipped: Token Lock v1, Input a11y, Modal a11y, :focus-visible rings.
+    • Keep all navigation as anchors for now; replace with Next.js <Link> during integration (pages router).
+    • No inline hex colors. All colors come from tokens above.
+  -->
+</body>
+</html>
