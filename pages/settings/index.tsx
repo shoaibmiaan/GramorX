@@ -1,6 +1,3 @@
-this is my existing, update it nd gimme full revised code
-
-// pages/dashboard/index.tsx
 'use client';
 
 import React, { useEffect, useState } from 'react';
