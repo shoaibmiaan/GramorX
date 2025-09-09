@@ -111,7 +111,6 @@ const formatMoneyFromUsdCents = (usdCents: number, currency: Currency) => {
       maximumFractionDigits,
     }).format(raw);
   } catch {
-    // Fallback symbol set
     const sym: Record<string, string> = {
       USD: '$', EUR: '€', GBP: '£', INR: '₹', PKR: '₨', AED: 'د.إ', SAR: '﷼', AUD: 'A$', CAD: 'C$', NGN: '₦', BRL: 'R$', PHP: '₱',
     };
@@ -143,7 +142,6 @@ const PricingPage: NextPage = () => {
       qs.set('plan', planKey);
       qs.set('billingCycle', cycle);
       if (referralCode) qs.set('code', referralCode);
-      // Pass currency forward so Checkout can show the same currency (optional)
       qs.set('currency', currency);
       void router.push(`/checkout?${qs.toString()}`);
     },
@@ -160,9 +158,11 @@ const PricingPage: NextPage = () => {
         />
       </Head>
 
-      <main className="min-h-screen bg-[radial-gradient(60rem_30rem_at_10%_-10%,rgba(99,102,241,.15),transparent_60%),radial-gradient(50rem_25rem_at_90%_10%,rgba(168,85,247,.18),transparent_60%),linear-gradient(to_bottom,#ffffff,#f8fafc)] text-foreground antialiased">
+      {/* MAIN landmark added */}
+      <main role="main" className="min-h-screen bg-[radial-gradient(60rem_30rem_at_10%_-10%,rgba(99,102,241,.15),transparent_60%),radial-gradient(50rem_25rem_at_90%_10%,rgba(168,85,247,.18),transparent_60%),linear-gradient(to_bottom,#ffffff,#f8fafc)] text-foreground antialiased">
         <Section id="pricing">
-          <Container className="pt-6 md:pt-8 pb-12 md:pb-16">
+          <Container className="pt-6 md:pt-8 pb-12 md:pb-16" aria-labelledby="pricing-title">
+
             {/* Top utility bar */}
             <div className="mx-auto max-w-7xl mb-4 flex items-center justify-between gap-3 text-sm">
               <div className="flex items-center gap-2">
@@ -174,10 +174,12 @@ const PricingPage: NextPage = () => {
               </div>
 
               <div className="flex items-center gap-2">
+                {/* Proper label for the select */}
+                <label htmlFor="currency" className="sr-only">Currency</label>
                 <div className="inline-flex items-center gap-2 border rounded-lg px-2 py-1 bg-card/60 backdrop-blur supports-[backdrop-filter]:bg-card/40">
                   <span className="text-muted-foreground">Currency</span>
                   <select
-                    aria-label="Currency selector"
+                    id="currency"
                     className="bg-transparent outline-none"
                     value={currency}
                     onChange={(e) => setCurrency(e.target.value as Currency)}
@@ -196,7 +198,7 @@ const PricingPage: NextPage = () => {
                 Flexible plans • Cancel anytime
               </p>
 
-              <h1 className="mt-3 md:mt-3 text-balance text-4xl md:text-5xl font-semibold leading-tight">
+              <h1 id="pricing-title" className="mt-3 md:mt-3 text-balance text-4xl md:text-5xl font-semibold leading-tight">
                 <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-fuchsia-500 to-cyan-500">Choose your plan</span>
               </h1>
 
@@ -212,12 +214,10 @@ const PricingPage: NextPage = () => {
 
             {/* Billing cycle + copy */}
             <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-              <div className="rounded-full border border-border bg-card p-1 flex">
+              <div className="rounded-full border border-border bg-card p-1 flex" role="tablist" aria-label="Billing cycle">
                 <button
                   type="button"
-                  className={`px-4 py-1.5 text-sm rounded-full transition ${
-                    cycle === 'monthly' ? 'bg-primary text-white' : 'text-muted-foreground hover:text-foreground'
-                  }`}
+                  className={`px-4 py-1.5 text-sm rounded-full transition ${cycle === 'monthly' ? 'bg-primary text-white' : 'text-muted-foreground hover:text-foreground'}`}
                   onClick={() => setCycle('monthly')}
                   aria-pressed={cycle === 'monthly'}
                 >
@@ -225,9 +225,7 @@ const PricingPage: NextPage = () => {
                 </button>
                 <button
                   type="button"
-                  className={`px-4 py-1.5 text-sm rounded-full transition ${
-                    cycle === 'annual' ? 'bg-primary text-white' : 'text-muted-foreground hover:text-foreground'
-                  }`}
+                  className={`px-4 py-1.5 text-sm rounded-full transition ${cycle === 'annual' ? 'bg-primary text-white' : 'text-muted-foreground hover:text-foreground'}`}
                   onClick={() => setCycle('annual')}
                   aria-pressed={cycle === 'annual'}
                 >
@@ -263,6 +261,7 @@ const PricingPage: NextPage = () => {
 
                       <div className="w-16 h-16 rounded-full flex items-center justify-center mb-6 text-white text-2xl bg-gradient-to-br from-purple-500 to-cyan-500">
                         <i className={`fas ${p.icon}`} aria-hidden="true" />
+                        <span className="sr-only">{p.title} icon</span>
                       </div>
 
                       <h3 className="text-xl font-semibold mb-1 flex items-center gap-2">
@@ -279,7 +278,7 @@ const PricingPage: NextPage = () => {
                       <ul className="mt-2">
                         {p.features.map((f) => (
                           <li key={f} className="py-2 pl-6 border-b border-dashed border-purple-400/20 relative text-muted-foreground">
-                            <span className="absolute left-0 top-2 text-emerald-500 font-bold">✓</span>
+                            <span className="absolute left-0 top-2 text-emerald-500 font-bold" aria-hidden="true">✓</span>
                             {f}
                           </li>
                         ))}
@@ -294,14 +293,14 @@ const PricingPage: NextPage = () => {
                         >
                           Choose {p.title}
                         </Button>
-                        <Link href="/waitlist" className="text-cyan-600 hover:underline text-sm text-center">
+                        {/* Make inline links underlined by default (no color-only distinction) */}
+                        <Link href="/waitlist" className="underline decoration-2 underline-offset-4 text-cyan-700 hover:opacity-90 text-sm text-center">
                           Not ready? Join the pre-launch list
                         </Link>
                       </div>
                     </>
                   );
 
-                  // Most popular gets the gradient ring container
                   if (p.mostPopular) {
                     return (
                       <div key={p.key} className="p-[1px] rounded-2xl bg-gradient-to-br from-indigo-600 via-fuchsia-500 to-cyan-500">
@@ -349,7 +348,7 @@ const PricingPage: NextPage = () => {
 
                 <p className="mt-2 text-xs text-muted-foreground">
                   Or{' '}
-                  <Link href="/account/referrals" className="underline underline-offset-4 hover:text-foreground">
+                  <Link href="/account/referrals" className="underline decoration-2 underline-offset-4 hover:opacity-90">
                     generate your own code
                   </Link>
                   .
@@ -360,13 +359,13 @@ const PricingPage: NextPage = () => {
                 <h3 className="text-lg font-medium">Questions?</h3>
                 <ul className="mt-3 list-none space-y-2 text-sm text-muted-foreground">
                   <li>
-                    <Link href="/terms" className="underline-offset-4 hover:underline">Billing & refunds</Link>
+                    <Link href="/terms" className="underline decoration-2 underline-offset-4 hover:opacity-90">Billing & refunds</Link>
                   </li>
                   <li>
-                    <Link href="/privacy" className="underline-offset-4 hover:underline">Privacy & data</Link>
+                    <Link href="/privacy" className="underline decoration-2 underline-offset-4 hover:opacity-90">Privacy & data</Link>
                   </li>
                   <li>
-                    <Link href="/contact" className="underline-offset-4 hover:underline">Contact support</Link>
+                    <Link href="/contact" className="underline decoration-2 underline-offset-4 hover:opacity-90">Contact support</Link>
                   </li>
                 </ul>
               </Card>

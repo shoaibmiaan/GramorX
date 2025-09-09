@@ -1,0 +1,38 @@
+[
+  {
+    "url": "http://localhost:3000/",
+    "isRepresentativeRun": true,
+    "htmlPath": "/workspaces/GramorX/localhost--2025_09_09_03_30_48.report.html",
+    "jsonPath": "/workspaces/GramorX/localhost--2025_09_09_03_30_48.report.json",
+    "summary": {
+      "performance": 0.67,
+      "accessibility": 0.96,
+      "best-practices": 0.96,
+      "seo": 1
+    }
+  },
+  {
+    "url": "http://localhost:3000/pricing",
+    "isRepresentativeRun": true,
+    "htmlPath": "/workspaces/GramorX/localhost-pricing-2025_09_09_03_31_17.report.html",
+    "jsonPath": "/workspaces/GramorX/localhost-pricing-2025_09_09_03_31_17.report.json",
+    "summary": {
+      "performance": 0.73,
+      "accessibility": 0.88,
+      "best-practices": 0.96,
+      "seo": 1
+    }
+  },
+  {
+    "url": "http://localhost:3000/study-plan",
+    "isRepresentativeRun": true,
+    "htmlPath": "/workspaces/GramorX/localhost-study_plan-2025_09_09_03_31_45.report.html",
+    "jsonPath": "/workspaces/GramorX/localhost-study_plan-2025_09_09_03_31_45.report.json",
+    "summary": {
+      "performance": 0.67,
+      "accessibility": 0.91,
+      "best-practices": 1,
+      "seo": 0.91
+    }
+  }
+]

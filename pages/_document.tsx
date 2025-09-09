@@ -1,10 +1,19 @@
+// pages/_document.tsx
 import { Html, Head, Main, NextScript } from 'next/document';
 
 export default function Document() {
+  const orgJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'GramorX',
+    url: 'https://gramorx.com',
+    logo: '/brand/logo.png',
+  };
+
   return (
-    <Html lang="en">
+    <Html lang="en" className="bg-background text-foreground">
       <Head>
-        {/* Do NOT include viewport meta here (Next.js warns). Use per-page <Head>. */}
+        {/* DO NOT add viewport here; Next.js handles it per-page */}
 
         {/* Base SEO */}
         <meta
@@ -15,6 +24,11 @@ export default function Document() {
           name="keywords"
           content="IELTS, exam prep, English learning, AI, listening, reading, writing, speaking"
         />
+
+        {/* Color scheme & theme */}
+        <meta name="color-scheme" content="dark light" />
+        <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
+        <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
 
         {/* Open Graph / Twitter */}
         <meta property="og:type" content="website" />
@@ -27,34 +41,25 @@ export default function Document() {
         <meta property="og:image" content="/brand/og-image.png" />
         <meta name="twitter:card" content="summary_large_image" />
 
-        {/* Fonts & Icons */}
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        {/* Preconnects (safe QoL) */}
+        <link rel="preconnect" href="https://cdn.jsdelivr.net" crossOrigin="" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Roboto+Slab:wght@300;400;500;600;700&display=swap"
-          rel="stylesheet"
-        />
 
-        {/* PWA */}
+        {/* We use next/font in _app to load Poppins & Roboto Slab; avoid double-loading via Google Fonts link */}
+
+        {/* PWA + Icons */}
         <link rel="manifest" href="/manifest.json" />
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.svg" />
 
-        {/* JSON-LD: Organization */}
+        {/* JSON-LD */}
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              '@context': 'https://schema.org',
-              '@type': 'Organization',
-              name: 'GramorX',
-              url: 'https://gramorx.com',
-              logo: '/brand/logo.png',
-            }),
-          }}
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
         />
       </Head>
-      <body>
+      <body className="bg-background text-foreground antialiased">
         <Main />
         <NextScript />
       </body>

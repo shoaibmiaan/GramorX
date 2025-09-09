@@ -1,3 +1,4 @@
+// pages/study-plan.tsx
 import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser';
@@ -14,7 +15,10 @@ const Shell: React.FC<{ title: string; children: React.ReactNode; right?: React.
         <h1 className="text-3xl font-bold">{title}</h1>
         {right}
       </header>
-      <div className="rounded-2xl border border-border bg-background/50 p-5 shadow-sm">{children}</div>
+      {/* MAIN landmark here */}
+      <main role="main" className="rounded-2xl border border-border bg-background/50 p-5 shadow-sm">
+        {children}
+      </main>
     </div>
   </div>
 );
@@ -40,7 +44,6 @@ export default function StudyPlanPage() {
 
   const days = useMemo<PlanDay[]>(() => {
     const all = plan?.plan_json?.days ?? [];
-    // show next 7 days starting today
     const todayISO = new Date().toISOString().slice(0, 10);
     const idx = all.findIndex((d) => d.date >= todayISO);
     const start = Math.max(0, idx);
@@ -52,24 +55,37 @@ export default function StudyPlanPage() {
   return (
     <Shell
       title="Your Study Plan"
-      right={<Link href="/progress" className="text-sm underline underline-offset-4">Progress</Link>}
+      right={<Link href="/progress" className="text-sm underline decoration-2 underline-offset-4">Progress</Link>}
     >
       {loading ? (
-        <div className="rounded-xl border border-border p-4 text-sm text-foreground/70">Loading your plan…</div>
+        <div className="rounded-xl border border-border p-4 text-sm text-foreground/70" aria-live="polite">
+          Loading your plan…
+        </div>
       ) : none ? (
         <div className="grid gap-3">
           <div className="rounded-xl border border-border p-4 text-sm">
-            No active plan found. Complete <Link href="/onboarding/goal" className="underline underline-offset-4">Onboarding</Link> to generate a plan.
+            No active plan found. Complete{' '}
+            <Link href="/onboarding/goal" className="underline decoration-2 underline-offset-4">
+              Onboarding
+            </Link>{' '}
+            to generate a plan.
           </div>
           <div className="flex justify-end">
-            <Link href="/onboarding/goal" className="rounded-xl bg-primary px-4 py-2 font-medium text-background hover:opacity-90">Start onboarding</Link>
+            <Link
+              href="/onboarding/goal"
+              className="rounded-xl bg-primary px-4 py-2 font-medium text-background hover:opacity-90"
+            >
+              Start onboarding
+            </Link>
           </div>
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {days.map((d) => (
             <article key={d.date} className="rounded-xl border border-border p-4">
-              <div className="mb-2 text-sm font-medium">{formatHuman(d.date)}</div>
+              <div className="mb-2 text-sm font-medium">
+                <time dateTime={d.date}>{formatHuman(d.date)}</time>
+              </div>
               <ul className="text-sm text-foreground/80">
                 {d.tasks.map((t, i) => (
                   <li key={i} className="flex items-center justify-between">
@@ -78,11 +94,27 @@ export default function StudyPlanPage() {
                   </li>
                 ))}
               </ul>
-              <div className="mt-3 flex gap-2">
-                {d.tasks.some(t => t.module === 'listening') && <Link href="/listening" className="rounded-lg border border-border px-3 py-1 text-sm hover:border-primary">Listening</Link>}
-                {d.tasks.some(t => t.module === 'reading')   && <Link href="/reading" className="rounded-lg border border-border px-3 py-1 text-sm hover:border-primary">Reading</Link>}
-                {d.tasks.some(t => t.module === 'writing')   && <Link href="/writing" className="rounded-lg border border-border px-3 py-1 text-sm hover:border-primary">Writing</Link>}
-                {d.tasks.some(t => t.module === 'speaking')  && <Link href="/speaking/simulator" className="rounded-lg border border-border px-3 py-1 text-sm hover:border-primary">Speaking</Link>}
+              <div className="mt-3 flex flex-wrap gap-2">
+                {d.tasks.some(t => t.module === 'listening') && (
+                  <Link href="/listening" className="rounded-lg border border-border px-3 py-1 text-sm hover:border-primary">
+                    Listening
+                  </Link>
+                )}
+                {d.tasks.some(t => t.module === 'reading') && (
+                  <Link href="/reading" className="rounded-lg border border-border px-3 py-1 text-sm hover:border-primary">
+                    Reading
+                  </Link>
+                )}
+                {d.tasks.some(t => t.module === 'writing') && (
+                  <Link href="/writing" className="rounded-lg border border-border px-3 py-1 text-sm hover:border-primary">
+                    Writing
+                  </Link>
+                )}
+                {d.tasks.some(t => t.module === 'speaking') && (
+                  <Link href="/speaking/simulator" className="rounded-lg border border-border px-3 py-1 text-sm hover:border-primary">
+                    Speaking
+                  </Link>
+                )}
               </div>
             </article>
           ))}

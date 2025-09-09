@@ -1,8 +1,6 @@
-// pages/_app.tsx
 import type { AppProps } from 'next/app';
-import Head from 'next/head';
+import { useEffect, useMemo } from 'react';
 import { useRouter } from 'next/router';
-import React, { useEffect, useMemo } from 'react';
 import { ThemeProvider } from 'next-themes';
 
 import '@/styles/globals.css';
@@ -39,8 +37,21 @@ import ProctoringLayout from '@/components/layouts/ProctoringLayout';
 import ExamLayout from '@/components/layouts/ExamLayout';
 
 import { Poppins, Roboto_Slab } from 'next/font/google';
-const poppins = Poppins({ subsets: ['latin'], weight: ['400','500','600','700'], display: 'swap', variable: '--font-sans' });
-const slab = Roboto_Slab({ subsets: ['latin'], weight: ['400','600','700'], display: 'swap', variable: '--font-display' });
+const poppins = Poppins({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  display: 'swap',
+  variable: '--font-sans',
+});
+const slab = Roboto_Slab({
+  subsets: ['latin'],
+  weight: ['400', '600', '700'],
+  display: 'swap',
+  variable: '--font-display',
+});
+
+// ✅ CI/dev quiet flag (prevents auth noise when no session)
+const IS_CI = process.env.NEXT_PUBLIC_CI === 'true';
 
 function GuardSkeleton() {
   return (
@@ -54,7 +65,12 @@ function InnerApp({ Component, pageProps }: AppProps) {
   const router = useRouter();
   const pathname = router.pathname;
 
-  const isPremium = pathname.startsWith('/premium');
+  // Treat both /premium and /pricing as premium-themed surfaces (scoped CSS)
+  const needPremium = useMemo(
+    () => pathname.startsWith('/premium') || pathname.startsWith('/pricing'),
+    [pathname]
+  );
+
   const isAuthPage = useMemo(
     () =>
       /^\/(login|signup|register)(\/|$)/.test(pathname) ||
@@ -62,12 +78,13 @@ function InnerApp({ Component, pageProps }: AppProps) {
       pathname === '/forgot-password',
     [pathname]
   );
+
   const isNoChromeRoute = useMemo(
-    // Keep focus/exam routes chrome-free
     () => /\/exam(\/|$)|\/exam-room(\/|$)|\/focus-mode(\/|$)/.test(pathname) || isAuthPage,
     [pathname, isAuthPage]
   );
-  const showLayout = !isPremium && !isNoChromeRoute;
+
+  const showLayout = !needPremium && !isNoChromeRoute;
 
   // Route groups
   const isDashboardRoute =
@@ -91,8 +108,7 @@ function InnerApp({ Component, pageProps }: AppProps) {
     pathname.startsWith('/legal') ||
     pathname.startsWith('/data-deletion');
 
-  const isLearningRoute =
-    pathname.startsWith('/learning') || pathname.startsWith('/content/studio');
+  const isLearningRoute = pathname.startsWith('/learning') || pathname.startsWith('/content/studio');
 
   const isCommunityRoute = pathname.startsWith('/community');
 
@@ -105,8 +121,7 @@ function InnerApp({ Component, pageProps }: AppProps) {
 
   const isInstitutionsRoute = pathname.startsWith('/institutions');
 
-  const isReportsRoute =
-    pathname.startsWith('/reports') || pathname.startsWith('/placement');
+  const isReportsRoute = pathname.startsWith('/reports') || pathname.startsWith('/placement');
 
   const isProctoringRoute =
     pathname.startsWith('/proctoring/check') || pathname.startsWith('/proctoring/exam');
@@ -122,37 +137,63 @@ function InnerApp({ Component, pageProps }: AppProps) {
     pathname.startsWith('/premium/reading') ||
     pathname.startsWith('/proctoring/exam');
 
-  // Idle timeout
+  // ⏲️ Idle timeout — skip in CI
   useEffect(() => {
+    if (IS_CI) return;
     const cleanup = initIdleTimeout(env.NEXT_PUBLIC_IDLE_TIMEOUT_MINUTES);
     return cleanup;
   }, []);
 
-  // Sync session → cookies
+  // 🔄 Sync session → cookies — attach only if a session exists; skip in CI
   useEffect(() => {
-    const { data: sub } = supabaseBrowser.auth.onAuthStateChange(async (event, session) => {
-      try {
-        await fetch('/api/auth/set-session', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'same-origin',
-          body: JSON.stringify({ event, session }),
-        });
-      } catch {}
-    });
-    return () => sub?.subscription?.unsubscribe();
+    if (IS_CI) return;
+
+    let unsub: (() => void) | undefined;
+
+    (async () => {
+      const {
+        data: { session },
+      } = await supabaseBrowser.auth.getSession();
+
+      if (!session) return; // no stored session yet → stay quiet
+
+      const { data: sub } = supabaseBrowser.auth.onAuthStateChange(async (event, sessionNow) => {
+        try {
+          await fetch('/api/auth/set-session', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'same-origin',
+            body: JSON.stringify({ event, session: sessionNow }),
+          });
+        } catch {
+          /* silent */
+        }
+      });
+
+      unsub = () => sub?.subscription?.unsubscribe();
+    })();
+
+    return () => unsub?.();
   }, []);
 
   const { isChecking } = useRouteGuard();
 
-  // Sign-out on expiry (but not on pricing/public)
+  // 🚪 Sign-out on expiry (but not on pricing/public) — skip in CI
   useEffect(() => {
+    if (IS_CI) return;
+
     const interval = setInterval(async () => {
-      const { data: { session } } = await supabaseBrowser.auth.getSession();
+      const {
+        data: { session },
+      } = await supabaseBrowser.auth.getSession();
       const exp = session?.expires_at;
       if (session && exp && exp <= Date.now() / 1000) {
         await supabaseBrowser.auth.signOut();
-        if (!isGuestOnlyRoute(router.pathname) && !isPublicRoute(router.pathname) && !/^\/pricing(\/|$)/.test(router.pathname)) {
+        if (
+          !isGuestOnlyRoute(router.pathname) &&
+          !isPublicRoute(router.pathname) &&
+          !/^\/pricing(\/|$)/.test(router.pathname)
+        ) {
           router.replace('/login');
         }
       }
@@ -160,10 +201,25 @@ function InnerApp({ Component, pageProps }: AppProps) {
     return () => clearInterval(interval);
   }, [router]);
 
+  // 🎨 Load premium.css only on premium/pricing
+  useEffect(() => {
+    let linkEl: HTMLLinkElement | null = null;
+    if (needPremium) {
+      linkEl = document.createElement('link');
+      linkEl.rel = 'stylesheet';
+      linkEl.href = '/premium.css';
+      linkEl.media = 'all';
+      document.head.appendChild(linkEl);
+    }
+    return () => {
+      if (linkEl) document.head.removeChild(linkEl);
+    };
+  }, [needPremium]);
+
   if (isChecking) return <GuardSkeleton />;
 
   // Premium routes get their own theme provider
-  const basePage = isPremium ? (
+  const basePage = needPremium ? (
     <PremiumThemeProvider>
       <Component {...pageProps} />
     </PremiumThemeProvider>
@@ -204,7 +260,6 @@ function InnerApp({ Component, pageProps }: AppProps) {
 
   return (
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
-      <Head>{isPremium ? <link rel="stylesheet" href="/premium.css" /> : null}</Head>
       <div className={`${poppins.variable} ${slab.variable} ${poppins.className} min-h-[100dvh]`}>
         {showLayout ? (
           <Layout>

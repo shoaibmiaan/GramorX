@@ -1,0 +1,72 @@
+[
+  {
+    "name": "minScore",
+    "expected": 0.75,
+    "actual": 0.67,
+    "values": [
+      0.67
+    ],
+    "operator": ">=",
+    "passed": false,
+    "auditProperty": "performance",
+    "auditId": "categories",
+    "level": "error",
+    "url": "http://localhost:3000/"
+  },
+  {
+    "name": "minScore",
+    "expected": 0.75,
+    "actual": 0.73,
+    "values": [
+      0.73
+    ],
+    "operator": ">=",
+    "passed": false,
+    "auditProperty": "performance",
+    "auditId": "categories",
+    "level": "error",
+    "url": "http://localhost:3000/pricing"
+  },
+  {
+    "name": "minScore",
+    "expected": 0.95,
+    "actual": 0.88,
+    "values": [
+      0.88
+    ],
+    "operator": ">=",
+    "passed": false,
+    "auditProperty": "accessibility",
+    "auditId": "categories",
+    "level": "error",
+    "url": "http://localhost:3000/pricing"
+  },
+  {
+    "name": "minScore",
+    "expected": 0.75,
+    "actual": 0.67,
+    "values": [
+      0.67
+    ],
+    "operator": ">=",
+    "passed": false,
+    "auditProperty": "performance",
+    "auditId": "categories",
+    "level": "error",
+    "url": "http://localhost:3000/study-plan"
+  },
+  {
+    "name": "minScore",
+    "expected": 0.95,
+    "actual": 0.91,
+    "values": [
+      0.91
+    ],
+    "operator": ">=",
+    "passed": false,
+    "auditProperty": "accessibility",
+    "auditId": "categories",
+    "level": "error",
+    "url": "http://localhost:3000/study-plan"
+  }
+]

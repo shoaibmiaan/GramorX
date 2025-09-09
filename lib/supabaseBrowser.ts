@@ -1,18 +1,21 @@
-import { env } from './env';
 // lib/supabaseBrowser.ts
 import { createClient } from '@supabase/supabase-js';
+import { env } from './env';
 
 const url = env.NEXT_PUBLIC_SUPABASE_URL;
 const anon = env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+// ✅ CI/dev quiet flag (skip refresh/persist in CI)
+const IS_CI = process.env.NEXT_PUBLIC_CI === 'true';
 
 // HMR-safe singleton in dev to avoid multiple GoTrueClient instances
 const getClient = () =>
   createClient(url, anon, {
     auth: {
-      // Persist the auth session so that verification links
-      // and page reloads keep the user logged in.
-      persistSession: true,
-      autoRefreshToken: true,
+      // Persist & refresh only if not in CI
+      persistSession: !IS_CI,
+      autoRefreshToken: !IS_CI,
+      detectSessionInUrl: true,
       // keep default storageKey (sb-<project>-auth-token)
     },
   });
@@ -29,6 +32,7 @@ export const supabaseBrowser =
     ? window.__supa ?? (window.__supa = getClient())
     : getClient();
 
+// Attach auth headers if session is present
 export async function authHeaders(
   headers: Record<string, string> = {}
 ): Promise<Record<string, string>> {
