@@ -283,7 +283,7 @@ export default function Strategies() {
                 type="button"
                 aria-pressed={area === a}
                 onClick={() => setArea(a)}
-                className="focus:outline-none"
+                className="focus-visible:outline-none"
                 title={`Filter by ${a}`}
               >
                 <Badge variant={area === a ? 'success' : 'neutral'} size="md" className="capitalize">
@@ -302,7 +302,7 @@ export default function Strategies() {
                   type="button"
                   aria-pressed={difficulty === d}
                   onClick={() => setDifficulty(d)}
-                  className="focus:outline-none"
+                  className="focus-visible:outline-none"
                   title={`Difficulty: ${d}`}
                 >
                   <Badge variant={difficulty === d ? 'success' : 'neutral'} size="md" className="capitalize">

@@ -153,9 +153,9 @@ export default function AdminReviewsIndex() {
                   onChange={e => setQ(e.target.value)}
                   placeholder="Student, email, task…"
                   className="w-full rounded-ds border bg-white text-lightText placeholder-gray-500
-                             focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary
+                             focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background focus:border-primary
                              dark:bg-dark/50 dark:text-white dark:placeholder-white/40 dark:border-purpleVibe/30
-                             dark:focus:ring-electricBlue dark:focus:border-electricBlue py-2.5 px-3.5"
+                             dark:focus-visible:ring-electricBlue dark:focus:border-electricBlue py-2.5 px-3.5"
                 />
               </div>
 
@@ -165,8 +165,8 @@ export default function AdminReviewsIndex() {
                   value={moduleFilter}
                   onChange={e => setModuleFilter(e.target.value as 'all' | ModuleKind)}
                   className="w-full rounded-ds border bg-white text-lightText
-                             focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary
-                             dark:bg-dark/50 dark:text-white dark:border-purpleVibe/30 dark:focus:ring-electricBlue dark:focus:border-electricBlue py-2.5 px-3.5"
+                             focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background focus:border-primary
+                             dark:bg-dark/50 dark:text-white dark:border-purpleVibe/30 dark:focus-visible:ring-electricBlue dark:focus:border-electricBlue py-2.5 px-3.5"
                 >
                   <option value="all">All</option>
                   <option value="writing">Writing</option>
@@ -180,8 +180,8 @@ export default function AdminReviewsIndex() {
                   value={windowFilter}
                   onChange={e => setWindowFilter(e.target.value as '7d' | '30d' | 'all')}
                   className="w-full rounded-ds border bg-white text-lightText
-                             focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary
-                             dark:bg-dark/50 dark:text-white dark:border-purpleVibe/30 dark:focus:ring-electricBlue dark:focus:border-electricBlue py-2.5 px-3.5"
+                             focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background focus:border-primary
+                             dark:bg-dark/50 dark:text-white dark:border-purpleVibe/30 dark:focus-visible:ring-electricBlue dark:focus:border-electricBlue py-2.5 px-3.5"
                 >
                   <option value="7d">Last 7 days</option>
                   <option value="30d">Last 30 days</option>
@@ -195,8 +195,8 @@ export default function AdminReviewsIndex() {
                   value={cohortFilter}
                   onChange={e => setCohortFilter(e.target.value)}
                   className="w-full rounded-ds border bg-white text-lightText
-                             focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary
-                             dark:bg-dark/50 dark:text-white dark:border-purpleVibe/30 dark:focus:ring-electricBlue dark:focus:border-electricBlue py-2.5 px-3.5"
+                             focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background focus:border-primary
+                             dark:bg-dark/50 dark:text-white dark:border-purpleVibe/30 dark:focus-visible:ring-electricBlue dark:focus:border-electricBlue py-2.5 px-3.5"
                 >
                   {cohorts.map(c => <option key={c} value={c}>{c === 'all' ? 'All cohorts' : c}</option>)}
                 </select>

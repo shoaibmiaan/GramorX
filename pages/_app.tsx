@@ -1,3 +1,4 @@
+import '@/styles/semantic.css';
 import type { AppProps } from 'next/app';
 import { useEffect, useMemo } from 'react';
 import { useRouter } from 'next/router';
@@ -221,7 +222,7 @@ function InnerApp({ Component, pageProps }: AppProps) {
   // Premium routes get their own theme provider
   const basePage = needPremium ? (
     <PremiumThemeProvider>
-      <Component {...pageProps} />
+      <div className={`${fontSans.variable} ${fontDisplay.variable}`}><Component {...pageProps} /></div>
     </PremiumThemeProvider>
   ) : (
     <Component {...pageProps} />

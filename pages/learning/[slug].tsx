@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { createClient } from '@supabase/supabase-js';
-
+import Image from "next/image";
 import { Container } from '@/components/design-system/Container';
 import { Card } from '@/components/design-system/Card';
 import { Button } from '@/components/design-system/Button';
@@ -212,8 +212,7 @@ export default function CourseDetailPage() {
           <Card className="p-0 rounded-ds-2xl overflow-hidden">
             {course.thumbnail_url ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={course.thumbnail_url} alt="" className="h-64 w-full object-cover" />
-            ) : (
+              <Image src={course.thumbnail_url} alt="" width={800} height={256} className="h-64 w-full object-cover" />            ) : (
               <div className="h-64 w-full bg-purpleVibe/10" />
             )}
             <div className="p-6">

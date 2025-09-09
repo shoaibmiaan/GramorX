@@ -22,7 +22,7 @@ export const Toggle: React.FC<ToggleProps> = ({ checked=false, onChange, label, 
           'relative inline-flex h-6 w-11 items-center rounded-ds transition',
           checked ? 'bg-primary dark:bg-electricBlue' : 'bg-border dark:bg-border/20',
           disabled ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer',
-          'focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-electricBlue'
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background'
         ].join(' ')}
       >
         <span

@@ -405,7 +405,7 @@ export default function WritingHome() {
                     Notes / Brainstorm
                   </span>
                   <textarea
-                    className="w-full min-h={[90]} p-3.5 rounded-ds border border-gray-200 dark:border-white/10 bg-white dark:bg-dark text-lightText dark:text-white placeholder-gray-500 dark:placeholder-white/40 focus:outline-none"
+                    className="w-full min-h={[90]} p-3.5 rounded-ds border border-gray-200 dark:border-white/10 bg-white dark:bg-dark text-lightText dark:text-white placeholder-gray-500 dark:placeholder-white/40 focus-visible:outline-none"
                     placeholder="Keywords, examples, data points…"
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
@@ -416,7 +416,7 @@ export default function WritingHome() {
                     Introduction
                   </span>
                   <textarea
-                    className="w-full min-h-[90px] p-3.5 rounded-ds border border-gray-200 dark:border-white/10 bg-white dark:bg-dark text-lightText dark:text-white placeholder-gray-500 dark:placeholder-white/40 focus:outline-none"
+                    className="w-full min-h-[90px] p-3.5 rounded-ds border border-gray-200 dark:border-white/10 bg-white dark:bg-dark text-lightText dark:text-white placeholder-gray-500 dark:placeholder-white/40 focus-visible:outline-none"
                     value={intro}
                     onChange={(e) => setIntro(e.target.value)}
                   />
@@ -426,7 +426,7 @@ export default function WritingHome() {
                     Body Paragraph 1
                   </span>
                   <textarea
-                    className="w-full min-h-[90px] p-3.5 rounded-ds border border-gray-200 dark:border-white/10 bg-white dark:bg-dark text-lightText dark:text-white placeholder-gray-500 dark:placeholder-white/40 focus:outline-none"
+                    className="w-full min-h-[90px] p-3.5 rounded-ds border border-gray-200 dark:border-white/10 bg-white dark:bg-dark text-lightText dark:text-white placeholder-gray-500 dark:placeholder-white/40 focus-visible:outline-none"
                     value={bp1}
                     onChange={(e) => setBp1(e.target.value)}
                   />
@@ -436,7 +436,7 @@ export default function WritingHome() {
                     Body Paragraph 2
                   </span>
                   <textarea
-                    className="w-full min-h-[90px] p-3.5 rounded-ds border border-gray-200 dark:border-white/10 bg-white dark:bg-dark text-lightText dark:text-white placeholder-gray-500 dark:placeholder-white/40 focus:outline-none"
+                    className="w-full min-h-[90px] p-3.5 rounded-ds border border-gray-200 dark:border-white/10 bg-white dark:bg-dark text-lightText dark:text-white placeholder-gray-500 dark:placeholder-white/40 focus-visible:outline-none"
                     value={bp2}
                     onChange={(e) => setBp2(e.target.value)}
                   />
@@ -446,7 +446,7 @@ export default function WritingHome() {
                     Conclusion
                   </span>
                   <textarea
-                    className="w-full min-h-[90px] p-3.5 rounded-ds border border-gray-200 dark:border-white/10 bg-white dark:bg-dark text-lightText dark:text-white placeholder-gray-500 dark:placeholder-white/40 focus:outline-none"
+                    className="w-full min-h-[90px] p-3.5 rounded-ds border border-gray-200 dark:border-white/10 bg-white dark:bg-dark text-lightText dark:text-white placeholder-gray-500 dark:placeholder-white/40 focus-visible:outline-none"
                     value={conclusion}
                     onChange={(e) => setConclusion(e.target.value)}
                   />
@@ -461,7 +461,7 @@ export default function WritingHome() {
                   Your response
                 </span>
                 <textarea
-                  className="w-full min-h-[260px] p-4 rounded-ds border border-gray-200 dark:border-white/10 bg-white dark:bg-dark text-lightText dark:text-white placeholder-gray-500 dark:placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                  className="w-full min-h-[260px] p-4 rounded-ds border border-gray-200 dark:border-white/10 bg-white dark:bg-dark text-lightText dark:text-white placeholder-gray-500 dark:placeholder-white/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background focus:border-primary"
                   placeholder="Write your essay here…"
                   value={essay}
                   onChange={(e) => setEssay(e.target.value)}

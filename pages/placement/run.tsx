@@ -9,6 +9,7 @@ import { Container } from '@/components/design-system/Container';
 import { Card } from '@/components/design-system/Card';
 import { Button } from '@/components/design-system/Button';
 import { Badge } from '@/components/design-system/Badge';
+import Image from "next/image";
 import { Alert } from '@/components/design-system/Alert';
 import { GradientText } from '@/components/design-system/GradientText';
 
@@ -212,8 +213,7 @@ export default function PlacementRun() {
               The chart below shows the percentage of households with internet access in three countries from 2010 to 2020.
               Summarise the information by selecting and reporting the main features, and make comparisons where relevant.
             </p>
-            <img src={chartImg} alt="Task 1 chart" className="mt-3 rounded-ds border border-gray-200 dark:border-white/10" />
-          </Card>
+            <Image src={chartImg} alt="Task 1 chart" width={800} height={450} className="mt-3 rounded-ds border border-gray-200 dark:border-white/10" />          </Card>
           <textarea
             rows={10}
             className="w-full rounded-ds border bg-white text-lightText dark:bg-dark/50 dark:text-white dark:border-purpleVibe/30 px-3.5 py-2.5"

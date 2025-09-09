@@ -101,7 +101,7 @@ export default function MarketplacePage() {
               <label className="text-sm text-mutedText">Search</label>
               <div className="mt-1 flex items-center gap-2">
                 <input
-                  className="w-full rounded-xl border border-border bg-card px-3 py-2 outline-none focus:ring-2"
+                  className="w-full rounded-xl border border-border bg-card px-3 py-2 outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                   placeholder="Coach name, tag, headline"
                   value={q}
                   onChange={(e) => setQ(e.target.value)}

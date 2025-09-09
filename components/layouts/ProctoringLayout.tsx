@@ -23,7 +23,7 @@ const ProctoringLayout: React.FC<React.PropsWithChildren> = ({ children }) => {
       </div>
 
       {/* Body */}
-      <Container className="py-4">
+      <Container className="py-4 pb-safe md:pb-0">
         <div className="card-surface rounded-ds-2xl p-3 sm:p-4">{children}</div>
       </Container>
     </div>

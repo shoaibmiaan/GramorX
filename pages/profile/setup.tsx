@@ -7,6 +7,7 @@ import { Input } from '@/components/design-system/Input';
 import { AvatarUploader } from '@/components/design-system/AvatarUploader';
 import { Button } from '@/components/design-system/Button';
 import { Badge } from '@/components/design-system/Badge';
+import Image from "next/image";
 import { Alert } from '@/components/design-system/Alert';
 import { Select } from '@/components/design-system/Select';
 import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser';
@@ -528,7 +529,7 @@ export default function ProfileSetup() {
                       <span className="mb-1.5 inline-block text-small text-gray-600 dark:text-grayish">Focus areas</span>
                       <div className="flex flex-wrap gap-2">
                         {PREFS.map(p => (
-                          <button key={p} type="button" onClick={()=>togglePref(p)} aria-pressed={prefs.includes(p)} className="focus:outline-none">
+                          <button key={p} type="button" onClick={()=>togglePref(p)} aria-pressed={prefs.includes(p)} className="focus-visible:outline-none">
                             <Badge variant={prefs.includes(p) ? 'success' : 'neutral'} className={`cursor-pointer transition ${prefs.includes(p) ? 'ring-2 ring-success' : 'hover:opacity-90'}`}>{p}</Badge>
                           </button>
                         ))}
@@ -539,7 +540,7 @@ export default function ProfileSetup() {
                       <span className="mb-1.5 inline-block text-small text-gray-600 dark:text-grayish">Weak areas</span>
                       <div className="flex flex-wrap gap-2">
                         {WEAKNESSES.map(w => (
-                          <button key={w} type="button" onClick={()=>toggleWeakness(w)} aria-pressed={weaknesses.includes(w)} className="focus:outline-none">
+                          <button key={w} type="button" onClick={()=>toggleWeakness(w)} aria-pressed={weaknesses.includes(w)} className="focus-visible:outline-none">
                             <Badge variant={weaknesses.includes(w) ? 'warning' : 'neutral'} className={`cursor-pointer transition ${weaknesses.includes(w) ? 'ring-2 ring-warning' : 'hover:opacity-90'}`}>{w}</Badge>
                           </button>
                         ))}
@@ -586,8 +587,7 @@ export default function ProfileSetup() {
               <h3 className="font-slab text-h3 mb-2">Profile preview</h3>
               <div className="text-body">
                 {avatarUrl && (
-                  <img src={avatarUrl} alt="Avatar preview" className="mb-3 h-20 w-20 rounded-full object-cover ring-2 ring-primary/40" />
-                )}
+                  <Image src={avatarUrl} alt="Avatar preview" width={80} height={80} className="mb-3 h-20 w-20 rounded-full object-cover ring-2 ring-primary/40" />                )}
                 <div className="font-semibold">{fullName || 'Your name'}</div>
                 <div className="opacity-80">{country || 'Country'} • {level || 'Level'} • {time || 'Time'}</div>
                 <div className="mt-2 flex flex-wrap gap-2">

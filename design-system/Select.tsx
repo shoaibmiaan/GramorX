@@ -12,8 +12,8 @@ export type SelectProps = React.SelectHTMLAttributes<HTMLSelectElement> & {
 export const Select: React.FC<SelectProps> = ({ label, hint, error, options = [], className = '', children, ...props }) => {
   const base = [
     'w-full rounded-ds border border-border bg-card text-lightText',
-    'focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary',
-    'dark:bg-dark/50 dark:text-foreground dark:border-purpleVibe/30 dark:focus:ring-electricBlue dark:focus:border-electricBlue',
+    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:border-ring',
+    'dark:bg-dark/50 dark:text-foreground dark:border-purpleVibe/30',
   ].join(' ');
   const invalid = error ? 'border-sunsetOrange focus:ring-sunsetOrange focus:border-sunsetOrange' : '';
 

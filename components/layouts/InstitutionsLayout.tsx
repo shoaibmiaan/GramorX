@@ -46,7 +46,7 @@ const InstitutionsLayout: React.FC<React.PropsWithChildren> = ({ children }) => 
         </Container>
       </div>
 
-      <Container className="py-6">
+      <Container className="py-6 pb-safe md:pb-0">
         <div className="card-surface rounded-ds-2xl p-4">{children}</div>
       </Container>
     </div>

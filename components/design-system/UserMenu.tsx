@@ -171,12 +171,11 @@ export const UserMenu: React.FC<{
       >
         {localAvatar ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={localAvatar}
+          <Image src={localAvatar}
             alt=""
             className="h-9 w-9 rounded-full object-cover"
             decoding="async"
-          />
+           width={40} height={40} />
         ) : (
           fallbackInitial
         )}
@@ -197,12 +196,11 @@ export const UserMenu: React.FC<{
                 <div className="h-9 w-9 rounded-full bg-vibrantPurple/15 flex items-center justify-center overflow-hidden">
                   {localAvatar ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={localAvatar}
+                    <Image src={localAvatar}
                       alt=""
                       className="h-9 w-9 object-cover"
                       decoding="async"
-                    />
+                     width={40} height={40} />
                   ) : (
                     <span className="text-vibrantPurple font-semibold">
                       {fallbackInitial}
@@ -291,3 +289,4 @@ export const UserMenu: React.FC<{
     </div>
   );
 };
+import Image from 'next/image';

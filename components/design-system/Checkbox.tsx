@@ -1,42 +1,81 @@
-import * as React from 'react'
-const cx = (...xs: Array<string | false | null | undefined>) => xs.filter(Boolean).join(' ')
+import * as React from "react";
 
-export type CheckboxProps = Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'> & {
-  label?: string; hint?: string; error?: string; size?: 'sm' | 'md' | 'lg'; indeterminate?: boolean;
+function cn(...a: Array<string | false | undefined | null>) {
+  return a.filter(Boolean).join(" ");
 }
 
-export const Checkbox: React.FC<CheckboxProps> = ({
-  label, hint, error, className = '', size = 'md', indeterminate, id, ...props
-}) => {
-  const inputId = React.useId(); const finalId = id || inputId; const ref = React.useRef<HTMLInputElement>(null)
-  React.useEffect(() => { if (ref.current) ref.current.indeterminate = !!indeterminate }, [indeterminate])
-  const boxSize = { sm: 'h-4 w-4', md: 'h-5 w-5', lg: 'h-6 w-6' }[size]
+export type CheckboxProps = Readonly<
+  Omit<React.InputHTMLAttributes<HTMLInputElement>, "type"> & {
+    label?: React.ReactNode;
+    description?: React.ReactNode;
+    error?: string | null;
+  }
+>;
 
-  return (
-    <label htmlFor={finalId} className={cx('flex items-start gap-3', className)}>
-      <input id={finalId} ref={ref} type="checkbox" className="sr-only peer" aria-invalid={!!error || undefined} {...props}/>
-      <span className={cx(
-        'mt-0.5 grid place-content-center rounded-ds border transition',
-        'bg-card text-card-foreground border-border',
-        'peer-focus-visible:outline-none peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-background',
-        'peer-checked:bg-primary peer-checked:border-primary peer-checked:text-background',
-        error && 'border-sunsetRed'
-      )} aria-hidden="true">
-        <span className={cx(boxSize,'relative')}>
-          <svg viewBox="0 0 24 24" className={cx('absolute inset-0 m-auto h-4 w-4 transition', indeterminate ? 'opacity-0 scale-75' : 'opacity-0 scale-75 peer-checked:opacity-100 peer-checked:scale-100')}>
-            <path fill="currentColor" d="M9 16.2 5.5 12.7 4.1 14.1 9 19l11.3-11.3-1.4-1.4z"/>
-          </svg>
-          <svg viewBox="0 0 24 24" className={cx('absolute inset-0 m-auto h-4 w-4 transition', indeterminate ? 'opacity-100 scale-100' : 'opacity-0 scale-75')}>
-            <rect x="5" y="11" width="14" height="2" rx="1" fill="currentColor"/>
+export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
+  ({ id, label, description, error, className, ...props }, ref) => {
+    const inputId = id ?? React.useId();
+    const descId = description ? `${inputId}-desc` : undefined;
+    const errId = error ? `${inputId}-error` : undefined;
+
+    return (
+      <div className={cn("flex items-start gap-3", className)}>
+        <span className="relative inline-flex items-center justify-center">
+          <input
+            ref={ref}
+            id={inputId}
+            type="checkbox"
+            aria-describedby={error ? errId : descId}
+            aria-invalid={!!error || undefined}
+            className={cn(
+              "peer h-5 w-5 shrink-0 rounded border",
+              // DS tokens
+              "text-primary",
+              // focus-visible ring (fixed per your rule)
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+              // base borders
+              error ? "border-sunsetOrange" : "border-border",
+              // dark bg cleanup (removed dark:focus classes)
+              "bg-card"
+            )}
+            {...props}
+          />
+          {/* Check glyph (uses :checked pseudo-element via utility) */}
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 20 20"
+            className="pointer-events-none absolute inset-0 m-auto h-3.5 w-3.5 opacity-0 peer-checked:opacity-100"
+          >
+            <path
+              d="M4 10.5l3 3 9-9"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
           </svg>
         </span>
-      </span>
-      <div className="min-w-0">
-        {label && <div className="text-body text-foreground">{label}</div>}
-        {error ? <div className="text-small text-sunsetRed" role="alert" aria-live="polite">{error}</div>
-               : hint ? <div className="text-small text-muted-foreground">{hint}</div> : null}
+
+        <div className="min-w-0">
+          {label && (
+            <label htmlFor={inputId} className="block text-sm font-medium text-foreground">
+              {label}
+            </label>
+          )}
+          {description && (
+            <p id={descId} className="mt-0.5 text-sm text-muted-foreground">
+              {description}
+            </p>
+          )}
+          {error && (
+            <p id={errId} className="mt-0.5 text-sm text-sunsetOrange">
+              {error}
+            </p>
+          )}
+        </div>
       </div>
-    </label>
-  )
-}
-export default Checkbox
+    );
+  }
+);
+Checkbox.displayName = "Checkbox";

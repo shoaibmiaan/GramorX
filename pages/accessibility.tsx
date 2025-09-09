@@ -84,7 +84,7 @@ export default function AccessibilityPage() {
                     />
                     <button
                       type="button"
-                      className="rounded-md border border-border bg-background px-3 py-1.5 text-sm text-foreground hover:bg-border/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      className="rounded-md border border-border bg-background px-3 py-1.5 text-sm text-foreground hover:bg-border/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                       onClick={() => announce("Form validated. No errors found.")}
                     >
                       Validate
@@ -97,7 +97,7 @@ export default function AccessibilityPage() {
                   <div className="mt-2 flex flex-wrap items-center gap-2">
                     <button
                       type="button"
-                      className="rounded-md border border-border bg-background px-3 py-1.5 text-sm hover:bg-border/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      className="rounded-md border border-border bg-background px-3 py-1.5 text-sm hover:bg-border/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                       onClick={() => announce("Primary action triggered")}
                     >
                       Action
@@ -112,7 +112,7 @@ export default function AccessibilityPage() {
                     </button>
                     <Link
                       href="/pricing"
-                      className="rounded-md border border-border bg-background px-3 py-1.5 text-sm text-foreground hover:bg-border/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      className="rounded-md border border-border bg-background px-3 py-1.5 text-sm text-foreground hover:bg-border/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                     >
                       Go to pricing
                     </Link>

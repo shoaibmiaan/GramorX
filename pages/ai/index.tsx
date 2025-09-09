@@ -281,7 +281,7 @@ export default function AIChatPage() {
                 }}
                 rows={1}
                 placeholder="Ask anything… (Enter to send, Shift+Enter = new line)"
-                className="w-full resize-none rounded-2xl border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/40 max-h-[148px]"
+                className="w-full resize-none rounded-2xl border border-border bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary/40 max-h-[148px] focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               />
               <button
                 onClick={() => send()}

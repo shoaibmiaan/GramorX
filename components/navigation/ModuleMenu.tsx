@@ -91,7 +91,7 @@ export function ModuleMenu({ open, setOpen, modulesRef }: ModuleMenuProps) {
         aria-expanded={open}
         aria-haspopup="menu"
         aria-controls={MENU_ID}
-        className="inline-flex items-center gap-2 rounded-lg px-3 py-2 hover:bg-muted transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border"
+        className="inline-flex items-center gap-2 rounded-lg px-3 py-2 hover:bg-muted transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border focus-visible:ring-offset-2 focus-visible:ring-offset-background"
       >
         <span>Modules</span>
         <svg

@@ -93,7 +93,7 @@ export default function OrgStudentsPage({ ok, error, org }: StudentsPageProps){
             </div>
             <div className="md:col-span-3">
               <label className="text-sm text-mutedText">Sort</label>
-              <select className="mt-1 w-full rounded-xl border border-border bg-card px-3 py-2 focus:ring-2 focus:ring-border" value={sort} onChange={(e)=>{ setSort(e.target.value as any); setPage(1) }}>
+              <select className="mt-1 w-full rounded-xl border border-border bg-card px-3 py-2 focus-visible:ring-2 focus-visible:ring-border" value={sort} onChange={(e)=>{ setSort(e.target.value as any); setPage(1) }}> focus-visible:ring-offset-2 focus-visible:ring-offset-background
                 <option value="name">Name</option>
                 <option value="attempts">Attempts</option>
                 <option value="band">Latest Band</option>
