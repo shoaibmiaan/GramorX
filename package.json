@@ -93,9 +93,6 @@
     "npm": ">=10 <11"
   },
   "pnpm": {
-    "onlyBuiltDependencies": [
-      "esbuild",
-      "unrs-resolver"
-    ]
+    "onlyBuiltDependencies": ["esbuild", "unrs-resolver"]
   }
 }
