@@ -1,0 +1,4 @@
+pages/placement/run.tsx:215:            <Image src={chartImg} alt="Task 1 chart" width={800} height={450} className="mt-3 rounded-ds border border-gray-200 dark:border-white/10" />pages/profile/index.tsx:171:                  <img src={profile.avatar_url} alt="Avatar" className="h-20 w-20 object-cover" />
+pages/profile/setup.tsx:589:                  <img src={avatarUrl} alt="Avatar preview" className="mb-3 h-20 w-20 rounded-full object-cover ring-2 ring-primary/40" />
+pages/blog/[slug].tsx:72:                    {post.hero_image_url ? <img src={post.hero_image_url} alt="" className="w-full h-full object-cover" /> : null}
+pages/learning/[slug].tsx:215:              <img src={course.thumbnail_url} alt="" className="h-64 w-full object-cover" />
