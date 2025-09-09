@@ -1,0 +1,88 @@
+components/nav/ModulesMenu.tsx:73:            style={{
+components/challenge/Leaderboard.tsx:116:      <div className="absolute left-0 top-0 h-full bg-primary" style={{ width: `${value}%` }} />
+components/challenge/ChallengeCohortCard.tsx:66:            style={{ width: `${Math.min(Math.max(progressPct, 0), 100)}%` }}
+components/teacher/CohortTable.tsx:187:        style={{ width: `${Math.min(Math.max(value, 0), 100)}%` }}
+components/paywall/UsageCounterBadge.tsx:55:      <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: allowed ? 'rgb(var(--color-success))' : 'rgb(var(--color-error))' }} />
+components/review/AIFeedbackPanel.tsx:89:                      style={{ width: `${Math.min(100, (v / 9) * 100)}%` }}
+components/exam/AudioPlayerSegmented.tsx:189:        <div className="h-full bg-primary" style={{ width: `${progress}%` }} />
+components/predictor/BandBreakdown.tsx:20:        <div className="h-2 rounded-full bg-primary" style={{ width: `${pct}%` }} />
+components/design-system/AudioBar.tsx:174:            style={{ width: `${pct}%` }}
+components/design-system/ProgressBar.tsx:21:          style={{ width: `${v}%` }}
+pages/placement/run.tsx:320:            <div className="h-2 bg-electricBlue rounded-ds" style={{ width: `${progress}%` }} />
+pages/profile/setup.tsx:58:    <div className="h-full w-[--w] bg-gradient-to-r from-primary/80 to-electricBlue/80 transition-[width] duration-300" style={{
+pages/reading/[slug].tsx:227:                <div className="h-2 bg-primary rounded-ds" style={{ width: `${progressPct}%` }} />
+premium-ui/components/PrProgress.tsx:8:<div className="pr-h-full pr-bg-[var(--pr-primary)]" style={{ width: `${v}%` }} />
+premium-ui/theme/ThemeSwitcher.tsx:26:            style={{ background: t.preview, backgroundSize: 'cover', backgroundPosition: 'center' }}
+emails/DailyTaskEmail.tsx:21:      <body style={{ margin: 0, padding: 0, fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, Arial' }}>
+emails/DailyTaskEmail.tsx:26:                <table role="presentation" width="600" style={{ margin: '24px auto', borderCollapse: 'collapse' }}>
+emails/DailyTaskEmail.tsx:29:                      <td style={{ padding: '16px 20px' }}>
+emails/DailyTaskEmail.tsx:30:                        <h1 style={{ margin: 0, fontSize: 20 }}>Hi {fullName},</h1>
+emails/DailyTaskEmail.tsx:31:                        <p style={{ margin: '6px 0 0 0', fontSize: 14 }}>
+emails/DailyTaskEmail.tsx:37:                      <td style={{ padding: '16px 20px' }}>
+emails/DailyTaskEmail.tsx:38:                        <p style={{ margin: 0, fontSize: 14 }}>
+emails/DailyTaskEmail.tsx:45:                      <td align="center" style={{ padding: '16px 20px' }}>
+emails/DailyTaskEmail.tsx:48:                          style={{ display: 'inline-block', padding: '10px 16px', textDecoration: 'none', borderRadius: 8, border: '1px solid' }}
+emails/DailyTaskEmail.tsx:55:                      <td style={{ padding: '16px 20px', fontSize: 12 }}>
+emails/DailyTaskEmail.tsx:60:                      <td style={{ padding: '8px 20px', fontSize: 12 }} align="center">© GramorX</td>
+emails/ResetPasswordEmail.tsx:12:        style={{
+emails/ResetPasswordEmail.tsx:20:          style={{
+emails/ResetPasswordEmail.tsx:30:            style={{
+emails/ResetPasswordEmail.tsx:43:          <p style={{ fontSize: "16px", marginBottom: "20px" }}>
+emails/ResetPasswordEmail.tsx:48:          <div style={{ textAlign: "center", margin: "32px 0" }}>
+emails/ResetPasswordEmail.tsx:52:              style={{
+emails/ResetPasswordEmail.tsx:68:          <p style={{ fontSize: "14px", color: "#555" }}>
+emails/ResetPasswordEmail.tsx:74:            style={{
+emails/ChangeEmailAddressEmail.tsx:19:        style={{
+emails/ChangeEmailAddressEmail.tsx:27:          style={{
+emails/ChangeEmailAddressEmail.tsx:37:            style={{
+emails/ChangeEmailAddressEmail.tsx:50:          <p style={{ fontSize: "16px", marginBottom: "12px" }}>
+emails/ChangeEmailAddressEmail.tsx:53:          <p style={{ fontSize: "15px", color: "#555", marginBottom: "20px" }}>
+emails/ChangeEmailAddressEmail.tsx:58:          <div style={{ textAlign: "center", margin: "28px 0" }}>
+emails/ChangeEmailAddressEmail.tsx:62:              style={{
+emails/ChangeEmailAddressEmail.tsx:78:          <p style={{ fontSize: "14px", color: "#555" }}>
+emails/ChangeEmailAddressEmail.tsx:84:            style={{
+emails/ReauthEmail.tsx:12:        style={{
+emails/ReauthEmail.tsx:20:          style={{
+emails/ReauthEmail.tsx:30:            style={{
+emails/ReauthEmail.tsx:43:          <p style={{ fontSize: "16px", marginBottom: "20px" }}>
+emails/ReauthEmail.tsx:49:            style={{
+emails/ReauthEmail.tsx:64:          <p style={{ fontSize: "14px", color: "#555" }}>
+emails/ReauthEmail.tsx:70:            style={{
+emails/MagicLinkEmail.tsx:15:        style={{
+emails/MagicLinkEmail.tsx:23:          style={{
+emails/MagicLinkEmail.tsx:33:            style={{
+emails/MagicLinkEmail.tsx:46:          <p style={{ fontSize: "16px", marginBottom: "20px" }}>
+emails/MagicLinkEmail.tsx:50:          <div style={{ textAlign: "center", margin: "32px 0" }}>
+emails/MagicLinkEmail.tsx:54:              style={{
+emails/MagicLinkEmail.tsx:70:          <p style={{ fontSize: "14px", color: "#555" }}>
+emails/MagicLinkEmail.tsx:76:            style={{
+emails/TeacherNudgeEmail.tsx:17:      <body style={{ margin: 0, padding: 0, fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, Arial' }}>
+emails/TeacherNudgeEmail.tsx:22:                <table role="presentation" width="600" style={{ margin: '24px auto', borderCollapse: 'collapse' }}>
+emails/TeacherNudgeEmail.tsx:25:                      <td style={{ padding: '16px 20px' }}>
+emails/TeacherNudgeEmail.tsx:26:                        <h1 style={{ margin: 0, fontSize: 20 }}>Hi {studentName},</h1>
+emails/TeacherNudgeEmail.tsx:27:                        <p style={{ margin: '6px 0 0 0', fontSize: 14 }}>
+emails/TeacherNudgeEmail.tsx:34:                        <td style={{ padding: '16px 20px', fontSize: 14 }}>
+emails/TeacherNudgeEmail.tsx:40:                      <td align="center" style={{ padding: '16px 20px' }}>
+emails/TeacherNudgeEmail.tsx:43:                          style={{ display: 'inline-block', padding: '10px 16px', textDecoration: 'none', borderRadius: 8, border: '1px solid' }}
+emails/TeacherNudgeEmail.tsx:50:                      <td style={{ padding: '8px 20px', fontSize: 12 }} align="center">© GramorX</td>
+emails/CertificateEmail.tsx:17:      <body style={{ margin: 0, padding: 0, fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, Arial' }}>
+emails/CertificateEmail.tsx:22:                <table role="presentation" width="600" style={{ margin: '24px auto', borderCollapse: 'collapse' }}>
+emails/CertificateEmail.tsx:25:                      <td style={{ padding: '16px 20px' }}>
+emails/CertificateEmail.tsx:26:                        <h1 style={{ margin: 0, fontSize: 22 }}>Congratulations, {fullName}! 🎉</h1>
+emails/CertificateEmail.tsx:27:                        <p style={{ margin: '6px 0 0 0', fontSize: 14 }}>
+emails/CertificateEmail.tsx:33:                      <td style={{ padding: '16px 20px' }}>
+emails/CertificateEmail.tsx:34:                        <p style={{ margin: 0, fontSize: 14 }}>
+emails/CertificateEmail.tsx:40:                      <td align="center" style={{ padding: '16px 20px' }}>
+emails/CertificateEmail.tsx:43:                          style={{ display: 'inline-block', padding: '10px 16px', textDecoration: 'none', borderRadius: 8, border: '1px solid' }}
+emails/CertificateEmail.tsx:50:                      <td style={{ padding: '8px 20px', fontSize: 12 }} align="center">© GramorX</td>
+emails/ChallengeWelcomeEmail.tsx:19:      <body style={{ margin: 0, padding: 0, fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, Arial' }}>
+emails/ChallengeWelcomeEmail.tsx:24:                <table role="presentation" width="600" style={{ margin: '24px auto', borderCollapse: 'collapse' }}>
+emails/ChallengeWelcomeEmail.tsx:27:                      <td style={{ padding: '16px 20px' }}>
+emails/ChallengeWelcomeEmail.tsx:28:                        <h1 style={{ margin: 0, fontSize: 22 }}>Welcome, {fullName}!</h1>
+emails/ChallengeWelcomeEmail.tsx:29:                        <p style={{ margin: '8px 0 0 0', fontSize: 14 }}>
+emails/ChallengeWelcomeEmail.tsx:35:                      <td style={{ padding: '16px 20px' }}>
+emails/ChallengeWelcomeEmail.tsx:36:                        <p style={{ margin: 0, fontSize: 14 }}>
+emails/ChallengeWelcomeEmail.tsx:42:                      <td style={{ padding: '16px 20px' }} align="center">
+emails/ChallengeWelcomeEmail.tsx:45:                          style={{
+emails/ChallengeWelcomeEmail.tsx:58:                      <td style={{ padding: '16px 20px', fontSize: 12 }}>
+emails/ChallengeWelcomeEmail.tsx:63:                      <td style={{ padding: '8px 20px', fontSize: 12 }} align="center">

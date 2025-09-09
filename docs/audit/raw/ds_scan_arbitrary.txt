@@ -1,0 +1,6 @@
+components/onboarding/StepShell.tsx:135:            <div className="pointer-events-none absolute inset-0 animate-[shimmer_2.2s_linear_infinite] bg-[linear-gradient(110deg,transparent,rgba(255,255,255,0.25),transparent)] [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]" />
+components/design-system/StreakIndicator.tsx:69:  const pulseShadow = pulse ? 'shadow-[0_0_0_6px_rgba(0,187,249,0.25)] transition-shadow' : ''
+components/listening/AnswerReview.tsx:45:    .replace(/[.,/#!$%^&*;:{}=\-_`~()"]/g, '');
+pages/pricing/index.tsx:162:      <main role="main" className="min-h-screen bg-[radial-gradient(60rem_30rem_at_10%_-10%,rgba(99,102,241,.15),transparent_60%),radial-gradient(50rem_25rem_at_90%_10%,rgba(168,85,247,.18),transparent_60%),linear-gradient(to_bottom,#ffffff,#f8fafc)] text-foreground antialiased">
+pages/index.tsx:65:      const a = target?.closest<HTMLAnchorElement>('a[href^="#"]');
+pages/profile/setup.tsx:603:      <div className="sm:hidden fixed inset-x-0 bottom-0 z-30 border-t border-border/60 bg-[rgb(var(--card))]/95 backdrop-blur supports-[backdrop-filter]:bg-[rgb(var(--card))]/75">

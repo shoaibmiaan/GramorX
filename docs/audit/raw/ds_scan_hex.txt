@@ -1,0 +1,74 @@
+components/certificates/CertificateCanvas.tsx:62:    const bg = css("--color-background", "#0b0c10");
+components/certificates/CertificateCanvas.tsx:63:    const fg = css("--color-foreground", "#e8eaed");
+components/certificates/CertificateCanvas.tsx:64:    const border = css("--color-border", "#232733");
+components/certificates/CertificateCanvas.tsx:65:    const primary = css("--color-primary", "#3b82f6");
+components/certificates/CertificateCanvas.tsx:118:    ctx.fillStyle = "#000000"; // text over primary needs contrast; we assume primary is light in our DS
+components/design-system/icons/index.tsx:17:    <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.9 31.7 29.4 35 24 35c-7 0-12.8-5.8-12.8-12.8S17 9.5 24 9.5c3.2 0 6.1 1.2 8.3 3.2l5.6-5.6C34.3 3.9 29.4 2 24 2 11.8 2 2 11.8 2 24s9.8 22 22 22c11 0 21-8 21-22 0-1-.1-2-.3-3.5z"/>
+components/design-system/icons/index.tsx:18:    <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 16 19 13 24 13c3.2 0 6.1 1.2 8.3 3.2l5.6-5.6C34.3 6 29.4 4 24 4 15.5 4 8.2 8.8 6.3 14.7z"/>
+components/design-system/icons/index.tsx:19:    <path fill="#4CAF50" d="M24 44c5.2 0 10-2 13.5-5.3l-6.2-5.1C29.2 35.6 26.8 36.5 24 36.5c-5.3 0-9.8-3.3-11.4-8l-6.5 5C8 39.2 15.4 44 24 44z"/>
+components/design-system/icons/index.tsx:20:    <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-1.3 3.9-5 6.5-9.3 6.5-2.7 0-5.2-.9-7.2-2.5l-6.5 5C14 40.8 18.7 43 24 43c11 0 21-8 21-22 0-1-.1-2-.4-3.5z"/>
+pages/pricing/index.tsx:162:      <main role="main" className="min-h-screen bg-[radial-gradient(60rem_30rem_at_10%_-10%,rgba(99,102,241,.15),transparent_60%),radial-gradient(50rem_25rem_at_90%_10%,rgba(168,85,247,.18),transparent_60%),linear-gradient(to_bottom,#ffffff,#f8fafc)] text-foreground antialiased">
+pages/_document.tsx:30:        <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
+pages/_document.tsx:31:        <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+pages/pages_premium.jsx:133:          --primary-bg: #FFFFFF; --secondary-bg: #F8FAFC; --primary-text: #1E293B; --accent: #3B82F6; --accent-hover: #2563EB; --success: #10B981; --card-bg: #FFFFFF; --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); --input-bg: #FFFFFF; --border-color: #E2E8F0;
+pages/pages_premium.jsx:135:        body.theme-nocturnal { --primary-bg: #1E293B; --secondary-bg: #334155; --primary-text: #F1F5F9; --accent: #818CF8; --accent-hover: #6366F1; --success: #34D399; --card-bg: #334155; --card-shadow: 0 4px 12px rgba(129, 140, 248, 0.1); --input-bg: #475569; --border-color: #475569; }
+pages/pages_premium.jsx:136:        body.theme-royal-gold { --primary-bg: #2D3748; --secondary-bg: #4A5568; --primary-text: #E2E8F0; --accent: #D4AF37; --accent-hover: #B7950B; --success: #D4AF37; --card-bg: #4A5568; --card-shadow: 0 4px 16px rgba(0, 0, 0, 0.3); --input-bg: #4A5568; --border-color: #6B7280; }
+pages/pages_premium.jsx:137:        body.theme-forest-focus { --primary-bg: #F1F5S9; --secondary-bg: #FFFFFF; --primary-text: #1E293B; --accent: #0F766E; --accent-hover: #0D9488; --success: #0F766E; --card-bg: #FFFFFF; --card-shadow: 0 2px 8px rgba(15, 118, 110, 0.1); --input-bg: #FFFFFF; --border-color: #E2E8F0; }
+pages/pages_premium.jsx:139:        body.theme-forest-focus { --primary-bg: #F1F5F9; }
+premium-ui/theme/premium-themes.ts:2:  { id: 'carbon', label: 'Carbon Noir', preview: '#1b1b1f' },
+premium-ui/theme/premium-themes.ts:3:  { id: 'ivory', label: 'Ivory Quartz', preview: '#f8f4e7' },
+premium-ui/theme/premium-themes.ts:4:  { id: 'royal', label: 'Royal Aster', preview: '#4c1d95' },
+premium-ui/theme/premium-themes.ts:5:  { id: 'aurora', label: 'Aurora Neo', preview: '#0ea5e9' },
+emails/ResetPasswordEmail.tsx:14:          backgroundColor: "#f0f2f5",
+emails/ResetPasswordEmail.tsx:15:          color: "#1a1a2e",
+emails/ResetPasswordEmail.tsx:23:            background: "#ffffff",
+emails/ResetPasswordEmail.tsx:35:              background: "linear-gradient(to right, #ff6b6b, #f72585)",
+emails/ResetPasswordEmail.tsx:56:                background: "linear-gradient(135deg,#f72585,#ff6b6b)",
+emails/ResetPasswordEmail.tsx:68:          <p style={{ fontSize: "14px", color: "#555" }}>
+emails/ResetPasswordEmail.tsx:70:            For help, visit our <a href="https://gramorx.com/support" style="color:#4361ee;text-decoration:underline;">Support Center</a>.
+emails/ResetPasswordEmail.tsx:76:              color: "#8a8a9c",
+emails/ChangeEmailAddressEmail.tsx:21:          backgroundColor: "#f0f2f5",
+emails/ChangeEmailAddressEmail.tsx:22:          color: "#1a1a2e",
+emails/ChangeEmailAddressEmail.tsx:30:            background: "#ffffff",
+emails/ChangeEmailAddressEmail.tsx:42:              background: "linear-gradient(to right, #4361ee, #4cc9f0)",
+emails/ChangeEmailAddressEmail.tsx:53:          <p style={{ fontSize: "15px", color: "#555", marginBottom: "20px" }}>
+emails/ChangeEmailAddressEmail.tsx:66:                background: "linear-gradient(135deg,#4361ee,#4cc9f0)",
+emails/ChangeEmailAddressEmail.tsx:78:          <p style={{ fontSize: "14px", color: "#555" }}>
+emails/ChangeEmailAddressEmail.tsx:86:              color: "#8a8a9c",
+emails/ReauthEmail.tsx:14:          backgroundColor: "#f0f2f5",
+emails/ReauthEmail.tsx:15:          color: "#1a1a2e",
+emails/ReauthEmail.tsx:23:            background: "#ffffff",
+emails/ReauthEmail.tsx:35:              background: "linear-gradient(to right, #4361ee, #4cc9f0)",
+emails/ReauthEmail.tsx:55:              background: "#f8f9ff",
+emails/ReauthEmail.tsx:56:              border: "1px dashed #4361ee",
+emails/ReauthEmail.tsx:64:          <p style={{ fontSize: "14px", color: "#555" }}>
+emails/ReauthEmail.tsx:72:              color: "#8a8a9c",
+emails/MagicLinkEmail.tsx:17:          backgroundColor: "#f0f2f5",
+emails/MagicLinkEmail.tsx:18:          color: "#1a1a2e",
+emails/MagicLinkEmail.tsx:26:            background: "#ffffff",
+emails/MagicLinkEmail.tsx:38:              background: "linear-gradient(to right, #f72585, #4cc9f0)",
+emails/MagicLinkEmail.tsx:58:                background: "linear-gradient(135deg,#f72585,#4cc9f0)",
+emails/MagicLinkEmail.tsx:70:          <p style={{ fontSize: "14px", color: "#555" }}>
+emails/MagicLinkEmail.tsx:78:              color: "#8a8a9c",
+design-system/tokens/colors.js:4:  primary:       '#4361ee',
+design-system/tokens/colors.js:5:  primaryDark:   '#3a56d4',
+design-system/tokens/colors.js:6:  secondary:     '#f72585',
+design-system/tokens/colors.js:7:  accent:        '#4cc9f0',
+design-system/tokens/colors.js:8:  success:       '#2ec4b6',
+design-system/tokens/colors.js:10:  purpleVibe:    '#9d4edd',
+design-system/tokens/colors.js:11:  vibrantPurple: '#9d4edd',  // alias
+design-system/tokens/colors.js:12:  electricBlue:  '#00bbf9',
+design-system/tokens/colors.js:13:  neonGreen:     '#80ffdb',
+design-system/tokens/colors.js:14:  sunsetOrange:  '#ff6b6b',
+design-system/tokens/colors.js:15:  sunsetRed:     '#ff4d4d',  // CTA gradient end
+design-system/tokens/colors.js:16:  goldenYellow:  '#ffd166',
+design-system/tokens/colors.js:18:  dark:          '#0f0f1b',
+design-system/tokens/colors.js:19:  darker:        '#070710',
+design-system/tokens/colors.js:21:  lightBg:       '#f0f2f5',
+design-system/tokens/colors.js:22:  lightText:     '#1a1a2e',
+design-system/tokens/colors.js:24:  // NOTE: unified with globals.css (138,138,156 -> #8a8a9c)
+design-system/tokens/colors.js:25:  grayish:       '#8a8a9c',
+design-system/tokens/colors.js:27:  lightCard:     '#ffffff',
+design-system/tokens/colors.js:28:  lightBorder:   '#e0e0e0',
+design-system/tokens/colors.js:29:  border:        '#e0e0e0',   // alias
+design-system/tokens/colors.js:30:  mutedText:     '#d0d0e0',

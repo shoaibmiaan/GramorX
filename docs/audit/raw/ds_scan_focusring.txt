@@ -1,0 +1,38 @@
+pages/admin/reviews/[attemptId].tsx:235:                               focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background focus:border-primary
+pages/admin/reviews/[attemptId].tsx:237:                               dark:focus:ring-electricBlue dark:focus:border-electricBlue py-2.5 px-3.5"
+pages/admin/reviews/[attemptId].tsx:249:                               focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background focus:border-primary
+pages/admin/reviews/[attemptId].tsx:251:                               dark:focus:ring-electricBlue dark:focus:border-electricBlue py-2.5 px-3.5"
+pages/admin/reviews/index.tsx:156:                             focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background focus:border-primary
+pages/admin/reviews/index.tsx:158:                             dark:focus:ring-electricBlue dark:focus:border-electricBlue py-2.5 px-3.5"
+pages/admin/reviews/index.tsx:168:                             focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background focus:border-primary
+pages/admin/reviews/index.tsx:169:                             dark:bg-dark/50 dark:text-white dark:border-purpleVibe/30 dark:focus:ring-electricBlue dark:focus:border-electricBlue py-2.5 px-3.5"
+pages/admin/reviews/index.tsx:183:                             focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background focus:border-primary
+pages/admin/reviews/index.tsx:184:                             dark:bg-dark/50 dark:text-white dark:border-purpleVibe/30 dark:focus:ring-electricBlue dark:focus:border-electricBlue py-2.5 px-3.5"
+pages/admin/reviews/index.tsx:198:                             focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background focus:border-primary
+pages/admin/reviews/index.tsx:199:                             dark:bg-dark/50 dark:text-white dark:border-purpleVibe/30 dark:focus:ring-electricBlue dark:focus:border-electricBlue py-2.5 px-3.5"
+pages/faq.tsx:76:                             dark:border-purpleVibe/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background py-3 px-3"
+pages/faq.tsx:91:                               hover:bg-purpleVibe/10 dark:hover:bg-lightCard/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+pages/teacher/index.tsx:296:                    className="w-full rounded-ds border border-border bg-background px-3 py-2 text-sm outline-none ring-border focus:ring-2"
+pages/writing/index.tsx:464:                  className="w-full min-h-[260px] p-4 rounded-ds border border-gray-200 dark:border-white/10 bg-white dark:bg-dark text-lightText dark:text-white placeholder-gray-500 dark:placeholder-white/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background focus:border-primary"
+pages/welcome/index.tsx:23:                    hover:shadow-glow hover:-translate-y-0.5 focus:ring-2 focus:ring-border">
+pages/ai/index.tsx:284:                className="w-full resize-none rounded-2xl border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/40 max-h-[148px]"
+pages/blog/index.tsx:129:                             dark:border-purpleVibe/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background py-3 px-3"
+pages/blog/index.tsx:140:                             dark:border-purpleVibe/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background py-3 px-3"
+pages/mock/writing/[id].tsx:101:          <textarea value={task1} onChange={(e) => setTask1(e.target.value)} className="h-40 w-full rounded-lg border border-border bg-background p-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background" />
+pages/mock/writing/[id].tsx:108:          <textarea value={task2} onChange={(e) => setTask2(e.target.value)} className="h-60 w-full rounded-lg border border-border bg-background p-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background" />
+pages/mock/reading/[id].tsx:165:    <input value={value} onChange={(e) => onChange(e.target.value)} className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background" placeholder="Type your answer" />
+pages/mock/listening/[id].tsx:198:                  className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+pages/bookings/index.tsx:97:              <select className="mt-1 w-full rounded-xl border border-border bg-card px-3 py-2 focus:ring-2 focus:ring-border" value={status} onChange={(e)=>{ setStatus(e.target.value as any); setPage('1') }}>
+pages/marketplace/index.tsx:104:                  className="w-full rounded-xl border border-border bg-card px-3 py-2 outline-none focus:ring-2"
+pages/institutions/[orgId]/students.tsx:96:              <select className="mt-1 w-full rounded-xl border border-border bg-card px-3 py-2 focus:ring-2 focus:ring-border" value={sort} onChange={(e)=>{ setSort(e.target.value as any); setPage(1) }}>
+pages/classes/index.tsx:84:              <select className="mt-1 w-full rounded-xl border border-border bg-card px-3 py-2 focus:ring-2 focus:ring-border" value={status} onChange={(e)=>{ setStatus(e.target.value as any); setPage('1') }}>
+design-system/Toggle.tsx:25:          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background dark:focus:ring-electricBlue'
+design-system/Checkbox.tsx:16:          'text-primary focus:ring-2 focus:ring-primary focus:outline-none',
+design-system/Checkbox.tsx:17:          'dark:bg-dark/50 dark:border-purpleVibe/30 dark:focus:ring-electricBlue',
+design-system/Checkbox.tsx:18:          error ? 'border-sunsetOrange focus:ring-sunsetOrange' : 'border-border'
+design-system/Radio.tsx:16:          'text-primary focus:ring-2 focus:ring-primary focus:outline-none',
+design-system/Radio.tsx:17:          'dark:bg-dark/50 dark:border-purpleVibe/30 dark:focus:ring-electricBlue',
+design-system/Radio.tsx:18:          error ? 'border-sunsetOrange focus:ring-sunsetOrange' : 'border-border'
+design-system/Select.tsx:15:    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background focus:border-primary',
+design-system/Select.tsx:16:    'dark:bg-dark/50 dark:text-foreground dark:border-purpleVibe/30 dark:focus:ring-electricBlue dark:focus:border-electricBlue',
+design-system/Select.tsx:18:  const invalid = error ? 'border-sunsetOrange focus:ring-sunsetOrange focus:border-sunsetOrange' : '';
