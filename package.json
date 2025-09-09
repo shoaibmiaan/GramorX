@@ -91,5 +91,11 @@
   "engines": {
     "node": ">=20 <21",
     "npm": ">=10 <11"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "unrs-resolver"
+    ]
   }
 }
