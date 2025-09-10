@@ -1,4 +1,4 @@
-// lib/locale.ts
+// lib/locale/index.ts
 // Compatibility bridge for i18n helpers used across the app.
 
 import { loadTranslations as _loadTranslations, getLocale as _getStoredLocale } from '@/lib/i18n';

@@ -1,4 +1,3 @@
-// components/common/LocaleSwitcher.tsx
 import React from 'react';
 import { loadTranslations, setLocale, getLocale, type Locale } from '@/lib/locale';
 
@@ -56,4 +55,4 @@ function LocaleSwitcher({ value, onChanged, options }: Props) {
 }
 
 export default LocaleSwitcher;
-export { LocaleSwitcher }; // <-- named export for legacy imports
+export { LocaleSwitcher };
