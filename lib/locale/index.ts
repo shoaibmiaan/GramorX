@@ -18,7 +18,7 @@ export function detectLocale(fallback: Locale = 'en'): Locale {
     const nav =
       (typeof navigator !== 'undefined' &&
         (navigator.language || (navigator.languages && navigator.languages[0]))) || '';
-    const short = nav.split('-')[0] as Locale;
+    const short = (nav || '').split('-')[0] as Locale;
     return (short || fallback) as Locale;
   } catch {
     return fallback;
