@@ -4,7 +4,7 @@
 import * as React from 'react'
 import Head from 'next/head'
 import Link from 'next/link'
-import  Button  from '@/components/design-system/Button'
+import { Button } from '@/components/design-system/Button'
 import { Input } from '@/components/design-system/Input'
 import { Skeleton } from '@/components/design-system/Skeleton'
 import { scoreSpeaking } from '@/lib/ai/speaking_v2'

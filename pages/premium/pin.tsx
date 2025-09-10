@@ -3,7 +3,7 @@ import * as React from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useLocale } from '@/lib/locale';
+import { useLocale } from '@/lib/locale/index';
 import { PremiumThemeProvider } from '@/premium-ui/theme/PremiumThemeProvider';
 import { ThemeSwitcherPremium } from '@/premium-ui/theme/ThemeSwitcher';
 import { PrButton } from '@/premium-ui/components/PrButton';

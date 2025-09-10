@@ -2,7 +2,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import Head from 'next/head';
 import dynamic from 'next/dynamic';
-import { useLocale } from '@/lib/locale';
+import { useLocale } from '@/lib/locale/index';
 
 /**
  * Chunk-split sections. Keep Hero interactive while server-rendering

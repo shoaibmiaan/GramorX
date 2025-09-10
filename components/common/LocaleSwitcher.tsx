@@ -1,6 +1,5 @@
-// components/common/LocaleSwitcher.tsx
 import React from 'react';
-import { loadTranslations, setLocale, getLocale, type Locale } from '@/lib/locale';
+import { loadTranslations, setLocale, getLocale, type Locale } from '@/lib/locale/index';
 
 type Props = {
   value?: Locale;
@@ -8,7 +7,7 @@ type Props = {
   options?: { value: Locale; label: string }[];
 };
 
-export default function LocaleSwitcher({ value, onChanged, options }: Props) {
+function LocaleSwitcher({ value, onChanged, options }: Props) {
   const [busy, setBusy] = React.useState(false);
   const [local, setLocal] = React.useState<Locale>(value ?? getLocale('en'));
 
@@ -36,16 +35,24 @@ export default function LocaleSwitcher({ value, onChanged, options }: Props) {
     <label className="inline-flex items-center gap-2 text-sm">
       <span className="text-mutedText">Language</span>
       <select
-        className="rounded-ds border border-border bg-card px-3 py-2 text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+        aria-label="Select language"
+        className="rounded-ds border border-border bg-card px-3 py-2 text-foreground shadow-sm
+                   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border focus-visible:ring-offset-2 focus-visible:ring-offset-background
+                   hover:bg-border/30 disabled:opacity-50"
         value={local}
         onChange={handleChange}
         disabled={busy}
       >
         {langs.map((l) => (
-          <option key={l.value} value={l.value}>{l.label}</option>
+          <option key={l.value} value={l.value}>
+            {l.label}
+          </option>
         ))}
       </select>
       {busy && <span className="text-mutedText text-xs">…updating</span>}
     </label>
   );
 }
+
+export default LocaleSwitcher;
+export { LocaleSwitcher };
