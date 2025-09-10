@@ -1,6 +1,7 @@
+// pages/_app.tsx
 import '@/styles/semantic.css';
 import type { AppProps } from 'next/app';
-import { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import { ThemeProvider } from 'next-themes';
 
@@ -12,7 +13,7 @@ import { ToastProvider } from '@/components/design-system/Toaster';
 import { NotificationProvider } from '@/components/notifications/NotificationProvider';
 import { supabaseBrowser } from '@/lib/supabaseBrowser';
 import { env } from '@/lib/env';
-import { LanguageProvider } from '@/lib/locale/index';
+import { LanguageProvider } from '@/lib/locale'; // <- index.tsx export
 import { initIdleTimeout } from '@/utils/idleTimeout';
 import { isGuestOnlyRoute, isPublicRoute } from '@/lib/routeAccess';
 import useRouteGuard from '@/hooks/useRouteGuard';
@@ -22,7 +23,7 @@ import { ImpersonationBanner } from '@/components/admin/ImpersonationBanner';
 import SidebarAI from '@/components/ai/SidebarAI';
 import AuthAssistant from '@/components/auth/AuthAssistant';
 
-// Existing layouts
+// Layouts
 import DashboardLayout from '@/components/layouts/DashboardLayout';
 import PublicMarketingLayout from '@/components/layouts/PublicMarketingLayout';
 import AdminLayout from '@/components/layouts/AdminLayout';
@@ -30,8 +31,6 @@ import LearningLayout from '@/components/layouts/LearningLayout';
 import CommunityLayout from '@/components/layouts/CommunityLayout';
 import MarketplaceLayout from '@/components/layouts/MarketplaceLayout';
 import InstitutionsLayout from '@/components/layouts/InstitutionsLayout';
-
-// NEW layouts
 import AuthLayout from '@/components/layouts/AuthLayout';
 import ReportsLayout from '@/components/layouts/ReportsLayout';
 import ProctoringLayout from '@/components/layouts/ProctoringLayout';
@@ -60,6 +59,39 @@ function GuardSkeleton() {
       <div className="h-6 w-40 animate-pulse rounded bg-border" />
     </div>
   );
+}
+
+// Minimal error boundary so a runtime error doesn't blank the page
+class ErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  componentDidCatch(error: unknown, info: unknown) {
+    // eslint-disable-next-line no-console
+    console.error('App crashed:', error, info);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen bg-background text-foreground grid place-items-center p-6">
+          <div className="max-w-xl text-center space-y-3">
+            <h1 className="text-2xl font-semibold">Something went wrong</h1>
+            <p className="text-muted-foreground">
+              Please refresh the page. If it keeps happening, check the browser console and Vercel logs.
+            </p>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
 }
 
 function InnerApp({ Component, pageProps }: AppProps) {
@@ -110,7 +142,6 @@ function InnerApp({ Component, pageProps }: AppProps) {
     pathname.startsWith('/data-deletion');
 
   const isLearningRoute = pathname.startsWith('/learning') || pathname.startsWith('/content/studio');
-
   const isCommunityRoute = pathname.startsWith('/community');
 
   const isMarketplaceRoute =
@@ -121,7 +152,6 @@ function InnerApp({ Component, pageProps }: AppProps) {
     pathname === '/partners';
 
   const isInstitutionsRoute = pathname.startsWith('/institutions');
-
   const isReportsRoute = pathname.startsWith('/reports') || pathname.startsWith('/placement');
 
   const isProctoringRoute =
@@ -222,7 +252,9 @@ function InnerApp({ Component, pageProps }: AppProps) {
   // Premium routes get their own theme provider
   const basePage = needPremium ? (
     <PremiumThemeProvider>
-      <div className={`${fontSans.variable} ${fontDisplay.variable}`}><Component {...pageProps} /></div>
+      <div className={`${poppins.variable} ${slab.variable}`}>
+        <Component {...pageProps} />
+      </div>
     </PremiumThemeProvider>
   ) : (
     <Component {...pageProps} />
@@ -282,12 +314,14 @@ function InnerApp({ Component, pageProps }: AppProps) {
 
 export default function App(props: AppProps) {
   return (
-    <LanguageProvider>
-      <ToastProvider>
-        <NotificationProvider>
-          <InnerApp {...props} />
-        </NotificationProvider>
-      </ToastProvider>
-    </LanguageProvider>
+    <ErrorBoundary>
+      <LanguageProvider initial="en">
+        <ToastProvider>
+          <NotificationProvider>
+            <InnerApp {...props} />
+          </NotificationProvider>
+        </ToastProvider>
+      </LanguageProvider>
+    </ErrorBoundary>
   );
 }
