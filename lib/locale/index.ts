@@ -1,6 +1,7 @@
 // lib/locale/index.ts
-// Compatibility bridge for i18n helpers used across the app.
+// Compatibility bridge for i18n helpers + a small Locale context.
 
+import React from 'react';
 import { loadTranslations as _loadTranslations, getLocale as _getStoredLocale } from '@/lib/i18n';
 import type { SupportedLocale as Locale } from '@/lib/i18n/config';
 
@@ -52,4 +53,63 @@ export function setLocale(next: Locale): void {
 /** Load translation resources for given locale. */
 export async function loadTranslations(next: Locale): Promise<void> {
   await _loadTranslations(next);
+}
+
+/* =========================
+   Context + Provider + Hook
+   ========================= */
+
+type LocaleContextValue = {
+  locale: Locale;
+  loading: boolean;
+  changeLocale: (next: Locale) => Promise<void>;
+};
+
+const LocaleContext = React.createContext<LocaleContextValue>({
+  locale: 'en',
+  loading: false,
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises
+  changeLocale: async () => {},
+});
+
+/** React hook used across pages/components. */
+export function useLocale(): LocaleContextValue {
+  const ctx = React.useContext(LocaleContext);
+  if (!ctx) {
+    throw new Error('useLocale must be used within <LanguageProvider>');
+  }
+  return ctx;
+}
+
+export function LanguageProvider({
+  initial,
+  children,
+}: {
+  initial?: Locale;
+  children: React.ReactNode;
+}) {
+  const [locale, setLocal] = React.useState<Locale>(initial ?? 'en');
+  const [loading, setLoading] = React.useState(false);
+
+  // On mount: resolve actual locale safely on client
+  React.useEffect(() => {
+    const resolved = getLocale(initial ?? 'en');
+    setLocal(resolved);
+    setLocale(resolved);
+  }, [initial]);
+
+  const changeLocale = React.useCallback(async (next: Locale) => {
+    setLoading(true);
+    try {
+      await loadTranslations(next);
+      setLocale(next);
+      setLocal(next);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const value: LocaleContextValue = { locale, loading, changeLocale };
+
+  return <LocaleContext.Provider value={value}>{children}</LocaleContext.Provider>;
 }
