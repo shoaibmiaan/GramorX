@@ -12,7 +12,7 @@ import { ToastProvider } from '@/components/design-system/Toaster';
 import { NotificationProvider } from '@/components/notifications/NotificationProvider';
 import { supabaseBrowser } from '@/lib/supabaseBrowser';
 import { env } from '@/lib/env';
-import { LanguageProvider } from '@/lib/locale';
+import { LanguageProvider } from '@/lib/locale/index';
 import { initIdleTimeout } from '@/utils/idleTimeout';
 import { isGuestOnlyRoute, isPublicRoute } from '@/lib/routeAccess';
 import useRouteGuard from '@/hooks/useRouteGuard';

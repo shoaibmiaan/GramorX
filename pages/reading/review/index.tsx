@@ -5,7 +5,7 @@ import type { GetServerSideProps, NextPage } from 'next';
 import { useRouter } from 'next/router';
 import dynamic from 'next/dynamic';
 import { createClient } from '@supabase/supabase-js';
-import { useLocale } from '@/lib/locale';
+import { useLocale } from '@/lib/locale/index';
 import { translateExplanation } from '@/lib/explanations';
 import { type AnswerValue } from '@/components/reading/useReadingAnswers';
 

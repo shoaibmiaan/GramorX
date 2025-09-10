@@ -11,7 +11,7 @@ import { Badge } from '@/components/design-system/Badge';
 import { StreakIndicator } from '@/components/design-system/StreakIndicator';
 import { supabaseBrowser } from '@/lib/supabaseBrowser';
 import { getUserRole } from '@/lib/routeAccess';
-import { useLocale } from '@/lib/locale';
+import { useLocale } from '@/lib/locale/index';
 
 type WordOfDay = { word: string; meaning?: string; example?: string };
 
