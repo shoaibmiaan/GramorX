@@ -115,7 +115,7 @@ export default function CohortDetailPage() {
         <meta name="description" content="Daily micro-tasks, progress tracking, and leaderboards." />
       </Head>
 
-      <div className="py-6">
+      <div className="pb-safe py-6">
         <Container>
           <header className="mb-4 flex items-center justify-between">
             <div>

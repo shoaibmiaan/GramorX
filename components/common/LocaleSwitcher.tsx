@@ -49,3 +49,5 @@ export default function LocaleSwitcher({ value, onChanged, options }: Props) {
     </label>
   );
 }
+
+export default LocaleSwitcher;

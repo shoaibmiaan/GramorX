@@ -91,7 +91,7 @@ const CheckoutPage: NextPage = () => {
         <title>Checkout — GramorX</title>
       </Head>
 
-      <main className="min-h-screen bg-background text-foreground antialiased">
+      <main className="pb-safe min-h-screen bg-background text-foreground antialiased">
         <div className="py-16">
           <Container>
             <header className="text-center max-w-3xl mx-auto mb-6">

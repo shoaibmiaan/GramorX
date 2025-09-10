@@ -74,7 +74,8 @@ export const Header: React.FC<{ streak?: number }> = ({ streak }) => {
   }, [mobileOpen]);
 
   return (
-    <header
+    <SkipLink />
+<header
       role="banner"
       className={[
         'relative z-50 transition-all duration-300',

@@ -132,7 +132,7 @@ const StepShell: React.FC<StepShellProps> = ({
               transition={{ type: 'spring', stiffness: 120, damping: 18 }}
               className="h-full bg-gradient-to-r from-primary via-electricBlue to-vibrantPurple"
             />
-            <div className="pointer-events-none absolute inset-0 animate-[shimmer_2.2s_linear_infinite] bg-[linear-gradient(110deg,transparent,rgba(255,255,255,0.25),transparent)] [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]" />
+            <div className="pointer-events-none absolute inset-0 animate-[shimmer_2.2s_linear_infinite] bg-marketing-aurora [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]" />
           </div>
         </div>
 
