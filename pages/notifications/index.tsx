@@ -9,10 +9,13 @@ import { useToast } from '@/components/design-system/Toaster';
 export default function NotificationSettings() {
   const router = useRouter();
   const { error: toastError, success: toastSuccess } = useToast();
+
   const [loading, setLoading] = useState(true);
-  const [channels, setChannels] = useState<string[]>([]);
-  const [start, setStart] = useState('');
-  const [end, setEnd] = useState('');
+  const [sms, setSms] = useState(false);
+  const [wa, setWa] = useState(false);
+  const [email, setEmail] = useState(true);
+  const [start, setStart] = useState(''); // 'HH:MM'
+  const [end, setEnd] = useState('');     // 'HH:MM'
 
   useEffect(() => {
     (async () => {
@@ -21,35 +24,43 @@ export default function NotificationSettings() {
         router.replace('/login');
         return;
       }
-      const { data } = await supabase
-        .from('user_profiles')
-        .select('notification_channels, quiet_hours_start, quiet_hours_end')
+
+      // read from notifications_opt_in
+      const { data, error } = await supabase
+        .from('notifications_opt_in')
+        .select('sms_opt_in, wa_opt_in, email_opt_in, quiet_start, quiet_end')
         .eq('user_id', session.user.id)
         .maybeSingle();
-      if (data) {
-        setChannels(data.notification_channels ?? []);
-        setStart(data.quiet_hours_start ?? '');
-        setEnd(data.quiet_hours_end ?? '');
+
+      if (!error && data) {
+        setSms(!!data.sms_opt_in);
+        setWa(!!data.wa_opt_in);
+        setEmail(!!data.email_opt_in);
+        setStart(data.quiet_start ?? '');
+        setEnd(data.quiet_end ?? '');
       }
+
       setLoading(false);
     })();
   }, [router]);
 
-  const toggle = (c: string) => {
-    setChannels((ch) => ch.includes(c) ? ch.filter((x) => x !== c) : [...ch, c]);
-  };
-
   const save = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user) return;
+
+    // upsert by user_id
     const { error } = await supabase
-      .from('user_profiles')
-      .update({
-        notification_channels: channels,
-        quiet_hours_start: start || null,
-        quiet_hours_end: end || null,
-      })
-      .eq('user_id', session.user.id);
+      .from('notifications_opt_in')
+      .upsert({
+        user_id: session.user.id,
+        sms_opt_in: sms,
+        wa_opt_in: wa,
+        email_opt_in: email,
+        quiet_start: start || null,
+        quiet_end: end || null,
+        updated_at: new Date().toISOString(),
+      });
+
     if (error) toastError('Could not save settings');
     else toastSuccess('Settings saved');
   };
@@ -69,21 +80,25 @@ export default function NotificationSettings() {
       <Container>
         <Card className="p-6 max-w-xl mx-auto space-y-6">
           <h1 className="font-slab text-display">Notifications</h1>
+
           <div>
             <h2 className="font-medium mb-2">Channels</h2>
             <div className="space-y-2">
-              {['email', 'sms', 'whatsapp'].map((c) => (
-                <label key={c} className="flex items-center gap-2 text-body">
-                  <input
-                    type="checkbox"
-                    checked={channels.includes(c)}
-                    onChange={() => toggle(c)}
-                  />
-                  {c.toUpperCase()}
-                </label>
-              ))}
+              <label className="flex items-center gap-2 text-body">
+                <input type="checkbox" checked={email} onChange={() => setEmail(!email)} />
+                EMAIL
+              </label>
+              <label className="flex items-center gap-2 text-body">
+                <input type="checkbox" checked={sms} onChange={() => setSms(!sms)} />
+                SMS
+              </label>
+              <label className="flex items-center gap-2 text-body">
+                <input type="checkbox" checked={wa} onChange={() => setWa(!wa)} />
+                WHATSAPP
+              </label>
             </div>
           </div>
+
           <div>
             <h2 className="font-medium mb-2">Quiet hours</h2>
             <div className="flex items-center gap-2">
@@ -102,10 +117,10 @@ export default function NotificationSettings() {
               />
             </div>
           </div>
+
           <Button onClick={save}>Save</Button>
         </Card>
       </Container>
     </section>
   );
 }
-
