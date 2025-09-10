@@ -186,16 +186,18 @@ export default function LoginOptions() {
           <SectionLabel>Sign in</SectionLabel>
 
           <div className="grid gap-3">
-            {/* Email = main CTA */}
+            {/* Email = main CTA (Link/NavLink for internal navigation) */}
             <Button
-              href={`/login/email${selectedRole ? `?role=${selectedRole}` : ''}`}
+              asChild
               variant="primary"
               size="lg"
               shape="rounded"
               fullWidth
               leadingIcon={<MailIcon className="h-5 w-5" />}
             >
-              Email &amp; Password
+              <Link href={`/login/email${selectedRole ? `?role=${selectedRole}` : ''}`} prefetch>
+                Email &amp; Password
+              </Link>
             </Button>
 
             {/* Google (soft primary) */}

@@ -1,90 +1,125 @@
 // pages/api/auth/login-event.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { supabaseServer, supabaseService } from '@/lib/supabaseServer';
+import { createSupabaseServerClient } from '@/lib/supabaseServer';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { enqueueNotification } from '@/lib/notify';
 
-type RespBody = { ok?: true } | { error: string; details?: string | null };
+type Resp =
+  | { ok: true; newDevice: boolean; firstLogin: boolean }
+  | { error: string; details?: string };
 
-function resolveAdminClient(candidate: any) {
-  // Candidate may be:
-  // - a supabase client (has .from)
-  // - an object like { admin: client } (test artifact)
-  // - undefined/null
-  if (!candidate) return null;
-  if (typeof candidate.from === 'function') return candidate;
-  if (candidate.admin && typeof candidate.admin.from === 'function') return candidate.admin;
-  // sometimes libs export default / named shapes, check deeper:
-  if (candidate.supabaseAdmin && typeof candidate.supabaseAdmin.from === 'function') return candidate.supabaseAdmin;
-  return null;
+function getClientIp(req: NextApiRequest): string | null {
+  const xfwd = (req.headers['x-forwarded-for'] as string) || '';
+  if (xfwd) {
+    const first = xfwd.split(',')[0]?.trim();
+    if (first) return first;
+  }
+  // Fallback to remoteAddress
+  // @ts-expect-error TODO: type for req.socket in Next 15
+  return (req.socket?.remoteAddress as string) || null;
 }
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse<RespBody>) {
-  if (req.method === 'OPTIONS') {
-    res.setHeader('Allow', 'POST, OPTIONS');
-    return res.status(204).end();
-  }
+export default async function handler(req: NextApiRequest, res: NextApiResponse<Resp>) {
   if (req.method !== 'POST') {
-    res.setHeader('Allow', 'POST, OPTIONS');
+    res.setHeader('Allow', 'POST');
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
   try {
-    // Read user using anon/server client
-    const sb = supabaseServer(req);
-    const { data: userRes, error: userErr } = await sb.auth.getUser();
-    if (userErr) console.error('supabaseServer.auth.getUser error', userErr);
-    const userId: string | null = (userRes?.user?.id as string) ?? null;
+    const sb = createSupabaseServerClient({ req });
+    const {
+      data: { user },
+      error: authErr,
+    } = await sb.auth.getUser();
 
-    const isTestBypass =
-      process.env.NODE_ENV === 'test' ||
-      process.env.TWILIO_BYPASS === '1' ||
-      req.headers['x-test-bypass'] === '1';
-
-    if (!userId && !isTestBypass) {
+    if (authErr) {
+      return res.status(500).json({ error: 'Failed to read auth session', details: authErr.message });
+    }
+    if (!user) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    const ip =
-      (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
-      (req.socket?.remoteAddress ?? null);
+    const userId = user.id;
+    const ip = getClientIp(req);
     const ua = (req.headers['user-agent'] as string) || null;
 
-    // Get admin client with fallbacks
-    const candidate = supabaseService();
-    let adminClient = resolveAdminClient(candidate) ?? resolveAdminClient(supabaseAdmin);
+    // ---- First-login check (count BEFORE insert)
+    let firstLogin = false;
+    {
+      const { count, error } = await supabaseAdmin
+        .from('login_events')
+        .select('id', { count: 'exact', head: true } as any)
+        .eq('user_id', userId);
 
-    // Last-ditch: if supabaseAdmin module default-exported a wrapper, try that
-    if (!adminClient && (supabaseAdmin as any)?.default && typeof (supabaseAdmin as any).default.from === 'function') {
-      adminClient = (supabaseAdmin as any).default;
+      if (error) {
+        // non-fatal; default to not first
+        firstLogin = false;
+      } else {
+        firstLogin = (count ?? 0) === 0;
+      }
     }
 
-    if (!adminClient) {
-      // log the candidate shapes to help CI debugging
-      console.error('supabaseService() did not return a usable client with .from()', {
-        candidate,
-        supabaseAdmin,
-      });
-      return res.status(500).json({ error: 'Supabase service client unavailable' });
+    // ---- New-device check: same user + same IP present?
+    let newDevice = false;
+    if (ip) {
+      try {
+        const { data } = await supabaseAdmin
+          .from('login_events')
+          .select('id')
+          .eq('user_id', userId)
+          .eq('ip_address', ip)
+          .maybeSingle();
+
+        newDevice = !data; // no prior row => new device
+      } catch {
+        newDevice = true; // on lookup failure, err on safe side
+      }
     }
 
-    const { error: insertErr } = await adminClient.from('login_events').insert([
-      {
-        user_id: userId,
-        ip_address: ip,
-        user_agent: ua,
-      },
-    ]);
-
-    if (insertErr) {
-      console.error('Failed to insert login event', insertErr);
-      return res
-        .status(500)
-        .json({ error: 'Failed to record login event', details: insertErr?.message ?? String(insertErr) });
+    // ---- Always record the login event
+    {
+      const { error } = await supabaseAdmin.from('login_events').insert([
+        {
+          user_id: userId,
+          ip_address: ip,
+          user_agent: ua,
+        },
+      ]);
+      if (error) {
+        return res.status(500).json({ error: 'Failed to record login event', details: error.message });
+      }
     }
 
-    return res.status(200).json({ ok: true });
+    // ---- Enqueue notifications (non-blocking; ignore failures)
+    // 1) Welcome only once
+    if (firstLogin) {
+      try {
+        await enqueueNotification({
+          userId,
+          template: 'welcome',
+        });
+      } catch {
+        /* noop */
+      }
+    }
+
+    // 2) New device
+    if (newDevice) {
+      try {
+        // Optional payload (if you parse UA/geo in your stack)
+        await enqueueNotification({
+          userId,
+          template: 'login_new_device',
+          // payload: { city: 'Lahore', device: 'Chrome on Windows' },
+          outOfApp: true, // respects sms/wa/email opt-ins + quiet hours
+        });
+      } catch {
+        /* noop */
+      }
+    }
+
+    return res.status(200).json({ ok: true, newDevice, firstLogin });
   } catch (err: any) {
-    console.error('Unhandled error in login-event handler', err);
-    return res.status(500).json({ error: 'Internal Server Error', details: String(err?.message ?? err) });
+    return res.status(500).json({ error: 'Internal Server Error', details: err?.message ?? String(err) });
   }
 }

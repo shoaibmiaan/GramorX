@@ -11,11 +11,10 @@ import { useToast } from '@/components/design-system/Toaster';
 
 export type Notification = {
   id: string;
-  title: string | null;
-  body: string | null;
-  read_at: string | null;
-  created_at: string;
+  message: string;           // ← was title/body
   url?: string | null;
+  read: boolean;             // ← was read_at (timestamp)
+  created_at: string;
 };
 
 type Ctx = {
@@ -42,7 +41,9 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     let cancelled = false;
 
     (async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (!cancelled) setHasSession(!!session);
     })();
 
@@ -67,13 +68,17 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
         const res = await fetch('/api/notifications');
         if (!res.ok) return;
         const data = await res.json();
-        if (active) setNotifications(data.notifications ?? data.items ?? []);
+        // API returns { notifications, unread }
+        const items = (data.notifications ?? data.items ?? []) as Notification[];
+        if (active) setNotifications(items);
       } catch {
         /* noop */
       }
     })();
 
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, [hasSession]);
 
   // Realtime subscription (only when logged in)
@@ -88,17 +93,22 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
         (payload: any) => {
           const n = payload.new as Notification;
           setNotifications((prev) => [n, ...prev]);
-          toast.info(n.title ?? 'Notification', n.body ?? undefined);
+          // toast.info(title, description?) → pass message as title
+          // If your Toaster supports a second param, you can add details there.
+          toast.info(n.message);
         }
       )
       .subscribe();
 
-    return () => { supabase.removeChannel(channel); };
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [hasSession, supabase, toast]);
 
   const markRead = useCallback(async (id: string) => {
+    // optimistic update
     setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read_at: new Date().toISOString() } : n))
+      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
     );
     try {
       await fetch(`/api/notifications/${id}`, { method: 'PATCH' });
@@ -107,11 +117,21 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     }
   }, []);
 
-  const unread = useMemo(() => notifications.filter((n) => !n.read_at).length, [notifications]);
+  const unread = useMemo(
+    () => notifications.filter((n) => !n.read).length,
+    [notifications]
+  );
 
-  const value = useMemo(() => ({ notifications, unread, markRead }), [notifications, unread, markRead]);
+  const value = useMemo(
+    () => ({ notifications, unread, markRead }),
+    [notifications, unread, markRead]
+  );
 
-  return <NotificationCtx.Provider value={value}>{children}</NotificationCtx.Provider>;
+  return (
+    <NotificationCtx.Provider value={value}>
+      {children}
+    </NotificationCtx.Provider>
+  );
 }
 
 export function useNotifications() {
