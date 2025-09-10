@@ -1,5 +1,5 @@
 import React from 'react';
-import { loadTranslations, setLocale, getLocale, type Locale } from '@/lib/locale';
+import { loadTranslations, setLocale, getLocale, type Locale } from '@/lib/locale/index';
 
 type Props = {
   value?: Locale;
